@@ -10,11 +10,14 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+import os
+
+SECRET_KEY = os.environ.get('SECRET_KEY', '')
+
 # Allow all host headers
 ALLOWED_HOSTS = ['*']
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os
 import dj_database_url
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
