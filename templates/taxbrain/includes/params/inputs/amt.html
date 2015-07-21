@@ -1,0 +1,33 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}amt{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>AMT</h1>
+  {% flatblock "taxbrain_amt_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>AMT Exemption</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_em %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_prt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_em_ps %}
+
+<h2>AMT Long-term capital gains and qualified dividents</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_CG_rt1 %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_CG_thd1 %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_CG_rt2 %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_CG_thd2 %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_CG_rt3 %}
+
+<h2>Tax Rate</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_trt1 %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_trt2 %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMT_tthd %}
+{% endblock %}
+
+{% block provide_if_no_continue %}{% endblock %}

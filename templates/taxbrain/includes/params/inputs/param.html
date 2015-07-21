@@ -1,0 +1,31 @@
+{% load inputs %}
+{% load utility %}
+
+<div class="row has-statuses">
+
+  {% if param.coming_soon %}
+    <div class="col-lg-12">
+      <span class="coming-soon"> - Coming soon - </span>
+    </div>
+  {% endif %}
+
+  <div class="col-xs-12">
+    <label>
+      {{ param.name }}
+      {% include 'taxbrain/includes/params/tooltip.html' with text=param.info %}
+    </label>
+
+    {% if param.inflatable %}
+      {% with form|dict_get:param.cpi_field.id as cpi_field %}
+        {% include 'taxbrain/includes/params/cpi_button.html' with cpi=cpi_field %}
+      {% endwith %}
+    {% endif %}
+  </div>
+
+  {% for field in param.col_fields %}
+    <div class="{{ param|col_input_class }}">
+      {% include 'taxbrain/includes/params/inputs/field.html' with field=field %}
+    </div>
+  {% endfor %}
+
+</div>

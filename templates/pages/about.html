@@ -1,0 +1,125 @@
+{% extends 'pages/home.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+
+  <div class="wrapper">
+    <div class="container">
+
+      <div class="page-header">
+        <h1 class="text-center">What is the Open Source Policy Center?</h1>
+      </div>
+
+      <section class="about-ospc">
+        <div class="about-mission">
+          <h2>Our Mission</h2>
+          {% flatblock "about_top" %}
+        </div>
+        <div class="about-break"></div>
+        <div class="about-history">
+          <h2>Our History</h2>
+          {% flatblock "about_bottom" %}
+        </div>
+        <div class="about-products">
+          <h2>Our Products</h2>
+          <div class="product">
+            <div class="product-logo">
+              <h2 class="sr-only">TaxBrain</h2>
+              <img src="{% static 'images/logo-taxbrain.png' %}" alt="TaxBrain" class="img-responsive">
+            </div>
+            <div class="product-info">
+              <span class="light">A disruptive open source platform for exploring tax policy impact.</span><br>
+              <a href="#">Learn more about TaxBrain</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="join join-complete">
+        <h2>Join the community</h2>
+        <div class="input-container">
+          <div class="input-group">
+`          <form action="{% url 'about' %}" method="post">{% csrf_token %}
+            <span class="input-group-btn">
+            {{ email_form.email }}
+            {{ email_form.email.errors }}
+            <input type="submit" class="btn btn-join" value="Sign Up"/>
+            </span>
+          </form>
+          </div>
+        </div>
+        <div class="join-info">
+          Welcome to the community!
+        </div>
+      </section>
+
+    </div> <!-- container -->
+
+    <div class="section-header">
+      <h2>What People Are Saying</h2>
+    </div>
+    
+    <section class="news-items">
+      <div class="container">
+        <p class="text-right"><a href="#" class="see-all">See all news</a></p>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="news-item tagged">
+              <h4><a href="#">Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</a></h4>
+              <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="news-item tagged">
+              <h4><a href="#">Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</a></h4>
+              <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <section class="sponsor-info">
+        <h2>Our Sponsor</h2>
+        <div>
+          <img src="{% static 'images/logo-aei.png' %}" alt="AEI" class="img-responsive">
+          <p>The American Enterprise Institute is a community of scholars and supporters committed to expanding liberty, increasing individual opportunity and strengthening free enterprise. AEI pursues these unchanging ideals through independent thinking, open debate, reasoned argument, facts and the highest standards of research and exposition. Without regard for politics or prevailing fashion, we dedicate our work to a more prosperous, safer and more democratic nation and world.</p>
+          <a href="#">Learn more about American Enterprise Institute</a>
+        </div>
+      </section>
+      <section class="contact-info">
+        {% flatblock "reach_out_community_link" %}
+        <ul class="contact-social">
+          <li class="contact-twitter"><a href="#">Post link on Twitter</a></li>
+          <li class="contact-facebook"><a href="#">Share on Facebook</a></li>
+          <li class="contact-linkedin"><a href="#">Discuss on LinkedIn</a></li>
+        </ul>
+        <div class="contact-info-break"></div>
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-5">
+            <h3>MATT JENSEN</h3>
+            <p>+1 202 862 5941</p>
+            <p>matt.jensen@aei.org</p>
+          </div>
+          <!--
+          <div class="col-sm-5">
+            <h3>PERSON NAME, PH.D.</h3>
+            <p>+1 555 555-3333 voice<br>
+            hello@mediacontactinfo.us</p>
+            <p>Company name PR<br>
+            1000 N Streetname Ave Suite 34<br>
+            Washington, DC 10000</p>
+          </div>
+          -->
+        </div>
+      </section>
+    </div>
+     
+
+    <div class="push"></div>
+  </div> <!-- /wrapper -->
+{% endblock %}

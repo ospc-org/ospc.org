@@ -1,0 +1,155 @@
+// shell
+
+// small screen
+@media (max-width: @screen-sm) {}
+
+// medium screen
+@media (max-width: @screen-md) {}
+
+// large screen
+@media (max-width: @screen-sm) {}
+
+// body
+body {
+	background-color: @site-bg;
+  position: relative;
+}
+
+// browse happy
+.browsehappy {
+  margin: 0.2em 0;
+  background: #ccc;
+  color: #000;
+  padding: 0.2em 0;
+}
+
+/* Default structure */
+
+// wrapper
+.wrapper {}
+
+// header
+.page-header {
+  border: 0;
+  margin: 0 0 50px 0;
+  padding: 0;
+}
+
+// main
+.main {
+  margin: 0 auto;
+  padding: 0 7px;
+  width: 974px;
+
+  .main-body {
+    float: left;
+    width: 726px;
+  }
+  .main-side {
+    float: right;
+    width: 225px;
+  }
+}
+
+.graphic-break {
+  background-color: @gray-light;
+  overflow: hidden;
+  img {
+    display: block;
+    margin: 0 auto;
+  }
+}
+
+// footer
+footer {
+  background-color: @footer-bg;
+  margin: 0;
+  padding: 0;
+
+  .copyright {
+    margin: 0;
+  }
+}
+
+.footer-main {
+  padding: 60px 0 40px 0;
+
+  .footer-main-logo {
+    float: left;
+    img {
+      display: block;
+      margin: 0 10px 10px 0;
+      width: 110px;
+      @media (min-width: @screen-md) {
+        margin-right: 60px;
+      }
+    }
+  }
+  .footer-main-text {
+    float: left;
+    font-size: 16px;
+    line-height: 26px;
+    width: 100%;
+    @media (min-width: @screen-md) {
+      margin-top: -2px;
+      width: 50%;
+    }
+  }
+  .footer-main-links {
+    float: right;
+  }
+
+  ul {
+    font-weight: 700;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    li {
+      display: inline-block;
+      margin-left: 10px;
+      @media (min-width: @screen-sm) {
+        margin-left: 30px;
+      }
+      a {
+        color: @link-footer;
+        &:hover {
+          color: #000;
+        }
+      }
+    }
+  }
+}
+
+.footer-sub {
+  .clearfix();
+  border-top: 1px solid #d6dede;
+  font-size: 11px;
+  line-height: 16px;
+  padding: 20px 0;
+
+  a {
+    color: @gray-dark;
+    &:hover {
+      border-bottom: 1px solid @gray-dark;
+      text-decoration: none;
+    }
+  }
+
+  .footer-sub-address {
+    text-transform: uppercase;
+    @media (min-width: @screen-md) {
+      float: left;
+    }
+    @media (max-width: @screen-sm) {
+      .adr {
+        display: block;
+      }
+    }
+  }
+  .footer-sub-u {
+    @media (min-width: @screen-md) {
+      float: right;
+    }
+  }
+}

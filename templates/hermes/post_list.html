@@ -1,0 +1,10 @@
+{% extends 'pages/home.html' %}
+
+{% block content %}
+  <div>
+	{% for post in posts %}
+      <a href="{{ post.get_absolute_url }}"><h3>{{ post.subject }}</h3></a>
+      <p>{{ post.summary }}</p>
+	{% endfor %}
+  </div>
+{% endblock %}

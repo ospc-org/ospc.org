@@ -1,0 +1,45 @@
+// Mixins
+
+.list-reset {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.icon-after {
+  float: right;
+  position: relative;
+  font-family: 'ospc';
+}
+.icon-before {
+  float: left;
+  position: relative;
+  font-family: 'ospc';
+}
+.icon-font  {
+  font-family: 'ospc';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased; // better font rendering
+  -moz-osx-font-smoothing: grayscale; // better font rendering
+}
+
+.section-header {
+  color: @gray-light;
+  margin: 0 0 1em 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.valign  {
+  display: table;
+  width: 100%;
+  > * {
+    display: table-cell;
+    vertical-align: middle;
+  }
+}

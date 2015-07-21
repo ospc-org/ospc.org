@@ -1,0 +1,124 @@
+// Header
+
+.taxbrain-hero {
+  background-color: #047099;
+  
+  .taxbrain-hero-block {
+    margin: 0 auto;
+    max-width: 770px;
+    text-align: center;
+    .logo {
+      border-bottom: 1px solid #2ca8d7;
+      padding: 50px 0 20px 0;
+      img {
+        margin: 0 auto;
+        &.for-web {
+          // hide on print
+          @media print {
+            display: none !important;
+          }
+        }
+        &.for-print {
+          display: none;
+          // show on print
+          @media print {
+            display: block !important;
+          }
+        }
+      }
+    }
+    .lead {
+      color: white;
+      margin: 20px 10px 40px 10px;
+      @media (min-width: @screen-md) {
+        margin: 20px 80px 40px 80px;
+      }
+    }
+    .what-is {
+      height: 50px;
+      font-size: 0.9286em;
+      line-height: 50px;
+      position: relative;
+      a {
+        color: white;
+        &:after {
+          display: block;
+          bottom: 0;
+          left: 50%;
+          border: solid transparent;
+          content: " ";
+          height: 0;
+          width: 0;
+          position: absolute;
+          pointer-events: none;
+          border-color: rgba(255, 255, 255, 0);
+          border-bottom-color: #eff4f4;
+          border-width: 10px;
+          margin-left: -10px;
+        }
+        &:hover {
+          color: white;
+        }
+        &.collapsed {
+          color: #2ca8d7;
+          &:after {
+            display: none;
+          }
+          &:hover {
+            color: white;
+          }
+        }
+      }
+      // hide on print
+      @media print {
+        display: none !important;
+      }
+    }
+  }
+}
+
+.taxbrain-hero-small {
+  .taxbrain-hero-block {
+    .logo {
+      border-bottom: 0;
+      padding: 15px 0 10px 0;
+      img {
+        width: 196px;
+      }
+    }
+  }
+}
+
+.taxbrain-info {
+  background-color: #eff4f4;
+  border-bottom: 1px solid #3d4444;
+  padding: 40px 0 60px 0;
+
+  .container {
+    width: 800px;
+  }
+  h2 {
+    text-align: center;
+  }
+  
+  .taxbrain-history {
+    font-family: @font-verb-cond;
+    font-size: 17px;
+    margin-bottom: 3em;
+    h2 {
+      margin-bottom: 2em;
+    }
+    p {
+      // margin-bottom: 1em;
+      &.bump {
+        font-size: 21px;
+      }
+    }
+  }
+  .taxbrain-build {
+    font-size: 21px;
+    text-align: center;
+  }
+}
+
+@media (min-width: @screen-md) {}

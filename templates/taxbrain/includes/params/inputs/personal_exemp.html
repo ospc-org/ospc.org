@@ -1,0 +1,23 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}exemptions{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Exemptions</h1>
+  {% flatblock "taxbrain_exemptions_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Personal Exemptions</h2>
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.II_em %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.II_em_ps %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.II_prt %}
+
+{% endblock %}
+
+{% block next_section_shortname %}standard-deduction{% endblock %}

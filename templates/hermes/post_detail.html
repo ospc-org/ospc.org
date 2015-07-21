@@ -1,0 +1,12 @@
+{% extends 'pages/home.html' %}
+
+{% block content %}
+<div class="post-detail" style="width:30em;margin-left:2em;">
+  <h2>Some Title</h2>
+    <div>
+      <h3>{{ post.subject }}</h3>
+      <p>{{ post.body }}</p>
+      <h5>by: {{ post.author }}</h5>
+	</div>
+</div>
+{% endblock %}

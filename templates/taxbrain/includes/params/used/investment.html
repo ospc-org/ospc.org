@@ -1,0 +1,74 @@
+<div class="parameter-block">
+  <div class="parameter-block-header">
+    <h3>Rates</h3>
+    <a href="#">Edit</a>
+  </div>
+  <div class="parameter-block-content">
+    <table class="table table-params">
+      <thead>
+        <tr>
+          <th>Long-Term Capital Gains</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Rates</th>
+          <td>-</td>
+          <td>{{ locals.inputs.long_term_cap }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>Dividends</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Dividends</th>
+          <td>1</td>
+          <td>{{ locals.inputs.dividends }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>Additional Medicare Tax on Unearned Income</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Rate</th>
+          <td>0.038</td>
+          <td>{{ locals.inputs.medicare_unearned_inc_rate }}</td>
+        </tr>
+        <tr>
+          <th>Threshold</th>
+          <td>-</td>
+          <td>{{ locals.inputs.medicare_unearned_inc_threshold }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>Income Tax</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Income Tax</th>
+          <td>-</td>
+          <td>{{ locals.inputs.income_tax_rate }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

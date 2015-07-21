@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% load staticfiles %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{section.title}} | OSPC</title>
+
+    <!-- Bootstrap -->
+    <link href="{% static 'css/vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Styles -->
+    <link href="{% static 'css/site.css' %}" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="static 'static/js/vendor/html5shiv/html5shiv.min.js'"></script>
+      <script src="static 'js/vendor/respond/respond.min.js'"></script>
+    <![endif]-->
+  </head>
+  <body>
+  {% load flatblocks %}
+
+
+  <div class="wrapper {% if section.active_nav == 'home' %}wrapper-home{% endif %}">
+
+    <nav class="navbar navbar-ospc" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#main-nav">
+            <span class="sr-only">Toggle navigation</span> Menu
+          </button>
+          <a class="navbar-brand" href="/">
+            <img alt="OSPC: Open Source Policy Center" src="{% static 'images/logo.png' %}">
+          </a>
+        </div>
+        <div class="collapse navbar-collapse" id="main-nav">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="{% if section.active_nav == 'home' %}current{% endif %}">
+              <a href="/">Home</a>
+            </li>
+            <li class="{% if section.active_nav == 'apps' %}current{% endif %}">
+              <a href="/taxbrain">Apps</a>
+            </li>
+            <li class="{% if section.active_nav == 'about' %}current{% endif %}">
+              <a href="/about">About</a>
+            </li>
+            <li class="{% if section.active_nav == 'news' %}current{% endif %}">
+              <a href="http://news.ospc.org">News</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    {% block content %}
+
+    {% endblock %}
+
+  </div> <!-- /wrapper -->
+
+  <footer>
+    <div class="container">
+      <div class="footer-main">
+        <div class="clearfix">
+          <div class="footer-main-logo">
+            <img alt="OSPC: Open Source Policy Center" src="{% static 'images/logo-no-text.png' %}">
+          </div>
+          <div class="footer-main-links">
+            <ul>
+              <li><a href="/">Home</a></li>
+              <li><a href="/taxbrain">Apps</a></li>
+              <li><a href="/about">About</a></li>
+              <li><a href="/news">News</a></li>
+            </ul>
+          </div>
+          <div class="footer-main-text">
+            {% flatblock "footer_blurb" %}
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-sub">
+        <div class="footer-sub-address">
+          <div class="vcard">
+            <a class="url fn org" href="http://www.ospc.org/">www.ospc.org</a>
+            <!-- ·
+            <span class="tel">888-555-4567</span> · 
+            <span class="adr">
+              <span class="street-address">1000 Maple St #204</span>,
+              <span class="locality">Washington</span>, 
+              <span class="region">DC</span>
+            </span>
+            -->
+          </div>            
+        </div>
+        <div class="footer-sub-u">
+          <!--
+          <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a> ·
+          -->
+          <span class="copyright">©2015 OSPC All Rights Reserved</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="{% static 'js/vendor/jquery/jquery.min.js' %}"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="{% static 'js/vendor/bootstrap/bootstrap.min.js' %}"></script>
+  <!-- Scripts -->
+  <script src="{% static 'js/site.js' %}"></script>
+  <script src="{% static 'js/pages.js' %}"></script>
+  <style>
+  {% block extracss %}
+
+  {% endblock %}
+  </style>
+  <script>
+  {% block extrajs %}
+
+  {% endblock %}
+  </script>
+
+  </body>
+</html>

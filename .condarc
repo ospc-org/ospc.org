@@ -1,0 +1,3 @@
+channels:
+  - https://conda.binstar.org/ospc
+  - defaults

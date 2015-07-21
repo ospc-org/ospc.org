@@ -1,0 +1,6 @@
+numba
+taxcalc
+reportlab
+boto
+gevent
+pillow

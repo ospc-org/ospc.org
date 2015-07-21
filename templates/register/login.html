@@ -1,0 +1,20 @@
+{% extends 'pages/home.html' %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div>
+	<p style="color:red;font-size:1.25em;">{{ error_msg }}</p>
+	<form action="" method="post">{% csrf_token %}
+	    {{ log_user.username.label }}
+        {{ log_user.username }}
+        {{ log_user.password.label }}
+        {{ log_user.password }}
+
+		<input type="submit" value="login">
+	</form>
+</div>
+<div>
+    {% flatblock "login_register_message" %}
+</div>
+{% endblock %}

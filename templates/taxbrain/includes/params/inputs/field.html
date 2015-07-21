@@ -1,0 +1,35 @@
+{% load utility %}
+
+{% with form|dict_get:field.id as form_field %}
+
+<div class="form-group{% if form_field.errors %} has-warning{% endif %}">
+
+  {% if form_field.label %}
+    <label for="{{ form_field.id_for_label }}">
+      {{ form_field.label }}
+    </label>
+  {% endif %}
+
+  {{ form_field }}
+
+  {% for error in form_field.errors %}
+    <span class="help-block">
+      {{ error }}
+    </span>
+  {% endfor %}
+
+  {% if field.default_value %}
+    <span class="default">
+      Default: {{ field.default_value }}
+    </span>
+  {% endif %}
+
+</div>
+
+{% endwith %}
+
+<!--
+<input type="text" id="inputHelpBlock" class="form-control" aria-describedby="helpBlock">
+<span id="helpBlock" class="help-block">A block of help text that breaks onto a new line and m
+ay extend beyond one line.</span>
+-->

@@ -1,0 +1,126 @@
+// Typography
+
+// Fonts
+@font-default: 'Open Sans', Arial, sans-serif;
+@font-fallback: Tahoma, Arial, sans-serif
+
+@font-verb: 'Verb', Arial, sans-serif;
+@font-verb-cond: 'Verb Condensed', Arial, sans-serif;
+@font-museo-rounded: 'Museo Rounded', Arial, sans-serif;
+
+// Icons
+@font-icons: 'ospc';
+
+// Font sizes
+// @font-size-base: 14px; // set by Bootstrap
+// @font-size-x: 14px;
+
+// Font weights
+@font-weight-light: 300;
+@font-weight-regular: 400;
+@font-weight-semi: 600;
+@font-weight-bold: 700;
+
+// Type
+body {
+    color: #4E5966;
+    font-family: @font-default;
+    // font-size: 100%;
+    font-size: 13px\9; /* IE 8 and below */
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1.4286; // 20px
+    -webkit-font-smoothing: antialiased;
+}
+
+// Headers
+h1, h2, h3, h4, h5 {
+    margin: 0 0 0.5em 0;
+}
+h1 {
+    margin-top: 0.15em;
+    margin-bottom: 0.5em;
+    color: #0054A0;
+    font-size: 47px;
+    font-weight: 600;
+    line-height: 1;
+    &.has-margin {
+        margin-bottom: 0.75em;
+    }
+}
+/*
+h2 {
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1.1111;
+}
+*/
+h2 {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.125;
+}
+h3 {
+    margin-bottom: 0.75em;
+    font-size: 21px;
+    font-weight: 400;
+    line-height: 32px;
+    strong {
+        font-weight: 600;
+    }
+}
+h4 {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 21px;
+}
+
+// Lead
+.lead {
+    font-size: 21px;
+    font-weight: 400;
+    line-height: 32px;
+}
+
+// Text
+strong {
+    font-weight: 700;
+}
+
+// Links
+a {
+    color: #175FC0;
+    font-weight: 600;
+    // icon
+    .icon {
+        color: #6C95C0;
+    }
+    // hover
+    &:hover {
+        color: #19529F;
+        text-decoration: underline;
+        .icon {
+            color: #0058A2;
+        }
+    }
+    // active
+    &:active, &.active {
+        color: #102F59;
+        text-decoration: underline;
+        .icon {
+            color: #0055A1;
+        }
+    }
+}
+
+// Lists
+
+// none yet
+
+// Rules
+hr {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    border: 0;
+    border-top: 1px solid #D7DBDE;
+}

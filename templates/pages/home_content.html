@@ -1,0 +1,141 @@
+{% extends 'pages/home.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+  <section class="home-display">
+    <div class="home-display-pattern">
+
+      <div class="home-hero">
+        <div class="home-hero-break"></div>
+        {% flatblock "home_top_overview" %}
+        <div class="row">
+          <div class="col-sm-4">
+            <div class="home-hero-item">
+              <span class="icon icon-invisible-folder"></span>
+              {% flatblock "home_left_subtitle" %}
+              {% flatblock "home_left_blurb" %}
+              {% flatblock "home_left_link" %}
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="home-hero-item">
+              <span class="icon icon-wrenches"></span>
+              {% flatblock "home_center_subtitle" %}
+              {% flatblock "home_center_blurb" %}
+              {% flatblock "home_center_link" %}
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div class="home-hero-item">
+              <span class="icon icon-arrows-inward"></span>
+              {% flatblock "home_right_subtitle" %}
+              {% flatblock "home_right_blurb" %}
+              {% flatblock "home_right_link" %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-display-app">
+        <h2>From The Lab</h2>
+        <div class="app app-taxbrain">
+          <div class="app-logo">
+            <h2 class="sr-only">TaxBrain</h2>
+            <img src="{% static 'images/logo-taxbrain.png' %}" alt="TaxBrain" class="img-responsive">
+          </div>
+          <div class="app-info">
+            {% flatblock "home_taxbrain_subtitle" %}
+            {% flatblock "home_taxbrain_blurb" %}
+            <br>
+            <a href="/taxbrain/" class="btn btn-primary">Explore the numbers</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="container">
+    <section class="join">
+      <h2>Join the community</h2>
+      <div class="input-container">
+        <div class="input-group">
+          <form action="{% url 'home' %}" method="post">{% csrf_token %}
+          <span class="input-group-btn">
+            {{ email_form.email }}
+            {{ email_form.email.errors }}
+            <input type="submit" class="btn btn-join" value="Sign Up"/>
+          </span>
+          </form>
+          <script>
+
+          </script>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="container">
+    <section class="contribute">
+      <h2>Become a contributor</h2>
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="contribute-block">
+            <span class="icon icon-code-doc"></span>
+            Documentation
+            <hr>
+            {% flatblock "home_contributor_left_blurb" %}
+            {% flatblock "home_contributor_left_link" %}
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="contribute-block">
+            <span class="icon icon-github"></span>
+            GitHub Project
+            <hr>
+            {% flatblock "home_contributor_center_blurb" %}
+            {% flatblock "home_contributor_center_link" %}
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="contribute-block">
+            <span class="icon icon-model-diagram"></span>
+            Peer-Modeling Group
+            <hr>
+            {% flatblock "home_contributor_right_blurb" %}
+            {% flatblock "home_contributor_right_link" %}
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="section-header">
+    <h2>Updates From the Field</h2>
+  </div>
+  
+  <section class="news-items news-items-dark">
+    <div class="container">
+      <p class="text-right"><a href="#" class="see-all">See all news</a></p>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="news-item tagged">
+            <h4><a href="#">Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</a></h4>
+            <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="news-item tagged">
+            <h4><a href="#">Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</a></h4>
+            <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="push"></div>
+{% endblock  %}

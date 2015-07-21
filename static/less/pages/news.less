@@ -1,0 +1,39 @@
+// News
+
+.news-break {
+  background: url(../images/break-ospc.png) top center no-repeat;
+  height: 20px;
+  margin: 0 0 20px 0;
+  max-width: 1500px;
+}
+
+.related-news {
+  margin: 90px 0;
+  h2 {
+    text-align: center;
+  }
+  ul {
+    background-color: white;
+    border-bottom: 2px solid #e6e8e8;
+    font-size: 17px;
+    line-height: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+    text-align: center;
+    li {
+      border-bottom: 1px solid @section-bg;
+      margin: 0 40px;
+      padding: 20px 0;
+      a {
+        color: @lime;
+        &:hover {
+          color: @gray-dark;
+        }
+      }
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+  }
+}

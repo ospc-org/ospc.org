@@ -1,0 +1,23 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}nonrefundable-credits{% endblock %}
+{% block input_section_title %}Nonrefundable Credits{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Nonrefundable Credits</h1>
+  {% flatblock "taxbrain_nonrefundable-credit_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Child Tax Credit</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.CTC_c %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.CTC_prt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.CTC_ps %}
+
+{% endblock %}
+
+{% block next_section_shortname %}other-taxes{% endblock %}
