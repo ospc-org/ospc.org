@@ -11,7 +11,7 @@ from webapp.apps.register.forms import MyRegistrationForm, LoginForm, SubscribeF
 from webapp.apps.register.models import Subscriber
 
 def login(request):
-    redirect_to = request.REQUEST.get('next', '')
+    redirect_to = request.REQUEST.get('next', '/')
 
     if request.method=='POST':
         log_user = LoginForm(request.POST)
@@ -37,7 +37,7 @@ def login(request):
     return render(request, 'register/login.html', log_context)
 
 def loggedin(request):
-    return render_to_response('register/loggedin.html', 
+    return render_to_response('register/loggedin.html',
         {'full_name': request.user.username})
 
 def invalid_login(request):

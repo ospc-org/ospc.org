@@ -26,7 +26,7 @@ TAXCALC_COMING_SOON_FIELDS = [
     '_BE_cg_per', '_BE_cg_trn'
     ]
 TAXCALC_COMING_SOON_INDEXED_BY_MARS = [
-    '_CG_thd1', '_CG_thd2', '_Dividend_thd1','_Dividend_thd2', '_Dividend_thd3'
+    '_Dividend_thd1','_Dividend_thd2', '_Dividend_thd3'
 ]
 
 TIMEOUT_IN_SECONDS = 1.0
@@ -72,8 +72,8 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
 TAXCALC_RESULTS_BIN_ROW_KEYS = dropq.dropq.bin_row_names
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'less_than_10':'Less than 10',
-    'ten_twenty':'10-20', 
-    'twenty_thirty':'20-30', 
+    'ten_twenty':'10-20',
+    'twenty_thirty':'20-30',
     'thirty_forty':'30-40',
     'forty_fifty':'40-50',
     'fifty_seventyfive':'50-75',
@@ -188,7 +188,7 @@ def leave_name_in(key, val, dd):
     """
     Under certain conditions, we will remove 'key' and its value
     from the dictionary we pass to the dropq package. This function
-    will test those conditions and return a Bool. 
+    will test those conditions and return a Bool.
 
     Parameters:
     -----------
@@ -279,7 +279,6 @@ def package_up_vars(user_values):
         for i, new_val in enumerate(v):
             expnded[i] = new_val
         ans[param] = expnded
- 
 
     return ans
 

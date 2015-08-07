@@ -16,28 +16,39 @@ def subscribeform(request):
     if request.method == 'POST':
         subscribeform = SubscribeForm(request.POST)
         if subscribeform.is_valid():
-            subscribeform.save()
+            subscriber = subscribeform.save()
+            subscriber.send_subscribe_confirm_email()
     else:
         subscribeform = SubscribeForm()
     return subscribeform
 
+def check_email(request):
+    return render(request, 'register/please-check-email.html', {})
+
 def homepage(request):
+    form = subscribeform(request)
     csrf_token = csrf(request)
+    if request.method == 'POST' and form.is_valid():
+        return check_email(request)
     test = render(request, 'pages/home_content.html', {
         'csrv_token': csrf(request)['csrf_token'],
-        'email_form': subscribeform(request),
+        'email_form': form,
         'section': {
             'active_nav': 'home',
             'title': 'Welcome to the Open Source Policy Center',
-        }
+        },
+        'username': request.user
     })
 
     return test
 
 def aboutpage(request):
+    form = subscribeform(request)
+    if request.method == 'POST' and form.is_valid():
+        return check_email(request)
     test_1 = render(request, 'pages/about.html', {
         'csrv_token': csrf(request)['csrf_token'],
-        'email_form': subscribeform(request),
+        'email_form': form,
         'section': {
             'active_nav': 'about',
             'title': 'About',
