@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
 
 import os
 import urllib
@@ -20,22 +21,17 @@ class Subscriber(models.Model):
             params = urllib.urlencode({'k': self.confirm_key})
         )
 
+    def send_subscribe_confirm_email(self):
+        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+        print(self.email)
+        send_mail(subject="Thank you for joining the conversation on American tax policy",
+            message = """Welcome!
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.core.urlresolvers import reverse
-
-@receiver(post_save, sender=Subscriber)
-def send_subscribe_confirm_email(sender, instance, **kwargs):
-    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-    send_mail(subject="Thank you for joining the conversation on American tax policy",
-        message = """Welcome!
-
-        Thank you for registering with ospc.org. This is the best way to stay up to date on
-        the latest news from the Open Source Policy Center. We also invite you to beta test
-        the TaxBrain webapp.
+            Thank you for registering with ospc.org. This is the best way to stay up to date on
+            the latest news from the Open Source Policy Center. We also invite you to beta test
+            the TaxBrain webapp.
 
 
-        Please visit {url} to confirm your subscription""".format(url = instance.confirm_url(hostname)),
-        from_email = "Open Source Policy Center <mailing@ospc.org>",
-        recipient_list = [instance.email,])
+            Please visit {url} to confirm your subscription""".format(url = self.confirm_url(hostname)),
+            from_email = "Open Source Policy Center <mailing@ospc.org>",
+            recipient_list = [self.email])

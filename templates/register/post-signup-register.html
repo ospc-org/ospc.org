@@ -1,25 +1,24 @@
 {% extends 'pages/home.html' %}
-{% block extracss %}
-  div#flat-wrapper {
-      padding-left: 15%;
-      padding-right: 15%;
-  }
-{% endblock %}
-{# FIXME This CSS should be moved to a better spot #}
 {% block content %}
-<div id="flat-wrapper">
-  <header id="flat-logo">
-    <p>You have signed up for the mailing list and are invited to join the beta test of TaxBrain!</p>
-  </header>
+<div class="container">
+  <div class="row">
+    <div class="columns col-md-12">
+      <div id="flat-wrapper">
+        <header id="flat-logo">
+          <p>You have signed up for the mailing list and are invited to join the beta test of TaxBrain!</p>
+        </header>
 
-  <h2>Register</h2>
-  <form action="/register/" method="post">{% csrf_token %}
-  <table>
-  {{ form.as_table }}
-  </table>
+        <h2>Register</h2>
+        <form action="/register/" method="post">{% csrf_token %}
+        <table>
+        {{ form.as_table }}
+        </table>
 
-  <input type="submit" value="Register">
+        <input type="submit" value="Register">
 
-  </form>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

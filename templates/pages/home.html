@@ -51,8 +51,21 @@
               <a href="/about">About</a>
             </li>
             <li class="{% if section.active_nav == 'news' %}current{% endif %}">
-              <a href="http://news.ospc.org">News</a>
+              <a href="//news.ospc.org">News</a>
             </li>
+            {% if user.is_authenticated %}
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                  {{username}}
+                  <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a href="/logout">Logout</a></li>
+                </ul>
+              </li>
+            {% else %}
+              <li><a href="/accounts/login">Login</a></li>
+            {% endif %}
           </ul>
         </div>
       </div>
@@ -89,14 +102,14 @@
           <div class="vcard">
             <a class="url fn org" href="http://www.ospc.org/">www.ospc.org</a>
             <!-- ·
-            <span class="tel">888-555-4567</span> · 
+            <span class="tel">888-555-4567</span> ·
             <span class="adr">
               <span class="street-address">1000 Maple St #204</span>,
-              <span class="locality">Washington</span>, 
+              <span class="locality">Washington</span>,
               <span class="region">DC</span>
             </span>
             -->
-          </div>            
+          </div>
         </div>
         <div class="footer-sub-u">
           <!--
