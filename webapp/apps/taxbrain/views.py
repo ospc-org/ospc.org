@@ -2,7 +2,6 @@ import csv
 import pdfkit
 import json
 import taxcalc
-import dropq
 import datetime
 
 from django.core import serializers
