@@ -3,16 +3,21 @@
 {% load flatblocks %}
 
 {% block content %}
-<div>
-	<p style="color:red;font-size:1.25em;">{{ error_msg }}</p>
-	<form action="" method="post">{% csrf_token %}
-	    {{ log_user.username.label }}
-        {{ log_user.username }}
-        {{ log_user.password.label }}
-        {{ log_user.password }}
-
-		<input type="submit" value="login">
-	</form>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <p style="color:red;font-size:1.25em;">{{ error_msg }}</p>
+            <form action="" method="post">{% csrf_token %}
+                {{ log_user.username.label }}
+                {{ log_user.username }}
+                {{ log_user.password.label }}
+                {{ log_user.password }}
+                <input type="submit" value="login" class="btn btn-sm btn-primary">
+                <a class="pull-right btn btn-success btn-sm" href="/register">Sign Up</a>
+            </form>
+            <br>
+        </div>
+    </div>
 </div>
 <div>
     {% flatblock "login_register_message" %}

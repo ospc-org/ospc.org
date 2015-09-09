@@ -58,22 +58,12 @@ def register_user(request):
         else:
             args = {'form': form} #Present the user the form with errors to correct.
     else:
-        confirm_key = request.GET.get('k')
-        if not confirm_key:
-            raise NotImplementedError(
-                "We do not handle the case where the user does not have a registration key.")
-        elif not Subscriber.objects.filter(confirm_key = confirm_key).exists():
-            raise NotImplementedError(
-                "We do not handle the case where the user has an incorrect registration key.")
-        else:
-            subscriber = Subscriber.objects.filter(confirm_key = confirm_key).get()
-            subscriber.active = True
-            subscriber.save()
-            args = {}
-            args['form'] = MyRegistrationForm(initial = {
-                'username': subscriber.email.split('@')[0] if len(subscriber.email.split('@')[0]) <= 30 else '',
-                'email': subscriber.email
-            })
+        args = {}
+        args['form'] = MyRegistrationForm()
+        subscriber = Subscriber()
+        subscriber.active = True
+        subscriber.save()
+
     args.update(csrf(request))
     return render_to_response('register/post-signup-register.html', args)
 
