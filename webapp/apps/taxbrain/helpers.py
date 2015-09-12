@@ -13,11 +13,16 @@ import time
 # Prepare user params to send to DropQ/Taxcalc
 #
 
+tcversion_info = taxcalc._version.get_versions()
+taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
+
+
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 START_YEAR = int(os.environ.get('START_YEAR', 2015))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
+ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
 TAXCALC_COMING_SOON_FIELDS = [
     '_Dividend_rt1', '_Dividend_thd1',
@@ -793,6 +798,12 @@ def dropq_get_results(job_ids):
         mX_bin.update(result['mX_bin'])
         df_bin.update(result['df_bin'])
         fiscal_tots.append(result['fiscal_tots'])
+
+    if ENFORCE_REMOTE_VERSION_CHECK:
+        versions = [r.get('version', None) for r in ans]
+        if not all([ver==taxcalc_version for ver in versions]):
+            msg ="Got difference versions from workers. Bailing out"
+            raise IOError(msg)
 
     results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
                'mY_bin': mY_bin, 'mX_bin': mX_bin, 'df_bin': df_bin,
