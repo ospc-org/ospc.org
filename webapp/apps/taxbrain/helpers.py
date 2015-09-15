@@ -99,12 +99,12 @@ TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'all':'All'
 }
 TAXCALC_RESULTS_TABLE_LABELS = {
-    'mX_dec': 'Base plan tax vars, weighted avg per AGI decile',
-    'mY_dec': 'User plan tax vars, weighted avg per AGI decile',
-    'df_dec': 'Difference between Base and User plans by AGI decile',
-    'mX_bin': 'Base plan tax vars, weighted avg per income bin',
-    'mY_bin': 'User plan tax vars, weighted avg per income bin',
-    'df_bin': 'Difference between Base and User plans by income bin',
+    'mX_dec': 'Base plan tax vars, weighted avg per expanded income decile',
+    'mY_dec': 'User plan tax vars, weighted avg per expanded income decile',
+    'df_dec': 'Difference between Base and User plans by expanded income decile',
+    'mX_bin': 'Base plan tax vars, weighted avg per expanded income bin',
+    'mY_bin': 'User plan tax vars, weighted avg per expanded income bin',
+    'df_bin': 'Difference between Base and User plans by expanded income bin',
     'fiscal_tots': 'Total Revenue Change by Calendar Year',
 }
 
