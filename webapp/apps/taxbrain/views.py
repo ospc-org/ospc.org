@@ -80,6 +80,36 @@ def personal_results(request):
 
     return render(request, 'taxbrain/input_form.html', init_context)
 
+
+@permission_required('taxbrain.view_inputs')
+def edit_personal_results(request, pk):
+    """
+    This view handles the editing of previously entered inputs
+    """
+    try:
+        url = OutputUrl.objects.get(pk=pk)
+    except:
+        raise Http404
+
+    model = TaxSaveInputs.objects.get(pk=url.model_pk)
+    #Get the user-input from the model in a way we can render
+    ser_model = serializers.serialize('json', [model])
+    user_inputs = json.loads(ser_model)
+    inputs = user_inputs[0]['fields']
+
+    form_personal_exemp = PersonalExemptionForm(
+                        initial=inputs)
+
+    init_context = {
+        'form': form_personal_exemp,
+        'params': TAXCALC_DEFAULT_PARAMS,
+        'taxcalc_version': taxcalc_version,
+    }
+
+    return render(request, 'taxbrain/input_form.html', init_context)
+
+
+
 @permission_required('taxbrain.view_inputs')
 def tax_results(request, pk):
     """
@@ -97,6 +127,7 @@ def tax_results(request, pk):
         current_user = User.objects.get(pk=request.user.id)
         unique_url = OutputUrl()
         unique_url.unique_inputs = model
+        unique_url.model_pk = model.pk
         unique_url.user = current_user
         unique_url.save()
 
