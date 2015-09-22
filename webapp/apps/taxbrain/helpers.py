@@ -224,7 +224,7 @@ def leave_name_in(key, val, dd):
 
 
 def package_up_vars(user_values):
-    dd = taxcalc.parameters.default_data(start_year=START_YEAR)
+    dd = taxcalc.parameters.Parameters.default_data(start_year=START_YEAR)
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
@@ -403,7 +403,7 @@ class TaxCalcParam(object):
             self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [True], self)
 
 # Create a list of default parameters
-TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.parameters.default_data(metadata=True, start_year=2015)
+TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.parameters.Parameters.default_data(metadata=True, start_year=2015)
 default_taxcalc_params = {}
 for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
     param = TaxCalcParam(k,v)

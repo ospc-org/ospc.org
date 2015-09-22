@@ -54,7 +54,7 @@ class TaxInputTests(TestCase):
 
         ans = package_up_vars(values)
 
-        defaults = taxcalc.parameters.default_data(start_year=2015)
+        defaults = taxcalc.parameters.Parameters.default_data(start_year=2015)
 
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, None, None, None, None],
