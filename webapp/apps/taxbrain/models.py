@@ -328,6 +328,7 @@ class OutputUrl(models.Model):
     """
     unique_inputs = models.ForeignKey(TaxSaveInputs, default=None)
     user = models.ForeignKey(User, null=True, default=None)
+    model_pk = models.IntegerField(default=None, null=True)
     uuid = UUIDField(auto=True, default=None, null=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
