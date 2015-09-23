@@ -201,3 +201,19 @@ class PersonalExemptionForm(ModelForm):
             'ACTC_ChildNum': _('Qualifying # of children'),
         }
         """
+
+def has_field_errors(form):
+    """
+    This allows us to see if we have field_errors, as opposed to only having
+    form.non_field_errors. I would prefer to put this in a template tag, but
+    getting that working with a conditional statement in a template was very
+    challenging.
+    """
+    if not form.errors:
+        return False
+
+    for field in form:
+        if field.errors:
+            return True
+
+    return False
