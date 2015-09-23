@@ -8032,6 +8032,9 @@ input[type="checkbox"] {
 .inputs-form:after {
   clear: both;
 }
+.inputs-form .alert {
+  border-radius: 0;
+}
 .inputs-form .inputs-main {
   background-color: white;
   border-left: 2px solid #eff4f4;
