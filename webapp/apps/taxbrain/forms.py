@@ -3,10 +3,152 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from .models import TaxSaveInputs
-from .helpers import TaxCalcField, TaxCalcParam, TAXCALC_DEFAULT_PARAMS
+from .helpers import TaxCalcField, TaxCalcParam, TAXCALC_DEFAULT_PARAMS, \
+    is_number, int_to_nth, is_string, string_to_float_array
 
 
 class PersonalExemptionForm(ModelForm):
+
+    def get_comp_data(self, comp_key, param_id, col, required_length):
+        """
+        Get the data necessary for a min/max validation comparison, given:
+            param_id - The webapp-internal TC parameter ID
+            col - The column number for the param
+            comp_key - a key that is either:
+               * a static value
+               * the word 'default' - we should use the field's defaults
+               * the name of another param - we should use that param's
+                 corresponding column field. If values have been submitted for
+                 it, use them. Otherwise use its defaults
+             required_len - The number of values we need to compare against
+
+        After finding the proper data, expand it to the required_length by
+        repeating the final value.
+
+        @todo: CPI inflate the final value to fill instead of simply repeating
+        """
+
+        base_param = TAXCALC_DEFAULT_PARAMS[param_id]
+        base_col = base_param.col_fields[col]
+
+        if is_number(comp_key):
+            comp_data = [comp_key]
+            source = "the static value"
+        elif comp_key == 'default':
+            comp_data = base_col.values
+            source = "this field's default"
+        elif comp_key in TAXCALC_DEFAULT_PARAMS:
+            other_param = TAXCALC_DEFAULT_PARAMS[comp_key]
+            other_col = other_param.col_fields[col]
+            other_values = None
+
+            if other_col.id in self.cleaned_data:
+                other_values_raw = self.cleaned_data[other_col.id]
+                other_values = string_to_float_array(other_values_raw)
+
+            if other_values:
+                comp_data = other_values
+                source = other_param.name + "'s value"
+            else:
+                other_defaults = other_col.values
+                comp_data = other_defaults
+                source = other_param.name + "'s default"
+        else:
+            raise ValueError('Unknown comp keyword "{0}"'.format(comp_key))
+
+        if len(comp_data) < 1:
+            raise ValueError('No comparison data found for kw'.format(comp_key))
+
+        len_diff = required_length - len(comp_data)
+        if len_diff > 0:
+            comp_data += [comp_data[-1]] * len_diff
+
+        return {'source': source, 'comp_data': comp_data}
+
+    def clean(self):
+        """
+        " This method should be used to provide custom model validation, and to
+        modify attributes on your model if desired. For instance, you could use
+        it to automatically provide a value for a field, or to do validation
+        that requires access to more than a single field."
+        per https://docs.djangoproject.com/en/1.8/ref/models/instances/
+
+        Note that this can be defined both on forms and on the model, but is
+        only automatically called on form submissions.
+        """
+        self.do_taxcalc_validations()
+
+    def do_taxcalc_validations(self):
+        """
+        Run the validations specified by Taxcalc's param definitions
+
+        Each parameter can be assigned a min and a max, the value of which can
+        be statically defined or determined dynamically via a keyword.
+
+        Keywords correlate to submitted value array for a different parameter,
+        or to the default value array for the validated field.
+
+        We could define these on individual fields instead, but we would need to
+        define all the field data dynamically both here and on the model,
+        and it's not yet possible on the model due to issues with how migrations
+        are detected.
+        """
+
+        for param_id, param in TAXCALC_DEFAULT_PARAMS.iteritems():
+            if param.coming_soon or param.hidden:
+                continue
+
+            if param.max is None and param.min is None:
+                continue
+
+            for col, col_field in enumerate(param.col_fields):
+                submitted_col_values_raw = self.cleaned_data[col_field.id]
+                submitted_col_values = string_to_float_array(submitted_col_values_raw)
+                default_col_values = col_field.values
+
+                # If we change a different field which this field relies on for
+                # validation, we must ensure this is validated even if unchanged
+                # from defaults
+                if submitted_col_values:
+                    col_values = submitted_col_values
+                else:
+                    col_values = default_col_values
+
+                if param.max is not None:
+                    comp = self.get_comp_data(param.max, param_id, col, len(col_values))
+                    source = comp['source']
+                    maxes = comp['comp_data']
+
+                    for i, value in enumerate(col_values):
+                        if value > maxes[i]:
+                            if len(col_values) == 1:
+                                self.add_error(col_field.id,
+                                               u"Must be \u2264 {0} of {1}".
+                                               format(source, maxes[i]))
+                            else:
+                                self.add_error(col_field.id,
+                                               u"{0} value must be \u2264 \
+                                               {1}'s {0} value of {2}".format(
+                                                   int_to_nth(i + 1),
+                                                   source, maxes[i]))
+
+                if param.min is not None:
+                    comp = self.get_comp_data(param.min, param_id, col, len(col_values))
+                    source = comp['source']
+                    mins = comp['comp_data']
+
+                    for i, value in enumerate(col_values):
+                        if value < mins[i]:
+                            if len(col_values) == 1:
+                                self.add_error(col_field.id,
+                                               u"Must be \u2265 {0} of {1}".
+                                               format(source, mins[i]))
+                            else:
+                                self.add_error(col_field.id,
+                                               u"{0} value must be \u2265 \
+                                               {1}'s {0} value of {2}".format(
+                                                   int_to_nth(i + 1),
+                                                   source, mins[i]))
 
     class Meta:
         model = TaxSaveInputs

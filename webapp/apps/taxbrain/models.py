@@ -316,29 +316,6 @@ class TaxSaveInputs(models.Model):
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
-    def clean(self):
-        """
-        " This method should be used to provide custom model validation, and to
-        modify attributes on your model if desired. For instance, you could use
-        it to automatically provide a value for a field, or to do validation
-        that requires access to more than a single field."
-        per https://docs.djangoproject.com/en/1.8/ref/models/instances/
-
-        Note that this is only automatically called on form submissions.
-        """
-        self.do_taxcalc_validations()
-
-    def do_taxcalc_validations(self):
-        """
-        Run the field validations specified by Taxcalc's param definitions
-
-        We could define these on individual fields instead, but we would need to
-        define them dynamically using the above "generate fields from default
-        param data" block and that's not feasible yet, see its note
-        """
-
-        # @todo run through validations, attach errors to fields
-        #self.add_error('field_name', 'Error Message')
 
     class Meta:
         permissions = (

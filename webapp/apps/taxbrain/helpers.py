@@ -1,12 +1,50 @@
 from collections import namedtuple
 import taxcalc
-import dropq
+import numbers
 import os
 import requests
 from requests.exceptions import Timeout, RequestException
 import json
 import pandas as pd
+import sys
 import time
+
+
+
+#
+# General helpers
+#
+
+PYTHON_MAJOR_VERSION = sys.version_info.major
+INT_TO_NTH_MAP = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',
+                  'seventh', 'eighth', 'nineth', 'tenth']
+
+def int_to_nth(x):
+    if x < 1:
+        return None
+    elif x < 11:
+        return INT_TO_NTH_MAP[x - 1]
+    else:
+        # we need to use an inflection library to support any value
+        raise NotImplementedError("Not implemented for x > 10")
+
+def is_number(x):
+    return isinstance(x, numbers.Number)
+
+def is_string(x):
+    if PYTHON_MAJOR_VERSION == 2:
+        return isinstance(x, basestring)
+    elif PYTHON_MAJOR_VERSION == 3:
+        return isinstance(x, str)
+
+def string_to_float(x):
+    return float(x.replace(',', ''))
+
+def string_to_float_array(s):
+    if len(s) > 0:
+        return [float(x) for x in s.split(',')]
+    else:
+        return []
 
 
 #
@@ -32,6 +70,18 @@ TAXCALC_COMING_SOON_FIELDS = [
     '_Dividend_rt3', '_Dividend_thd3', '_BE_inc', '_BE_sub',
     '_BE_cg_per', '_BE_cg_trn'
     ]
+
+TAXCALC_HIDDEN_FIELDS = [
+    '_ACTC_Income_thd',
+    '_AMT_Child_em', '_AMT_em_pe', '_AMT_thd_MarriedS',
+    '_CDCC_ps', '_CDCC_crt',
+    '_DCC_c',
+    '_EITC_InvestIncome_c', '_EITC_ps_MarriedJ',
+    '_ETC_pe_Single', '_ETC_pe_Married',
+    '_KT_c_Age',
+    '_LLC_Expense_c'
+]
+
 TAXCALC_COMING_SOON_INDEXED_BY_MARS = [
     '_Dividend_thd1','_Dividend_thd2', '_Dividend_thd3'
 ]
@@ -340,6 +390,7 @@ class TaxCalcParam(object):
         self.start_year = START_YEAR
 
         self.coming_soon = (self.tc_id in TAXCALC_COMING_SOON_FIELDS)
+        self.hidden = (self.tc_id in TAXCALC_HIDDEN_FIELDS)
 
         # normalize single-year default lists [] to [[]]
         if not isinstance(values_by_year[0], list):
@@ -401,6 +452,33 @@ class TaxCalcParam(object):
 
         if self.inflatable:
             self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [True], self)
+
+        # Get validation details
+        validations_json =  attributes.get('validations')
+        if validations_json:
+            self.max = validations_json.get('max')
+            self.min = validations_json.get('min')
+        else:
+            self.max = None
+            self.min = None
+
+        # Coax string-formatted numerics to floats and field IDs to nice IDs
+        if self.max:
+            if is_string(self.max):
+                try:
+                    self.max = string_to_float(self.max)
+                except ValueError:
+                    if self.max[0] == '_':
+                        self.max = self.max[1:]
+
+        if self.min:
+            if is_string(self.min):
+                try:
+                    self.min = string_to_float(self.min)
+                except ValueError:
+                    if self.min[0] == '_':
+                        self.min = self.min[1:]
+
 
 # Create a list of default parameters
 TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.parameters.Parameters.default_data(metadata=True, start_year=2015)
