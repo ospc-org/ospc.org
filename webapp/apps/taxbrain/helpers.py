@@ -13,11 +13,18 @@ import time
 # Prepare user params to send to DropQ/Taxcalc
 #
 
+tcversion_info = taxcalc._version.get_versions()
+taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
+
+dqversion_info = dropq._version.get_versions()
+dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
+
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 START_YEAR = int(os.environ.get('START_YEAR', 2015))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
+ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
 TAXCALC_COMING_SOON_FIELDS = [
     '_Dividend_rt1', '_Dividend_thd1',
@@ -99,12 +106,12 @@ TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'all':'All'
 }
 TAXCALC_RESULTS_TABLE_LABELS = {
-    'mX_dec': 'Base plan tax vars, weighted avg per AGI decile',
-    'mY_dec': 'User plan tax vars, weighted avg per AGI decile',
-    'df_dec': 'Difference between Base and User plans by AGI decile',
-    'mX_bin': 'Base plan tax vars, weighted avg per income bin',
-    'mY_bin': 'User plan tax vars, weighted avg per income bin',
-    'df_bin': 'Difference between Base and User plans by income bin',
+    'mX_dec': 'Base plan tax vars, weighted avg per expanded income decile',
+    'mY_dec': 'User plan tax vars, weighted avg per expanded income decile',
+    'df_dec': 'Difference between Base and User plans by expanded income decile',
+    'mX_bin': 'Base plan tax vars, weighted avg per expanded income bin',
+    'mY_bin': 'User plan tax vars, weighted avg per expanded income bin',
+    'df_bin': 'Difference between Base and User plans by expanded income bin',
     'fiscal_tots': 'Total Revenue Change by Calendar Year',
 }
 
@@ -217,7 +224,7 @@ def leave_name_in(key, val, dd):
 
 
 def package_up_vars(user_values):
-    dd = taxcalc.parameters.default_data(start_year=START_YEAR)
+    dd = taxcalc.parameters.Parameters.default_data(start_year=START_YEAR)
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
@@ -396,7 +403,7 @@ class TaxCalcParam(object):
             self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [True], self)
 
 # Create a list of default parameters
-TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.parameters.default_data(metadata=True, start_year=2015)
+TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.parameters.Parameters.default_data(metadata=True, start_year=2015)
 default_taxcalc_params = {}
 for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
     param = TaxCalcParam(k,v)
@@ -793,6 +800,19 @@ def dropq_get_results(job_ids):
         mX_bin.update(result['mX_bin'])
         df_bin.update(result['df_bin'])
         fiscal_tots.append(result['fiscal_tots'])
+
+    if ENFORCE_REMOTE_VERSION_CHECK:
+        versions = [r.get('taxcalc_version', None) for r in ans]
+        if not all([ver==taxcalc_version for ver in versions]):
+            msg ="Got different taxcalc versions from workers. Bailing out"
+            print msg
+            raise IOError(msg)
+        versions = [r.get('dropq_version', None) for r in ans]
+        if not all([ver==dropq_version for ver in versions]):
+            msg ="Got different dropq versions from workers. Bailing out"
+            print msg
+            raise IOError(msg)
+
 
     results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
                'mY_bin': mY_bin, 'mX_bin': mX_bin, 'df_bin': df_bin,
