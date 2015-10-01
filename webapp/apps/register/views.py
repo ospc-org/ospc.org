@@ -9,6 +9,8 @@ from django.contrib.auth.models import Permission
 
 from webapp.apps.register.forms import MyRegistrationForm, LoginForm, SubscribeForm
 from webapp.apps.register.models import Subscriber
+from django.contrib.auth.models import User
+import urllib
 
 def login(request):
     redirect_to = request.REQUEST.get('next', '/')
@@ -54,19 +56,27 @@ def register_user(request):
             form.save()
             permission = Permission.objects.get(codename = 'view_inputs', content_type__app_label = 'taxbrain')
             form.instance.user_permissions.add(permission)
-            return HttpResponseRedirect('/register_success')
+            return render_to_response('register/confirm_registration.html')
         else:
             args = {'form': form} #Present the user the form with errors to correct.
     else:
+        confirm_key = request.GET.get('k')
+        if confirm_key and Subscriber.objects.filter(confirm_key = confirm_key).exists():
+            subscriber = Subscriber.objects.filter(confirm_key = confirm_key).get()
+            subscriber.active = True
+            subscriber.save()
+            return render_to_response('register/subscribe_success.html')
+
         args = {}
         args['form'] = MyRegistrationForm()
-        subscriber = Subscriber()
-        subscriber.active = True
-        subscriber.save()
-
-    args.update(csrf(request))
-    return render_to_response('register/post-signup-register.html', args)
+        args.update(csrf(request))
+        return render_to_response('register/register.html', args)
 
 def register_success(request):
-    return render_to_response('register/register_success.html', {},
-        context_instance=RequestContext(request))
+    confirm_email = request.GET.get('confirm_email')
+    if confirm_email and User.objects.filter(email = urllib.unquote(confirm_email)).exists():
+        user = User.objects.filter(email = urllib.unquote(confirm_email)).get()
+        user.is_active = True
+        user.save()
+        return render_to_response('register/register_success.html')
+    return HttpResponseRedirect('/')
