@@ -19,7 +19,7 @@ from django.contrib.auth.models import User
 
 from djqscsv import render_to_csv_response
 
-from .forms import PersonalExemptionForm
+from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
 from .helpers import (TAXCALC_DEFAULT_PARAMS, taxcalc_results_to_tables, format_csv,
                       submit_dropq_calculation, dropq_results_ready, dropq_get_results)
@@ -75,8 +75,11 @@ def personal_results(request):
         'taxcalc_version': taxcalc_version,
     }
 
-    if no_inputs is True:
-        init_context['message'] = "Please specify a tax-law change before submitting."
+    if has_field_errors(form_personal_exemp):
+        form_personal_exemp.add_error(None, "Some fields have errors.")
+
+    if no_inputs:
+        form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
 
     return render(request, 'taxbrain/input_form.html', init_context)
 

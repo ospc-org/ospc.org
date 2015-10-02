@@ -76,16 +76,15 @@
 
       <div class="inputs-main">
 
-        {% block messages %}
-          {% if message %}
+        {% for error in form.non_field_errors %}
             <div class="alert alert-danger text-center lert-dismissible" role="alert">
               <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
-              {{ message }}
+              {{ error }}
             </div>
-          {% endif %}
-        {% endblock %}
+        {% endfor %}
+
         <div id="get-started" class="inputs-block inputs-block-intro">
           <div class="inputs-block-header">
             <h1>Get Started</h1>
@@ -106,20 +105,6 @@
             </div>
           </div>
         </div>
-
-        {% if form.errors %}
-        form has errors
-          {% for field in form %}
-            {% for error in field.errors %}
-            <span class="error">
-              {{ error }}
-              {% if field != '__all__' %}
-                <strong>{{ field.label }}</strong>
-              {% endif %}
-              </span>
-            {% endfor %}
-          {% endfor %}
-        {% endif %}
 
         {% include 'taxbrain/includes/params/inputs/soc.html' %}
         {% include 'taxbrain/includes/params/inputs/adjust.html' %}

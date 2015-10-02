@@ -316,6 +316,7 @@ class TaxSaveInputs(models.Model):
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
+
     class Meta:
         permissions = (
             ("view_inputs", "Allowed to view Taxbrain."),
