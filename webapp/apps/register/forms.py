@@ -26,6 +26,9 @@ class MyRegistrationForm(UserCreationForm):
         fields = ('email', 'password1', 'password2')
 
     def save(self, commit=True):
+        if User.objects.filter(email = self.cleaned_data['email']).exists():
+            return False;
+
         user = super(MyRegistrationForm, self).save(commit=False)
         user.email = self.cleaned_data['email']
         user.username = user.email
@@ -43,6 +46,12 @@ class MyRegistrationForm(UserCreationForm):
             path = '/register_success',
             params = urllib.urlencode({'confirm_email': email})
         )
+
+    def clean(self):
+        if User.objects.filter(email = self.cleaned_data['email']).exists():
+            raise forms.ValidationError("Email already exists")
+
+        return self.cleaned_data
 
     def send_registration_confirm_email(self):
       password = self.cleaned_data['password1']

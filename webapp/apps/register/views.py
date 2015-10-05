@@ -52,8 +52,7 @@ def logout(request):
 def register_user(request):
     if request.method == 'POST':
         form = MyRegistrationForm(request.POST)
-        if form.is_valid():
-            form.save()
+        if form.is_valid() and form.save():
             permission = Permission.objects.get(codename = 'view_inputs', content_type__app_label = 'taxbrain')
             form.instance.user_permissions.add(permission)
             return render_to_response('register/confirm_registration.html')
@@ -69,8 +68,8 @@ def register_user(request):
 
         args = {}
         args['form'] = MyRegistrationForm()
-        args.update(csrf(request))
-        return render_to_response('register/register.html', args)
+    args.update(csrf(request))
+    return render_to_response('register/register.html', args)
 
 def register_success(request):
     confirm_email = request.GET.get('confirm_email')
