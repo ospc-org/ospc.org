@@ -275,7 +275,7 @@ def leave_name_in(key, val, dd):
 
 
 def package_up_vars(user_values):
-    dd = taxcalc.parameters.Parameters.default_data(start_year=START_YEAR)
+    dd = taxcalc.policy.Policy.default_data(start_year=START_YEAR)
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
@@ -481,8 +481,8 @@ class TaxCalcParam(object):
                         self.min = self.min[1:]
 
 
-# Create a list of default parameters
-TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.parameters.Parameters.default_data(metadata=True, start_year=2015)
+# Create a list of default policy
+TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.policy.Policy.default_data(metadata=True, start_year=2015)
 default_taxcalc_params = {}
 for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
     param = TaxCalcParam(k,v)

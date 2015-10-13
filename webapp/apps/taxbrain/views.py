@@ -29,7 +29,6 @@ tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-@permission_required('taxbrain.view_inputs')
 def personal_results(request):
     """
     This view handles the input page and calls the function that
@@ -84,7 +83,6 @@ def personal_results(request):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-@permission_required('taxbrain.view_inputs')
 def edit_personal_results(request, pk):
     """
     This view handles the editing of previously entered inputs
@@ -112,8 +110,6 @@ def edit_personal_results(request, pk):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-
-@permission_required('taxbrain.view_inputs')
 def tax_results(request, pk):
     """
     This view allows the app to wait for the taxcalc results to be
@@ -127,18 +123,19 @@ def tax_results(request, pk):
         model.creation_date = datetime.datetime.now()
         model.save()
 
-        current_user = User.objects.get(pk=request.user.id)
         unique_url = OutputUrl()
+        if request.user.is_authenticated():
+            current_user = User.objects.get(pk=request.user.id)
+            unique_url.user = current_user
         unique_url.unique_inputs = model
         unique_url.model_pk = model.pk
-        unique_url.user = current_user
         unique_url.save()
 
         return redirect(unique_url)
 
     return render_to_response('taxbrain/not_ready.html', {'raw_results':'raw_results'})
 
-@permission_required('taxbrain.view_inputs')
+
 def output_detail(request, pk):
     """
     This view handles the results page.
