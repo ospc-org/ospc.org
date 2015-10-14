@@ -166,7 +166,12 @@ class PersonalExemptionForm(ModelForm):
                 if param.coming_soon:
                     attrs['disabled'] = True
 
-                widgets[field.id] = forms.TextInput(attrs=attrs)
+                if param.tc_id == '_ID_BenefitSurtax_Switch':
+                    attrs['checked'] = True
+                    widgets[field.id] = forms.CheckboxInput(attrs=attrs)
+                else:
+                    widgets[field.id] = forms.TextInput(attrs=attrs)
+
                 labels[field.id] = field.label
 
             if param.inflatable:
@@ -239,6 +244,14 @@ class PersonalExemptionForm(ModelForm):
             'ID_ps_3': _('Married filing Separately'),
             'ID_prt': _('Phaseout Rate'),
             'ID_crt': _('Max Percent Forfeited'),
+            'ID_BenefitSurtax_trt': _('Surtax rate'),
+            'ID_BenefitSurtax_crt': _('Credit on surtax (percent of AGI)'),
+            'ID_BenefitSurtax_Switch_0': _('Medical deduction'),
+            'ID_BenefitSurtax_Switch_1': _('State and local deduction (incl real estate taxes'),
+            'ID_BenefitSurtax_Switch_2': _('Casualty deduction'),
+            'ID_BenefitSurtax_Switch_3': _('Miscellaneous deduction'),
+            'ID_BenefitSurtax_Switch_4': _('Intrest paid deduction (incl business and mortgage)'),
+            'ID_BenefitSurtax_Switch_5': _('Charitable deduction'),
 
             'CG_rt1': _('Rate 1'),
             'CG_thd1_0': _('Single'),
@@ -266,7 +279,7 @@ class PersonalExemptionForm(ModelForm):
             'Dividend_thd3_1': _('Married filing Jointly'),
             'Dividend_thd3_2': _('Head of Household'),
             'Dividend_thd3_3': _('Married filing Separately'),
-            
+
             'NIIT_trt': _('Rate'),
             'NIIT_thd_0': _('Single'),
             'NIIT_thd_1': _('Married filing Jointly'),
@@ -316,7 +329,7 @@ class PersonalExemptionForm(ModelForm):
             'AMT_trt1': _('AMT rate'),
             'AMT_trt2': _('Surtax rate'),
             'AMT_tthd': _('Surtax Threshold'),
-            
+
             'EITC_rt_0': _('0 Kids'),
             'EITC_rt_1': _('1 Kid'),
             'EITC_rt_2': _('2 Kids'),
