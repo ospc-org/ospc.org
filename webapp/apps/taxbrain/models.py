@@ -294,6 +294,11 @@ class TaxSaveInputs(models.Model):
     BE_cg_per = CommaSeparatedField(default=None, blank=True, null=True)
     BE_cg_trn = CommaSeparatedField(default=None, blank=True, null=True)
 
+    # Growth Assumptions
+    factor_adjustment = CommaSeparatedField(default=None, blank=True, null=True)
+    factor_target = CommaSeparatedField(default=None, blank=True, null=True)
+    growth_choice = models.IntegerField(default=None, null=True)
+
 
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up

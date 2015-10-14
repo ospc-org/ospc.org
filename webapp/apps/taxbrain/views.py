@@ -37,6 +37,7 @@ def personal_results(request):
     no_inputs = False
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
+        import pdb;pdb.set_trace()
         personal_inputs = PersonalExemptionForm(request.POST)
 
         if personal_inputs.is_valid():
@@ -52,6 +53,7 @@ def personal_results(request):
             worker_data ={k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
 
             # start calc job
+            import pdb;pdb.set_trace()
             submitted_ids = submit_dropq_calculation(worker_data)
             if not submitted_ids:
                 no_inputs = True
