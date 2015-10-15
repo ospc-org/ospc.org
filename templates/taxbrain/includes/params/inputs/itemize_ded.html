@@ -35,6 +35,11 @@
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_prt %}
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_crt %}
 
+<h2>Surtax on Itemized Deduction Benefits above an AGI Threshold</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_BenefitSurtax_trt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_BenefitSurtax_crt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_BenefitSurtax_Switch %}
+
 {% endblock %}
 
 {% block next_section_shortname %}regular-taxes{% endblock %}

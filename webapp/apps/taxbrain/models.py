@@ -52,7 +52,7 @@ class CommaSeparatedField(models.CharField):
 
 class TaxSaveInputs(models.Model):
     """
-    This model contains all the parameters for the tax model and the tax 
+    This model contains all the parameters for the tax model and the tax
     result.
 
     For filing status fields:
@@ -139,6 +139,14 @@ class TaxSaveInputs(models.Model):
     ID_crt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_StateLocalTax_HC = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Charity_frt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_crt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_Switch_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_Switch_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_Switch_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_Switch_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_Switch_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_Switch_5 = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)

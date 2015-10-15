@@ -14,32 +14,36 @@
       {{ param1.name }}
       {% include 'taxbrain/includes/params/tooltip.html' with text=param1.info %}
     </label>
-
-    <br>
     <form action="">
+    <div class="row">
+      <div class="col-xs-1">
         <input type="radio" name="growth_choice" value="{{ param1.nice_id }}">
-
+      </div>
+      <div class="col-xs-11">
         {% for field in param1.col_fields %}
             <div class="{{ param1|col_input_class }}">
             {% include 'taxbrain/includes/params/inputs/field.html' with field=field %}
             </div>
         {% endfor %}
-
-        <label>
-        {{ param2.name }}
-        {% include 'taxbrain/includes/params/tooltip.html' with text=param2.info %}
-        </label>
-
-        <br>
+      </div>
+    </div>
+    <label>
+    {{ param2.name }}
+    {% include 'taxbrain/includes/params/tooltip.html' with text=param2.info %}
+    </label>
+    <div class="row">
+      <div class="col-xs-1">
         <input type="radio" name="growth_choice" value="{{ param2.nice_id }}">
+      </div>
+      <div class="col-xs-11">
         {% for field in param2.col_fields %}
             <div class="{{ param2|col_input_class }}">
             {% include 'taxbrain/includes/params/inputs/field.html' with field=field %}
             </div>
         {% endfor %}
+      </div>
+    </div>
 
     </form>
-
   </div>
-
 </div>
