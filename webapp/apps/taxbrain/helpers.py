@@ -68,7 +68,7 @@ ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'Tr
 TAXCALC_COMING_SOON_FIELDS = [
     '_Dividend_rt1', '_Dividend_thd1',
     '_Dividend_rt2', '_Dividend_thd2',
-    '_Dividend_rt3', '_Dividend_thd3', '_BE_inc', '_BE_sub',
+    '_Dividend_rt3', '_Dividend_thd3',
     '_BE_cg_per', '_BE_cg_trn'
     ]
 
@@ -492,9 +492,9 @@ for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
 #the params dictionary has the right info
 # value, col_label, long_name, description, irs_ref, notes
 be_params = []
-be_inc_param = {'value':[0], 'col_label':['label'], 'long_name':'Income Effect',
+be_inc_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Income Effect',
                 'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-be_sub_param = {'value':[0], 'col_label':['label'], 'long_name':'Substitution Effect',
+be_sub_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Substitution Effect',
                 'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
 be_cg_per_param = {'value':[0], 'col_label':['label'], 'long_name':'Persistent',
                 'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
