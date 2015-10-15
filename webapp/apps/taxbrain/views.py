@@ -29,6 +29,27 @@ tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
+def benefit_surtax_fixup(mod):
+    _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(6)]
+    mod['ID_BenefitSurtax_Switch'] = [[mod[_id][0] for _id in _ids]]
+    for _id in _ids:
+        del mod[_id]
+
+def growth_fixup(mod):
+    if mod['growth_choice']:
+        if mod['growth_choice'] == 'factor_adjustment':
+            del mod['factor_target']
+        if mod['growth_choice'] == 'factor_target':
+            del mod['factor_adjustment']
+    else:
+        if 'factor_adjustment' in mod:
+            del mod['factor_adjustment']
+        if 'factor_target' in mod:
+            del mod['factor_target']
+
+    del mod['growth_choice']
+
+
 def personal_results(request):
     """
     This view handles the input page and calls the function that
@@ -37,7 +58,6 @@ def personal_results(request):
     no_inputs = False
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        import pdb;pdb.set_trace()
         personal_inputs = PersonalExemptionForm(request.POST)
 
         if personal_inputs.is_valid():
@@ -45,12 +65,18 @@ def personal_results(request):
 
             # prepare taxcalc params from TaxSaveInputs model
             curr_dict = model.__dict__
+            import pdb;pdb.set_trace()
+            growth_fixup(curr_dict)
 
             for key, value in curr_dict.items():
                 if type(value) == type(unicode()):
-                    curr_dict[key] = [float(x) for x in value.split(',') if x]
+                    try:
+                        curr_dict[key] = [float(x) for x in value.split(',') if x]
+                    except ValueError:
+                        curr_dict[key] = [bool(x) for x in value.split(',') if x]
 
-            worker_data ={k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
+            worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
+            benefit_surtax_fixup(worker_data)
 
             # start calc job
             import pdb;pdb.set_trace()
