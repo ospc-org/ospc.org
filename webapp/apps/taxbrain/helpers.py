@@ -68,7 +68,7 @@ ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'Tr
 TAXCALC_COMING_SOON_FIELDS = [
     '_Dividend_rt1', '_Dividend_thd1',
     '_Dividend_rt2', '_Dividend_thd2',
-    '_Dividend_rt3', '_Dividend_thd3', '_BE_inc', '_BE_sub',
+    '_Dividend_rt3', '_Dividend_thd3',
     '_BE_cg_per', '_BE_cg_trn'
     ]
 
@@ -275,7 +275,11 @@ def leave_name_in(key, val, dd):
 
 
 def package_up_vars(user_values):
-    dd = taxcalc.parameters.Parameters.default_data(start_year=START_YEAR)
+    dd = taxcalc.policy.Policy.default_data(start_year=START_YEAR)
+    growth_dd = taxcalc.growth.Growth.default_data(start_year=START_YEAR)
+    behavior_dd = taxcalc.Behavior.default_data(start_year=START_YEAR)
+    dd.update(growth_dd)
+    dd.update(behavior_dd)
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
@@ -481,8 +485,8 @@ class TaxCalcParam(object):
                         self.min = self.min[1:]
 
 
-# Create a list of default parameters
-TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.parameters.Parameters.default_data(metadata=True, start_year=2015)
+# Create a list of default policy
+TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.policy.Policy.default_data(metadata=True, start_year=2015)
 default_taxcalc_params = {}
 for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
     param = TaxCalcParam(k,v)
@@ -492,9 +496,9 @@ for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
 #the params dictionary has the right info
 # value, col_label, long_name, description, irs_ref, notes
 be_params = []
-be_inc_param = {'value':[0], 'col_label':['label'], 'long_name':'Income Effect',
+be_inc_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Income Effect',
                 'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-be_sub_param = {'value':[0], 'col_label':['label'], 'long_name':'Substitution Effect',
+be_sub_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Substitution Effect',
                 'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
 be_cg_per_param = {'value':[0], 'col_label':['label'], 'long_name':'Persistent',
                 'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
@@ -505,6 +509,53 @@ be_params.append(('_BE_sub', be_sub_param))
 be_params.append(('_BE_cg_per', be_cg_per_param))
 be_params.append(('_BE_cg_trn', be_cg_trn_param))
 for k,v in be_params:
+    param = TaxCalcParam(k,v)
+    default_taxcalc_params[param.nice_id] = param
+
+#Growth assumptions not in default data yet. Add in the appropriate info so that
+#the params dictionary has the right info
+# value, col_label, long_name, description, irs_ref, notes
+growth_params = []
+adj_long_name = ("Deviation from CBO forecast of baseline economic "
+                 "growth (percentage point)")
+adj_descr = ("The data underlying this model are extrapolated to roughly "
+             "match the CBO's projection of the economy's development over "
+             "the 10-year federal budget window, with each type of economic "
+             "data extrapolated at a different growth rate. This parameter "
+             "allows a factor to be subtracted or added to those growth "
+             "rates for the construction of the economic baseline. For "
+             "example if you supply .02 (or 2%), then 0.02 will be added to "
+             "the wage and salary growth rate, interest income growth rate, "
+             "dividend growth rate, schedule E income growth rate, and all "
+             "other growth rates used to extrapolate the underlying dataset.")
+
+factor_adjustment = {'value':[[0]], 'col_label':"", 'long_name': adj_long_name,
+                     'description': adj_descr, 'irs_ref':'', 'notes':''}
+growth_params.append(('_factor_adjustment', factor_adjustment))
+
+target_long_name = ("Replacement for CBO real GDP growth in economic baseline "
+                    "(percent)")
+
+target_descr = ("The data underlying this model are extrapolated to roughly "
+                "match the CBO's projection of the economy's development "
+                "over the 10-year federal budget window, with each type of "
+                "economic data extrapolated at a different growth rate. One "
+                "of the growth rates taken from the CBO is GDP growth. This "
+                "parameter allows you to specify a real GDP growth rate, and "
+                "all other rates will be modified to maintain the distance "
+                "between them and GDP growth in the CBO baseline. For example, "
+                "if the CBO growth rate for one year is 0.02 and the user "
+                "enters 0.018 for this parameter, then 0.002 will be "
+                "subtracted from every growth rate in the construction of the "
+                "economic baseline, including wage and salary growth, interest "
+                "income growth, dividend growth, and many others.")
+
+factor_target= {'value':[[0]], 'col_label':"", 'long_name': target_long_name,
+                     'description': target_descr, 'irs_ref':'', 'notes':''}
+
+growth_params.append(('_factor_target', factor_target))
+
+for k,v in growth_params:
     param = TaxCalcParam(k,v)
     default_taxcalc_params[param.nice_id] = param
 

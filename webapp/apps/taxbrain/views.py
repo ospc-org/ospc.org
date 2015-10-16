@@ -29,7 +29,31 @@ tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-@permission_required('taxbrain.view_inputs')
+def benefit_surtax_fixup(mod):
+    _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(6)]
+    mod['ID_BenefitSurtax_Switch'] = [[mod[_id][0] for _id in _ids]]
+    for _id in _ids:
+        del mod[_id]
+
+def make_bool(x):
+    b = True if x == 'True' else False
+    return b
+
+def growth_fixup(mod):
+    if mod['growth_choice']:
+        if mod['growth_choice'] == 'factor_adjustment':
+            del mod['factor_target']
+        if mod['growth_choice'] == 'factor_target':
+            del mod['factor_adjustment']
+    else:
+        if 'factor_adjustment' in mod:
+            del mod['factor_adjustment']
+        if 'factor_target' in mod:
+            del mod['factor_target']
+
+    del mod['growth_choice']
+
+
 def personal_results(request):
     """
     This view handles the input page and calls the function that
@@ -45,12 +69,19 @@ def personal_results(request):
 
             # prepare taxcalc params from TaxSaveInputs model
             curr_dict = model.__dict__
+            growth_fixup(curr_dict)
 
             for key, value in curr_dict.items():
                 if type(value) == type(unicode()):
-                    curr_dict[key] = [float(x) for x in value.split(',') if x]
+                    try:
+                        curr_dict[key] = [float(x) for x in value.split(',') if x]
+                    except ValueError:
+                        curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                else:
+                    print "missing this: ", key
 
-            worker_data ={k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
+            worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
+            benefit_surtax_fixup(worker_data)
 
             # start calc job
             submitted_ids = submit_dropq_calculation(worker_data)
@@ -84,7 +115,6 @@ def personal_results(request):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-@permission_required('taxbrain.view_inputs')
 def edit_personal_results(request, pk):
     """
     This view handles the editing of previously entered inputs
@@ -100,8 +130,8 @@ def edit_personal_results(request, pk):
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = PersonalExemptionForm(
-                        initial=inputs)
+    form_personal_exemp = PersonalExemptionForm(instance=model)
+
 
     init_context = {
         'form': form_personal_exemp,
@@ -112,8 +142,6 @@ def edit_personal_results(request, pk):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-
-@permission_required('taxbrain.view_inputs')
 def tax_results(request, pk):
     """
     This view allows the app to wait for the taxcalc results to be
@@ -127,18 +155,19 @@ def tax_results(request, pk):
         model.creation_date = datetime.datetime.now()
         model.save()
 
-        current_user = User.objects.get(pk=request.user.id)
         unique_url = OutputUrl()
+        if request.user.is_authenticated():
+            current_user = User.objects.get(pk=request.user.id)
+            unique_url.user = current_user
         unique_url.unique_inputs = model
         unique_url.model_pk = model.pk
-        unique_url.user = current_user
         unique_url.save()
 
         return redirect(unique_url)
 
     return render_to_response('taxbrain/not_ready.html', {'raw_results':'raw_results'})
 
-@permission_required('taxbrain.view_inputs')
+
 def output_detail(request, pk):
     """
     This view handles the results page.

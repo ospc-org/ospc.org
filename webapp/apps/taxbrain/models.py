@@ -52,7 +52,7 @@ class CommaSeparatedField(models.CharField):
 
 class TaxSaveInputs(models.Model):
     """
-    This model contains all the parameters for the tax model and the tax 
+    This model contains all the parameters for the tax model and the tax
     result.
 
     For filing status fields:
@@ -139,6 +139,14 @@ class TaxSaveInputs(models.Model):
     ID_crt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_StateLocalTax_HC = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Charity_frt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_crt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_Switch_0 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_1 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_2 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_3 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
@@ -293,6 +301,12 @@ class TaxSaveInputs(models.Model):
     BE_sub = CommaSeparatedField(default=None, blank=True, null=True)
     BE_cg_per = CommaSeparatedField(default=None, blank=True, null=True)
     BE_cg_trn = CommaSeparatedField(default=None, blank=True, null=True)
+
+    # Growth Assumptions
+    factor_adjustment = CommaSeparatedField(default=None, blank=True, null=True)
+    factor_target = CommaSeparatedField(default=None, blank=True, null=True)
+    growth_choice = models.CharField(blank=True, default=None, null=True,
+                                     max_length=50)
 
 
     # generate fields from default param data
