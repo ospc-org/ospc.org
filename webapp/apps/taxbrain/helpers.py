@@ -47,6 +47,9 @@ def string_to_float_array(s):
     else:
         return []
 
+def same_version(v1, v2):
+    idx = v1.rfind('.')
+    return v1[:idx] == v2[:idx]
 
 #
 # Prepare user params to send to DropQ/Taxcalc
@@ -938,7 +941,7 @@ def dropq_get_results(job_ids):
             print msg
             raise IOError(msg)
         versions = [r.get('dropq_version', None) for r in ans]
-        if not all([ver==dropq_version for ver in versions]):
+        if not all([same_version(ver, dropq_version) for ver in versions]):
             msg ="Got different dropq versions from workers. Bailing out"
             print msg
             raise IOError(msg)
