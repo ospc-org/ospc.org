@@ -6,6 +6,12 @@ from .models import TaxSaveInputs
 from .helpers import TaxCalcField, TaxCalcParam, TAXCALC_DEFAULT_PARAMS, \
     is_number, int_to_nth, is_string, string_to_float_array
 
+def bool_like(x):
+    b = True if x == 'True' or x == True else False
+    return b
+
+
+
 
 class PersonalExemptionForm(ModelForm):
 
@@ -167,8 +173,14 @@ class PersonalExemptionForm(ModelForm):
                     attrs['disabled'] = True
 
                 if param.tc_id == '_ID_BenefitSurtax_Switch':
-                    attrs['checked'] = True
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs)
+                    """switches = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(6)]
+                    print "getting the model attribute"
+                    for switch in switches:
+                        print "switch is ", switch
+                        val = getattr(model, switch)
+                        print "val is ", val"""
+                    attrs['checked'] = False
+                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
 

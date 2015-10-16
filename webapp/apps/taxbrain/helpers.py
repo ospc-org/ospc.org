@@ -276,6 +276,10 @@ def leave_name_in(key, val, dd):
 
 def package_up_vars(user_values):
     dd = taxcalc.policy.Policy.default_data(start_year=START_YEAR)
+    growth_dd = taxcalc.growth.Growth.default_data(start_year=START_YEAR)
+    behavior_dd = taxcalc.Behavior.default_data(start_year=START_YEAR)
+    dd.update(growth_dd)
+    dd.update(behavior_dd)
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v

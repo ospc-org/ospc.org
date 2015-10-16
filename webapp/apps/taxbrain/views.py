@@ -35,6 +35,10 @@ def benefit_surtax_fixup(mod):
     for _id in _ids:
         del mod[_id]
 
+def make_bool(x):
+    b = True if x == 'True' else False
+    return b
+
 def growth_fixup(mod):
     if mod['growth_choice']:
         if mod['growth_choice'] == 'factor_adjustment':
@@ -65,7 +69,6 @@ def personal_results(request):
 
             # prepare taxcalc params from TaxSaveInputs model
             curr_dict = model.__dict__
-            import pdb;pdb.set_trace()
             growth_fixup(curr_dict)
 
             for key, value in curr_dict.items():
@@ -73,13 +76,14 @@ def personal_results(request):
                     try:
                         curr_dict[key] = [float(x) for x in value.split(',') if x]
                     except ValueError:
-                        curr_dict[key] = [bool(x) for x in value.split(',') if x]
+                        curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                else:
+                    print "missing this: ", key
 
             worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
             benefit_surtax_fixup(worker_data)
 
             # start calc job
-            import pdb;pdb.set_trace()
             submitted_ids = submit_dropq_calculation(worker_data)
             if not submitted_ids:
                 no_inputs = True
@@ -126,8 +130,8 @@ def edit_personal_results(request, pk):
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = PersonalExemptionForm(
-                        initial=inputs)
+    form_personal_exemp = PersonalExemptionForm(instance=model)
+
 
     init_context = {
         'form': form_personal_exemp,

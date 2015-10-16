@@ -141,12 +141,12 @@ class TaxSaveInputs(models.Model):
     ID_Charity_frt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_crt = CommaSeparatedField(default=None, blank=True, null=True)
-    ID_BenefitSurtax_Switch_0 = models.CharField(default=None, blank=True, null=True, max_length=50)
-    ID_BenefitSurtax_Switch_1 = models.CharField(default=None, blank=True, null=True, max_length=50)
-    ID_BenefitSurtax_Switch_2 = models.CharField(default=None, blank=True, null=True, max_length=50)
-    ID_BenefitSurtax_Switch_3 = models.CharField(default=None, blank=True, null=True, max_length=50)
-    ID_BenefitSurtax_Switch_4 = models.CharField(default=None, blank=True, null=True, max_length=50)
-    ID_BenefitSurtax_Switch_5 = models.CharField(default=None, blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_0 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_1 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_2 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_3 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
