@@ -1,20 +1,19 @@
 {% extends 'taxbrain/input_form_section.html' %}
 
 {% block input_section_shortname %}social-medicare{% endblock %}
-{% block input_section_title %}Social Security and Medicare{% endblock %}
+{% block input_section_title %}Social Security Taxability{% endblock %}
 
 {% load flatblocks %}
 
 {% block content %}
 <div class="inputs-block-header">
-  <h1>Social Security and Medicare</h1>
+  <h1>Social Security Taxability</h1>
   {% flatblock "taxbrain_socsec_blurb" %}
   {% block section_warnings %}
   {% endblock %}
 </div>
 
 <h2>Social Security Taxability</h2>
-{% include 'taxbrain/includes/params/inputs/param.html' with param=params.SS_Earnings_c %}
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.SS_thd50 %}
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.SS_percentage1 %}
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.SS_thd85 %}
