@@ -1,0 +1,29 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}payroll-taxes{% endblock %}
+{% block input_section_title %}Payroll Taxes{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Payroll Taxes</h1>
+  {% flatblock "taxbrain_payroll_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Social Security FICA</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.FICA_ss_trt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.SS_Earnings_c %}
+
+<h2>Medicare FICA</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.FICA_mc_trt%}
+
+<h2>Additional Medicare FICA</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMED_thd%}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.AMED_trt %}
+
+{% endblock %}
+
+{% block next_section_shortname %}adjustments{% endblock %}
