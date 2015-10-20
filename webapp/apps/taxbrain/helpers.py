@@ -165,7 +165,7 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'df_dec': 'Difference between Base and User plans by expanded income decile',
     'mX_bin': 'Base plan tax vars, weighted avg per expanded income bin',
     'mY_bin': 'User plan tax vars, weighted avg per expanded income bin',
-    'df_bin': 'Individual Income Tax: Difference between Base and User plans by AGI decile',
+    'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
     'fiscal_tots': 'Total Liabilities Change by Calendar Year',
 }
 
