@@ -128,3 +128,14 @@ class TaxInputTests(TestCase):
 
         ans = format_csv(tax_results, u'42')
         assert ans[0] == ['#URL: http://www.ospc.org/taxbrain/42/']
+
+
+def test_arrange_totals_by_row():
+    total_row_names = ["ind_tax", "payroll_tax", "combined_tax"]
+    tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3", 
+            'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6", 
+            'combined_tax_0': "7", 'combined_tax_1': "8", 'combined_tax_2': "9"}
+    ans = arrange_totals_by_row(tots, total_row_names)
+    exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
+    assert ans == exp
+

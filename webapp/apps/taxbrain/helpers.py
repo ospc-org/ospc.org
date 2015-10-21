@@ -51,6 +51,22 @@ def same_version(v1, v2):
     idx = v1.rfind('.')
     return v1[:idx] == v2[:idx]
 
+def arrange_totals_by_row(tots, keys):
+
+    out = {}
+    for key in keys:
+        order_map = {}
+        for name in tots:
+            if name.startswith(key):
+                year_num = int(name[name.rfind('_')+1:])
+                order_map[year_num] = tots[name]
+        vals = [order_map[i] for i in range(len(order_map))]
+        out[key] = vals
+    return out
+            
+            
+
+
 #
 # Prepare user params to send to DropQ/Taxcalc
 #
@@ -168,8 +184,12 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'df_bin': 'Difference between Base and User plans by expanded income bin',
     'fiscal_tots': 'Total Revenue Change by Calendar Year',
 }
-
-
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
+TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
+    'ind_tax':'Individual Income Tax Liability Change',
+    'payroll_tax':'Payroll Tax Liability Change',
+    'combined_tax':'Combined Payroll and Individual Income Tax Liability Change',
+}
 
 def expand_1D(x, num_years):
     """
@@ -589,13 +609,17 @@ def taxcalc_results_to_tables(results):
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
-
-    num_years = len(results['fiscal_tots'])
+    total_row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+    #import pdb;pdb.set_trace()
+    num_years = len(results['fiscal_tots'][total_row_keys[0]])
     years = list(range(TAXCALC_RESULTS_START_YEAR,
                        TAXCALC_RESULTS_START_YEAR + num_years))
 
+    print "here 1"
+    print "num_years is ", num_years
     tables = {}
     for table_id in results:
+        print "here 2", table_id
 
         # Debug inputs
         """
@@ -609,6 +633,7 @@ def taxcalc_results_to_tables(results):
         """
 
         if table_id in ['mX_dec', 'mY_dec']:
+            print "here 3", table_id
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -617,6 +642,7 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id in ['mX_bin', 'mY_bin']:
+            print "here 4", table_id
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -625,6 +651,7 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id == 'df_dec':
+            print "here 5", table_id
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -633,6 +660,7 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id == 'df_bin':
+            print "here 6", table_id
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -641,12 +669,17 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id == 'fiscal_tots':
+            print "here 7", table_id
             # todo - move these into the above TC result param constants
-            row_keys = ['totals']
-            row_labels = {'totals': 'Total Revenue'}
+            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS 
+            row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS 
             col_labels = years
+            print "here 8", table_id
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
-            table_data = {'totals': results[table_id]}
+            #table_data = {'totals': results[table_id][row_keys[0]]}
+            print "here 9", table_id
+            table_data = results[table_id]
+            print "here 10", table_id
             multi_year_cells = False
 
         table = {
@@ -657,7 +690,12 @@ def taxcalc_results_to_tables(results):
             'multi_valued': multi_year_cells
         }
 
+        print "col_formats", col_formats
+        print "col_labels", col_labels
+        print "len(col_formats)", len(col_formats)
+        print "len(col_labels)", len(col_labels)
         for col_key, label in enumerate(col_labels):
+            print "col_key", col_key
             table['cols'].append({
                 'label': label,
                 'divisor': col_formats[col_key][0],
@@ -703,11 +741,9 @@ def taxcalc_results_to_tables(results):
         tables[table_id] = table
 
         # Debug results
-        """
-        print('\n ----- result ------- ')
-        print('{0}'.format(table))
-        print(' ----- result ------- \n')
-        """
+        print '\n ----- result ------- '
+        print '{0}'.format(table)
+        print ' ----- result ------- \n'
 
     tables['result_years'] = years
     return tables
@@ -924,7 +960,7 @@ def dropq_get_results(job_ids):
     mY_bin = {}
     mX_bin = {}
     df_bin = {}
-    fiscal_tots = []
+    fiscal_tots = {}
     for result in ans:
         mY_dec.update(result['mY_dec'])
         mX_dec.update(result['mX_dec'])
@@ -932,7 +968,8 @@ def dropq_get_results(job_ids):
         mY_bin.update(result['mY_bin'])
         mX_bin.update(result['mX_bin'])
         df_bin.update(result['df_bin'])
-        fiscal_tots.append(result['fiscal_tots'])
+        fiscal_tots.update(result['fiscal_tots'])
+
 
     if ENFORCE_REMOTE_VERSION_CHECK:
         versions = [r.get('taxcalc_version', None) for r in ans]
@@ -946,6 +983,8 @@ def dropq_get_results(job_ids):
             print msg
             raise IOError(msg)
 
+    fiscal_tots = arrange_totals_by_row(fiscal_tots,
+                                        TAXCALC_RESULTS_TOTAL_ROW_KEYS)
 
     results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
                'mY_bin': mY_bin, 'mX_bin': mX_bin, 'df_bin': df_bin,
