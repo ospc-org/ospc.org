@@ -118,7 +118,10 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'Non-refundable Credits',
     [1000000000, 'Dollars', 1],  # 'Tax before Refundable Credits',
     [1000000000, 'Dollars', 1],  # 'Refundable Credits',
-    [1000000000, 'Dollars', 1],  # 'Revenue'
+    [1000000000, 'Dollars', 1],  # 'Individual Income Liabilities',
+    [1000000000, 'Dollars', 1],  # 'Payroll Tax Liablities',
+    [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities'
+                                      
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [      1000,      None, 0],    # "Inds. w/ Tax Cut",
@@ -165,8 +168,8 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'df_dec': 'Difference between Base and User plans by expanded income decile',
     'mX_bin': 'Base plan tax vars, weighted avg per expanded income bin',
     'mY_bin': 'User plan tax vars, weighted avg per expanded income bin',
-    'df_bin': 'Difference between Base and User plans by expanded income bin',
-    'fiscal_tots': 'Total Revenue Change by Calendar Year',
+    'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
+    'fiscal_tots': 'Total Liabilities Change by Calendar Year',
 }
 
 
@@ -643,7 +646,7 @@ def taxcalc_results_to_tables(results):
         elif table_id == 'fiscal_tots':
             # todo - move these into the above TC result param constants
             row_keys = ['totals']
-            row_labels = {'totals': 'Total Revenue'}
+            row_labels = {'totals': 'Individual Income Tax Liability Change'}
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
             table_data = {'totals': results[table_id]}
