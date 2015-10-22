@@ -679,12 +679,7 @@ def taxcalc_results_to_tables(results):
             'multi_valued': multi_year_cells
         }
 
-        print "col_formats", col_formats
-        print "col_labels", col_labels
-        print "len(col_formats)", len(col_formats)
-        print "len(col_labels)", len(col_labels)
         for col_key, label in enumerate(col_labels):
-            print "col_key", col_key
             table['cols'].append({
                 'label': label,
                 'divisor': col_formats[col_key][0],
@@ -730,9 +725,11 @@ def taxcalc_results_to_tables(results):
         tables[table_id] = table
 
         # Debug results
+        """
         print '\n ----- result ------- '
         print '{0}'.format(table)
         print ' ----- result ------- \n'
+        """
 
     tables['result_years'] = years
     return tables
