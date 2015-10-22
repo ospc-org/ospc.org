@@ -481,8 +481,10 @@ class TaxCalcParam(object):
         first_value = self.col_fields[0].values[0]
         self.inflatable = first_value > 1 and self.tc_id != '_ACTC_ChildNum'
 
+
         if self.inflatable:
-            self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [True], self)
+            cpi_flag = attributes['cpi_inflated']
+            self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [cpi_flag], self)
 
         # Get validation details
         validations_json =  attributes.get('validations')

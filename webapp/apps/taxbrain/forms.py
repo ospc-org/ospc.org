@@ -190,7 +190,7 @@ class PersonalExemptionForm(ModelForm):
                 field = param.cpi_field
                 attrs = {
                     'class': 'form-control sr-only',
-                    'placeholder': "{0}".format(field.default_value),
+                    'placeholder': bool(field.default_value),
                 }
 
                 if param.coming_soon:
