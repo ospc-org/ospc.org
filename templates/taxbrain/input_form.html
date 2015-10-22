@@ -46,6 +46,7 @@
       <div class="inputs-sidebar">
         <ul class="nav sidebar-nav">
           <li class="get-started"><a href="#get-started">Get Started</a></li>
+          <li><a href="#payroll-taxes">Payroll Taxes</a></li>
           <li><a href="#social-medicare">Social Security Taxability</a></li>
           <li><a href="#adjustments">Adjustments</a></li>
           <li><a href="#exemptions">Exemptions</a></li>
@@ -107,6 +108,7 @@
           </div>
         </div>
 
+        {% include 'taxbrain/includes/params/inputs/payroll.html' %}
         {% include 'taxbrain/includes/params/inputs/soc.html' %}
         {% include 'taxbrain/includes/params/inputs/adjust.html' %}
         {% include 'taxbrain/includes/params/inputs/personal_exemp.html' %}
