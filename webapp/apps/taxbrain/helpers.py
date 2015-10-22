@@ -134,7 +134,10 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'Non-refundable Credits',
     [1000000000, 'Dollars', 1],  # 'Tax before Refundable Credits',
     [1000000000, 'Dollars', 1],  # 'Refundable Credits',
-    [1000000000, 'Dollars', 1],  # 'Revenue'
+    [1000000000, 'Dollars', 1],  # 'Individual Income Liabilities',
+    [1000000000, 'Dollars', 1],  # 'Payroll Tax Liablities',
+    [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities'
+                                      
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [      1000,      None, 0],    # "Inds. w/ Tax Cut",
@@ -181,8 +184,8 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'df_dec': 'Difference between Base and User plans by expanded income decile',
     'mX_bin': 'Base plan tax vars, weighted avg per expanded income bin',
     'mY_bin': 'User plan tax vars, weighted avg per expanded income bin',
-    'df_bin': 'Difference between Base and User plans by expanded income bin',
-    'fiscal_tots': 'Total Revenue Change by Calendar Year',
+    'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
+    'fiscal_tots': 'Total Liabilities Change by Calendar Year',
 }
 TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
@@ -610,17 +613,12 @@ def taxcalc_results_to_tables(results):
     Return organized and labeled table results for display
     """
     total_row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
-    #import pdb;pdb.set_trace()
     num_years = len(results['fiscal_tots'][total_row_keys[0]])
     years = list(range(TAXCALC_RESULTS_START_YEAR,
                        TAXCALC_RESULTS_START_YEAR + num_years))
 
-    print "here 1"
-    print "num_years is ", num_years
     tables = {}
     for table_id in results:
-        print "here 2", table_id
-
         # Debug inputs
         """
         print('\n ----- inputs ------- ')
@@ -633,7 +631,6 @@ def taxcalc_results_to_tables(results):
         """
 
         if table_id in ['mX_dec', 'mY_dec']:
-            print "here 3", table_id
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -642,7 +639,6 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id in ['mX_bin', 'mY_bin']:
-            print "here 4", table_id
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -651,7 +647,6 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id == 'df_dec':
-            print "here 5", table_id
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -660,7 +655,6 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id == 'df_bin':
-            print "here 6", table_id
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -669,17 +663,12 @@ def taxcalc_results_to_tables(results):
             multi_year_cells = True
 
         elif table_id == 'fiscal_tots':
-            print "here 7", table_id
             # todo - move these into the above TC result param constants
             row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS 
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS 
             col_labels = years
-            print "here 8", table_id
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
-            #table_data = {'totals': results[table_id][row_keys[0]]}
-            print "here 9", table_id
             table_data = results[table_id]
-            print "here 10", table_id
             multi_year_cells = False
 
         table = {
