@@ -60,8 +60,6 @@ def personal_results(request):
     This view handles the input page and calls the function that
     handles the calculation on the inputs.
     """
-    # from pprint import pprint
-    # pprint (vars(request))
     no_inputs = False
     start_year = '2015'
     start_years = ('2013', '2014', '2015')
@@ -106,8 +104,6 @@ def personal_results(request):
         form_personal_exemp = PersonalExemptionForm()
         # start_year = request['QUERY_STRING']
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
-        print('start_year' in params)
-        print(params['start_year'] in start_years)
         if 'start_year' in params and params['start_year'][0] in start_years:
             start_year = params['start_year'][0]
 
