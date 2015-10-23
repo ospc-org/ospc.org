@@ -64,8 +64,6 @@ def arrange_totals_by_row(tots, keys):
         out[key] = vals
     return out
             
-            
-
 
 #
 # Prepare user params to send to DropQ/Taxcalc
@@ -300,10 +298,10 @@ def leave_name_in(key, val, dd):
             return False
 
 
-def package_up_vars(user_values):
-    dd = taxcalc.policy.Policy.default_data(start_year=START_YEAR)
-    growth_dd = taxcalc.growth.Growth.default_data(start_year=START_YEAR)
-    behavior_dd = taxcalc.Behavior.default_data(start_year=START_YEAR)
+def package_up_vars(user_values, first_budget_year):
+    dd = taxcalc.policy.Policy.default_data(start_year=first_budget_year)
+    growth_dd = taxcalc.growth.Growth.default_data(start_year=first_budget_year)
+    behavior_dd = taxcalc.Behavior.default_data(start_year=first_budget_year)
     dd.update(growth_dd)
     dd.update(behavior_dd)
     for k, v in user_values.items():
@@ -380,7 +378,7 @@ class TaxCalcField(object):
     An atomic unit of data for a TaxCalcParam, which can be stored as a field
     Used for both CSV float fields (value column data) and boolean fields (cpi)
     """
-    def __init__(self, id, label, values, param):
+    def __init__(self, id, label, values, param, first_budget_year):
         self.id = id
         self.label = label
         self.values = values
@@ -391,7 +389,7 @@ class TaxCalcField(object):
             year = param.start_year + i
             self.values_by_year[year] = value
 
-        self.default_value = self.values_by_year[START_YEAR]
+        self.default_value = self.values_by_year[first_budget_year]
 
 
 class TaxCalcParam(object):
@@ -399,10 +397,10 @@ class TaxCalcParam(object):
     A collection of TaxCalcFields that represents all configurable details
     for one of TaxCalc's Parameters
     """
-    def __init__(self, param_id, attributes):
-        self.__load_from_json(param_id, attributes)
+    def __init__(self, param_id, attributes, first_budget_year):
+        self.__load_from_json(param_id, attributes, first_budget_year)
 
-    def __load_from_json(self, param_id, attributes):
+    def __load_from_json(self, param_id, attributes, first_budget_year):
         values_by_year = attributes['value']
         col_labels = attributes['col_label']
 
@@ -418,7 +416,7 @@ class TaxCalcParam(object):
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
         #self.start_year = int(attributes['start_year'])
-        self.start_year = START_YEAR
+        self.start_year = first_budget_year
 
         self.coming_soon = (self.tc_id in TAXCALC_COMING_SOON_FIELDS)
         self.hidden = (self.tc_id in TAXCALC_HIDDEN_FIELDS)
@@ -465,16 +463,17 @@ class TaxCalcParam(object):
                 self.nice_id,
                 col_labels[0],
                 values_by_col[0],
-                self
+                self,
+                first_budget_year
             ))
         else:
             for col, label in enumerate(col_labels):
                 self.col_fields.append(TaxCalcField(
-
                     self.nice_id + "_{0}".format(col),
                     label,
                     values_by_col[col],
-                    self
+                    self,
+                    first_budget_year
                 ))
 
         # we assume we can CPI inflate if first value isn't a ratio
@@ -482,7 +481,8 @@ class TaxCalcParam(object):
         self.inflatable = first_value > 1 and self.tc_id != '_ACTC_ChildNum'
 
         if self.inflatable:
-            self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [True], self)
+            self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [True],
+                                          self, first_budget_year)
 
         # Get validation details
         validations_json =  attributes.get('validations')
@@ -512,80 +512,85 @@ class TaxCalcParam(object):
 
 
 # Create a list of default policy
-TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.policy.Policy.default_data(metadata=True, start_year=2015)
-default_taxcalc_params = {}
-for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
-    param = TaxCalcParam(k,v)
-    default_taxcalc_params[param.nice_id] = param
+def default_policy(first_budget_year):
 
-#Behavior Effects not in params.json yet. Add in the appropriate info so that
-#the params dictionary has the right info
-# value, col_label, long_name, description, irs_ref, notes
-be_params = []
-be_inc_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Income Effect',
-                'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-be_sub_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Substitution Effect',
-                'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-be_cg_per_param = {'value':[0], 'col_label':['label'], 'long_name':'Persistent',
-                'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-be_cg_trn_param= {'value':[0], 'col_label':['label'], 'long_name':'Transitory',
-                'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-be_params.append(('_BE_inc', be_inc_param))
-be_params.append(('_BE_sub', be_sub_param))
-be_params.append(('_BE_cg_per', be_cg_per_param))
-be_params.append(('_BE_cg_trn', be_cg_trn_param))
-for k,v in be_params:
-    param = TaxCalcParam(k,v)
-    default_taxcalc_params[param.nice_id] = param
+    TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.policy.Policy.default_data(metadata=True,
+                                                                     start_year=first_budget_year)
+    default_taxcalc_params = {}
+    for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
+        param = TaxCalcParam(k,v)
+        default_taxcalc_params[param.nice_id] = param
 
-#Growth assumptions not in default data yet. Add in the appropriate info so that
-#the params dictionary has the right info
-# value, col_label, long_name, description, irs_ref, notes
-growth_params = []
-adj_long_name = ("Deviation from CBO forecast of baseline economic "
-                 "growth (percentage point)")
-adj_descr = ("The data underlying this model are extrapolated to roughly "
-             "match the CBO's projection of the economy's development over "
-             "the 10-year federal budget window, with each type of economic "
-             "data extrapolated at a different growth rate. This parameter "
-             "allows a factor to be subtracted or added to those growth "
-             "rates for the construction of the economic baseline. For "
-             "example if you supply .02 (or 2%), then 0.02 will be added to "
-             "the wage and salary growth rate, interest income growth rate, "
-             "dividend growth rate, schedule E income growth rate, and all "
-             "other growth rates used to extrapolate the underlying dataset.")
+    #Behavior Effects not in params.json yet. Add in the appropriate info so that
+    #the params dictionary has the right info
+    # value, col_label, long_name, description, irs_ref, notes
+    be_params = []
+    be_inc_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Income Effect',
+                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
+    be_sub_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Substitution Effect',
+                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
+    be_cg_per_param = {'value':[0], 'col_label':['label'], 'long_name':'Persistent',
+                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
+    be_cg_trn_param= {'value':[0], 'col_label':['label'], 'long_name':'Transitory',
+                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
+    be_params.append(('_BE_inc', be_inc_param))
+    be_params.append(('_BE_sub', be_sub_param))
+    be_params.append(('_BE_cg_per', be_cg_per_param))
+    be_params.append(('_BE_cg_trn', be_cg_trn_param))
+    for k,v in be_params:
+        param = TaxCalcParam(k,v)
+        default_taxcalc_params[param.nice_id] = param
 
-factor_adjustment = {'value':[[0]], 'col_label':"", 'long_name': adj_long_name,
-                     'description': adj_descr, 'irs_ref':'', 'notes':''}
-growth_params.append(('_factor_adjustment', factor_adjustment))
+    #Growth assumptions not in default data yet. Add in the appropriate info so that
+    #the params dictionary has the right info
+    # value, col_label, long_name, description, irs_ref, notes
+    growth_params = []
+    adj_long_name = ("Deviation from CBO forecast of baseline economic "
+                    "growth (percentage point)")
+    adj_descr = ("The data underlying this model are extrapolated to roughly "
+                "match the CBO's projection of the economy's development over "
+                "the 10-year federal budget window, with each type of economic "
+                "data extrapolated at a different growth rate. This parameter "
+                "allows a factor to be subtracted or added to those growth "
+                "rates for the construction of the economic baseline. For "
+                "example if you supply .02 (or 2%), then 0.02 will be added to "
+                "the wage and salary growth rate, interest income growth rate, "
+                "dividend growth rate, schedule E income growth rate, and all "
+                "other growth rates used to extrapolate the underlying dataset.")
 
-target_long_name = ("Replacement for CBO real GDP growth in economic baseline "
-                    "(percent)")
+    factor_adjustment = {'value':[[0]], 'col_label':"", 'long_name': adj_long_name,
+                        'description': adj_descr, 'irs_ref':'', 'notes':''}
+    growth_params.append(('_factor_adjustment', factor_adjustment))
 
-target_descr = ("The data underlying this model are extrapolated to roughly "
-                "match the CBO's projection of the economy's development "
-                "over the 10-year federal budget window, with each type of "
-                "economic data extrapolated at a different growth rate. One "
-                "of the growth rates taken from the CBO is GDP growth. This "
-                "parameter allows you to specify a real GDP growth rate, and "
-                "all other rates will be modified to maintain the distance "
-                "between them and GDP growth in the CBO baseline. For example, "
-                "if the CBO growth rate for one year is 0.02 and the user "
-                "enters 0.018 for this parameter, then 0.002 will be "
-                "subtracted from every growth rate in the construction of the "
-                "economic baseline, including wage and salary growth, interest "
-                "income growth, dividend growth, and many others.")
+    target_long_name = ("Replacement for CBO real GDP growth in economic baseline "
+                        "(percent)")
 
-factor_target= {'value':[[0]], 'col_label':"", 'long_name': target_long_name,
-                     'description': target_descr, 'irs_ref':'', 'notes':''}
+    target_descr = ("The data underlying this model are extrapolated to roughly "
+                    "match the CBO's projection of the economy's development "
+                    "over the 10-year federal budget window, with each type of "
+                    "economic data extrapolated at a different growth rate. One "
+                    "of the growth rates taken from the CBO is GDP growth. This "
+                    "parameter allows you to specify a real GDP growth rate, and "
+                    "all other rates will be modified to maintain the distance "
+                    "between them and GDP growth in the CBO baseline. For example, "
+                    "if the CBO growth rate for one year is 0.02 and the user "
+                    "enters 0.018 for this parameter, then 0.002 will be "
+                    "subtracted from every growth rate in the construction of the "
+                    "economic baseline, including wage and salary growth, interest "
+                    "income growth, dividend growth, and many others.")
 
-growth_params.append(('_factor_target', factor_target))
+    factor_target= {'value':[[0]], 'col_label':"", 'long_name': target_long_name,
+                        'description': target_descr, 'irs_ref':'', 'notes':''}
 
-for k,v in growth_params:
-    param = TaxCalcParam(k,v)
-    default_taxcalc_params[param.nice_id] = param
+    growth_params.append(('_factor_target', factor_target))
 
-TAXCALC_DEFAULT_PARAMS = default_taxcalc_params
+    for k,v in growth_params:
+        param = TaxCalcParam(k,v)
+        default_taxcalc_params[param.nice_id] = param
+
+    TAXCALC_DEFAULT_PARAMS = default_taxcalc_params
+
+    return TAXCALC_DEFAULT_PARAMS
 
 
 # Debug TaxParams
@@ -607,15 +612,15 @@ for k, param in TAXCALC_DEFAULT_PARAMS.iteritems():
 """
 
 
-def taxcalc_results_to_tables(results):
+def taxcalc_results_to_tables(results, first_budget_year):
     """
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
     total_row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
     num_years = len(results['fiscal_tots'][total_row_keys[0]])
-    years = list(range(TAXCALC_RESULTS_START_YEAR,
-                       TAXCALC_RESULTS_START_YEAR + num_years))
+    years = list(range(first_budget_year,
+                       first_budget_year + num_years))
 
     tables = {}
     for table_id in results:
@@ -710,7 +715,7 @@ def taxcalc_results_to_tables(results):
                             value = value[:-1]
                         cell['year_values'][year] = value
 
-                    cell['first_value'] = cell['year_values'][TAXCALC_RESULTS_START_YEAR]
+                    cell['first_value'] = cell['year_values'][first_budget_year]
 
                 else:
                     value = table_data[row_key][col_key]
@@ -734,7 +739,7 @@ def taxcalc_results_to_tables(results):
     tables['result_years'] = years
     return tables
 
-def format_csv(tax_results, url_id):
+def format_csv(tax_results, url_id, first_budget_year):
     """
     Takes a dictionary with the tax_results, having these keys:
     [u'mY_bin', u'mX_bin', u'mY_dec', u'mX_dec', u'df_dec', u'df_bin',
@@ -802,7 +807,7 @@ def format_csv(tax_results, url_id):
     #FISCAL TOTS
     res.append(["#fiscal totals data"])
     ft = tax_results.get('fiscal_tots', [])
-    yrs = [START_YEAR + i for i in range(0, len(ft))]
+    yrs = [first_budget_year + i for i in range(0, len(ft))]
     if yrs:
         res.append(yrs)
     if ft:
@@ -870,14 +875,14 @@ def format_csv(tax_results, url_id):
 
     return res
 
-def submit_dropq_calculation(mods):
+def submit_dropq_calculation(mods, first_budget_year):
     print "mods is ", mods
-    user_mods = package_up_vars(mods)
+    user_mods = package_up_vars(mods, first_budget_year)
     if not bool(user_mods):
         return False
     print "user_mods is ", user_mods
     print "submit work"
-    user_mods={START_YEAR:user_mods}
+    user_mods={first_budget_year:user_mods}
     years = list(range(0,NUM_BUDGET_YEARS))
 
     hostnames = DROPQ_WORKERS
