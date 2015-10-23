@@ -29,6 +29,18 @@ class TaxInputTests(TestCase):
         assert ans['_II_brk2'] == exp
         assert len(ans) == 1
 
+    def test_package_up_vars_CTC(self):
+        values = {"CTC_c": [2000.0]}
+        ans = package_up_vars(values)
+        exp =  [2000.0]
+        assert ans['_CTC_c'] == exp
+
+    def test_package_up_vars_with_cpi(self):
+        values = {"CTC_c_cpi": True}
+        ans = package_up_vars(values)
+        assert ans == {'_CTC_c_cpi': True}
+
+
     def test_convert_4_budget_years(self):
         values = {"II_brk2_0": [36000., 38000., 40000., 41000],
                     "II_brk2_1": [72250., 74000.],
@@ -54,7 +66,7 @@ class TaxInputTests(TestCase):
 
         ans = package_up_vars(values)
 
-        defaults = taxcalc.parameters.Parameters.default_data(start_year=2015)
+        defaults = taxcalc.policy.Policy.default_data(start_year=2015)
 
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, None, None, None, None],
@@ -130,12 +142,12 @@ class TaxInputTests(TestCase):
         assert ans[0] == ['#URL: http://www.ospc.org/taxbrain/42/']
 
 
-def test_arrange_totals_by_row():
-    total_row_names = ["ind_tax", "payroll_tax", "combined_tax"]
-    tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3", 
-            'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6", 
-            'combined_tax_0': "7", 'combined_tax_1': "8", 'combined_tax_2': "9"}
-    ans = arrange_totals_by_row(tots, total_row_names)
-    exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
-    assert ans == exp
+        def test_arrange_totals_by_row(self):
+            total_row_names = ["ind_tax", "payroll_tax", "combined_tax"]
+            tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3", 
+                    'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6", 
+                    'combined_tax_0': "7", 'combined_tax_1': "8", 'combined_tax_2': "9"}
+            ans = arrange_totals_by_row(tots, total_row_names)
+            exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
+            assert ans == exp
 

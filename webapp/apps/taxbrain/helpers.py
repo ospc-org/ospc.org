@@ -350,7 +350,6 @@ def package_up_vars(user_values):
     #Process remaining values set by user
     for k, v in user_values.items():
         if k in dd:
-            default_data = dd[k]
             param = k
         elif k.endswith("_cpi"):
             if k[:-4] in dd:
@@ -360,13 +359,8 @@ def package_up_vars(user_values):
             continue
         else:
             #add a leading underscore
-            default_data = dd["_" + k]
             param = "_" + k
-        num_years = len(v)
-        expnded = expand_list(default_data, num_years)
-        for i, new_val in enumerate(v):
-            expnded[i] = new_val
-        ans[param] = expnded
+        ans[param] = v
 
     return ans
 
