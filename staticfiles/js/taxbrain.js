@@ -21,6 +21,9 @@ $('body').scrollspy({
 
 // scroll to form
 $('.inputs-form a, .btn-explore').click(function (e) {
+  if ($(this).attr('id') === 'current-year-link') {
+    return;
+  }
   e.preventDefault();
   var target = this.hash;
   if (this.href != '#') {
@@ -135,4 +138,9 @@ $(".data-switch .dropdown-menu li a").click(function(){
     $this.text(switch_value).fadeIn('fast');
   });
 
+});
+
+$('#start-year-select').change(function() {
+  $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val());
+  $('#current-year-alert').removeClass('hidden');
 });
