@@ -54,6 +54,17 @@ def growth_fixup(mod):
     del mod['growth_choice']
 
 
+def denormalize(x):
+    ans = ["#".join([i[0],i[1]]) for i in x]
+    ans = [str(x) for x in ans]
+    return ans
+
+
+def normalize(x):
+    ans = [i.split('#') for i in x]
+    return ans
+
+
 def personal_results(request):
     """
     This view handles the input page and calls the function that
@@ -68,7 +79,7 @@ def personal_results(request):
             model = personal_inputs.save()
 
             # prepare taxcalc params from TaxSaveInputs model
-            curr_dict = model.__dict__
+            curr_dict = dict(model.__dict__)
             growth_fixup(curr_dict)
 
             for key, value in curr_dict.items():
@@ -89,7 +100,9 @@ def personal_results(request):
                 no_inputs = True
                 form_personal_exemp = personal_inputs
             else:
-                request.session['submitted_ids'] = submitted_ids
+                job_ids = denormalize(submitted_ids)
+                model.job_ids = job_ids
+                model.save()
                 return redirect('tax_results', model.pk)
 
         else:
@@ -147,7 +160,9 @@ def tax_results(request, pk):
     This view allows the app to wait for the taxcalc results to be
     returned.
     """
-    submitted_ids = request.session['submitted_ids']
+    model = TaxSaveInputs.objects.get(pk=pk)
+    job_ids = model.job_ids
+    submitted_ids = normalize(job_ids)
     if dropq_results_ready(submitted_ids):
         model = TaxSaveInputs.objects.get(pk=pk)
         model.tax_result = dropq_get_results(submitted_ids)
