@@ -141,3 +141,19 @@ $(".data-switch .dropdown-menu li a").click(function(){
   });
 
 });
+
+$('input[name="growth_choice"]').click(function () {
+  if ($(this).val() === 'factor_target') {
+    $('#id_factor_adjustment').val('');
+  } else {
+    $('#id_factor_target').val('');
+  }
+});
+
+$('#id_factor_adjustment, #id_factor_target').focus(function() {
+  if ($(this).attr('id') === 'id_factor_target') {
+    $('input[type="radio"][value="factor_target"]').click();
+  } else {
+    $('input[type="radio"][value="factor_adjustment"]').click();
+  }
+});
