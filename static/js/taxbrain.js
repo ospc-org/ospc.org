@@ -19,15 +19,20 @@ $('body').scrollspy({
   target: '.inputs-sidebar'
 });
 
-// scroll to form
-$('.inputs-form a, .btn-explore').click(function (e) {
-  e.preventDefault();
-  var target = this.hash;
-  if (this.href != '#') {
-    jQuery('html, body').animate({
-      scrollTop: jQuery(target).offset().top
-    }, 700);
+// Scroll to taxbrain form input areas, instead of jumping
+$('.inputs-form a, .btn-explore').click(function(event) {
+
+  // ensure link is indeed a hash link on current page
+  if (this.host == location.host && this.pathname == location.pathname) {
+    event.preventDefault();
+    var target = this.hash;
+    if (this.href != '#') {
+      $('body').animate({
+        scrollTop: $(target).offset().top
+      }, 700);
+    }
   }
+
 });
 
 // CPI buttons
