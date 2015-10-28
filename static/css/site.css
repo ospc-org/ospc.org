@@ -8099,8 +8099,6 @@ fieldset[disabled] .form-group.cpi-group .btn.btn-cpi {
   background-image: -moz-linear-gradient(top, #fafcfc 0%, #bdc9c9 100%);
   background-image: -o-linear-gradient(top, #fafcfc 0%, #bdc9c9 100%);
   background-image: linear-gradient(to bottom, #fafcfc 0%, #bdc9c9 100%);
-  margin-bottom: 200px;
-  position: relative;
 }
 .home-display:before,
 .home-display:after {
@@ -8119,9 +8117,7 @@ fieldset[disabled] .form-group.cpi-group .btn.btn-cpi {
   clear: both;
 }
 .home-display .home-display-app {
-  bottom: -200px;
-  margin-top: -200px;
-  position: relative;
+  margin-bottom: 50px;
 }
 .home-display .home-display-app h2 {
   color: #869191;
