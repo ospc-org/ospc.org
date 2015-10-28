@@ -63,8 +63,6 @@ def arrange_totals_by_row(tots, keys):
         vals = [order_map[i] for i in range(len(order_map))]
         out[key] = vals
     return out
-            
-            
 
 
 #
@@ -181,10 +179,14 @@ TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
 TAXCALC_RESULTS_TABLE_LABELS = {
     'mX_dec': 'Base plan tax vars, weighted avg per expanded income decile',
     'mY_dec': 'User plan tax vars, weighted avg per expanded income decile',
-    'df_dec': 'Difference between Base and User plans by expanded income decile',
+    'df_dec': 'Individual Income Tax: Difference between Base and User plans by expanded income decile',
+    'pdf_dec': 'Payroll Tax: Difference between Base and User plans by expanded income decile',
+    'cdf_dec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',
     'mX_bin': 'Base plan tax vars, weighted avg per expanded income bin',
     'mY_bin': 'User plan tax vars, weighted avg per expanded income bin',
     'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
+    'pdf_bin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
+    'cdf_bin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
     'fiscal_tots': 'Total Liabilities Change by Calendar Year',
 }
 TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
@@ -642,7 +644,7 @@ def taxcalc_results_to_tables(results):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id == 'df_dec':
+        elif table_id in ['df_dec', 'pdf_dec', 'cdf_dec']:
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -650,7 +652,7 @@ def taxcalc_results_to_tables(results):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id == 'df_bin':
+        elif table_id in ['df_bin', 'pdf_bin', 'cdf_bin']:
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -939,17 +941,25 @@ def dropq_get_results(job_ids):
     mY_dec = {}
     mX_dec = {}
     df_dec = {}
+    pdf_dec = {}
+    cdf_dec = {}
     mY_bin = {}
     mX_bin = {}
     df_bin = {}
+    pdf_bin = {}
+    cdf_bin = {}
     fiscal_tots = {}
     for result in ans:
         mY_dec.update(result['mY_dec'])
         mX_dec.update(result['mX_dec'])
         df_dec.update(result['df_dec'])
+        pdf_dec.update(result['pdf_dec'])
+        cdf_dec.update(result['cdf_dec'])
         mY_bin.update(result['mY_bin'])
         mX_bin.update(result['mX_bin'])
         df_bin.update(result['df_bin'])
+        pdf_bin.update(result['pdf_bin'])
+        cdf_bin.update(result['cdf_bin'])
         fiscal_tots.update(result['fiscal_tots'])
 
 
@@ -969,7 +979,8 @@ def dropq_get_results(job_ids):
                                         TAXCALC_RESULTS_TOTAL_ROW_KEYS)
 
     results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
-               'mY_bin': mY_bin, 'mX_bin': mX_bin, 'df_bin': df_bin,
-               'fiscal_tots': fiscal_tots}
+               'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
+               'mX_bin': mX_bin, 'df_bin': df_bin, 'pdf_bin': pdf_bin,
+               'cdf_bin': cdf_bin, 'fiscal_tots': fiscal_tots}
 
     return results
