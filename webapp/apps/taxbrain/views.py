@@ -4,6 +4,7 @@ import json
 import taxcalc
 import dropq
 import datetime
+from urlparse import urlparse, parse_qs
 
 from django.core import serializers
 from django.core.context_processors import csrf
@@ -16,6 +17,7 @@ from django.template.context import RequestContext
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
+from django import forms
 
 from djqscsv import render_to_csv_response
 
@@ -55,21 +57,34 @@ def growth_fixup(mod):
     del mod['growth_choice']
 
 
+def denormalize(x):
+    ans = ["#".join([i[0],i[1]]) for i in x]
+    ans = [str(x) for x in ans]
+    return ans
+
+
+def normalize(x):
+    ans = [i.split('#') for i in x]
+    return ans
+
+
 def personal_results(request):
     """
     This view handles the input page and calls the function that
     handles the calculation on the inputs.
     """
     no_inputs = False
+    start_year = '2015'
+    start_years = ('2013', '2014', '2015')
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        personal_inputs = PersonalExemptionForm(request.POST)
+        personal_inputs = PersonalExemptionForm(request.POST, first_year=start_year)
 
         if personal_inputs.is_valid():
             model = personal_inputs.save()
 
             # prepare taxcalc params from TaxSaveInputs model
-            curr_dict = model.__dict__
+            curr_dict = dict(model.__dict__)
             growth_fixup(curr_dict)
 
             for key, value in curr_dict.items():
@@ -90,7 +105,9 @@ def personal_results(request):
                 no_inputs = True
                 form_personal_exemp = personal_inputs
             else:
-                request.session['submitted_ids'] = submitted_ids
+                job_ids = denormalize(submitted_ids)
+                model.job_ids = job_ids
+                model.save()
                 return redirect('tax_results', model.pk)
 
         else:
@@ -98,13 +115,32 @@ def personal_results(request):
             form_personal_exemp = personal_inputs
 
     else:
+        import pdb;pdb.set_trace()
         # Probably a GET request, load a default form
-        form_personal_exemp = PersonalExemptionForm()
+        form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+        # start_year = request['QUERY_STRING']
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in start_years:
+            start_year = params['start_year'][0]
+
+    import pdb;pdb.set_trace()
+
+    taxcalc_default_params = default_policy(int(start_year))
+
+    amtem = taxcalc_default_params['AMT_em']
+    print "the amt em value is ", amtem.col_fields[0].default_value
+    #form_personal_exemp._meta.widgets['AMT_em_0'].attrs['placeholder'] = 99999
+    fpe = form_personal_exemp
+    newattrs = dict(fpe._meta.widgets['AMT_em_0'].attrs)
+    newattrs['placeholder'] = 99999
+    fpe._meta.widgets['AMT_em_0'] = forms.TextInput(attrs=newattrs)
 
     init_context = {
         'form': form_personal_exemp,
-        'params': TAXCALC_DEFAULT_PARAMS,
+        'params': taxcalc_default_params,
         'taxcalc_version': taxcalc_version,
+        'start_years': start_years,
+        'start_year': start_year
     }
 
     if has_field_errors(form_personal_exemp):
@@ -131,12 +167,12 @@ def edit_personal_results(request, pk):
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = PersonalExemptionForm(instance=model)
-
+    form_personal_exemp = PersonalExemptionForm(first_year=start_year, instance=model)
+    taxcalc_default_params = default_policy(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,
-        'params': TAXCALC_DEFAULT_PARAMS,
+        'params': taxcalc_default_params,
         'taxcalc_version': taxcalc_version,
     }
 
@@ -148,7 +184,9 @@ def tax_results(request, pk):
     This view allows the app to wait for the taxcalc results to be
     returned.
     """
-    submitted_ids = request.session['submitted_ids']
+    model = TaxSaveInputs.objects.get(pk=pk)
+    job_ids = model.job_ids
+    submitted_ids = normalize(job_ids)
     if dropq_results_ready(submitted_ids):
         model = TaxSaveInputs.objects.get(pk=pk)
         model.tax_result = dropq_get_results(submitted_ids)

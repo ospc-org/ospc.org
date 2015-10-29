@@ -19,15 +19,22 @@ $('body').scrollspy({
   target: '.inputs-sidebar'
 });
 
-// scroll to form
-$('.inputs-form a, .btn-explore').click(function (e) {
-  e.preventDefault();
-  var target = this.hash;
-  if (this.href != '#') {
-    jQuery('html, body').animate({
-      scrollTop: jQuery(target).offset().top
-    }, 700);
+// Scroll to taxbrain form input areas, instead of jumping
+$('.inputs-form a, .btn-explore').click(function(event) {
+  if ($(this).attr('id') === 'current-year-link') {
+    return;
   }
+  // ensure link is indeed a hash link on current page <<-- Zach's stuff
+  if (this.host == location.host && this.pathname == location.pathname) {
+    event.preventDefault();
+    var target = this.hash;
+    if (this.href != '#') {
+      $('body').animate({
+        scrollTop: $(target).offset().top
+      }, 700);
+    }
+  }
+
 });
 
 // CPI buttons
@@ -135,4 +142,9 @@ $(".data-switch .dropdown-menu li a").click(function(){
     $this.text(switch_value).fadeIn('fast');
   });
 
+});
+
+$('#start-year-select').change(function() {
+  $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val());
+  $('#current-year-alert').removeClass('hidden');
 });

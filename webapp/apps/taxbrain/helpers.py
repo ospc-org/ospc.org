@@ -346,7 +346,6 @@ def package_up_vars(user_values, first_budget_year):
     #Process remaining values set by user
     for k, v in user_values.items():
         if k in dd:
-            default_data = dd[k]
             param = k
         elif k.endswith("_cpi"):
             if k[:-4] in dd:
@@ -356,13 +355,8 @@ def package_up_vars(user_values, first_budget_year):
             continue
         else:
             #add a leading underscore
-            default_data = dd["_" + k]
             param = "_" + k
-        num_years = len(v)
-        expnded = expand_list(default_data, num_years)
-        for i, new_val in enumerate(v):
-            expnded[i] = new_val
-        ans[param] = expnded
+        ans[param] = v
 
     return ans
 
@@ -478,9 +472,11 @@ class TaxCalcParam(object):
         first_value = self.col_fields[0].values[0]
         self.inflatable = first_value > 1 and self.tc_id != '_ACTC_ChildNum'
 
+
         if self.inflatable:
-            self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI", [True],
-                                          self, first_budget_year)
+            cpi_flag = attributes['cpi_inflated']
+            self.cpi_field = TaxCalcField(self.nice_id + "_cpi", "CPI",
+                                          [cpi_flag], self, first_budget_year)
 
         # Get validation details
         validations_json =  attributes.get('validations')
@@ -516,7 +512,7 @@ def default_policy(first_budget_year):
                                                                      start_year=first_budget_year)
     default_taxcalc_params = {}
     for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
-        param = TaxCalcParam(k,v)
+        param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
     #Behavior Effects not in params.json yet. Add in the appropriate info so that
@@ -536,7 +532,7 @@ def default_policy(first_budget_year):
     be_params.append(('_BE_cg_per', be_cg_per_param))
     be_params.append(('_BE_cg_trn', be_cg_trn_param))
     for k,v in be_params:
-        param = TaxCalcParam(k,v)
+        param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
     #Growth assumptions not in default data yet. Add in the appropriate info so that
@@ -583,7 +579,7 @@ def default_policy(first_budget_year):
     growth_params.append(('_factor_target', factor_target))
 
     for k,v in growth_params:
-        param = TaxCalcParam(k,v)
+        param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
     TAXCALC_DEFAULT_PARAMS = default_taxcalc_params

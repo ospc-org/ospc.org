@@ -11,8 +11,6 @@ from uuidfield import UUIDField
 from jsonfield import JSONField
 import datetime
 
-#from .helpers import TAXCALC_DEFAULT_PARAMS
-
 
 def convert_to_floats(tsi):
     """
@@ -48,6 +46,29 @@ class CommaSeparatedField(models.CharField):
         if kwargs.get("max_length", None) == 1000:
             del kwargs['max_length']
         return name, path, args, kwargs
+
+
+class SeparatedValuesField(models.TextField):
+    __metaclass__ = models.SubfieldBase
+
+    def __init__(self, *args, **kwargs):
+        self.token = kwargs.pop('token', ',')
+        super(SeparatedValuesField, self).__init__(*args, **kwargs)
+
+    def to_python(self, value):
+        if not value: return
+        if isinstance(value, list):
+            return value
+        return value.split(self.token)
+
+    def get_db_prep_value(self, value, connection, prepared=False):
+        if not value: return
+        assert(isinstance(value, list) or isinstance(value, tuple))
+        return self.token.join([unicode(s) for s in value])
+
+    def value_to_string(self, obj):
+        value = self._get_val_from_obj(obj)
+        return self.get_db_prep_value(value)
 
 
 class TaxSaveInputs(models.Model):
@@ -308,6 +329,9 @@ class TaxSaveInputs(models.Model):
     growth_choice = models.CharField(blank=True, default=None, null=True,
                                      max_length=50)
 
+
+    # Job IDs when running a job
+    job_ids = SeparatedValuesField(blank=True, default=None, null=True)
 
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up
