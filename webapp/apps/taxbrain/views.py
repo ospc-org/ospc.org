@@ -4,6 +4,7 @@ import json
 import taxcalc
 import dropq
 import datetime
+from urlparse import urlparse, parse_qs
 
 from django.core import serializers
 from django.core.context_processors import csrf
@@ -71,6 +72,8 @@ def personal_results(request):
     handles the calculation on the inputs.
     """
     no_inputs = False
+    start_year = '2015'
+    start_years = ('2013', '2014', '2015')
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         personal_inputs = PersonalExemptionForm(request.POST)
@@ -112,11 +115,17 @@ def personal_results(request):
     else:
         # Probably a GET request, load a default form
         form_personal_exemp = PersonalExemptionForm()
+        # start_year = request['QUERY_STRING']
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in start_years:
+            start_year = params['start_year'][0]
 
     init_context = {
         'form': form_personal_exemp,
         'params': TAXCALC_DEFAULT_PARAMS,
         'taxcalc_version': taxcalc_version,
+        'start_years': start_years,
+        'start_year': start_year
     }
 
     if has_field_errors(form_personal_exemp):
