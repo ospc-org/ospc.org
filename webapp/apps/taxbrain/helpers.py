@@ -10,8 +10,6 @@ import dropq
 import sys
 import time
 
-
-
 #
 # General helpers
 #
