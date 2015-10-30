@@ -3,7 +3,6 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from .models import TaxSaveInputs
-#from .helpers import TaxCalcField, TaxCalcParam, TAXCALC_DEFAULT_PARAMS, \
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       int_to_nth, is_string, string_to_float_array)
                       
