@@ -41,7 +41,7 @@
       </div>
     </section>
 
-    <form class="inputs-form" method="post" action="/taxbrain/{{ unique_url.getabsoluteurl|stringformat:'s' }}">
+    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}">
       {% csrf_token %}
       <div class="inputs-sidebar">
         <label class="">Start Year:
@@ -72,7 +72,7 @@
           <li><a href="#growth">Growth Assumptions</a></li>
         </ul>
         <div class="sidebar-button">
-          <a href="results.html" ></a>
+          <a href="#" ></a>
           <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Show me the results!">
         </div>
         <!--

@@ -13,7 +13,7 @@ def bool_like(x):
     return b
 
 
-TAXCALC_DEFAULTS_2015 = default_policy(2013)
+TAXCALC_DEFAULTS_2015 = default_policy(2015)
 
 
 class PersonalExemptionForm(ModelForm):
@@ -21,6 +21,17 @@ class PersonalExemptionForm(ModelForm):
     def __init__(self, first_year, *args, **kwargs):
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
+        # Defaults are set in the Meta, but we need to swap
+        # those outs here in the init because the user may
+        # have chosen a different start year
+        all_defaults = []
+        for param in self._default_params.values():
+            for field in param.col_fields:
+                all_defaults.append((field.id, field.default_value))
+
+        for _id, default in all_defaults:
+            self._meta.widgets[_id].attrs['placeholder'] = default
+
         super(PersonalExemptionForm, self).__init__(*args, **kwargs)
 
     def get_comp_data(self, comp_key, param_id, col, required_length):
@@ -205,6 +216,7 @@ class PersonalExemptionForm(ModelForm):
                     attrs['disabled'] = True
 
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
+
 
         # Keeping label text, may want to use some of these custom labels
         # instead of those specified in params.json

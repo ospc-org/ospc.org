@@ -329,10 +329,11 @@ class TaxSaveInputs(models.Model):
     growth_choice = models.CharField(blank=True, default=None, null=True,
                                      max_length=50)
 
-
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
 
+    # Starting Year of the reform calculation
+    first_year = models.IntegerField(default=None, null=True)
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up
     # field changes and automatically create migrations
