@@ -23,7 +23,6 @@ from djqscsv import render_to_csv_response
 
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
-#from .helpers import (TAXCALC_DEFAULT_PARAMS, taxcalc_results_to_tables, format_csv,
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       submit_dropq_calculation, dropq_results_ready, dropq_get_results)
 
