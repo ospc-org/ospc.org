@@ -41,9 +41,20 @@
       </div>
     </section>
 
-    <form class="inputs-form" method="post" action="/taxbrain/{{ unique_url.getabsoluteurl|stringformat:'s' }}">
+    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}">
       {% csrf_token %}
       <div class="inputs-sidebar">
+        <label class="">Start Year:
+          <select id="start-year-select" class="form-control pull-right">
+            {% for year in start_years %}
+              <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <div id="current-year-alert" class="hidden">
+          This will clear your current inputs.
+          <a href="#" class="alert-link" id="current-year-link">OK, go for it.</a>
+        </div>
         <ul class="nav sidebar-nav">
           <li class="get-started"><a href="#get-started">Get Started</a></li>
           <li><a href="#payroll-taxes">Payroll Taxes</a></li>
@@ -61,7 +72,7 @@
           <li><a href="#growth">Growth Assumptions</a></li>
         </ul>
         <div class="sidebar-button">
-          <a href="results.html" ></a>
+          <a href="#" ></a>
           <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Show me the results!">
         </div>
         <!--
@@ -92,7 +103,7 @@
             <h1>Get Started</h1>
            {% flatblock "taxbrain_get_started_blurb" %}
             <div>
-              You are looking at default parameters for 2015.
+              You are looking at default parameters for {{start_year}}.
               <!--
               <div class="dropdown dropdown-inline">
                 <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
@@ -118,9 +129,9 @@
         {% include 'taxbrain/includes/params/inputs/amt.html' %}
         {% include 'taxbrain/includes/params/inputs/nonrefundable_credit.html' %}
         {% include 'taxbrain/includes/params/inputs/other_taxes.html' %}
-        {% include 'taxbrain/includes/params/inputs/refundable_credit.html' %}  
-        {% include 'taxbrain/includes/params/inputs/behavior.html' %}       
-        {% include 'taxbrain/includes/params/inputs/growth.html' %}       
+        {% include 'taxbrain/includes/params/inputs/refundable_credit.html' %}
+        {% include 'taxbrain/includes/params/inputs/behavior.html' %}
+        {% include 'taxbrain/includes/params/inputs/growth.html' %}
 
       </div> <!-- main -->
     </form> <!-- form -->
