@@ -113,7 +113,7 @@ def personal_results(request):
             else:
                 # we don't have a real, public ip address for user
                 print "BEGIN DROPQ WORK FROM: unknown IP"
-        
+
             # start calc job
             submitted_ids = submit_dropq_calculation(worker_data, int(start_year))
             if not submitted_ids:
