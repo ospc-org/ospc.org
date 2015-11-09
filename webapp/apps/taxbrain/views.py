@@ -226,6 +226,7 @@ def output_detail(request, pk):
     created_on = url.unique_inputs.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
     inputs = url.unique_inputs
+    is_registered = True if request.user.is_authenticated() else False
 
     context = {
         'locals':locals(),
@@ -233,7 +234,8 @@ def output_detail(request, pk):
         'taxcalc_version':taxcalc_version,
         'tables':tables,
         'created_on':created_on,
-        'first_year':first_year
+        'first_year':first_year,
+        'is_registered':is_registered
     }
 
     return render(request, 'taxbrain/results.html', context)
