@@ -19,7 +19,7 @@ class DynamicInputsModelForm(ModelForm):
         exclude = ['creation_date']
         widgets = {}
         labels = {}
-
+        import pdb;pdb.set_trace()
         for param in OGUSA_DEFAULT_PARAMS.values():
             for field in param.col_fields:
                 attrs = {

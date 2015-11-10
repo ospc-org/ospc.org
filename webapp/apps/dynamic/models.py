@@ -24,7 +24,9 @@ class DynamicSaveInputs(models.Model):
 
     # Parameters used for the dynamic model
     g_y_annual = CommaSeparatedField(default=None, null=True, blank=True)
+    g_y_annual_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     upsilon = CommaSeparatedField(default=None, null=True, blank=True)
+    upsilon_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
