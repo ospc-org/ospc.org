@@ -2,6 +2,7 @@ import json
 import datetime
 from urlparse import urlparse, parse_qs
 import taxcalc
+import ogusa
 
 from django.core.mail import send_mail
 from django.core import serializers
@@ -18,23 +19,30 @@ from django.contrib.auth.models import User
 from django import forms
 
 from djqscsv import render_to_csv_response
-from .forms import PersonalExemptionForm, has_field_errors
-from .models import TaxSaveInputs, OutputUrl
-from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      submit_dropq_calculation, dropq_results_ready, dropq_get_results)
-
+from .forms import DynamicInputsModelForm, has_field_errors
+from .models import DynamicSaveInputs, DynamicOutputUrl
+from .helpers import default_parameters
 
 
 tcversion_info = taxcalc._version.get_versions()
-
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-def dynamic_input(request):
+ogversion_info = ogusa._version.get_versions()
+ogusa_version = ".".join([ogversion_info['version'],
+                         ogversion_info['full-revisionid'][:6]])
+
+
+
+@permission_required('taxbrain.view_inputs')
+def dynamic_input(request, pk):
     """
     This view handles the dynamic input page and calls the function that
     handles the calculation on the inputs.
     """
 
+    import pdb;pdb.set_trace()
+    # Only acceptable year for dynamic simulations right now
+    start_year=2015
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         dyn_mod_form = DynamicModelForm(start_year, fields)
@@ -65,13 +73,12 @@ def dynamic_input(request):
             form_personal_exemp = personal_inputs
 
     else:
-        params = parse_qs(urlparse(request.build_absolute_uri()).query)
 
         # Probably a GET request, load a default form
-        form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+        form_personal_exemp = DynamicInputsModelForm()
         # start_year = request['QUERY_STRING']
 
-    ogusa_default_params = macro_default_params(int(start_year))
+    ogusa_default_params = default_parameters(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,
@@ -84,15 +91,10 @@ def dynamic_input(request):
     if has_field_errors(form_personal_exemp):
         form_personal_exemp.add_error(None, "Some fields have errors.")
 
-    if no_inputs:
-        form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
-
-    return render(request, 'taxbrain/input_form.html', init_context)
+    return render(request, 'dynamic/dynamic_input_form.html', init_context)
 
 
-
-
-def dynamic_done(request):
+def dynamic_submitted(request):
     """
     This view sends an email
     """

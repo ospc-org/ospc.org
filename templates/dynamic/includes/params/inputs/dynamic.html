@@ -1,0 +1,22 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}dynamic-sim{% endblock %}
+{% block input_section_title %}Macroeconomic Parameters{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Macroeconomic Parameters</h1>
+  {% flatblock "taxbrain_dynamic_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Macroeconomic Parameters</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.gyt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.frisch_el %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.gnt %}
+
+{% endblock %}
+
