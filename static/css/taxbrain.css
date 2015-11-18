@@ -8458,3 +8458,22 @@ label {
   }
 }
 */
+
+share-button {
+  background: inherit;
+  color: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  text-transform: inherit;
+  padding: inherit;
+}
+
+share-button:before {
+  background: inherit;
+  content: none;
+}
+
+share-button:hover {
+  background: inherit;
+  color: inherit;
+}
