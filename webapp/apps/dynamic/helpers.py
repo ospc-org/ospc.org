@@ -137,7 +137,7 @@ def ogusa_results_to_tables(results, first_budget_year):
 
 def submit_ogusa_calculation(mods, first_budget_year):
     print "mods is ", mods
-    return 'a111'
+    return [('a111', '1.1.1.1')]
 
 
 # Might not be needed because this would be handled on the worker node side

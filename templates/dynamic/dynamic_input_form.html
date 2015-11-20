@@ -40,7 +40,7 @@
       </div>
     </section>
 
-    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}">
+    <form class="inputs-form" method="post" action="/dynamic/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
       <div class="inputs-sidebar">
         <ul class="nav sidebar-nav">
@@ -67,7 +67,7 @@
         <div id="get-started" class="inputs-block inputs-block-intro">
           <div class="inputs-block-header">
             <h1>Get Started</h1>
-           {% flatblock "taxbrain_get_started_blurb" %}
+           {% flatblock "dynamic_get_started_blurb" %}
             <div>
               You are looking at default parameters for {{start_year}}.
             </div>

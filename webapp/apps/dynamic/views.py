@@ -9,7 +9,7 @@ from django.core import serializers
 from django.core.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseServerError
 from django.shortcuts import render, render_to_response, get_object_or_404, redirect
 from django.template import loader, Context
 from django.template.context import RequestContext
@@ -44,8 +44,9 @@ def dynamic_input(request, pk):
     # Only acceptable year for dynamic simulations right now
     start_year=2015
     if request.method=='POST':
+        import pdb;pdb.set_trace()
         # Client is attempting to send inputs, validate as form data
-        dyn_mod_form = DynamicModelForm(start_year, fields)
+        dyn_mod_form = DynamicInputsModelForm(request.POST)
 
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
@@ -57,20 +58,19 @@ def dynamic_input(request, pk):
 
             # start calc job
             start_year = 2015
-            submitted_ids = submit_dynamic_calculation(worker_data, int(start_year))
-            if not submitted_ids:
-                no_inputs = True
-                form_personal_exemp = personal_inputs
-            else:
-                job_ids = denormalize(submitted_ids)
-                model.job_ids = job_ids
+            submitted_id = submit_dynamic_calculation(worker_data, int(start_year))
+            if submitted_id:
+                model.job_ids = denormalize(submitted_id)
                 model.first_year = int(start_year)
                 model.save()
-                return redirect('tax_results', model.pk)
+                return redirect('show_job_submitted', model.pk)
+
+            else:
+                raise HttpResponseServerError
 
         else:
             # received POST but invalid results, return to form with errors
-            form_personal_exemp = personal_inputs
+            form_personal_exemp = dyn_mod_form
 
     else:
 
@@ -85,7 +85,8 @@ def dynamic_input(request, pk):
         'params': ogusa_default_params,
         'taxcalc_version': taxcalc_version,
         'ogusa_version': ogusa_version,
-        'start_year': start_year
+        'start_year': start_year,
+        'pk': pk
     }
 
     if has_field_errors(form_personal_exemp):
@@ -94,7 +95,7 @@ def dynamic_input(request, pk):
     return render(request, 'dynamic/dynamic_input_form.html', init_context)
 
 
-def dynamic_submitted(request):
+def dynamic_finished(request):
     """
     This view sends an email
     """
@@ -121,3 +122,18 @@ def dynamic_submitted(request):
     response = HttpResponse()
 
     return response
+
+
+def show_job_submitted(request, pk):
+    """
+    This view gives the necessary info to show that a dynamic job was
+    submitted.
+    """
+    import pdb;pdb.set_trace()
+    model = DynamicSaveInputs.objects.get(pk=pk)
+    job_id = model.job_ids
+    submitted_id = normalize(job_id)
+    return render_to_response('dynamic/submitted.html', {'job_id': submitted_id[0]})
+
+
+
