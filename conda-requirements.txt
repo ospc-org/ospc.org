@@ -1,5 +1,5 @@
 numba
-taxcalc=0.5.3
+taxcalc=0.5.4
 reportlab
 boto
 gevent
