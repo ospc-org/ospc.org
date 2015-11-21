@@ -254,7 +254,8 @@ def csv_output(request, pk):
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
     results = url.unique_inputs.tax_result
-    csv_results = format_csv(results, pk)
+    first_year = url.unique_inputs.first_year
+    csv_results = format_csv(results, pk, first_year)
     writer = csv.writer(response)
     for csv_row in csv_results:
         writer.writerow(csv_row)
