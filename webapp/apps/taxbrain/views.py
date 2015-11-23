@@ -4,6 +4,7 @@ import json
 import taxcalc
 import dropq
 import datetime
+from urlparse import urlparse, parse_qs
 
 from django.core import serializers
 from django.core.context_processors import csrf
@@ -16,18 +17,20 @@ from django.template.context import RequestContext
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
+from django import forms
 
 from djqscsv import render_to_csv_response
 
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
-from .helpers import (TAXCALC_DEFAULT_PARAMS, taxcalc_results_to_tables, format_csv,
+from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       submit_dropq_calculation, dropq_results_ready, dropq_get_results)
 
 
 tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
+START_YEARS = ('2013', '2014', '2015')
 
 def benefit_surtax_fixup(mod):
     _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(6)]
@@ -71,9 +74,16 @@ def personal_results(request):
     handles the calculation on the inputs.
     """
     no_inputs = False
+    start_year = '2015'
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        personal_inputs = PersonalExemptionForm(request.POST)
+
+        # Need need to the pull the start_year out of the query string
+        # to properly set up the Form
+        start_year = request.REQUEST['start_year']
+        fields = dict(request.REQUEST)
+        fields['first_year'] = fields['start_year']
+        personal_inputs = PersonalExemptionForm(start_year, fields)
 
         if personal_inputs.is_valid():
             model = personal_inputs.save()
@@ -95,13 +105,14 @@ def personal_results(request):
             benefit_surtax_fixup(worker_data)
 
             # start calc job
-            submitted_ids = submit_dropq_calculation(worker_data)
+            submitted_ids = submit_dropq_calculation(worker_data, int(start_year))
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
             else:
                 job_ids = denormalize(submitted_ids)
                 model.job_ids = job_ids
+                model.first_year = int(start_year)
                 model.save()
                 return redirect('tax_results', model.pk)
 
@@ -110,13 +121,22 @@ def personal_results(request):
             form_personal_exemp = personal_inputs
 
     else:
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in START_YEARS:
+            start_year = params['start_year'][0]
+
         # Probably a GET request, load a default form
-        form_personal_exemp = PersonalExemptionForm()
+        form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+        # start_year = request['QUERY_STRING']
+
+    taxcalc_default_params = default_policy(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,
-        'params': TAXCALC_DEFAULT_PARAMS,
+        'params': taxcalc_default_params,
         'taxcalc_version': taxcalc_version,
+        'start_years': START_YEARS,
+        'start_year': start_year
     }
 
     if has_field_errors(form_personal_exemp):
@@ -138,18 +158,22 @@ def edit_personal_results(request, pk):
         raise Http404
 
     model = TaxSaveInputs.objects.get(pk=url.model_pk)
+    start_year = model.first_year
     #Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = PersonalExemptionForm(instance=model)
-
+    form_personal_exemp = PersonalExemptionForm(first_year=start_year, instance=model)
+    taxcalc_default_params = default_policy(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,
-        'params': TAXCALC_DEFAULT_PARAMS,
+        'params': taxcalc_default_params,
         'taxcalc_version': taxcalc_version,
+        'start_years': START_YEARS,
+        'start_year': str(start_year)
+
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)
@@ -164,7 +188,6 @@ def tax_results(request, pk):
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
     if dropq_results_ready(submitted_ids):
-        model = TaxSaveInputs.objects.get(pk=pk)
         model.tax_result = dropq_get_results(submitted_ids)
 
         model.creation_date = datetime.datetime.now()
@@ -199,8 +222,9 @@ def output_detail(request, pk):
         url.save()
 
     output = url.unique_inputs.tax_result
+    first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
-    tables = taxcalc_results_to_tables(output)
+    tables = taxcalc_results_to_tables(output, first_year)
     inputs = url.unique_inputs
 
     context = {
@@ -208,7 +232,8 @@ def output_detail(request, pk):
         'unique_url':url,
         'taxcalc_version':taxcalc_version,
         'tables':tables,
-        'created_on':created_on
+        'created_on':created_on,
+        'first_year':first_year
     }
 
     return render(request, 'taxbrain/results.html', context)
@@ -229,7 +254,8 @@ def csv_output(request, pk):
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
     results = url.unique_inputs.tax_result
-    csv_results = format_csv(results, pk)
+    first_year = url.unique_inputs.first_year
+    csv_results = format_csv(results, pk, first_year)
     writer = csv.writer(response)
     for csv_row in csv_results:
         writer.writerow(csv_row)

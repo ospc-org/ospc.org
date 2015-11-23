@@ -3,17 +3,35 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from .models import TaxSaveInputs
-from .helpers import TaxCalcField, TaxCalcParam, TAXCALC_DEFAULT_PARAMS, \
-    is_number, int_to_nth, is_string, string_to_float_array
+from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
+                      int_to_nth, is_string, string_to_float_array)
+                      
 
 def bool_like(x):
     b = True if x == 'True' or x == True else False
     return b
 
 
+TAXCALC_DEFAULTS_2015 = default_policy(2015)
 
 
 class PersonalExemptionForm(ModelForm):
+
+    def __init__(self, first_year, *args, **kwargs):
+        self._first_year = int(first_year)
+        self._default_params = default_policy(self._first_year)
+        # Defaults are set in the Meta, but we need to swap
+        # those outs here in the init because the user may
+        # have chosen a different start year
+        all_defaults = []
+        for param in self._default_params.values():
+            for field in param.col_fields:
+                all_defaults.append((field.id, field.default_value))
+
+        for _id, default in all_defaults:
+            self._meta.widgets[_id].attrs['placeholder'] = default
+
+        super(PersonalExemptionForm, self).__init__(*args, **kwargs)
 
     def get_comp_data(self, comp_key, param_id, col, required_length):
         """
@@ -34,7 +52,7 @@ class PersonalExemptionForm(ModelForm):
         @todo: CPI inflate the final value to fill instead of simply repeating
         """
 
-        base_param = TAXCALC_DEFAULT_PARAMS[param_id]
+        base_param = self._default_params[param_id]
         base_col = base_param.col_fields[col]
 
         if is_number(comp_key):
@@ -43,8 +61,8 @@ class PersonalExemptionForm(ModelForm):
         elif comp_key == 'default':
             comp_data = base_col.values
             source = "this field's default"
-        elif comp_key in TAXCALC_DEFAULT_PARAMS:
-            other_param = TAXCALC_DEFAULT_PARAMS[comp_key]
+        elif comp_key in self._default_params:
+            other_param = self._default_params[comp_key]
             other_col = other_param.col_fields[col]
             other_values = None
 
@@ -100,7 +118,7 @@ class PersonalExemptionForm(ModelForm):
         are detected.
         """
 
-        for param_id, param in TAXCALC_DEFAULT_PARAMS.iteritems():
+        for param_id, param in self._default_params.iteritems():
             if param.coming_soon or param.hidden:
                 continue
 
@@ -162,7 +180,7 @@ class PersonalExemptionForm(ModelForm):
         widgets = {}
         labels = {}
 
-        for param in TAXCALC_DEFAULT_PARAMS.values():
+        for param in TAXCALC_DEFAULTS_2015.values():
             for field in param.col_fields:
                 attrs = {
                     'class': 'form-control',
@@ -197,6 +215,7 @@ class PersonalExemptionForm(ModelForm):
                     attrs['disabled'] = True
 
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
+
 
         # Keeping label text, may want to use some of these custom labels
         # instead of those specified in params.json

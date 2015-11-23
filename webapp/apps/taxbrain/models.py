@@ -11,8 +11,6 @@ from uuidfield import UUIDField
 from jsonfield import JSONField
 import datetime
 
-#from .helpers import TAXCALC_DEFAULT_PARAMS
-
 
 def convert_to_floats(tsi):
     """
@@ -63,7 +61,7 @@ class SeparatedValuesField(models.TextField):
             return value
         return value.split(self.token)
 
-    def get_db_prep_value(self, value, connection, prepared=False):
+    def get_db_prep_value(self, value, connection=None, prepared=False):
         if not value: return
         assert(isinstance(value, list) or isinstance(value, tuple))
         return self.token.join([unicode(s) for s in value])
@@ -140,6 +138,20 @@ class TaxSaveInputs(models.Model):
     STD_2 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_3 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+
+    # Parameters used for Personal Refundable Credit.
+    II_credit_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    II_credit_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    II_credit_prt = CommaSeparatedField(default=None, blank=True, null=True)
+
     #Confirm for additional aged
     STD_Aged_0 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_Aged_1 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -308,6 +320,7 @@ class TaxSaveInputs(models.Model):
     CTC_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Inflation adjustments
     inflation = models.FloatField(default=None, blank=True, null=True,
@@ -331,10 +344,11 @@ class TaxSaveInputs(models.Model):
     growth_choice = models.CharField(blank=True, default=None, null=True,
                                      max_length=50)
 
-
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
 
+    # Starting Year of the reform calculation
+    first_year = models.IntegerField(default=None, null=True)
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up
     # field changes and automatically create migrations

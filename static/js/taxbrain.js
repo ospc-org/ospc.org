@@ -21,8 +21,10 @@ $('body').scrollspy({
 
 // Scroll to taxbrain form input areas, instead of jumping
 $('.inputs-form a, .btn-explore').click(function(event) {
-
-  // ensure link is indeed a hash link on current page
+  if ($(this).attr('id') === 'current-year-link') {
+    return;
+  }
+  // ensure link is indeed a hash link on current page <<-- Zach's stuff
   if (this.host == location.host && this.pathname == location.pathname) {
     event.preventDefault();
     var target = this.hash;
@@ -156,4 +158,9 @@ $('#id_factor_adjustment, #id_factor_target').focus(function() {
   } else {
     $('input[type="radio"][value="factor_adjustment"]').click();
   }
+});
+
+$('#start-year-select').change(function() {
+  $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val());
+  $('#current-year-alert').removeClass('hidden');
 });
