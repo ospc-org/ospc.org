@@ -138,6 +138,20 @@ class TaxSaveInputs(models.Model):
     STD_2 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_3 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+
+    # Parameters used for Personal Refundable Credit.
+    II_credit_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    II_credit_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    II_credit_prt = CommaSeparatedField(default=None, blank=True, null=True)
+
     #Confirm for additional aged
     STD_Aged_0 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_Aged_1 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -306,6 +320,7 @@ class TaxSaveInputs(models.Model):
     CTC_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Inflation adjustments
     inflation = models.FloatField(default=None, blank=True, null=True,
