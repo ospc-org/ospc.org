@@ -34,7 +34,7 @@ taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6
 START_YEARS = ('2013', '2014', '2015')
 
 def benefit_surtax_fixup(mod):
-    _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(6)]
+    _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
     mod['ID_BenefitSurtax_Switch'] = [[mod[_id][0] for _id in _ids]]
     for _id in _ids:
         del mod[_id]
