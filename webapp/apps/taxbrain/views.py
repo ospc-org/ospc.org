@@ -5,6 +5,7 @@ import taxcalc
 import dropq
 import datetime
 from urlparse import urlparse, parse_qs
+from ipware.ip import get_real_ip
 
 from django.core import serializers
 from django.core.context_processors import csrf
@@ -103,6 +104,15 @@ def personal_results(request):
 
             worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
             benefit_surtax_fixup(worker_data)
+
+            # About to begin calculation, log event
+            ip = get_real_ip(request)
+            if ip is not None:
+                # we have a real, public ip address for user
+                print "BEGIN DROPQ WORK FROM: ", ip
+            else:
+                # we don't have a real, public ip address for user
+                print "BEGIN DROPQ WORK FROM: unknown IP"
 
             # start calc job
             submitted_ids = submit_dropq_calculation(worker_data, int(start_year))
