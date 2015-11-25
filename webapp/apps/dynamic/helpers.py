@@ -5,6 +5,7 @@ import taxcalc
 import dropq
 import sys
 from ..taxbrain.helpers import TaxCalcParam
+from django.core.mail import send_mail
 
 #
 # General helpers
@@ -210,3 +211,26 @@ def ogusa_get_results(job_ids):
                'cdf_bin': cdf_bin, 'fiscal_tots': fiscal_tots}
 
     return results
+
+
+def job_submitted(email_addr, job_id):
+    """
+    This view sends an email to say that a job was submitted
+    """
+
+    url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_id)
+
+    send_mail(subject="Your TaxBrain simulation has been submitted!",
+        message = """Hello!
+
+        Good news! Your TaxBrain simulation has been submitted.
+        Your job ID is {job}. We'll notify you again when your job is complete.
+
+        Best,
+        The TaxBrain Team""".format(url=url, job=job_id),
+        from_email = "Open Source Policy Center <mailing@ospc.org>",
+        recipient_list = [email_addr])
+
+    return
+
+

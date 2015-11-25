@@ -21,7 +21,7 @@ from django import forms
 from djqscsv import render_to_csv_response
 from .forms import DynamicInputsModelForm, has_field_errors
 from .models import DynamicSaveInputs, DynamicOutputUrl
-from .helpers import default_parameters, submit_ogusa_calculation
+from .helpers import default_parameters, submit_ogusa_calculation, job_submitted
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -79,6 +79,13 @@ def dynamic_input(request, pk):
                 model.job_ids = denormalize(submitted_id)
                 model.first_year = int(start_year)
                 model.save()
+                if request.user.is_authenticated():
+                    current_user = User.objects.get(pk=request.user.id)
+                    email_addr = current_user.email
+                    job_submitted(email_addr, model.job_ids)
+                else:
+                    raise Http404
+
                 return redirect('show_job_submitted', model.pk)
 
             else:
