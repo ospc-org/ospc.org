@@ -308,11 +308,17 @@ def csv_input(request, pk):
     return response
 
 @permission_required('taxbrain.view_inputs')
-def pdf_view(request):
+def pdf_view(request, pk):
     """
     This view creates the pdfs.
     """
-    pdf = pdfkit.from_url(request.META['HTTP_REFERER'], False)
+    try:
+        url = OutputUrl.objects.get(pk=pk)
+    except:
+        raise Http404
+    
+    abs_uri = request.build_absolute_uri(url.get_absolute_url())
+    pdf = pdfkit.from_url(abs_uri, False)
     response = HttpResponse(pdf, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="tax_results.pdf"'
 
