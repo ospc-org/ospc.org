@@ -21,7 +21,7 @@ from django import forms
 from djqscsv import render_to_csv_response
 from .forms import DynamicInputsModelForm, has_field_errors
 from .models import DynamicSaveInputs, DynamicOutputUrl
-from .helpers import default_parameters
+from .helpers import default_parameters, submit_ogusa_calculation
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -30,6 +30,17 @@ taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6
 ogversion_info = ogusa._version.get_versions()
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
+
+
+def denormalize(x):
+    ans = ["#".join([i[0],i[1]]) for i in x]
+    ans = [str(x) for x in ans]
+    return ans
+
+
+def normalize(x):
+    ans = [i.split('#') for i in x]
+    return ans
 
 
 
@@ -46,8 +57,12 @@ def dynamic_input(request, pk):
     if request.method=='POST':
         import pdb;pdb.set_trace()
         # Client is attempting to send inputs, validate as form data
-        dyn_mod_form = DynamicInputsModelForm(request.POST)
+        fields = dict(request.POST)
+        fields['first_year'] = start_year
+        #dyn_mod_form = DynamicInputsModelForm(request.POST)
+        dyn_mod_form = DynamicInputsModelForm(start_year, fields)
 
+        import pdb;pdb.set_trace()
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
@@ -56,9 +71,10 @@ def dynamic_input(request, pk):
             for key, value in curr_dict.items():
                 print "got this ", key, value
 
+            worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
             # start calc job
             start_year = 2015
-            submitted_id = submit_dynamic_calculation(worker_data, int(start_year))
+            submitted_id = submit_ogusa_calculation(worker_data, int(start_year))
             if submitted_id:
                 model.job_ids = denormalize(submitted_id)
                 model.first_year = int(start_year)
@@ -75,7 +91,7 @@ def dynamic_input(request, pk):
     else:
 
         # Probably a GET request, load a default form
-        form_personal_exemp = DynamicInputsModelForm()
+        form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
         # start_year = request['QUERY_STRING']
 
     ogusa_default_params = default_parameters(int(start_year))
