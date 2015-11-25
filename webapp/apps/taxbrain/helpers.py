@@ -807,11 +807,16 @@ def format_csv(tax_results, url_id, first_budget_year):
     #FISCAL TOTS
     res.append(["#fiscal totals data"])
     ft = tax_results.get('fiscal_tots', [])
-    yrs = [first_budget_year + i for i in range(0, len(ft))]
+    yrs = [first_budget_year + i for i in range(0, len(ft['ind_tax']))]
     if yrs:
         res.append(yrs)
     if ft:
-        res.append(ft)
+        res.append(['payroll_tax'])
+        res.append(ft['payroll_tax'])
+        res.append(['combined_tax'])
+        res.append(ft['combined_tax'])
+        res.append(['ind_tax'])
+        res.append(ft['ind_tax'])
 
     #MX_DEC
     res.append(["#mX_dec"])

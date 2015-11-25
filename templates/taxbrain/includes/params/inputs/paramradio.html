@@ -17,7 +17,7 @@
     <form action="">
     <div class="row">
       <div class="col-xs-1">
-         <input type="radio" name="growth_choice" value="{{ field1.value}}" {% if field1.value %} checked {% endif %} >
+         <input type="radio" name="growth_choice" value="{{ field1.name }}" {% if field1.value %} checked {% endif %} >
       </div>
       <div class="col-xs-11">
         {% for field in param1.col_fields %}
@@ -33,7 +33,7 @@
     </label>
     <div class="row">
       <div class="col-xs-1">
-         <input type="radio" name="growth_choice" value="{{ field2.value}}" {% if field2.value %} checked {% endif %}>
+         <input type="radio" name="growth_choice" value="{{ field2.name }}" {% if field2.value %} checked {% endif %}>
       </div>
       <div class="col-xs-11">
         {% for field in param2.col_fields %}

@@ -138,6 +138,20 @@ class TaxSaveInputs(models.Model):
     STD_2 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_3 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+
+    # Parameters used for Personal Refundable Credit.
+    II_credit_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    II_credit_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    II_credit_prt = CommaSeparatedField(default=None, blank=True, null=True)
+
     #Confirm for additional aged
     STD_Aged_0 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_Aged_1 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -159,6 +173,7 @@ class TaxSaveInputs(models.Model):
     ID_prt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_crt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_StateLocalTax_HC = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_RealEstate_HC = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Charity_frt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_crt = CommaSeparatedField(default=None, blank=True, null=True)
@@ -168,6 +183,7 @@ class TaxSaveInputs(models.Model):
     ID_BenefitSurtax_Switch_3 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_6 = models.CharField(default="True", blank=True, null=True, max_length=50)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
@@ -306,6 +322,7 @@ class TaxSaveInputs(models.Model):
     CTC_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Inflation adjustments
     inflation = models.FloatField(default=None, blank=True, null=True,
