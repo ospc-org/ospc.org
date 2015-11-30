@@ -173,6 +173,7 @@ class TaxSaveInputs(models.Model):
     ID_prt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_crt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_StateLocalTax_HC = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_RealEstate_HC = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Charity_frt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_crt = CommaSeparatedField(default=None, blank=True, null=True)
@@ -182,6 +183,7 @@ class TaxSaveInputs(models.Model):
     ID_BenefitSurtax_Switch_3 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitSurtax_Switch_6 = models.CharField(default="True", blank=True, null=True, max_length=50)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)

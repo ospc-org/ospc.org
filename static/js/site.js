@@ -12,6 +12,9 @@ $(document).ready(function(){
 		description: 'This is an output from OSPC TaxBrains, a tax simulation: ' + urlToShare,
 		url: urlToShare,
 		networks: {
+			email: {
+			  enabled: false
+			},
 			pinterest: {
 			  enabled: false
 			},

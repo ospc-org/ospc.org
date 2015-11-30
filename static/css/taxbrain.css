@@ -1644,7 +1644,9 @@ pre code {
   width: 16.66666667%;
 }
 .col-xs-1 {
-  width: 8.33333333%;
+  width: 13%;
+  padding-left: 1px;
+  padding-right: 1px;
 }
 .col-xs-pull-12 {
   right: 100%;
