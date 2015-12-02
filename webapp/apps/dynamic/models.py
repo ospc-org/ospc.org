@@ -37,6 +37,10 @@ class DynamicSaveInputs(models.Model):
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    # Email address for user who started this job
+    user_email = models.CharField(blank=True, default=None, null=True,
+                                  max_length=50)
+
 
     class Meta:
         permissions = (

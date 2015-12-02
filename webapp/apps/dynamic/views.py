@@ -51,18 +51,15 @@ def dynamic_input(request, pk):
     handles the calculation on the inputs.
     """
 
-    import pdb;pdb.set_trace()
     # Only acceptable year for dynamic simulations right now
     start_year=2015
     if request.method=='POST':
-        import pdb;pdb.set_trace()
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.POST)
         fields['first_year'] = start_year
         #dyn_mod_form = DynamicInputsModelForm(request.POST)
         dyn_mod_form = DynamicInputsModelForm(start_year, fields)
 
-        import pdb;pdb.set_trace()
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
@@ -78,14 +75,14 @@ def dynamic_input(request, pk):
             if submitted_id:
                 model.job_ids = denormalize(submitted_id)
                 model.first_year = int(start_year)
-                model.save()
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
-                    email_addr = current_user.email
-                    job_submitted(email_addr, model.job_ids)
+                    model.user_email = current_user.email
+                    job_submitted(model.user_email, model.job_ids)
                 else:
                     raise Http404
 
+                model.save()
                 return redirect('show_job_submitted', model.pk)
 
             else:
@@ -122,14 +119,15 @@ def dynamic_finished(request):
     """
     This view sends an email
     """
-    if not request.method=='POST':
-        raise Http404
 
     # Client is giving us the info we need to send email
 
-    email_addr = request.POST['email_address']
-    job_id = request.POST['job_id']
-    url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_id)
+    job_id = request.GET['job_id']
+    #url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_id)
+    url = "http://www.ospc.org/dynamic/9"
+    qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
+    dsi = qs[0]
+    email_addr = dsi.user_email
 
     send_mail(subject="Your TaxBrain simulation has completed!",
         message = """Hello!
@@ -142,7 +140,7 @@ def dynamic_finished(request):
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
 
-    response = HttpResponse()
+    response = HttpResponse('')
 
     return response
 
@@ -152,7 +150,6 @@ def show_job_submitted(request, pk):
     This view gives the necessary info to show that a dynamic job was
     submitted.
     """
-    import pdb;pdb.set_trace()
     model = DynamicSaveInputs.objects.get(pk=pk)
     job_id = model.job_ids
     submitted_id = normalize(job_id)

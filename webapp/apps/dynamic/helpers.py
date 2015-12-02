@@ -3,16 +3,20 @@ import os
 import requests
 import taxcalc
 import dropq
+import json
 import sys
 from ..taxbrain.helpers import TaxCalcParam
 from django.core.mail import send_mail
+import requests
+from requests.exceptions import Timeout, RequestException
+dropq_workers = os.environ.get('DROPQ_WORKERS', '')
+DROPQ_WORKERS = dropq_workers.split(",")
 
 #
 # General helpers
 #
 
 PYTHON_MAJOR_VERSION = sys.version_info.major
-
 
 def string_to_float(x):
     return float(x.replace(',', ''))
@@ -136,9 +140,101 @@ def ogusa_results_to_tables(results, first_budget_year):
     return results
 
 
+def filter_ogusa_only(user_values):
+
+    unused_names = ['creation_date', '_state', 'id']
+
+    for k, v in user_values.items():
+        if k in unused_names:
+            print "Removing ", k, v
+            del user_values[k]
+
+    return user_values
+ 
 def submit_ogusa_calculation(mods, first_budget_year):
     print "mods is ", mods
-    return [('a111', '1.1.1.1')]
+    #user_mods = package_up_vars(mods, first_budget_year)
+    user_mods = filter_ogusa_only(mods)
+    if not bool(user_mods):
+        return False
+    print "user_mods is ", user_mods
+    print "submit dynamic work"
+    user_mods={first_budget_year:user_mods}
+
+    hostnames = DROPQ_WORKERS
+    num_hosts = len(hostnames)
+
+    DEFAULT_PARAMS = {
+        'callback': "http://localhost:8000/dynamic"  + "/dynamic_finished",
+        'params': '{}',
+    }
+
+    data = {}
+    data['user_mods'] = json.dumps(user_mods)
+    job_ids = []
+    hostname_idx = 0
+    submitted = False
+    registered = False
+    attempts = 0
+    while not submitted:
+        theurl = "http://{hn}/example_start_job".format(hn=hostnames[hostname_idx])
+        try:
+            response = requests.post(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
+            if response.status_code == 200:
+                print "submitted: ", hostnames[hostname_idx]
+                submitted = True
+                hostname_idx = (hostname_idx + 1) % num_hosts
+                resp_data = json.loads(response.text)
+                job_ids.append((resp_data['job_id'], hostnames[hostname_idx]))
+            else:
+                print "FAILED: ", hostnames[hostname_idx]
+                hostname_idx = (hostname_idx + 1) % num_hosts
+                attempts += 1
+        except Timeout:
+            print "Couldn't submit to: ", hostnames[hostname_idx]
+            hostname_idx = (hostname_idx + 1) % num_hosts
+            attempts += 1
+        except RequestException as re:
+            print "Something unexpected happened: ", re
+            hostname_idx = (hostname_idx + 1) % num_hosts
+            attempts += 1
+        if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
+            print "Exceeded max attempts. Bailing out."
+            raise IOError()
+
+    params = DEFAULT_PARAMS.copy()
+    params['job_id'] = job_ids[0]
+    reg_url = "http://" + hostnames[0] + "/register_job"
+    register = requests.post(reg_url, data=params)
+
+    while not registered:
+        reg_url = "http://{hn}/register_job".format(hn=hostnames[hostname_idx])
+        try:
+            params = DEFAULT_PARAMS.copy()
+            params['job_id'] = job_ids[0][0]
+            reg_url = "http://" + hostnames[0] + "/register_job"
+
+            register = requests.post(reg_url, data=params, timeout=TIMEOUT_IN_SECONDS)
+            if response.status_code == 200:
+                print "registered: ", hostnames[hostname_idx]
+                registered = True
+            else:
+                print "FAILED: ", hostnames[hostname_idx]
+                attempts += 1
+        except Timeout:
+            print "Couldn't submit to: ", hostnames[hostname_idx]
+            attempts += 1
+        except RequestException as re:
+            print "Something unexpected happened: ", re
+            attempts += 1
+        if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
+            print "Exceeded max attempts. Bailing out."
+            raise IOError()
+
+
+
+    return job_ids
+
 
 
 # Might not be needed because this would be handled on the worker node side
