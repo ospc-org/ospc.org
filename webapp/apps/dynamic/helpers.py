@@ -11,6 +11,14 @@ import requests
 from requests.exceptions import Timeout, RequestException
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
+ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
+
+OGUSA_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.ogusa_row_names
+OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
+
+OGUSA_RESULTS_TABLE_LABELS = {
+    'df_ogusa': 'Difference between Base and User plan',
+}
 
 #
 # General helpers
@@ -60,17 +68,6 @@ NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-
-OGUSA_RESULTS_TABLE_LABELS = {
-    'ogusa_tots': 'Macroeconomic Outputs',
-}
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
-TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
-    'ind_tax': 'Individual Income Tax Liability Change',
-    'payroll_tax': 'Payroll Tax Liability Change',
-    'combined_tax': ('Combined Payroll and Individual Income '
-                     'Tax Liability Change')
-}
 
 
 def convert_to_floats(tsi):
@@ -129,15 +126,6 @@ def default_parameters(first_budget_year):
 
     return default_ogusa_params
 
-
-# Debug TaxParams
-
-def ogusa_results_to_tables(results, first_budget_year):
-    """
-    Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
-    Return organized and labeled table results for display
-    """
-    return results
 
 
 def filter_ogusa_only(user_values):
@@ -261,34 +249,14 @@ def ogusa_get_results(job_ids):
         if job_response.status_code == 200: # Valid response
             ans.append(job_response.json())
 
-    mY_dec = {}
-    mX_dec = {}
-    df_dec = {}
-    pdf_dec = {}
-    cdf_dec = {}
-    mY_bin = {}
-    mX_bin = {}
-    df_bin = {}
-    pdf_bin = {}
-    cdf_bin = {}
-    fiscal_tots = {}
+    df_ogusa = {}
     for result in ans:
-        mY_dec.update(result['mY_dec'])
-        mX_dec.update(result['mX_dec'])
-        df_dec.update(result['df_dec'])
-        pdf_dec.update(result['pdf_dec'])
-        cdf_dec.update(result['cdf_dec'])
-        mY_bin.update(result['mY_bin'])
-        mX_bin.update(result['mX_bin'])
-        df_bin.update(result['df_bin'])
-        pdf_bin.update(result['pdf_bin'])
-        cdf_bin.update(result['cdf_bin'])
-        fiscal_tots.update(result['fiscal_tots'])
+        df_ogusa.update(result['df_ogusa'])
 
 
     if ENFORCE_REMOTE_VERSION_CHECK:
-        versions = [r.get('taxcalc_version', None) for r in ans]
-        if not all([ver==taxcalc_version for ver in versions]):
+        versions = [r.get('ogusa_version', None) for r in ans]
+        if not all([ver==ogusa_version for ver in versions]):
             msg ="Got different taxcalc versions from workers. Bailing out"
             print msg
             raise IOError(msg)
@@ -298,13 +266,7 @@ def ogusa_get_results(job_ids):
             print msg
             raise IOError(msg)
 
-    fiscal_tots = arrange_totals_by_row(fiscal_tots,
-                                        TAXCALC_RESULTS_TOTAL_ROW_KEYS)
-
-    results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
-               'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
-               'mX_bin': mX_bin, 'df_bin': df_bin, 'pdf_bin': pdf_bin,
-               'cdf_bin': cdf_bin, 'fiscal_tots': fiscal_tots}
+    results = {'df_ogusa': df_ogusa}
 
     return results
 
@@ -328,5 +290,88 @@ def job_submitted(email_addr, job_id):
         recipient_list = [email_addr])
 
     return
+
+
+def ogusa_results_to_tables(results, first_budget_year):
+    """
+    Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
+    Return organized and labeled table results for display
+    """
+    num_years = 10 
+    years = list(range(first_budget_year,
+                       first_budget_year + num_years))
+
+    tables = {}
+    for table_id in results:
+
+        if table_id == 'df_ogusa':
+            row_keys = OGUSA_RESULTS_TOTAL_ROW_KEYS 
+            row_labels = OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS 
+            add_col1 = "-".join([str(years[0]), str(years[-1])])
+            add_col2= "Steady State"
+            col_labels = years + [add_col1, add_col2]
+            col_formats = [ [1, 'Percent', 3] for y in col_labels]
+            table_data = results[table_id]
+            multi_year_cells = False
+
+        else:
+            raise ValueError("Not a valid key")
+
+        table = {
+            'col_labels': col_labels,
+            'cols': [],
+            'label': OGUSA_RESULTS_TABLE_LABELS[table_id],
+            'rows': [],
+            'multi_valued': multi_year_cells
+        }
+
+        for col_key, label in enumerate(col_labels):
+            table['cols'].append({
+                'label': label,
+                'divisor': col_formats[col_key][0],
+                'units': col_formats[col_key][1],
+                'decimals': col_formats[col_key][2],
+            })
+
+        col_count = len(col_labels)
+        for row_key in row_keys:
+            row = {
+                'label': row_labels[row_key],
+                'cells': []
+            }
+
+            for col_key in range(0, col_count):
+                cell = {
+                    'year_values': {},
+                    'format': {
+                        'divisor': table['cols'][col_key]['divisor'],
+                        'decimals': table['cols'][col_key]['decimals'],
+                    }
+                }
+
+                if multi_year_cells:
+                    for yi, year in enumerate(years):
+                        value = table_data["{0}_{1}".format(row_key, yi)][col_key]
+                        if value[-1] == "%":
+                            value = value[:-1]
+                        cell['year_values'][year] = value
+
+                    cell['first_value'] = cell['year_values'][first_budget_year]
+
+                else:
+                    value = table_data[row_key][col_key]
+                    if value[-1] == "%":
+                            value = value[:-1]
+                    cell['value'] = value
+
+                row['cells'].append(cell)
+
+            table['rows'].append(row)
+
+        tables[table_id] = table
+
+
+    tables['result_years'] = years
+    return tables
 
 

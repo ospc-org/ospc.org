@@ -21,7 +21,8 @@ from django import forms
 from djqscsv import render_to_csv_response
 from .forms import DynamicInputsModelForm, has_field_errors
 from .models import DynamicSaveInputs, DynamicOutputUrl
-from .helpers import default_parameters, submit_ogusa_calculation, job_submitted
+from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
+                      ogusa_get_results, ogusa_results_to_tables)
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -78,11 +79,11 @@ def dynamic_input(request, pk):
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
                     model.user_email = current_user.email
-                    job_submitted(model.user_email, model.job_ids)
                 else:
                     raise Http404
 
                 model.save()
+                job_submitted(model.user_email, model.job_ids)
                 return redirect('show_job_submitted', model.pk)
 
             else:
@@ -120,14 +121,34 @@ def dynamic_finished(request):
     This view sends an email
     """
 
-    # Client is giving us the info we need to send email
+    import pdb;pdb.set_trace()
 
     job_id = request.GET['job_id']
-    #url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_id)
-    url = "http://www.ospc.org/dynamic/9"
     qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
     dsi = qs[0]
     email_addr = dsi.user_email
+
+
+    # We know the results are ready so go get them from the server
+    job_ids = dsi.job_ids
+    submitted_ids = normalize(job_ids)
+    dsi.tax_result = ogusa_get_results(submitted_ids)
+    import pdb;pdb.set_trace()
+    dsi.creation_date = datetime.datetime.now()
+    dsi.save()
+
+    #Create a new output model instance
+    unique_url = DynamicOutputUrl()
+    if request.user.is_authenticated():
+        current_user = User.objects.get(pk=request.user.id)
+        unique_url.user = current_user
+    unique_url.unique_inputs = dsi
+    unique_url.model_pk = dsi.pk
+    unique_url.save()
+
+
+
+    result_url = "http://www.ospc.org/dynamic/results/{pk}".format(pk=unique_url.pk)
 
     send_mail(subject="Your TaxBrain simulation has completed!",
         message = """Hello!
@@ -136,9 +157,11 @@ def dynamic_finished(request):
         {url} and have a look!
 
         Best,
-        The TaxBrain Team""".format(url=url),
+        The TaxBrain Team""".format(url=result_url),
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
+
+
 
     response = HttpResponse('')
 
@@ -155,5 +178,37 @@ def show_job_submitted(request, pk):
     submitted_id = normalize(job_id)
     return render_to_response('dynamic/submitted.html', {'job_id': submitted_id[0]})
 
+
+def ogusa_results(request, pk):
+    """
+    This view handles the results page.
+    """
+    import pdb;pdb.set_trace()
+    try:
+        url = DynamicOutputUrl.objects.get(pk=pk)
+    except:
+        raise Http404
+
+    if url.ogusa_vers != None:
+        pass
+    else:
+        url.ogusa_vers = ogusa_version
+        url.save()
+
+    output = url.unique_inputs.tax_result
+    first_year = url.unique_inputs.first_year
+    created_on = url.unique_inputs.creation_date
+    tables = ogusa_results_to_tables(output, first_year)
+
+    context = {
+        'locals':locals(),
+        'unique_url':url,
+        'taxcalc_version':taxcalc_version,
+        'tables':tables,
+        'created_on':created_on,
+        'first_year':first_year,
+    }
+
+    return render(request, 'dynamic/results.html', context)
 
 
