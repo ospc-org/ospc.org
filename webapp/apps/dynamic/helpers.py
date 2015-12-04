@@ -6,6 +6,7 @@ import dropq
 import json
 import sys
 from ..taxbrain.helpers import TaxCalcParam
+from .errors import JobFailureException, UnknownStatusException
 from django.core.mail import send_mail
 import requests
 from requests.exceptions import Timeout, RequestException
@@ -248,6 +249,13 @@ def ogusa_get_results(job_ids):
         job_response = requests.get(result_url, params={'job_id':id_})
         if job_response.status_code == 200: # Valid response
             ans.append(job_response.json())
+        elif job_response.status_code == 501: # Job failed
+            import pdb;pdb.set_trace()
+            raise JobFailureException()
+        else:
+            msg = "Don't know how to handle response: {0}"
+            msg = msg.format(job_response.status_code)
+            raise UnknownStatusException(msg)
 
     df_ogusa = {}
     for result in ans:
@@ -375,3 +383,28 @@ def ogusa_results_to_tables(results, first_budget_year):
     return tables
 
 
+def success_text():
+    '''
+    The text of the email to indicate a successful simulation
+    '''
+    message = """Hello!
+
+    Good news! Your simulation is done and you can now view the results. Just navigate to
+    {url} and have a look!
+
+    Best,
+    The TaxBrain Team"""
+    return message
+
+def failure_text():
+    '''
+    The text of the email to indicate a successful simulation
+    '''
+    message = """Hello!
+
+    There was a problem with your simulation and your jobs has failed.
+    Please naviate to {url} to view the error message.
+
+    Better luck next time!
+    The TaxBrain Team"""
+    return message

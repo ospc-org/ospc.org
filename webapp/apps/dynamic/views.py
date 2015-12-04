@@ -22,7 +22,8 @@ from djqscsv import render_to_csv_response
 from .forms import DynamicInputsModelForm, has_field_errors
 from .models import DynamicSaveInputs, DynamicOutputUrl
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
-                      ogusa_get_results, ogusa_results_to_tables)
+                      ogusa_get_results, ogusa_results_to_tables, success_text,
+                      failure_text)
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -122,7 +123,6 @@ def dynamic_finished(request):
     """
 
     import pdb;pdb.set_trace()
-
     job_id = request.GET['job_id']
     qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
     dsi = qs[0]
@@ -132,10 +132,20 @@ def dynamic_finished(request):
     # We know the results are ready so go get them from the server
     job_ids = dsi.job_ids
     submitted_ids = normalize(job_ids)
-    dsi.tax_result = ogusa_get_results(submitted_ids)
-    import pdb;pdb.set_trace()
-    dsi.creation_date = datetime.datetime.now()
-    dsi.save()
+    try:
+        result = ogusa_get_results(submitted_ids)
+        dsi.tax_result = result
+    except JobFailureException as je:
+        text = failure_text()
+
+    except UnknownStatusException as use:
+        print "Got an unknown response from server: ", use
+        raise use
+    else:
+        text = success_text()
+    finally:
+        dsi.creation_date = datetime.datetime.now()
+        dsi.save()
 
     #Create a new output model instance
     unique_url = DynamicOutputUrl()
@@ -146,22 +156,12 @@ def dynamic_finished(request):
     unique_url.model_pk = dsi.pk
     unique_url.save()
 
-
-
     result_url = "http://www.ospc.org/dynamic/results/{pk}".format(pk=unique_url.pk)
 
     send_mail(subject="Your TaxBrain simulation has completed!",
-        message = """Hello!
-
-        Good news! Your simulation is done and you can now view the results. Just navigate to
-        {url} and have a look!
-
-        Best,
-        The TaxBrain Team""".format(url=result_url),
+        message = text.format(url=result_url),
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
-
-
 
     response = HttpResponse('')
 
@@ -183,7 +183,6 @@ def ogusa_results(request, pk):
     """
     This view handles the results page.
     """
-    import pdb;pdb.set_trace()
     try:
         url = DynamicOutputUrl.objects.get(pk=pk)
     except:
