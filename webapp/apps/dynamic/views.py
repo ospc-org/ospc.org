@@ -122,8 +122,8 @@ def dynamic_finished(request):
     This view sends an email
     """
 
-    import pdb;pdb.set_trace()
     job_id = request.GET['job_id']
+    status = request.GET['status']
     qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
     dsi = qs[0]
     email_addr = dsi.user_email
@@ -132,34 +132,31 @@ def dynamic_finished(request):
     # We know the results are ready so go get them from the server
     job_ids = dsi.job_ids
     submitted_ids = normalize(job_ids)
-    try:
-        result = ogusa_get_results(submitted_ids)
-        dsi.tax_result = result
-    except JobFailureException as je:
-        text = failure_text()
-
-    except UnknownStatusException as use:
-        print "Got an unknown response from server: ", use
-        raise use
-    else:
-        text = success_text()
-    finally:
-        dsi.creation_date = datetime.datetime.now()
-        dsi.save()
+    result = ogusa_get_results(submitted_ids, status=status)
+    dsi.tax_result = result
+    dsi.creation_date = datetime.datetime.now()
+    dsi.save()
 
     #Create a new output model instance
-    unique_url = DynamicOutputUrl()
-    if request.user.is_authenticated():
-        current_user = User.objects.get(pk=request.user.id)
-        unique_url.user = current_user
-    unique_url.unique_inputs = dsi
-    unique_url.model_pk = dsi.pk
-    unique_url.save()
 
-    result_url = "http://www.ospc.org/dynamic/results/{pk}".format(pk=unique_url.pk)
+    if status == "SUCCESS":
+        unique_url = DynamicOutputUrl()
+        if request.user.is_authenticated():
+            current_user = User.objects.get(pk=request.user.id)
+            unique_url.user = current_user
+        unique_url.unique_inputs = dsi
+        unique_url.model_pk = dsi.pk
+        unique_url.save()
+        result_url = "http://www.ospc.org/dynamic/results/{pk}".format(pk=unique_url.pk)
+        text = success_text()
+        text = text.format(url=result_url)
+    elif status == "FAILURE":
+        text = failure_text(result['job_fail'])
+    else:
+        raise ValueError("status must be either 'SUCESS' or 'FAILURE'")
 
     send_mail(subject="Your TaxBrain simulation has completed!",
-        message = text.format(url=result_url),
+        message = text,
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
 
