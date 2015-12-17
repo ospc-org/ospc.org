@@ -5,13 +5,12 @@ import taxcalc
 import dropq
 import json
 import sys
-from ..taxbrain.helpers import TaxCalcParam
-from .errors import JobFailureException, UnknownStatusException
+from ..taxbrain.helpers import TaxCalcParam, package_up_vars
 from django.core.mail import send_mail
 import requests
 from requests.exceptions import Timeout, RequestException
-dropq_workers = os.environ.get('DROPQ_WORKERS', '')
-DROPQ_WORKERS = dropq_workers.split(",")
+ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
+OGUSA_WORKERS = ogusa_workers.split(",")
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
 OGUSA_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.ogusa_row_names
@@ -131,42 +130,46 @@ def default_parameters(first_budget_year):
 
 def filter_ogusa_only(user_values):
 
-    unused_names = ['creation_date', '_state', 'id']
+    unused_names = ['first_year', 'creation_date', '_state', 'id', 'user_email']
 
     for k, v in user_values.items():
         if k in unused_names:
             print "Removing ", k, v
             del user_values[k]
+        else:
+            #strip off [] and extra quotes
+            user_values[k] = float(v[3:-2])
 
     return user_values
  
-def submit_ogusa_calculation(mods, first_budget_year):
+def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     print "mods is ", mods
     #user_mods = package_up_vars(mods, first_budget_year)
-    user_mods = filter_ogusa_only(mods)
-    if not bool(user_mods):
+    ogusa_mods = filter_ogusa_only(mods)
+    microsim_params = package_up_vars(microsim_data, first_budget_year)
+    if not bool(ogusa_mods):
         return False
-    print "user_mods is ", user_mods
+    print "ogusa_mods is ", ogusa_mods
     print "submit dynamic work"
-    user_mods={first_budget_year:user_mods}
 
-    hostnames = DROPQ_WORKERS
+    hostnames = OGUSA_WORKERS
     num_hosts = len(hostnames)
 
     DEFAULT_PARAMS = {
         'callback': "http://localhost:8000/dynamic"  + "/dynamic_finished",
-        'params': '{}',
     }
 
     data = {}
-    data['user_mods'] = json.dumps(user_mods)
+    data['ogusa_params'] = json.dumps(ogusa_mods)
+    microsim_mods = {first_budget_year:microsim_params}
+    data['user_mods'] = json.dumps(microsim_mods)
     job_ids = []
     hostname_idx = 0
     submitted = False
     registered = False
     attempts = 0
     while not submitted:
-        theurl = "http://{hn}/example_start_job".format(hn=hostnames[hostname_idx])
+        theurl = "http://{hn}/ogusa_start_job".format(hn=hostnames[hostname_idx])
         try:
             response = requests.post(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
             if response.status_code == 200:
@@ -263,7 +266,7 @@ def ogusa_get_results(job_ids, status):
     else:
         msg = "Don't know how to handle response: {0}"
         msg = msg.format(job_response.status_code)
-        raise UnknownStatusException(msg)
+        raise IOError(msg)
 
     if ENFORCE_REMOTE_VERSION_CHECK:
         versions = [r.get('ogusa_version', None) for r in ans]

@@ -3,6 +3,7 @@ import datetime
 from urlparse import urlparse, parse_qs
 import taxcalc
 import ogusa
+import os
 
 from django.core.mail import send_mail
 from django.core import serializers
@@ -21,6 +22,8 @@ from django import forms
 from djqscsv import render_to_csv_response
 from .forms import DynamicInputsModelForm, has_field_errors
 from .models import DynamicSaveInputs, DynamicOutputUrl
+from ..taxbrain.models import TaxSaveInputs, OutputUrl
+from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
                       ogusa_get_results, ogusa_results_to_tables, success_text,
                       failure_text)
@@ -70,10 +73,30 @@ def dynamic_input(request, pk):
             for key, value in curr_dict.items():
                 print "got this ", key, value
 
+            # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
-            # start calc job
+
+            # set the start year
             start_year = 2015
-            submitted_id = submit_ogusa_calculation(worker_data, int(start_year))
+
+            #get microsim data 
+            taxbrain_model = OutputUrl.objects.get(pk=pk).unique_inputs
+            taxbrain_dict = dict(taxbrain_model.__dict__)
+            growth_fixup(taxbrain_dict)
+            for key, value in taxbrain_dict.items():
+                if type(value) == type(unicode()):
+                    try:
+                        taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
+                    except ValueError:
+                        taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                else:
+                    print "missing this: ", key
+
+            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+            benefit_surtax_fixup(microsim_data)
+
+            # start calc job
+            submitted_id = submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
             if submitted_id:
                 model.job_ids = denormalize(submitted_id)
                 model.first_year = int(start_year)
@@ -147,7 +170,8 @@ def dynamic_finished(request):
         unique_url.unique_inputs = dsi
         unique_url.model_pk = dsi.pk
         unique_url.save()
-        result_url = "http://www.ospc.org/dynamic/results/{pk}".format(pk=unique_url.pk)
+        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+        result_url = "{host}/dynamic/results/{pk}".format(host=hostname, pk=unique_url.pk)
         text = success_text()
         text = text.format(url=result_url)
     elif status == "FAILURE":

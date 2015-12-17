@@ -1,0 +1,102 @@
+{% extends 'taxbrain/input_base.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="wrapper">
+
+    <nav class="logobar" role="navigation">
+      <a class="logobar-brand" href="/">
+        <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
+      </a>
+    </nav>
+
+
+
+    <section class="taxbrain-hero taxbrain-hero-small">
+      <div class="taxbrain-hero-block">
+        <div class="logo">
+          <h2 class="sr-only">TaxBrain</h2>
+          <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+        </div>
+        <div class="what-is">
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="taxbrain-info collapse" id="taxbrainInfo">
+      <div class="container">
+        <div class="taxbrain-history">
+          <h2>Our History</h2>
+          {% flatblock "taxbrain_what_is_taxbrain_dropdown" %}
+        </div>
+        <div class="taxbrain-build">
+          <h2>Code Build</h2>
+          <p><a href="https://github.com/OpenSourcePolicyCenter/Tax-Calculator">Version {{ unique_url.taxcalc_vers }} - GitHub</a></p>
+        </div>
+      </div>
+    </section>
+
+    <div class="result-header">
+      <div class="result-header-control">
+        <h1>{% flatblock "taxbrain_results_header" %}</h1>
+        for
+        <div class="dropdown dropdown-select dropdown-inline data-switch">
+          <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+            {{ tables.result_years.0}}
+            <span class="caret"></span>
+          </a>
+          <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+            {% for year in tables.result_years %}
+              <li role="presentation">
+                <a role="menuitem" tabindex="-1" href="#">
+                  {{ year }}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="#">version {{ unique_url.taxcalc_vers }}</a> TaxBrain. (ID: 10045)</p>
+    </div>
+
+    <div class="result-table">
+      <div class="result-table-controls">
+          <a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}"" class="btn btn-secondary">Edit Parameters</a>
+          {% if is_registered %}
+        <a href="/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}"" class="btn btn-secondary">Link to Dynamic Simulation</a>
+          {% endif %}
+        <div class="controls-tools">
+          <div class="btn-group">
+            <button type="button" class="btn btn-text btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+              Save As <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="/taxbrain/pdf">PDF Report</a></li>
+              <li><a href="/taxbrain/{{ unique_url.pk }}/output.csv/">Outputs as CSV</a></li>
+              <li><a href="/taxbrain/{{ unique_url.pk }}/input.csv/">Inputs as CSV</a></li>
+            </ul>
+          </div>
+          <button class="btn btn-share btn-sm">Share</button>
+          <button class="btn btn-text btn-sm">Print</button>
+        </div>
+      </div>
+
+      {% include 'taxbrain/includes/results/table.html' with table=tables.df_ogusa %}
+
+
+    </div>
+
+    <div class="result-info">
+      {% flatblock "taxbrain_results_footer" %}
+    </div>
+
+
+    <div class="push"></div>
+</div> <!-- /wrapper -->
+
+<div id="results-table"></div>
+{% endblock %}
