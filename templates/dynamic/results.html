@@ -85,19 +85,7 @@
         </div>
       </div>
 
-      {% include 'taxbrain/includes/results/table.html' with table=tables.fiscal_tots %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.df_dec %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.pdf_dec %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.cdf_dec %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.df_bin %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.pdf_bin %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.cdf_bin %}
-
-      {% include 'taxbrain/includes/results/table.html' with table=tables.mX_dec %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.mY_dec %}
-
-      {% include 'taxbrain/includes/results/table.html' with table=tables.mX_bin %}
-      {% include 'taxbrain/includes/results/table.html' with table=tables.mY_bin %}
+      {% include 'taxbrain/includes/results/table.html' with table=tables.df_ogusa %}
 
 
     </div>
@@ -106,28 +94,6 @@
       {% flatblock "taxbrain_results_footer" %}
     </div>
 
-    <!--
-    <section class="result-parameters">
-      <div class="container">
-        <div class="result-parameters-header">
-          <h2>Parameters Used:</h2>
-          <p>Edited parameters values shown in <span>black</span>.</p>
-        </div>
-
-        {% include 'taxbrain/includes/params/used/personal_exemp.html' %}
-        {% include 'taxbrain/includes/params/used/standard_ded.html' %}
-        {% include 'taxbrain/includes/params/used/itemize_ded.html' %}
-        {% include 'taxbrain/includes/params/used/adjust.html' %}
-        {% include 'taxbrain/includes/params/used/soc.html' %}
-        {% include 'taxbrain/includes/params/used/credit.html' %}
-        {% include 'taxbrain/includes/params/used/investment.html' %}
-        {% include 'taxbrain/includes/params/used/personal_income.html' %}
-        {# include 'taxbrain/includes/params/used/amt.html' #}
-        {# include 'taxbrain/includes/params/used/adjust_II.html' #}
-
-      </div>
-    </section>
-    -->
 
     <div class="push"></div>
 </div> <!-- /wrapper -->
