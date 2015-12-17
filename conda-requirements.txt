@@ -1,5 +1,6 @@
 numba
 taxcalc
+ogusa
 reportlab
 boto
 gevent
