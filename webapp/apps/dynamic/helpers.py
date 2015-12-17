@@ -11,6 +11,7 @@ import requests
 from requests.exceptions import Timeout, RequestException
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
+CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
 OGUSA_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.ogusa_row_names
@@ -156,7 +157,7 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     num_hosts = len(hostnames)
 
     DEFAULT_PARAMS = {
-        'callback': "http://localhost:8000/dynamic"  + "/dynamic_finished",
+        'callback': "http://{}/dynamic/dynamic_finished".format(CALLBACK_HOSTNAME),
     }
 
     data = {}
