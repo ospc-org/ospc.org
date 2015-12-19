@@ -38,6 +38,11 @@ def string_to_float_array(s):
         return []
 
 
+def strip_empty_lists(l):
+    for k, v in l.items():
+        l[k] = v[0] if v == [u''] else v
+
+
 def same_version(v1, v2):
     idx = v1.rfind('.')
     return v1[:idx] == v2[:idx]
@@ -55,6 +60,18 @@ def arrange_totals_by_row(tots, keys):
         vals = [order_map[i] for i in range(len(order_map))]
         out[key] = vals
     return out
+
+
+def denormalize(x):
+    ans = ["#".join([i[0],i[1]]) for i in x]
+    ans = [str(x) for x in ans]
+    return ans
+
+
+def normalize(x):
+    ans = [i.split('#') for i in x]
+    return ans
+
 
 #
 # Prepare user params to send to DropQ/Taxcalc
@@ -145,13 +162,10 @@ def filter_ogusa_only(user_values):
  
 def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     print "mods is ", mods
-    #user_mods = package_up_vars(mods, first_budget_year)
     ogusa_mods = filter_ogusa_only(mods)
     microsim_params = package_up_vars(microsim_data, first_budget_year)
-    if not bool(ogusa_mods):
-        return False
-    print "ogusa_mods is ", ogusa_mods
     print "submit dynamic work"
+    print "ogusa_mods is ", ogusa_mods
 
     hostnames = OGUSA_WORKERS
     num_hosts = len(hostnames)
@@ -287,10 +301,13 @@ def ogusa_get_results(job_ids, status):
 
 def job_submitted(email_addr, job_id):
     """
-    This view sends an email to say that a job was submitted
+    Send an email to say that a job was submitted
     """
 
     url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_id)
+
+    submitted_ids_and_ips = normalize(job_id)
+    submitted_id, submitted_ip = submitted_ids_and_ips[0]
 
     send_mail(subject="Your TaxBrain simulation has been submitted!",
         message = """Hello!
@@ -299,7 +316,7 @@ def job_submitted(email_addr, job_id):
         Your job ID is {job}. We'll notify you again when your job is complete.
 
         Best,
-        The TaxBrain Team""".format(url=url, job=job_id),
+        The TaxBrain Team""".format(url=url, job=submitted_id),
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
 
