@@ -11,6 +11,7 @@ import requests
 from requests.exceptions import Timeout, RequestException
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
+OGUSA_WORKER_IDX = 0
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
@@ -72,6 +73,10 @@ def normalize(x):
     ans = [i.split('#') for i in x]
     return ans
 
+
+def increment_ogusa_worker():
+    global OGUSA_WORKER_IDX
+    OGUSA_WORKER_IDX = (OGUSA_WORKER_IDX + 1) % len(OGUSA_WORKERS)
 
 #
 # Prepare user params to send to DropQ/Taxcalc
@@ -168,7 +173,6 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     print "ogusa_mods is ", ogusa_mods
 
     hostnames = OGUSA_WORKERS
-    num_hosts = len(hostnames)
 
     DEFAULT_PARAMS = {
         'callback': "http://{}/dynamic/dynamic_finished".format(CALLBACK_HOSTNAME),
@@ -179,7 +183,7 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     microsim_mods = {first_budget_year:microsim_params}
     data['user_mods'] = json.dumps(microsim_mods)
     job_ids = []
-    hostname_idx = 0
+    hostname_idx = OGUSA_WORKER_IDX
     submitted = False
     registered = False
     attempts = 0
@@ -190,28 +194,27 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
             if response.status_code == 200:
                 print "submitted: ", hostnames[hostname_idx]
                 submitted = True
-                hostname_idx = (hostname_idx + 1) % num_hosts
                 resp_data = json.loads(response.text)
                 job_ids.append((resp_data['job_id'], hostnames[hostname_idx]))
             else:
                 print "FAILED: ", hostnames[hostname_idx]
-                hostname_idx = (hostname_idx + 1) % num_hosts
                 attempts += 1
         except Timeout:
             print "Couldn't submit to: ", hostnames[hostname_idx]
-            hostname_idx = (hostname_idx + 1) % num_hosts
+            increment_ogusa_worker()
             attempts += 1
         except RequestException as re:
             print "Something unexpected happened: ", re
-            hostname_idx = (hostname_idx + 1) % num_hosts
+            increment_ogusa_worker()
             attempts += 1
         if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
             print "Exceeded max attempts. Bailing out."
+            increment_ogusa_worker()
             raise IOError()
 
     params = DEFAULT_PARAMS.copy()
     params['job_id'] = job_ids[0]
-    reg_url = "http://" + hostnames[0] + "/register_job"
+    reg_url = "http://" + hostnames[hostname_idx] + "/register_job"
     register = requests.post(reg_url, data=params)
 
     while not registered:
@@ -238,8 +241,9 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
             print "Exceeded max attempts. Bailing out."
             raise IOError()
 
-
-
+    # We increment upon exceptions to submit, but once we have submitted and
+    # registered, increment again to move to the next OGUSA worker node
+    increment_ogusa_worker()
     return job_ids
 
 
