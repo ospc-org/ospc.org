@@ -1,4 +1,3 @@
-import ogusa
 import os
 import requests
 import taxcalc
@@ -83,7 +82,8 @@ def increment_ogusa_worker():
 #
 
 tcversion_info = taxcalc._version.get_versions()
-ogversion_info = ogusa._version.get_versions()
+ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
+                  u'dirty': False, u'version': u'0.1.1', u'error': None}
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
