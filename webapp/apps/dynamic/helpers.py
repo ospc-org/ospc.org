@@ -11,6 +11,7 @@ import requests
 from requests.exceptions import Timeout, RequestException
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
+OGUSA_WORKER_IDX = 0
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
@@ -38,6 +39,11 @@ def string_to_float_array(s):
         return []
 
 
+def strip_empty_lists(l):
+    for k, v in l.items():
+        l[k] = v[0] if v == [u''] else v
+
+
 def same_version(v1, v2):
     idx = v1.rfind('.')
     return v1[:idx] == v2[:idx]
@@ -55,6 +61,22 @@ def arrange_totals_by_row(tots, keys):
         vals = [order_map[i] for i in range(len(order_map))]
         out[key] = vals
     return out
+
+
+def denormalize(x):
+    ans = ["#".join([i[0],i[1]]) for i in x]
+    ans = [str(x) for x in ans]
+    return ans
+
+
+def normalize(x):
+    ans = [i.split('#') for i in x]
+    return ans
+
+
+def increment_ogusa_worker():
+    global OGUSA_WORKER_IDX
+    OGUSA_WORKER_IDX = (OGUSA_WORKER_IDX + 1) % len(OGUSA_WORKERS)
 
 #
 # Prepare user params to send to DropQ/Taxcalc
@@ -98,8 +120,8 @@ def default_parameters(first_budget_year):
     # OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters()
 
     g_y_param = {'value': [0.03], 'cpi_inflated': False,
-                 'col_label': ['Growth rate of tech.'],
-                 'long_name': 'Growth rate of tech.',
+                 'col_label': ['Growth rate of technology'],
+                 'long_name': 'Growth rate of technology',
                  'description': 'Annual growth rate of technology',
                  'irs_ref': '', 'notes': '', 'inflatable': False}
 
@@ -145,16 +167,12 @@ def filter_ogusa_only(user_values):
  
 def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     print "mods is ", mods
-    #user_mods = package_up_vars(mods, first_budget_year)
     ogusa_mods = filter_ogusa_only(mods)
     microsim_params = package_up_vars(microsim_data, first_budget_year)
-    if not bool(ogusa_mods):
-        return False
-    print "ogusa_mods is ", ogusa_mods
     print "submit dynamic work"
+    print "ogusa_mods is ", ogusa_mods
 
     hostnames = OGUSA_WORKERS
-    num_hosts = len(hostnames)
 
     DEFAULT_PARAMS = {
         'callback': "http://{}/dynamic/dynamic_finished".format(CALLBACK_HOSTNAME),
@@ -165,7 +183,7 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     microsim_mods = {first_budget_year:microsim_params}
     data['user_mods'] = json.dumps(microsim_mods)
     job_ids = []
-    hostname_idx = 0
+    hostname_idx = OGUSA_WORKER_IDX
     submitted = False
     registered = False
     attempts = 0
@@ -176,28 +194,27 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
             if response.status_code == 200:
                 print "submitted: ", hostnames[hostname_idx]
                 submitted = True
-                hostname_idx = (hostname_idx + 1) % num_hosts
                 resp_data = json.loads(response.text)
                 job_ids.append((resp_data['job_id'], hostnames[hostname_idx]))
             else:
                 print "FAILED: ", hostnames[hostname_idx]
-                hostname_idx = (hostname_idx + 1) % num_hosts
                 attempts += 1
         except Timeout:
             print "Couldn't submit to: ", hostnames[hostname_idx]
-            hostname_idx = (hostname_idx + 1) % num_hosts
+            increment_ogusa_worker()
             attempts += 1
         except RequestException as re:
             print "Something unexpected happened: ", re
-            hostname_idx = (hostname_idx + 1) % num_hosts
+            increment_ogusa_worker()
             attempts += 1
         if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
             print "Exceeded max attempts. Bailing out."
+            increment_ogusa_worker()
             raise IOError()
 
     params = DEFAULT_PARAMS.copy()
     params['job_id'] = job_ids[0]
-    reg_url = "http://" + hostnames[0] + "/register_job"
+    reg_url = "http://" + hostnames[hostname_idx] + "/register_job"
     register = requests.post(reg_url, data=params)
 
     while not registered:
@@ -224,8 +241,9 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
             print "Exceeded max attempts. Bailing out."
             raise IOError()
 
-
-
+    # We increment upon exceptions to submit, but once we have submitted and
+    # registered, increment again to move to the next OGUSA worker node
+    increment_ogusa_worker()
     return job_ids
 
 
@@ -287,10 +305,13 @@ def ogusa_get_results(job_ids, status):
 
 def job_submitted(email_addr, job_id):
     """
-    This view sends an email to say that a job was submitted
+    Send an email to say that a job was submitted
     """
 
     url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_id)
+
+    submitted_ids_and_ips = normalize(job_id)
+    submitted_id, submitted_ip = submitted_ids_and_ips[0]
 
     send_mail(subject="Your TaxBrain simulation has been submitted!",
         message = """Hello!
@@ -299,7 +320,7 @@ def job_submitted(email_addr, job_id):
         Your job ID is {job}. We'll notify you again when your job is complete.
 
         Best,
-        The TaxBrain Team""".format(url=url, job=job_id),
+        The TaxBrain Team""".format(url=url, job=submitted_id),
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
 

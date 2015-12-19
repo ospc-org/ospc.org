@@ -26,7 +26,7 @@ from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
                       ogusa_get_results, ogusa_results_to_tables, success_text,
-                      failure_text)
+                      failure_text, normalize, denormalize, strip_empty_lists)
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -35,17 +35,6 @@ taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6
 ogversion_info = ogusa._version.get_versions()
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
-
-
-def denormalize(x):
-    ans = ["#".join([i[0],i[1]]) for i in x]
-    ans = [str(x) for x in ans]
-    return ans
-
-
-def normalize(x):
-    ans = [i.split('#') for i in x]
-    return ans
 
 
 
@@ -62,6 +51,7 @@ def dynamic_input(request, pk):
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.POST)
         fields['first_year'] = start_year
+        strip_empty_lists(fields)
         #dyn_mod_form = DynamicInputsModelForm(request.POST)
         dyn_mod_form = DynamicInputsModelForm(start_year, fields)
 
@@ -69,12 +59,11 @@ def dynamic_input(request, pk):
             model = dyn_mod_form.save()
 
             curr_dict = dict(model.__dict__)
-
             for key, value in curr_dict.items():
                 print "got this ", key, value
 
             # get macrosim data from form
-            worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
+            worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
             # set the start year
             start_year = 2015
@@ -196,8 +185,9 @@ def show_job_submitted(request, pk):
     """
     model = DynamicSaveInputs.objects.get(pk=pk)
     job_id = model.job_ids
-    submitted_id = normalize(job_id)
-    return render_to_response('dynamic/submitted.html', {'job_id': submitted_id[0]})
+    submitted_ids_and_ips = normalize(job_id)
+    submitted_id, submitted_ip = submitted_ids_and_ips[0]
+    return render_to_response('dynamic/submitted.html', {'job_id': submitted_id})
 
 
 def ogusa_results(request, pk):
