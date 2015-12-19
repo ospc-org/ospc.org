@@ -115,8 +115,8 @@ def default_parameters(first_budget_year):
     # OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters()
 
     g_y_param = {'value': [0.03], 'cpi_inflated': False,
-                 'col_label': ['Growth rate of tech.'],
-                 'long_name': 'Growth rate of tech.',
+                 'col_label': ['Growth rate of technology'],
+                 'long_name': 'Growth rate of technology',
                  'description': 'Annual growth rate of technology',
                  'irs_ref': '', 'notes': '', 'inflatable': False}
 
