@@ -9,7 +9,7 @@ $(document).ready(function(){
 	var urlToShare = window.location.href.indexOf('http://localhost:8000') > -1 ? 'http://www.ospc.org/taxbrain' :window.location.href;
 	new ShareButton({
 		title: 'TaxBrain Results',
-		description: 'Check out my output from OSPC TaxBrain, a tax policy simulator: ' + urlToShare,
+		description: 'Check out my output from TaxBrain, an open-source tax policy simulator: ' + urlToShare,
 		url: urlToShare,
 		networks: {
 			email: {
