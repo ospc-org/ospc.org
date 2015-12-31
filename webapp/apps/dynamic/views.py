@@ -2,7 +2,6 @@ import json
 import datetime
 from urlparse import urlparse, parse_qs
 import taxcalc
-import ogusa
 import os
 
 from django.core.mail import send_mail
@@ -32,7 +31,8 @@ from .helpers import (default_parameters, submit_ogusa_calculation, job_submitte
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-ogversion_info = ogusa._version.get_versions()
+ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
+                  u'dirty': False, u'version': u'0.1.1', u'error': None}
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
