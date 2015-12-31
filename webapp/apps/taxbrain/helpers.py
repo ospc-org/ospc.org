@@ -473,7 +473,10 @@ class TaxCalcParam(object):
 
         # we assume we can CPI inflate if first value isn't a ratio
         first_value = self.col_fields[0].values[0]
-        self.inflatable = first_value > 1 and self.tc_id != '_ACTC_ChildNum'
+        if 'inflatable' in attributes:
+            self.inflatable = attributes['inflatable']
+        else:
+            self.inflatable = first_value > 1 and self.tc_id != '_ACTC_ChildNum'
 
 
         if self.inflatable:

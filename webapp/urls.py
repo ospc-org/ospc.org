@@ -18,6 +18,7 @@ urlpatterns = patterns('',
 
     url(r'', include("webapp.apps.pages.urls")),
     url(r'^taxbrain/', include("webapp.apps.taxbrain.urls")),
+    url(r'^dynamic/', include("webapp.apps.dynamic.urls")),
 
     # Login & Registration URL Confs
     url(r'^accounts/login/$', login),

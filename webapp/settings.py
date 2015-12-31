@@ -53,6 +53,7 @@ INSTALLED_APPS = (
 
     # Apps
     'webapp.apps.taxbrain',
+    'webapp.apps.dynamic',
     'webapp.apps.pages',
     'webapp.apps.register',
 
