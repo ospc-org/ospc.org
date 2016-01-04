@@ -8126,6 +8126,11 @@ fieldset[disabled] .form-group.cpi-group .btn.btn-cpi {
   text-transform: uppercase;
   color: white;
 }
+
+#taxbrain-fromthelab-heading {
+  margin-top: 200px;
+}
+
 .home-display .home-display-app h2 h2,
 .home-display .home-display-app h2 h3 {
   color: #869191;
