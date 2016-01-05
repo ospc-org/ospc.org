@@ -81,6 +81,7 @@ def personal_results(request):
 
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
+        has_errors = make_bool(request.POST['has_errors'])
         start_year = request.REQUEST['start_year']
         fields = dict(request.REQUEST)
         fields['first_year'] = fields['start_year']
@@ -141,16 +142,20 @@ def personal_results(request):
 
     taxcalc_default_params = default_policy(int(start_year))
 
+    has_errors = False
+    if has_field_errors(form_personal_exemp):
+        form_personal_exemp.add_error(None, "Some fields have errors.")
+        has_errors = True
+
     init_context = {
         'form': form_personal_exemp,
         'params': taxcalc_default_params,
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
-        'start_year': start_year
+        'start_year': start_year,
+        'has_errors': has_errors
     }
 
-    if has_field_errors(form_personal_exemp):
-        form_personal_exemp.add_error(None, "Some fields have errors.")
 
     if no_inputs:
         form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
