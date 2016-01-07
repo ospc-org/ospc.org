@@ -158,7 +158,9 @@ def personal_results(request):
 
     has_errors = False
     if has_field_errors(form_personal_exemp):
-        form_personal_exemp.add_error(None, "Some fields have errors.")
+        msg = ("Some fields have errors. Values outside of suggested ranges "
+               " will be accepted if submitted again on this page.")
+        form_personal_exemp.add_error(None, msg)
         has_errors = True
 
     init_context = {
