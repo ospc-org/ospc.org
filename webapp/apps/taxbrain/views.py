@@ -4,6 +4,7 @@ import json
 import taxcalc
 import dropq
 import datetime
+import logging
 from urlparse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
@@ -87,7 +88,20 @@ def personal_results(request):
         fields['first_year'] = fields['start_year']
         personal_inputs = PersonalExemptionForm(start_year, fields)
 
-        if personal_inputs.is_valid():
+        # Accept the POST if the form is valid, or if the form has errors
+        # we don't check again so it is OK if the form is invalid the second
+        # time
+        if personal_inputs.is_valid() or has_errors:
+            if has_errors and personal_inputs.errors:
+                msg = ("Form has validation errors, but allowing the user "
+                       "to proceed anyway since we already showed them the "
+                       "errors once.")
+                msg2 = "Dropping these errors {}"
+                msg2 = msg2.format(personal_inputs.errors)
+                logging.warn(msg)
+                logging.warn(msg2)
+                personal_inputs._errors = {}
+
             model = personal_inputs.save()
 
             # prepare taxcalc params from TaxSaveInputs model
