@@ -255,7 +255,9 @@ def output_detail(request, pk):
     created_on = url.unique_inputs.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
     inputs = url.unique_inputs
-    is_registered = True if request.user.is_authenticated() else False
+    #is_registered = True if request.user.is_authenticated() else False
+    # TEMP: Turn off linking to dynamic sim for now
+    is_registered = False
 
     context = {
         'locals':locals(),
