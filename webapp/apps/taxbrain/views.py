@@ -159,7 +159,7 @@ def personal_results(request):
     has_errors = False
     if has_field_errors(form_personal_exemp):
         msg = ("Some fields have errors. Values outside of suggested ranges "
-               " will be accepted if submitted again on this page.")
+               " will be accepted if submitted again from this page.")
         form_personal_exemp.add_error(None, msg)
         has_errors = True
 
