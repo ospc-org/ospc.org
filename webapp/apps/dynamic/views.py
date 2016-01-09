@@ -1,8 +1,14 @@
 import json
 import datetime
 from urlparse import urlparse, parse_qs
-import taxcalc
 import os
+#Mock some module for imports because we can't fit them on Heroku slugs
+from mock import Mock
+import sys
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+import taxcalc
+
 
 from django.core.mail import send_mail
 from django.core import serializers
@@ -27,12 +33,11 @@ from .helpers import (default_parameters, submit_ogusa_calculation, job_submitte
                       ogusa_get_results, ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists)
 
-
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
-                  u'dirty': False, u'version': u'0.1.1', u'error': None}
+import ogusa
+ogversion_info = ogusa._version.get_versions()
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
