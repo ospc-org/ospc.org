@@ -12,6 +12,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
 import dropq
 import datetime
+import logging
 from urlparse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
@@ -89,12 +90,26 @@ def personal_results(request):
 
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
+        has_errors = make_bool(request.POST['has_errors'])
         start_year = request.REQUEST['start_year']
         fields = dict(request.REQUEST)
         fields['first_year'] = fields['start_year']
         personal_inputs = PersonalExemptionForm(start_year, fields)
 
-        if personal_inputs.is_valid():
+        # Accept the POST if the form is valid, or if the form has errors
+        # we don't check again so it is OK if the form is invalid the second
+        # time
+        if personal_inputs.is_valid() or has_errors:
+            if has_errors and personal_inputs.errors:
+                msg = ("Form has validation errors, but allowing the user "
+                       "to proceed anyway since we already showed them the "
+                       "errors once.")
+                msg2 = "Dropping these errors {}"
+                msg2 = msg2.format(personal_inputs.errors)
+                logging.warn(msg)
+                logging.warn(msg2)
+                personal_inputs._errors = {}
+
             model = personal_inputs.save()
 
             # prepare taxcalc params from TaxSaveInputs model
@@ -149,16 +164,22 @@ def personal_results(request):
 
     taxcalc_default_params = default_policy(int(start_year))
 
+    has_errors = False
+    if has_field_errors(form_personal_exemp):
+        msg = ("Some fields have errors. Values outside of suggested ranges "
+               " will be accepted if submitted again from this page.")
+        form_personal_exemp.add_error(None, msg)
+        has_errors = True
+
     init_context = {
         'form': form_personal_exemp,
         'params': taxcalc_default_params,
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
-        'start_year': start_year
+        'start_year': start_year,
+        'has_errors': has_errors
     }
 
-    if has_field_errors(form_personal_exemp):
-        form_personal_exemp.add_error(None, "Some fields have errors.")
 
     if no_inputs:
         form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
@@ -244,9 +265,7 @@ def output_detail(request, pk):
     created_on = url.unique_inputs.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
     inputs = url.unique_inputs
-    #is_registered = True if request.user.is_authenticated() else False
-    # TEMP: Turn off linking to dynamic sim for now
-    is_registered = False
+    is_registered = True if request.user.is_authenticated() else False
 
     context = {
         'locals':locals(),

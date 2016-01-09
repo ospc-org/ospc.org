@@ -43,6 +43,7 @@
 
     <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}">
       {% csrf_token %}
+      <input type="hidden" name="has_errors" value="{{ has_errors }}" />
       <div class="inputs-sidebar">
         <label class="">Start Year:
           <select id="start-year-select" class="form-control pull-right">
