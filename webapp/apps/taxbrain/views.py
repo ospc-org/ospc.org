@@ -92,6 +92,7 @@ def personal_results(request):
         # we don't check again so it is OK if the form is invalid the second
         # time
         if personal_inputs.is_valid() or has_errors:
+            stored_errors = None
             if has_errors and personal_inputs.errors:
                 msg = ("Form has validation errors, but allowing the user "
                        "to proceed anyway since we already showed them the "
@@ -100,9 +101,14 @@ def personal_results(request):
                 msg2 = msg2.format(personal_inputs.errors)
                 logging.warn(msg)
                 logging.warn(msg2)
+                stored_errors = dict(personal_inputs._errors)
                 personal_inputs._errors = {}
 
             model = personal_inputs.save()
+            if stored_errors:
+                # Force the entered value on to the model
+                for attr in stored_errors:
+                    setattr(model, attr, request.POST[attr])
 
             # prepare taxcalc params from TaxSaveInputs model
             curr_dict = dict(model.__dict__)
