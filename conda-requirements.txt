@@ -4,3 +4,4 @@ reportlab
 boto
 gevent
 pillow
+ogusa

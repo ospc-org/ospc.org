@@ -1,9 +1,15 @@
 import os
 import requests
-import taxcalc
 import dropq
 import json
 import sys
+
+#Mock some module for imports because we can't fit them on Heroku slugs
+from mock import Mock
+import sys
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 from ..taxbrain.helpers import TaxCalcParam, package_up_vars
 from django.core.mail import send_mail
 import requests
@@ -81,9 +87,13 @@ def increment_ogusa_worker():
 # Prepare user params to send to DropQ/Taxcalc
 #
 
+import taxcalc
 tcversion_info = taxcalc._version.get_versions()
-ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
-                  u'dirty': False, u'version': u'0.1.1', u'error': None}
+#ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
+                  #u'dirty': False, u'version': u'0.1.1', u'error': None}
+
+import ogusa
+ogversion_info = ogusa._version.get_versions()
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
@@ -119,36 +129,22 @@ def default_parameters(first_budget_year):
 
     # OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters()
 
-    g_y_param = {'value': [0.03], 'cpi_inflated': False,
-                 'col_label': ['Growth rate of technology'],
-                 'long_name': 'Growth rate of technology',
-                 'description': 'Annual growth rate of technology',
-                 'irs_ref': '', 'notes': '', 'inflatable': False}
+    OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters(True, guid='',
+            user_modifiable=True, metadata=True)
 
-    upsilon_param = {'value': [3.0542], 'cpi_inflated': False,
-                     'col_label': ['Omega'],
-                     'long_name': 'omega for elliptical fit utility function',
-                     'description': 'elliptical fit of utility function',
-                     'irs_ref': '', 'notes': '', 'inflatable': False}
-
-    # not using g_n or g_n_vector yet
-    param_names_used = ['g_y_annual', 'upsilon']
 
     default_ogusa_params = {}
-    # for p in param_names_used.iteritems():
-    #    v = OGUSA_DEFAULT_PARAMS_JSON[p]
-    #    param = TaxCalcParam(k,v, first_budget_year)
-    #    default_taxcalc_params[param.nice_id] = param
-
-    og_params = []
-    og_params.append(('g_y_annual', g_y_param))
-    og_params.append(('upsilon', upsilon_param))
-    for k, v in og_params:
-        param = TaxCalcParam(k, v, first_budget_year)
+    for k,v in OGUSA_DEFAULT_PARAMS_JSON.iteritems():
+        #TaxCalcParams expect list
+        if 'value' in v:
+            v['value'] = [v['value']]
+        param = TaxCalcParam(k,v, first_budget_year)
+        print "key is ", k
+        print "param.nice_id is ", param.nice_id
         default_ogusa_params[param.nice_id] = param
 
-    return default_ogusa_params
 
+    return default_ogusa_params
 
 
 def filter_ogusa_only(user_values):
@@ -160,8 +156,7 @@ def filter_ogusa_only(user_values):
             print "Removing ", k, v
             del user_values[k]
         else:
-            #strip off [] and extra quotes
-            user_values[k] = float(v[3:-2])
+            user_values[k] = float(v)
 
     return user_values
  
