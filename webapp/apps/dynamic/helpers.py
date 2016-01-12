@@ -7,7 +7,8 @@ import sys
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
+                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from ..taxbrain.helpers import TaxCalcParam, package_up_vars
