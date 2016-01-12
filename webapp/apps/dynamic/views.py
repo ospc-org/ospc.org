@@ -54,10 +54,9 @@ def dynamic_input(request, pk):
     start_year=2015
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.POST)
+        fields = dict(request.REQUEST)
         fields['first_year'] = start_year
         strip_empty_lists(fields)
-        #dyn_mod_form = DynamicInputsModelForm(request.POST)
         dyn_mod_form = DynamicInputsModelForm(start_year, fields)
 
         if dyn_mod_form.is_valid():
@@ -115,7 +114,6 @@ def dynamic_input(request, pk):
 
         # Probably a GET request, load a default form
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
-        # start_year = request['QUERY_STRING']
 
     ogusa_default_params = default_parameters(int(start_year))
 

@@ -131,22 +131,7 @@ def default_parameters(first_budget_year):
 
     OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters(True, guid='',
             user_modifiable=True, metadata=True)
-    import pdb;pdb.set_trace()
 
-    """g_y_param = {'value': [0.03], 'cpi_inflated': False,
-                 'col_label': ['Growth rate of technology'],
-                 'long_name': 'Growth rate of technology',
-                 'description': 'Annual growth rate of technology',
-                 'irs_ref': '', 'notes': '', 'inflatable': False}
-
-    upsilon_param = {'value': [3.0542], 'cpi_inflated': False,
-                     'col_label': ['Omega'],
-                     'long_name': 'omega for elliptical fit utility function',
-                     'description': 'elliptical fit of utility function',
-                     'irs_ref': '', 'notes': '', 'inflatable': False}
-
-    # not using g_n or g_n_vector yet
-    param_names_used = ['g_y_annual', 'upsilon']"""
 
     default_ogusa_params = {}
     for k,v in OGUSA_DEFAULT_PARAMS_JSON.iteritems():
@@ -158,12 +143,6 @@ def default_parameters(first_budget_year):
         print "param.nice_id is ", param.nice_id
         default_ogusa_params[param.nice_id] = param
 
-    """og_params = []
-    og_params.append(('g_y_annual', g_y_param))
-    og_params.append(('upsilon', upsilon_param))
-    for k, v in og_params:
-        param = TaxCalcParam(k, v, first_budget_year)
-        default_ogusa_params[param.nice_id] = param"""
 
     return default_ogusa_params
 
@@ -177,8 +156,7 @@ def filter_ogusa_only(user_values):
             print "Removing ", k, v
             del user_values[k]
         else:
-            #strip off [] and extra quotes
-            user_values[k] = float(v[3:-2])
+            user_values[k] = float(v)
 
     return user_values
  
