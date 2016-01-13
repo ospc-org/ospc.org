@@ -241,7 +241,7 @@ def ogusa_results(request, pk):
     created_on = url.unique_inputs.creation_date
     tables = ogusa_results_to_tables(output, first_year)
     hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-    microsim_url = hostname + "/taxbrain/" + str(url.model_pk)
+    microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
 
     context = {
         'locals':locals(),
