@@ -32,7 +32,8 @@ from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
                       ogusa_get_results, ogusa_results_to_tables, success_text,
-                      failure_text, normalize, denormalize, strip_empty_lists)
+                      failure_text, normalize, denormalize, strip_empty_lists,
+                      cc_text, cc_failure_text)
 
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
@@ -74,7 +75,9 @@ def dynamic_input(request, pk):
             start_year = 2015
 
             #get microsim data 
-            taxbrain_model = OutputUrl.objects.get(pk=pk).unique_inputs
+            outputsurl = OutputUrl.objects.get(pk=pk)
+            model.micro_sim = outputsurl
+            taxbrain_model = outputsurl.unique_inputs
             taxbrain_dict = dict(taxbrain_model.__dict__)
             growth_fixup(taxbrain_dict)
             for key, value in taxbrain_dict.items():
@@ -153,8 +156,16 @@ def dynamic_finished(request):
     dsi.creation_date = datetime.datetime.now()
     dsi.save()
 
-    #Create a new output model instance
+    #Get the user-input from the model in a way we can render
+    ser_model = serializers.serialize('json', [dsi])
+    user_inputs = json.loads(ser_model)
+    inputs = user_inputs[0]['fields']
+    params = {k:inputs[k] for k in ogusa.parameters.USER_MODIFIABLE_PARAMS}
 
+    #DynamicOutputUrl.objects.filter(model_pk=5)
+    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+    microsim_url = hostname + "/taxbrain/" + str(dsi.micro_sim.pk)
+    #Create a new output model instance
     if status == "SUCCESS":
         unique_url = DynamicOutputUrl()
         if request.user.is_authenticated():
@@ -163,12 +174,18 @@ def dynamic_finished(request):
         unique_url.unique_inputs = dsi
         unique_url.model_pk = dsi.pk
         unique_url.save()
-        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
         result_url = "{host}/dynamic/results/{pk}".format(host=hostname, pk=unique_url.pk)
         text = success_text()
-        text = text.format(url=result_url)
+        cc_txt = cc_text()
+        text = text.format(url=result_url, microsim_url=microsim_url,
+                           job_id=job_id, params=params)
+        cc_txt = cc_txt.format(url=result_url, microsim_url=microsim_url,
+                                 job_id=job_id, params=params)
     elif status == "FAILURE":
-        text = failure_text(result['job_fail'])
+        text = failure_text(traceback=result['job_fail'], microsim_url=microsim_url,
+                            job_id=job_id, params=params)
+        cc_txt = cc_failure_text(traceback=result['job_fail'], microsim_url=microsim_url,
+                                  job_id=job_id, params=params)
     else:
         raise ValueError("status must be either 'SUCESS' or 'FAILURE'")
 
@@ -176,6 +193,16 @@ def dynamic_finished(request):
         message = text,
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
+
+    other_email_addrs = os.environ.get('CC_EMAIL_ADDRESSES', None)
+    if other_email_addrs:
+        other_email_addrs = other_email_addrs.split(',')
+        send_mail(subject="A TaxBrain simulation has completed!",
+            message = cc_txt,
+            from_email = "Open Source Policy Center <mailing@ospc.org>",
+            recipient_list = other_email_addrs)
+
+
 
     response = HttpResponse('')
 
@@ -213,6 +240,8 @@ def ogusa_results(request, pk):
     first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
     tables = ogusa_results_to_tables(output, first_year)
+    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+    microsim_url = hostname + "/taxbrain/" + str(url.model_pk)
 
     context = {
         'locals':locals(),
@@ -221,6 +250,7 @@ def ogusa_results(request, pk):
         'tables':tables,
         'created_on':created_on,
         'first_year':first_year,
+        'microsim_url':microsim_url
     }
 
     return render(request, 'dynamic/results.html', context)
