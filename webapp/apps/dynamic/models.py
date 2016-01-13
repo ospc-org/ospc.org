@@ -11,7 +11,8 @@ from uuidfield import UUIDField
 from jsonfield import JSONField
 
 
-from ..taxbrain.models import CommaSeparatedField, SeparatedValuesField
+from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
+                               TaxSaveInputs, OutputUrl)
 import datetime
 
 
@@ -42,6 +43,8 @@ class DynamicSaveInputs(models.Model):
     user_email = models.CharField(blank=True, default=None, null=True,
                                   max_length=50)
 
+    micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
+                                  on_delete=models.SET_NULL)
 
     class Meta:
         permissions = (
