@@ -218,7 +218,7 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
         try:
             params = DEFAULT_PARAMS.copy()
             params['job_id'] = job_ids[0][0]
-            reg_url = "http://" + hostnames[0] + "/register_job"
+            reg_url = "http://" + hostnames[hostname_idx] + "/register_job"
 
             register = requests.post(reg_url, data=params, timeout=TIMEOUT_IN_SECONDS)
             if response.status_code == 200:
