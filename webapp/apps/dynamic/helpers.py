@@ -179,6 +179,7 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     microsim_mods = {first_budget_year:microsim_params}
     data['user_mods'] = json.dumps(microsim_mods)
     job_ids = []
+    guids = []
     hostname_idx = OGUSA_WORKER_IDX
     submitted = False
     registered = False
@@ -192,6 +193,7 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
                 submitted = True
                 resp_data = json.loads(response.text)
                 job_ids.append((resp_data['job_id'], hostnames[hostname_idx]))
+                guids.append((resp_data['job_id'], resp_data.get('guid', 'None')))
             else:
                 print "FAILED: ", hostnames[hostname_idx]
                 attempts += 1
@@ -240,7 +242,7 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     # We increment upon exceptions to submit, but once we have submitted and
     # registered, increment again to move to the next OGUSA worker node
     increment_ogusa_worker()
-    return job_ids
+    return job_ids, guids
 
 
 
@@ -470,6 +472,12 @@ def cc_text():
 
     They used the following macroeconomic model parameters: {params}
 
+    The hostname for the node that computed the result is: {hostname}
+
+    The path for the baseline run is: {baseline}
+
+    The path for the policy run is: {policy}
+
     Best,
     The TaxBrain Team"""
     return message
@@ -491,6 +499,12 @@ def cc_failure_text():
     {microsim_url}
 
     They used the following macroeconomic model parameters: {params}
+
+    The hostname for the node that computed the result is: {hostname}
+
+    The path for the baseline run is: {baseline}
+
+    The path for the policy run is: {policy}
 
     Best,
     The TaxBrain Team""".format(traceback=traceback)

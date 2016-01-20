@@ -93,9 +93,10 @@ def dynamic_input(request, pk):
             benefit_surtax_fixup(microsim_data)
 
             # start calc job
-            submitted_id = submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
-            if submitted_id:
-                model.job_ids = denormalize(submitted_id)
+            submitted_ids, guids = submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
+            if submitted_ids:
+                model.job_ids = denormalize(submitted_ids)
+                model.guids = denormalize(guids)
                 model.first_year = int(start_year)
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
@@ -151,6 +152,12 @@ def dynamic_finished(request):
     # We know the results are ready so go get them from the server
     job_ids = dsi.job_ids
     submitted_ids = normalize(job_ids)
+    guids = dsi.guids
+    guids = normalize(guids)
+    #Get the celery ID and IP address of the job
+    celery_id, hostname = submitted_ids[0]
+    #Get the globally unique ID of the job
+    guid, _ = guids[0]
     result = ogusa_get_results(submitted_ids, status=status)
     dsi.tax_result = result
     dsi.creation_date = datetime.datetime.now()
@@ -161,6 +168,10 @@ def dynamic_finished(request):
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
     params = {k:inputs[k] for k in ogusa.parameters.USER_MODIFIABLE_PARAMS}
+
+    #Create the path information for debugging info to include in the email
+    baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid)
+    policy = "/home/ubuntu/dropQ/OUTPUT_REFORM_{guid}".format(guid)
 
     #DynamicOutputUrl.objects.filter(model_pk=5)
     hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
@@ -180,12 +191,16 @@ def dynamic_finished(request):
         text = text.format(url=result_url, microsim_url=microsim_url,
                            job_id=job_id, params=params)
         cc_txt = cc_txt.format(url=result_url, microsim_url=microsim_url,
-                                 job_id=job_id, params=params)
+                                 job_id=job_id, params=params,
+                                 hostname=hostname, baseline=baseline,
+                                 policy=policy)
     elif status == "FAILURE":
         text = failure_text(traceback=result['job_fail'], microsim_url=microsim_url,
                             job_id=job_id, params=params)
         cc_txt = cc_failure_text(traceback=result['job_fail'], microsim_url=microsim_url,
-                                  job_id=job_id, params=params)
+                                  job_id=job_id, params=params,
+                                  hostname=hostname, baseline=baseline,
+                                  policy=policy)
     else:
         raise ValueError("status must be either 'SUCESS' or 'FAILURE'")
 
@@ -201,7 +216,6 @@ def dynamic_finished(request):
             message = cc_txt,
             from_email = "Open Source Policy Center <mailing@ospc.org>",
             recipient_list = other_email_addrs)
-
 
 
     response = HttpResponse('')
