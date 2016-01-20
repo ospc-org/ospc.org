@@ -271,20 +271,22 @@ def output_detail(request, pk):
     first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
+    json_tables = json.dumps(tables)
+    print(json_tables)
     inputs = url.unique_inputs
     is_registered = True if request.user.is_authenticated() else False
-
     context = {
         'locals':locals(),
         'unique_url':url,
         'taxcalc_version':taxcalc_version,
-        'tables':tables,
+        'tables': tables,
+        'json_tables': json_tables,
         'created_on':created_on,
         'first_year':first_year,
         'is_registered':is_registered
     }
 
-    return render(request, 'taxbrain/results.html', context)
+    return render(request, 'taxbrain/resultsjs.html', context)
 
 @permission_required('taxbrain.view_inputs')
 def csv_output(request, pk):
