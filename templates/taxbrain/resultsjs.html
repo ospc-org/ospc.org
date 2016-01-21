@@ -2,7 +2,17 @@
 {% load staticfiles %}
 {% load flatblocks %}
 {% block style %}
+{{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
+<link href="text/javascript" src="{% static 'js/vendor/DataTables/datatables.min.css' %}"></link>
+<style>
+  .btn {
+    color: black;
+  }
+  .table > thead > tr > th {
+    border: 0;
+  }
+</style>
 {% endblock %}
 {% block content %}
 <div class="wrapper">
@@ -46,7 +56,7 @@
         <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
           {% for year in tables.result_years %}
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" href="#">
+            <a role="menuitem" tabindex="-1" href="#" data-year="{{ year }}">
               {{ year }}
             </a>
           </li>
@@ -67,5 +77,6 @@
 {{ block.super }}
 <script src="{% static 'js/vendor/underscore/underscore-min.js' %}"></script>
 <script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
+<script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
 <script src="{% static 'js/taxbrain-tablebuilder.js' %}"></script>
 {% endblock %}
