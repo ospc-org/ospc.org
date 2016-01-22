@@ -54,7 +54,7 @@ $(function() {
         numberWithCommas: function(x) {
             var parts = x.toString().split(".");
             parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            return parts.join(".");
+            return parts.join(".") === "NaN" ? 0 : parts.join(".");
         },
 
         columnVisibility: function() {
