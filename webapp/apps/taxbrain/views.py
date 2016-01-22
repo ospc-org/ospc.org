@@ -285,7 +285,7 @@ def output_detail(request, pk):
         'is_registered':is_registered
     }
 
-    return render(request, 'taxbrain/resultsjs.html', context)
+    return render(request, 'taxbrain/results.html', context)
 
 @permission_required('taxbrain.view_inputs')
 def csv_output(request, pk):

@@ -3,7 +3,12 @@
 $(function() {
     var TableModel = Backbone.Model.extend({
         defaults: {
-            year: 2015
+            year: 2015,
+            row_labels: [
+                'Individual Income Tax Liability Change',
+                'Payroll Tax Liability Change',
+                'Combined Payroll and Individual Income Tax Liability Change'
+            ]
         },
 
         initialize: function() {
@@ -33,9 +38,13 @@ $(function() {
             _.each(this.get('rows'), function(row) {
                 var j = 0;
                 _.each(row.cells, function(cell) {
-                    _.each(_.keys(cell.year_values), function(year) {
-                        that.get('rows')[i]['cells'][j]['year_values'][year] = that.numberWithCommas((parseFloat(cell.year_values[year] / cell.format.divisor)).toFixed(cell.format.decimals));
-                    });
+                    if (_.isEmpty(cell.year_values)) {
+                        that.get('rows')[i]['cells'][j]['tot_value'] = that.numberWithCommas((parseFloat(cell.value / cell.format.divisor)).toFixed(cell.format.decimals));
+                    } else {
+                        _.each(_.keys(cell.year_values), function(year) {
+                            that.get('rows')[i]['cells'][j]['year_values'][year] = that.numberWithCommas((parseFloat(cell.year_values[year] / cell.format.divisor)).toFixed(cell.format.decimals));
+                        });
+                    }
                     j++;
                 });
                 i++;
@@ -92,7 +101,7 @@ $(function() {
                     '1000+',
                     'All'
                 ];
-            } else {
+            } else if (this.get('grouping') == 'dec') {
                 return [
                     '0-10%',
                     '10-20%',
@@ -121,7 +130,7 @@ $(function() {
                     <table class="table table-striped">\
                         <thead>\
                             <tr>\
-                                <th class="text-center" colspan="<%= model.get("cols").length + 1%>"><h1><%= model.get("label").toUpperCase() + " (" + model.get("year") + ")" %></h1></th>\
+                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %><% if (model.get("reference") !== "fiscal_tots") { %> (<%= model.get("year") %>)<% } %></h1></th>\
                             </tr>\
                             <tr>\
                                 <th></th>\
@@ -143,10 +152,10 @@ $(function() {
                             </tr>\
                             <% _.each(model.get("rows"), function(row, idx) { %>\
                             <tr>\
-                                <td class="text-center"><%= model.get("row_labels")[idx] %></td>\
+                                <td class="text-center"><strong><%= model.get("row_labels")[idx] %></strong></td>\
                                 <% _.each(row.cells, function(cell, idx) { %>\
                                 <%   if (model.get("cols")[idx].show) { %>\
-                                <td class="text-center"><%= cell["year_values"][model.get("year")] %></td>\
+                                <td class="text-center"><% if (cell["tot_value"]) { %><%= cell["tot_value"] %><% } else { %><%= cell["year_values"][model.get("year")] %><% } %></td>\
                                 <%   } %>\
                                 <% }) %>\
                             </tr>\
@@ -163,15 +172,43 @@ $(function() {
     })
 
     var TableSelectView = Backbone.View.extend({
-        el: '<div class="panel panel-default">\
+        el: '<div class="panel panel-default"></div>',
+        template: _.template('\
               <div class="panel-heading">\
-                <h3 class="panel-title">Table Drilldown</h3>\
+                <h3 class="panel-title">Build Table</h3>\
               </div>\
               <div class="panel-body">\
+                <div class="row">\
+                    <div class="col-md-6">\
+                        <h1 class="text-center">For Year: </h1>\
+                    </div>\
+                    <div class="col-md-6">\
+                        <h1 class="text-center">\
+                            <div class="dropdown dropdown-select dropdown-inline data-switch">\
+                              <a class="dropdown-toggle" type="button" id="years" data-toggle="dropdown" aria-expanded="true">\
+                                <%= result_years[0] %>\
+                                <span class="caret"></span>\
+                              </a>\
+                              <ul class="dropdown-menu" role="menu" aria-labelledby="years">\
+                                <% _.each(result_years, function(year) { %>\
+                                <li role="presentation">\
+                                  <a role="menuitem" tabindex="-1" href="#" data-year="<%= year %>">\
+                                    <%= year %>\
+                                  </a>\
+                                </li>\
+                                <% }) %>\
+                              </ul>\
+                            </div>\
+                        </h1>\
+                    </div>\
+                </div>\
+                <br>\
+                <br>\
                 <ul class="nav nav-pills nav-justified">\
                   <li class="active" data-difference="false"><a href="#">Diagnostic</a></li>\
                   <li data-difference="true"><a href="#">Difference</a></li>\
                 </ul>\
+                <br>\
                 <br>\
                 <ul id="plan" class="nav nav-pills nav-justified">\
                   <li class="active" data-plan="X"><a href="#">Base</a></li>\
@@ -183,19 +220,32 @@ $(function() {
                   <li data-incometax="true"><a href="#">Income</a></li>\
                 </ul>\
                 <br>\
+                <br>\
                 <ul class="nav nav-pills nav-justified">\
                   <li class="active" data-income="expanded"><a href="#">Expanded Income</a></li>\
                   <li class="disabled" data-income="adjusted"><a href="#" disabled>Adjusted Income</a></li>\
                 </ul>\
+                <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
                   <li class="active" data-grouping="bin"><a href="#">Income Bins</a></li>\
                   <li data-grouping="dec"><a href="#">Income Decimals</a></li>\
                 </ul>\
               </div>\
-            </div>',
+            </div>'),
 
         events: {
+            'click [data-year]': function(e) {
+                e.preventDefault();
+                this.collection.each(function(table) {
+                    table.set('year', $(e.currentTarget).data('year'), {
+                        silent: true
+                    });
+                });
+                this.$el.find('#years').html($(e.currentTarget).data('year') + ' <span class="caret"></span>');
+                tables.trigger('update');
+            },
+
             'click [data-payrolltax]': function(e) {
                 var $el = $(e.currentTarget);
                 var payrolltax = $el.data('payrolltax');
@@ -242,6 +292,14 @@ $(function() {
                 e.preventDefault();
             }
         },
+
+        initialize: function(options) {
+            this.resultYears = options.resultYears;
+        },
+
+        render: function() {
+            this.$el.html(this.template({ result_years: this.resultYears }));
+        }
 
     });
 
@@ -298,10 +356,11 @@ $(function() {
             <div>\
                 <div class="container" style="width:95%">\
                     <div class="row">\
-                        <div class="col-md-6 col-md-offset-3" id="table-select-container"></div>\
+                        <div class="col-md-12" id="fiscal-totals-container"></div>\
                     </div>\
                     <div class="row">\
-                        <div class="col-md-offset-2 col-md-8" id="column-select-container"></div>\
+                        <div class="col-md-6" id="table-select-container"></div>\
+                        <div class="col-md-6" id="column-select-container"></div>\
                     </div>\
                     <div class="row">\
                         <div class="col-md-12" id="table-container"></div>\
@@ -310,10 +369,11 @@ $(function() {
             </div>\
         ',
 
-        initialize: function() {
+        initialize: function(options) {
             this.insertTableView();
             this.listenTo(this.model, 'change update', this.insertTableView);
             this.listenTo(this.collection, 'update', this.insertTableView);
+            this.resultYears = options.resultYears;
         },
 
         tableView: null,
@@ -324,6 +384,13 @@ $(function() {
                 return this.collection.findWhere({ reference: reference });
             }
             return false;
+        },
+        dataTableOptions: {
+            "paging":   false,
+            "ordering": false,
+            "searching": false,
+            "bInfo" : false,
+            "dom": 'tB'
         },
 
         insertTableView: function() {
@@ -336,24 +403,18 @@ $(function() {
                 this.tableView = new TableView({ model: tableModel });
                 this.tableView.render();
                 this.$el.find('#table-container').html(this.tableView.el);
-                this.tableView.$el.find('table').dataTable({
-                    "paging":   false,
-                    "ordering": false,
-                    "searching": false,
-                    "bInfo" : false,
-                    "dom": 'tB',
-                    "buttons": [
-                        {
-                            extend: 'print',
-                            customize: function ( win ) {
-                                $(win.document.body).find('h1').html('<center>' + tableModel.get('label').toUpperCase() + " (" + tableModel.get("year") + ")</center>");
-                            }
-                        },
-                        'copy',
-                        'csv',
-                        'excel',
-                    ]
-                });
+                this.dataTableOptions.buttons = [
+                    {
+                        extend: 'print',
+                        customize: function ( win ){
+                            $(win.document.body).find('h1').html('<center>' + tableModel.get('label').toUpperCase() + ' (' + tableModel.get('year') + ')</center>');
+                        }
+                    },
+                    'copy',
+                    'csv',
+                    'excel'
+                ];
+                this.tableView.$el.find('table').dataTable(this.dataTableOptions);
                 this.tableView.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');
                 this.insertColumnSelectView(tableModel);
             }
@@ -363,18 +424,45 @@ $(function() {
             if (this.columnSelectView) {
                 this.columnSelectView.remove();
             }
-            this.columnSelectView = new ColumnSelectView({ model: tableModel });
+            this.columnSelectView = new ColumnSelectView({
+                model: tableModel,
+            });
             this.columnSelectView.render();
             this.$el.find('#column-select-container').html(this.columnSelectView.el);
         },
 
         render: function() {
-            var tableSelectView = new TableSelectView({ model: this.model });
+            var fiscalTableModel = this.collection.findWhere({ reference: 'fiscal_tots'});
+            var fiscalTableView = new TableView({
+                model: fiscalTableModel
+            });
+            fiscalTableView.render();
+            this.$el.find('#fiscal-totals-container').html(fiscalTableView.el);
+            this.dataTableOptions.buttons = [
+                {
+                    extend: 'print',
+                    customize: function ( win ) {
+                        $(win.document.body).find('h1').html('<center>' + fiscalTableModel.get('label').toUpperCase() + '</center>');
+                    }
+                },
+                'copy',
+                'csv',
+                'excel',
+            ];
+            fiscalTableView.$el.find('table').dataTable(this.dataTableOptions);
+            fiscalTableView.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');
+            var tableSelectView = new TableSelectView({
+                model: this.model,
+                resultYears: this.resultYears,
+                collection: this.collection
+            });
+            tableSelectView.render();
             this.$el.find('#table-select-container').html(tableSelectView.el);
         }
     });
 
     var tablesObj = $('[data-tables]').detach().data('tables');
+    var resultYears = tablesObj['result_years'];
     delete tablesObj['result_years'];
 
     var tables = [];
@@ -387,17 +475,9 @@ $(function() {
 
     var tableDrilldownView = new TableDrilldownView({
         model: new SelectedTableModel(),
-        collection: tables
+        collection: tables,
+        resultYears: resultYears,
     });
     tableDrilldownView.render();
     $('#table-drilldown-container').html(tableDrilldownView.el);
-    $('[data-year]').click(function(e) {
-        e.preventDefault();
-        tables.each(function(table) {
-            table.set('year', $(this).data('year'), {
-                silent: true
-            });
-        }, this);
-        tables.trigger('update');
-    });
-});
+ });
