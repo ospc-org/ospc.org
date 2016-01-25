@@ -271,15 +271,13 @@ def output_detail(request, pk):
     first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
-    json_tables = json.dumps(tables)
     inputs = url.unique_inputs
     is_registered = True if request.user.is_authenticated() else False
     context = {
         'locals':locals(),
         'unique_url':url,
         'taxcalc_version':taxcalc_version,
-        'tables': tables,
-        'json_tables': json_tables,
+        'tables': json.dumps(tables),
         'created_on':created_on,
         'first_year':first_year,
         'is_registered':is_registered
