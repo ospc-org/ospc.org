@@ -170,8 +170,8 @@ def dynamic_finished(request):
     params = {k:inputs[k] for k in ogusa.parameters.USER_MODIFIABLE_PARAMS}
 
     #Create the path information for debugging info to include in the email
-    baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid)
-    policy = "/home/ubuntu/dropQ/OUTPUT_REFORM_{guid}".format(guid)
+    baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid=guid)
+    policy = "/home/ubuntu/dropQ/OUTPUT_REFORM_{guid}".format(guid=guid)
 
     #DynamicOutputUrl.objects.filter(model_pk=5)
     hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
