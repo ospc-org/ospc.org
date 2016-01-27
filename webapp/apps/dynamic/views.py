@@ -142,6 +142,7 @@ def dynamic_finished(request):
     This view sends an email
     """
 
+
     job_id = request.GET['job_id']
     status = request.GET['status']
     qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
@@ -157,7 +158,7 @@ def dynamic_finished(request):
     #Get the celery ID and IP address of the job
     celery_id, hostname = submitted_ids[0]
     #Get the globally unique ID of the job
-    guid, _ = guids[0]
+    _, guid = guids[0]
     result = ogusa_get_results(submitted_ids, status=status)
     dsi.tax_result = result
     dsi.creation_date = datetime.datetime.now()
