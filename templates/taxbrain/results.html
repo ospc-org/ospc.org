@@ -9,8 +9,14 @@
   .btn {
     color: black;
   }
+  .text-white {
+    color: white;
+  }
   .table > thead > tr > th {
     border: 0;
+  }
+  .single-line {
+    white-space: nowrap;
   }
 </style>
 {% endblock %}
@@ -49,6 +55,14 @@
       <h1>{% flatblock "taxbrain_results_header" %}</h1>
     </div>
     <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="#">version {{ unique_url.taxcalc_vers }}</a> TaxBrain. (ID: 10045)</p>
+    <div class="result-table">
+      <div class="result-table-controls">
+        <a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
+        {% if is_registered %}
+        <a href="/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Link to Dynamic Simulation</a>
+        {% endif %}
+      </div>
+    </div>
   </div>
   <br>
   <div data-tables="{{tables}}"></div>

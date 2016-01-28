@@ -27,7 +27,7 @@ $(function() {
                 } else if (col.divisor === 1000000000) {
                     col.divisor_label += 'Billions';
                 }
-                col.divisor_label += col.units ? col.divisor_label ? ' of ' + col.units : col.units : '';
+                // col.divisor_label += col.units ? col.divisor_label ? ' of ' + col.units : col.units : ''; // this adds "of dollars", etc
                 col.label_val = col.label.toString().toLowerCase().split(" ").join("-");
             });
         },
@@ -152,7 +152,7 @@ $(function() {
                             </tr>\
                             <% _.each(model.get("rows"), function(row, idx) { %>\
                             <tr>\
-                                <td class="text-center"><strong><%= model.get("row_labels")[idx] %></strong></td>\
+                                <td class="text-center single-line"><strong><%= model.get("row_labels")[idx] %></strong></td>\
                                 <% _.each(row.cells, function(cell, idx) { %>\
                                 <%   if (model.get("cols")[idx].show) { %>\
                                 <td class="text-center"><% if (cell["tot_value"]) { %><%= cell["tot_value"] %><% } else { %><%= cell["year_values"][model.get("year")] %><% } %></td>\
@@ -160,6 +160,14 @@ $(function() {
                                 <% }) %>\
                             </tr>\
                             <% }) %>\
+                            <tr>\
+                                <td>Source: <a id="source" href=""></a</td>\
+                                <% _.each(model.get("rows")[0].cells, function(cell, idx) { %>\
+                                <%   if (model.get("cols")[idx].show) { %>\
+                                <td></td>\
+                                <%   } %>\
+                                <% }) %>\
+                            </tr>\
                         </tbody>\
                     </table>\
                 </div>\
@@ -168,6 +176,7 @@ $(function() {
 
         render: function() {
             this.$el.html(this.template({ model: this.model }));
+            this.$el.find('#source').attr('href', window.location.href).text(window.location.href);
         }
     })
 
@@ -205,31 +214,31 @@ $(function() {
                 <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
-                  <li class="active" data-difference="false"><a href="#">Diagnostic</a></li>\
-                  <li data-difference="true"><a href="#">Difference</a></li>\
+                  <li data-difference="false" class="active"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.diagnostic %>" href="#">Diagnostic</a></li>\
+                  <li data-difference="true"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.difference %>" href="#">Difference</a></li>\
                 </ul>\
                 <br>\
                 <br>\
                 <ul id="plan" class="nav nav-pills nav-justified">\
-                  <li class="active" data-plan="X"><a href="#">Base</a></li>\
-                  <li data-plan="Y"><a href="#">User</a></li>\
+                  <li class="active" data-plan="X"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.base %>" href="#">Baseline</a></li>\
+                  <li data-plan="Y"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.reform %>" href="#">Reform</a></li>\
                 </ul>\
                 <ul id="tax" class="nav nav-pills nav-justified" style="display:none">\
-                  <li class="active" data-payrolltax="false"><a href="#">Payroll</a></li>\
+                  <li class="active" data-payrolltax="false"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll</a></li>\
                   <li><h1 class="text-center" style="margin:0">+</h1></li>\
-                  <li data-incometax="true"><a href="#">Income</a></li>\
+                  <li data-incometax="true"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income</a></li>\
                 </ul>\
                 <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
-                  <li class="active" data-income="expanded"><a href="#">Expanded Income</a></li>\
-                  <li class="disabled" data-income="adjusted"><a href="#" disabled>Adjusted Income</a></li>\
+                  <li class="active" data-income="expanded"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.expanded %>" href="#">Expanded Income</a></li>\
+                  <li class="disabled" data-income="adjusted"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.adjusted %>" href="#" disabled>Adjusted Income</a></li>\
                 </ul>\
                 <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
-                  <li class="active" data-grouping="bin"><a href="#">Income Bins</a></li>\
-                  <li data-grouping="dec"><a href="#">Income Decimals</a></li>\
+                  <li class="active" data-grouping="bin"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.bins %>" href="#">Income Bins</a></li>\
+                  <li data-grouping="dec"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.deciles %>" href="#">Income Deciles</a></li>\
                 </ul>\
               </div>\
             </div>'),
@@ -295,10 +304,15 @@ $(function() {
 
         initialize: function(options) {
             this.resultYears = options.resultYears;
+            this.tooltips = options.tooltips;
         },
 
         render: function() {
-            this.$el.html(this.template({ result_years: this.resultYears }));
+            this.$el.html(this.template({
+                result_years: this.resultYears,
+                tooltips: this.tooltips
+            }));
+            this.$el.find('[data-toggle="tooltip"]').tooltip()
         }
 
     });
@@ -349,7 +363,7 @@ $(function() {
         render: function() {
             this.$el.html(this.template({ model: this.model }));
         }
-    })
+    });
 
     var TableDrilldownView = Backbone.View.extend({
         el: '\
@@ -374,6 +388,7 @@ $(function() {
             this.listenTo(this.model, 'change update', this.insertTableView);
             this.listenTo(this.collection, 'update', this.insertTableView);
             this.resultYears = options.resultYears;
+            this.tooltips = options.tooltips;
         },
 
         tableView: null,
@@ -454,7 +469,8 @@ $(function() {
             var tableSelectView = new TableSelectView({
                 model: this.model,
                 resultYears: this.resultYears,
-                collection: this.collection
+                collection: this.collection,
+                tooltips: this.tooltips
             });
             tableSelectView.render();
             this.$el.find('#table-select-container').html(tableSelectView.el);
@@ -463,7 +479,9 @@ $(function() {
 
     var tablesObj = $('[data-tables]').detach().data('tables');
     var resultYears = tablesObj['result_years'];
+    var tooltips = tablesObj['tooltips'];
     delete tablesObj['result_years'];
+    delete tablesObj['tooltips'];
 
     var tables = [];
     _.each(_.keys(tablesObj), function(key) {
@@ -477,6 +495,7 @@ $(function() {
         model: new SelectedTableModel(),
         collection: tables,
         resultYears: resultYears,
+        tooltips: tooltips
     });
     tableDrilldownView.render();
     $('#table-drilldown-container').html(tableDrilldownView.el);

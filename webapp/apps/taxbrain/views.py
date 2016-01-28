@@ -275,19 +275,20 @@ def output_detail(request, pk):
     first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
+    tables["tooltips"] = {
+        'diagnostic': DIAGNOSTIC_TOOLTIP,
+        'difference': DIFFERENCE_TOOLTIP,
+        'payroll': PAYROLL_TOOLTIP,
+        'income': INCOME_TOOLTIP,
+        'base': BASE_TOOLTIP,
+        'reform': REFORM_TOOLTIP,
+        'expanded': EXPANDED_TOOLTIP,
+        'adjusted': ADJUSTED_TOOLTIP,
+        'bins': INCOME_BINS_TOOLTIP,
+        'deciles': INCOME_DECILES_TOOLTIP
+    }
     inputs = url.unique_inputs
     is_registered = True if request.user.is_authenticated() else False
-    tooltips = { 'diagnostic': DIAGNOSTIC_TOOLTIP,
-                 'difference': DIFFERENCE_TOOLTIP,
-                 'payroll': PAYROLL_TOOLTIP,
-                 'income': INCOME_TOOLTIP,
-                 'base': BASE_TOOLTIP,
-                 'reform': REFORM_TOOLTIP,
-                 'expanded': EXPANDED_TOOLTIP,
-                 'adjusted': ADJUSTED_TOOLTIP,
-                 'income': INCOME_BINS_TOOLTIP,
-                 'income': INCOME_DECILES_TOOLTIP
-               }
 
     context = {
         'locals':locals(),
@@ -296,8 +297,7 @@ def output_detail(request, pk):
         'tables': json.dumps(tables),
         'created_on': created_on,
         'first_year': first_year,
-        'is_registered': is_registered,
-        'tooltips': tooltips
+        'is_registered': is_registered
     }
 
     return render(request, 'taxbrain/results.html', context)
