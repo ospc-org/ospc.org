@@ -145,9 +145,6 @@ def dynamic_finished(request):
     This view sends an email
     """
 
-    import pdb;pdb.set_trace()
-
-
     job_id = request.GET['job_id']
     status = request.GET['status']
     qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
