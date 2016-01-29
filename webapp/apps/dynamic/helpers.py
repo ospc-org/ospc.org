@@ -433,7 +433,7 @@ def success_text():
     The TaxBrain Team"""
     return message
 
-def failure_text(traceback):
+def failure_text():
     '''
     The text of the email to indicate a successful simulation
     traceback: the traceback to include in the email
@@ -452,7 +452,7 @@ def failure_text(traceback):
     You used the following macroeconomic model parameters: {params}
 
     Better luck next time!
-    The TaxBrain Team""".format(traceback=traceback)
+    The TaxBrain Team"""
     return message
 
 
@@ -507,5 +507,5 @@ def cc_failure_text():
     The path for the policy run is: {policy}
 
     Best,
-    The TaxBrain Team""".format(traceback=traceback)
+    The TaxBrain Team"""
     return message

@@ -119,7 +119,7 @@ def dynamic_input(request, pk):
 
         # Probably a GET request, load a default form
         start_year = request.REQUEST.get('start_year', start_year)
-        if start_year != 2015:
+        if int(start_year) != 2015:
             return HttpResponse('Dynamic simulation must have a start year of 2015!', status=403)
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
@@ -144,6 +144,8 @@ def dynamic_finished(request):
     """
     This view sends an email
     """
+
+    import pdb;pdb.set_trace()
 
 
     job_id = request.GET['job_id']
@@ -199,12 +201,16 @@ def dynamic_finished(request):
                                  hostname=hostname, baseline=baseline,
                                  policy=policy)
     elif status == "FAILURE":
-        text = failure_text(traceback=result['job_fail'], microsim_url=microsim_url,
-                            job_id=job_id, params=params)
-        cc_txt = cc_failure_text(traceback=result['job_fail'], microsim_url=microsim_url,
-                                  job_id=job_id, params=params,
-                                  hostname=hostname, baseline=baseline,
-                                  policy=policy)
+        text = failure_text()
+        text = text.format(traceback=result['job_fail'], microsim_url=microsim_url,
+                           job_id=job_id, params=params)
+
+        cc_txt = cc_failure_text()
+        cc_txt = cc_txt.format(traceback=result['job_fail'],
+                               microsim_url=microsim_url,
+                               job_id=job_id, params=params,
+                               hostname=hostname, baseline=baseline,
+                               policy=policy)
     else:
         raise ValueError("status must be either 'SUCESS' or 'FAILURE'")
 
