@@ -117,6 +117,9 @@ def dynamic_input(request, pk):
     else:
 
         # Probably a GET request, load a default form
+        start_year = request.REQUEST.get('start_year', start_year)
+        if start_year != 2015:
+            return HttpResponse('Dynamic simulation must have a start year of 2015!', status=403)
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))

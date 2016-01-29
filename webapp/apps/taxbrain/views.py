@@ -41,7 +41,7 @@ from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
 tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
-START_YEARS = ('2013', '2014', '2015')
+START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 
 def benefit_surtax_fixup(mod):
     _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
