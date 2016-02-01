@@ -215,30 +215,30 @@ $(function() {
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
                   <li data-difference="false" class="active"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.diagnostic %>" href="#">Diagnostic</a></li>\
-                  <li data-difference="true"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.difference %>" href="#">Difference</a></li>\
+                  <li data-difference="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.difference %>" href="#">Difference</a></li>\
                 </ul>\
                 <br>\
                 <br>\
                 <ul id="plan" class="nav nav-pills nav-justified">\
-                  <li class="active" data-plan="X"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.base %>" href="#">Baseline</a></li>\
-                  <li data-plan="Y"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.reform %>" href="#">Reform</a></li>\
+                  <li class="active" data-plan="X"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.base %>" href="#">Baseline</a></li>\
+                  <li data-plan="Y"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.reform %>" href="#">Reform</a></li>\
                 </ul>\
                 <ul id="tax" class="nav nav-pills nav-justified" style="display:none">\
-                  <li class="active" data-payrolltax="false"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll</a></li>\
+                  <li class="active" data-payrolltax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll</a></li>\
                   <li><h1 class="text-center" style="margin:0">+</h1></li>\
-                  <li data-incometax="true"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income</a></li>\
+                  <li data-incometax="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income</a></li>\
                 </ul>\
                 <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
-                  <li class="active" data-income="expanded"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.expanded %>" href="#">Expanded Income</a></li>\
-                  <li class="disabled" data-income="adjusted"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.adjusted %>" href="#" disabled>Adjusted Income</a></li>\
+                  <li class="active" data-income="expanded"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.expanded %>" href="#">Expanded Income</a></li>\
+                  <li class="disabled" data-income="adjusted"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.adjusted %>" href="#" disabled>Adjusted Income</a></li>\
                 </ul>\
                 <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
-                  <li class="active" data-grouping="bin"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.bins %>" href="#">Income Bins</a></li>\
-                  <li data-grouping="dec"><a data-difference="false" data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.deciles %>" href="#">Income Deciles</a></li>\
+                  <li class="active" data-grouping="bin"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.bins %>" href="#">Income Bins</a></li>\
+                  <li data-grouping="dec"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.deciles %>" href="#">Income Deciles</a></li>\
                 </ul>\
               </div>\
             </div>'),
