@@ -90,7 +90,7 @@ TAXCALC_COMING_SOON_FIELDS = [
     '_Dividend_rt1', '_Dividend_thd1',
     '_Dividend_rt2', '_Dividend_thd2',
     '_Dividend_rt3', '_Dividend_thd3',
-    '_BE_cg_trn', '_FEI_ec_c'
+    '_BE_CG_trn', '_FEI_ec_c'
     ]
 
 TAXCALC_HIDDEN_FIELDS = [
