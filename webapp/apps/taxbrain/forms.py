@@ -12,7 +12,7 @@ def bool_like(x):
     return b
 
 
-TAXCALC_DEFAULTS_2015 = default_policy(2015)
+TAXCALC_DEFAULTS_2016 = default_policy(2016)
 
 
 class PersonalExemptionForm(ModelForm):
@@ -180,7 +180,7 @@ class PersonalExemptionForm(ModelForm):
         widgets = {}
         labels = {}
 
-        for param in TAXCALC_DEFAULTS_2015.values():
+        for param in TAXCALC_DEFAULTS_2016.values():
             for field in param.col_fields:
                 attrs = {
                     'class': 'form-control',
