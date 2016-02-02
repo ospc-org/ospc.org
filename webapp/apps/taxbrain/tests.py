@@ -5,6 +5,9 @@ from .models import convert_to_floats
 from .helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv)
 import taxcalc
+from taxcalc import Policy
+
+FBY = 2015
 
 def cycler(max):
     count = 0
@@ -14,30 +17,54 @@ def cycler(max):
 
 class TaxInputTests(TestCase):
 
+
     def test_convert(self):
+
         values = {"II_brk2_0": [36000., 38000., 40000.],
                     "II_brk2_1": [72250., 74000.],
                     "II_brk2_2": [36500.]
                     }
 
-        ans = package_up_vars(values)
+        ans = package_up_vars(values, first_budget_year=FBY)
+        pp = Policy(start_year=2013)
+        pp.set_year(FBY)
+        # irates are rates for 2015, 2016, and 2017
+        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+                                            num_years_to_expand=3)
 
+        # User choices propagate through to all future years
+        # The user has specified part of the parameter up to 2017.
+        # So, we choose to fill in the propagated value, which is
+        # either inflated or not.
+
+        f2_2016 = int(36500 * (1.0 + irates[0]))
+        f3_2016 = int(50200 * (1.0 + irates[0]))
+        f4_2016 = int(74900 * (1.0 + irates[0]))
+        f5_2016 = int(37450 * (1.0 + irates[0]))
+
+        f1_2017 = int(74000 * (1.0 + irates[1]))
+        f2_2017 = int(f2_2016 * (1.0 + irates[1]))
+        #f3_2017 = int(f3_2016 * (1.0 + irates[1]))
+        #f4_2017 = int(f4_2016 * (1.0 + irates[1]))
+        #f5_2017 = int(f5_2016 * (1.0 + irates[1]))
+    
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
-                [38000, 74000, None, None, None, None],
-                [40000, None, None, None, None, None]]
+                [38000, 74000, f2_2016, 50400, 75300, 37650],
+                [40000, f1_2017, f2_2017, None, None, None]]
 
         assert ans['_II_brk2'] == exp
         assert len(ans) == 1
 
+
     def test_package_up_vars_CTC(self):
         values = {"CTC_c": [2000.0]}
-        ans = package_up_vars(values)
+        ans = package_up_vars(values, first_budget_year=FBY)
         exp =  [2000.0]
         assert ans['_CTC_c'] == exp
 
     def test_package_up_vars_with_cpi(self):
         values = {"CTC_c_cpi": True}
-        ans = package_up_vars(values)
+        ans = package_up_vars(values, first_budget_year=FBY)
         assert ans == {'_CTC_c_cpi': True}
 
 
@@ -47,12 +74,39 @@ class TaxInputTests(TestCase):
                     "II_brk2_2": [36500.]
                     }
 
-        ans = package_up_vars(values)
+        ans = package_up_vars(values, first_budget_year=FBY)
 
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, None, None, None, None],
                 [40000, None, None, None, None, None],
                 [41000, None, None, None, None, None]]
+
+        pp = Policy(start_year=2013)
+        pp.set_year(FBY)
+        # irates are rates for 2015, 2016, and 2017
+        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+                                            num_years_to_expand=4)
+
+        # User choices propagate through to all future years
+        # The user has specified part of the parameter up to 2017.
+        # So, we choose to fill in the propagated value, which is
+        # either inflated or not.
+
+        f2_2016 = int(36500 * (1.0 + irates[0]))
+        f3_2016 = int(50200 * (1.0 + irates[0]))
+        f4_2016 = int(74900 * (1.0 + irates[0]))
+        f5_2016 = int(37450 * (1.0 + irates[0]))
+
+        f1_2017 = int(74000 * (1.0 + irates[1]))
+        f2_2017 = int(f2_2016 * (1.0 + irates[1]))
+
+        f1_2018 = int(f1_2017 * (1.0 + irates[2]))
+        f2_2018 = int(f2_2017 * (1.0 + irates[2]))
+    
+        exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
+                [38000, 74000, f2_2016, 50400, 75300, 37650],
+                [40000, f1_2017, f2_2017, None, None, None],
+                [41000, f1_2018, f2_2018, None, None, None]]
 
         assert ans['_II_brk2'] == exp
 
@@ -64,7 +118,7 @@ class TaxInputTests(TestCase):
 
         values['II_em'] = [4000]
 
-        ans = package_up_vars(values)
+        ans = package_up_vars(values, first_budget_year=FBY)
 
         defaults = taxcalc.policy.Policy.default_data(start_year=2015)
 
@@ -129,8 +183,10 @@ class TaxInputTests(TestCase):
                     u'perc80-90_2', u'perc10-20_0', u'perc10-20_1', u'perc10-20_2',
                     u'perc60-70_0', u'perc60-70_1', u'perc60-70_2']
 
+        tot_keys = [u'combined_tax', u'ind_tax', u'payroll_tax']
+
         tax_results = {}
-        tax_results[u'fiscal_tots'] = [1,2,3]
+        tax_results[u'fiscal_tots'] = {k:[1,2,3] for k in tot_keys}
         tax_results[u'mY_bin'] = { k:[next(c)] for k in bin_keys}
         tax_results[u'mX_bin'] = { k:[next(c)] for k in bin_keys}
         tax_results[u'df_bin'] = { k:[next(c)] for k in bin_keys}
@@ -138,7 +194,7 @@ class TaxInputTests(TestCase):
         tax_results[u'mX_dec'] = { k:[next(c)] for k in dec_keys}
         tax_results[u'df_dec'] = { k:[next(c)] for k in dec_keys}
 
-        ans = format_csv(tax_results, u'42')
+        ans = format_csv(tax_results, u'42', first_budget_year=FBY)
         assert ans[0] == ['#URL: http://www.ospc.org/taxbrain/42/']
 
 

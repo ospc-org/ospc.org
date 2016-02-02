@@ -11,7 +11,7 @@ djrill
 pytest-django
 pytest-xdist
 psycopg2==2.5.4
-django-user-accounts==1.0
+django-user-accounts
 django-uuidfield==0.5.0
 django-queryset-csv==0.2.10
 newrelic==2.58.2.45

@@ -17,6 +17,7 @@ MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import taxcalc
+from taxcalc import Policy
 #
 # General helpers
 #
@@ -253,6 +254,56 @@ def expand_list(x, num_years):
         return expand_1D(x, num_years)
 
 
+def propagate_user_list(x, num_years, cpi, first_budget_year):
+    """
+    Dispatch to either expand_1D or expand2D depending on the dimension of x
+
+    Parameters:
+    -----------
+    x : list from user to progagate forward in time. The first value is for
+        year 'first_budget_year'. The value at index i is the value for
+        budget year first_budget_year + i. 
+
+    num_years: int 
+               Number of budget years to expand
+
+    cpi: Bool
+
+    first_budget_year: int 
+
+    Returns:
+    --------
+    list of length 'num_years'. if 'cpi'==True, the values will be inflated
+    based on the last value the user specified
+
+    """
+    # x can't be empty
+    assert x
+
+    pp = Policy(start_year=2013)
+    pp.set_year(first_budget_year)
+    # irates are rates for 2015, 2016, and 2017
+    if cpi:
+        irates = pp.indexing_rates_for_update(param_name='II_brk2',
+                                              calyear=first_budget_year,
+                                              num_years_to_expand=num_years)
+    else:
+        irates = [1.0] * num_years
+
+    last_val = x[-1]
+    ans = [None] * num_years
+    for i in range(num_years):
+        if i < len(x):
+            ans[i] = x[i]
+        else:
+            ans[i] = int(ans[i-1] * (1.0 + irates[i-1]))
+
+
+    print "x is ", x
+    print "ans is ", ans
+    return ans
+
+
 def convert_to_floats(tsi):
     """
     A helper function that tax all of the fields of a TaxSaveInputs model
@@ -308,6 +359,8 @@ def leave_name_in(key, val, dd):
 
 def package_up_vars(user_values, first_budget_year):
     dd = taxcalc.policy.Policy.default_data(start_year=first_budget_year)
+    dd_meta = taxcalc.policy.Policy.default_data(metadata=True,
+                                                 start_year=first_budget_year)
     growth_dd = taxcalc.growth.Growth.default_data(start_year=first_budget_year)
     behavior_dd = taxcalc.Behavior.default_data(start_year=first_budget_year)
     dd.update(growth_dd)
@@ -337,21 +390,44 @@ def package_up_vars(user_values, first_budget_year):
             default_data = dd["_" + k]
             param = "_" + k
 
+        # What is the CPI setting for this parameter?
+        cpi_flag_from_user = user_values.get(param + "_cpi", None)
+        if cpi_flag_from_user is None:
+            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
+
+        if cpi_flag_from_user is None:
+            attributes = dd_meta[param]
+            cpi_flag = attributes['cpi_inflated']
+        else:
+            cpi_flag = cpi_flag_from_user
+
         # get max number of years to advance
         _max = 0
         for name in vals:
             num_years = len(user_values[name])
             if num_years > _max:
                 _max = num_years
-        expnded = expand_list(default_data, _max)
+        expnded_defaults = expand_list(default_data, _max)
         #Now copy necessary data to expanded array
-        for name in vals:
+        for name in sorted(vals):
             idx = int(name[-1]) # either 0, 1, 2, 3
             user_arr = user_values[name]
-            for new_arr, user_val in zip(expnded, user_arr):
+            if len(user_arr) < expnded_defaults:
+                user_arr = propagate_user_list(user_arr,
+                                               num_years=len(expnded_defaults),
+                                               cpi=cpi_flag,
+                                               first_budget_year=first_budget_year)
+            for new_arr, user_val in zip(expnded_defaults, user_arr):
                 new_arr[idx] = int(user_val)
             del user_values[name]
-        ans[param] = expnded
+        """for name in vals:
+            idx = int(name[-1]) # either 0, 1, 2, 3
+            user_arr = user_values[name]
+            for new_arr, user_val in zip(expnded_defaults, user_arr):
+                new_arr[idx] = int(user_val)
+            del user_values[name]"""
+        #user_mask = [[None] * len(default_data[0])]*_max
+        ans[param] = expnded_defaults
 
     #Process remaining values set by user
     for k, v in user_values.items():
@@ -366,6 +442,25 @@ def package_up_vars(user_values, first_budget_year):
         else:
             #add a leading underscore
             param = "_" + k
+
+        default_data = dd[param]
+
+        # What is the CPI setting for this parameter?
+        cpi_flag_from_user = user_values.get(param + "_cpi", None)
+        if cpi_flag_from_user is None:
+            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
+        if cpi_flag_from_user is None:
+            attributes = dd_meta[param]
+            cpi_flag = attributes['cpi_inflated']
+        else:
+            cpi_flag = cpi_flag_from_user
+
+        if len(v) < expnded_defaults:
+            v = propagate_user_list(v,
+                                    num_years=len(default_data),
+                                    cpi=cpi_flag,
+                                    first_budget_year=first_budget_year)
+
         ans[param] = v
 
     return ans
@@ -800,7 +895,7 @@ def format_csv(tax_results, url_id, first_budget_year):
 
     #FISCAL TOTS
     res.append(["#fiscal totals data"])
-    ft = tax_results.get('fiscal_tots', [])
+    ft = tax_results.get('fiscal_tots', {})
     yrs = [first_budget_year + i for i in range(0, len(ft['ind_tax']))]
     if yrs:
         res.append(yrs)
