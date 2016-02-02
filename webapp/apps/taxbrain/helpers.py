@@ -81,7 +81,7 @@ dqversion_info = dropq._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
-START_YEAR = int(os.environ.get('START_YEAR', 2015))
+START_YEAR = int(os.environ.get('START_YEAR', 2016))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")

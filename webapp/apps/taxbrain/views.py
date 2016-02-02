@@ -85,7 +85,7 @@ def personal_results(request):
     handles the calculation on the inputs.
     """
     no_inputs = False
-    start_year = '2015'
+    start_year = '2016'
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
 
