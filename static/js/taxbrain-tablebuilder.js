@@ -220,7 +220,7 @@ $(function() {
                 <br>\
                 <br>\
                 <ul id="plan" class="nav nav-pills nav-justified">\
-                  <li class="active" data-plan="X"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.base %>" href="#">Baseline</a></li>\
+                  <li class="active" data-plan="X"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.base %>" href="#">Current Law</a></li>\
                   <li data-plan="Y"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.reform %>" href="#">Reform</a></li>\
                 </ul>\
                 <ul id="tax" class="nav nav-pills nav-justified" style="display:none">\
