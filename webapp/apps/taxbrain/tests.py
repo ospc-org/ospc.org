@@ -122,14 +122,43 @@ class TaxInputTests(TestCase):
 
         defaults = taxcalc.policy.Policy.default_data(start_year=2015)
 
+        pp = Policy(start_year=2013)
+        pp.set_year(FBY)
+        # irates are rates for 2015, 2016, and 2017
+        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+                                            num_years_to_expand=4)
+
+        # User choices propagate through to all future years
+        # The user has specified part of the parameter up to 2017.
+        # So, we choose to fill in the propagated value, which is
+        # either inflated or not.
+
+        f2_2016 = int(36500 * (1.0 + irates[0]))
+        f3_2016 = int(50200 * (1.0 + irates[0]))
+        f4_2016 = int(74900 * (1.0 + irates[0]))
+        f5_2016 = int(37450 * (1.0 + irates[0]))
+
+        f1_2017 = int(74000 * (1.0 + irates[1]))
+        f2_2017 = int(f2_2016 * (1.0 + irates[1]))
+
+        f1_2018 = int(f1_2017 * (1.0 + irates[2]))
+        f2_2018 = int(f2_2017 * (1.0 + irates[2]))
+
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
-                [38000, 74000, None, None, None, None],
-                [40000, None, None, None, None, None],
-                [41000, None, None, None, None, None]]
+                [38000, 74000, f2_2016, 50400, 75300, 37650],
+                [40000, f1_2017, f2_2017, None, None, None],
+                [41000, f1_2018, f2_2018, None, None, None]]
 
         assert ans['_II_brk2'] == exp
-        exp_em = defaults['_II_em']
-        exp_em[0] = 4000
+
+        # For scalar parameter values, we still have that all user
+        # choices propagate up through whatever is specified as 
+        # a default. We know that _II_em is specified up to 2016, so
+        # package up vars needs to overwrite those default and return
+        # 2015 and 2016 values
+
+        exp_em = [4000, int(4000 *(1 + irates[0]))]
+        import pdb;pdb.set_trace()
         assert ans['_II_em'] == exp_em
         assert len(ans) == 2
 
@@ -198,12 +227,12 @@ class TaxInputTests(TestCase):
         assert ans[0] == ['#URL: http://www.ospc.org/taxbrain/42/']
 
 
-        def test_arrange_totals_by_row(self):
-            total_row_names = ["ind_tax", "payroll_tax", "combined_tax"]
-            tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3", 
-                    'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6", 
-                    'combined_tax_0': "7", 'combined_tax_1': "8", 'combined_tax_2': "9"}
-            ans = arrange_totals_by_row(tots, total_row_names)
-            exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
-            assert ans == exp
+    def test_arrange_totals_by_row(self):
+        total_row_names = ["ind_tax", "payroll_tax", "combined_tax"]
+        tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3", 
+                'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6", 
+                'combined_tax_0': "7", 'combined_tax_1': "8", 'combined_tax_2': "9"}
+        ans = arrange_totals_by_row(tots, total_row_names)
+        exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
+        assert ans == exp
 

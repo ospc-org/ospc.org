@@ -455,7 +455,7 @@ def package_up_vars(user_values, first_budget_year):
         else:
             cpi_flag = cpi_flag_from_user
 
-        if len(v) < expnded_defaults:
+        if len(v) < default_data:
             v = propagate_user_list(v,
                                     num_years=len(default_data),
                                     cpi=cpi_flag,
