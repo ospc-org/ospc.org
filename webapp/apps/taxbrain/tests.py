@@ -3,7 +3,7 @@ from django.test import TestCase
 from .models import TaxSaveInputs
 from .models import convert_to_floats
 from .helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                     format_csv)
+                     format_csv, arrange_totals_by_row)
 import taxcalc
 from taxcalc import Policy
 
@@ -158,7 +158,6 @@ class TaxInputTests(TestCase):
         # 2015 and 2016 values
 
         exp_em = [4000, int(4000 *(1 + irates[0]))]
-        import pdb;pdb.set_trace()
         assert ans['_II_em'] == exp_em
         assert len(ans) == 2
 
