@@ -15,6 +15,7 @@ install:
   - conda install -c ospc --file conda-requirements.txt
   - pip install -r requirements.txt
   - pip install -r requirements_dev.txt
+  - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
 
 before_script:
   - python manage.py syncdb –migrate –noinput
