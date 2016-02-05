@@ -18,7 +18,7 @@ install:
   - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
 
 before_script:
-  - python manage.py syncdb –migrate –noinput
+  - python manage.py syncdb -migrate -noinput
 
 script:
   - python manage.py test webapp/apps/taxbrain
