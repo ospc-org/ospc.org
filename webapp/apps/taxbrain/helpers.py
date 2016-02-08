@@ -288,7 +288,7 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
                                               calyear=first_budget_year,
                                               num_years_to_expand=num_years)
     else:
-        irates = [1.0] * num_years
+        irates = [0.0] * num_years
 
     last_val = x[-1]
     ans = [None] * num_years

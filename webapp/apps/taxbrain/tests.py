@@ -112,7 +112,7 @@ class TaxInputTests(TestCase):
 
         ans = package_up_vars(values, first_budget_year=FBY)
 
-        defaults = taxcalc.policy.Policy.default_data(start_year=2015)
+        defaults = taxcalc.policy.Policy.default_data(start_year=FBY)
 
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
@@ -152,6 +152,29 @@ class TaxInputTests(TestCase):
         exp_em = [4000, int(4000 *(1 + irates[0]))]
         assert ans['_II_em'] == exp_em
         assert len(ans) == 2
+
+    def test_convert_non_cpi_inflated(self):
+        values = {"FEI_ec_c": [100000.]}
+
+        ans = package_up_vars(values, first_budget_year=FBY)
+
+        defaults = taxcalc.policy.Policy.default_data(start_year=2015)
+
+        pp = Policy(start_year=2013)
+        pp.set_year(FBY)
+        # irates are rates for 2015, 2016, and 2017
+        irates = pp.indexing_rates_for_update(param_name='FEI_ec_c', calyear=FBY,
+                                            num_years_to_expand=2)
+
+        # User choices propagate through to all future years
+        # The user has specified the parameter just for 2015, but
+        # the defaults JSON file has values up to 2016. We should
+        # give back values up to 2016, with user choice propagating
+
+        f2_2016 = 100000
+
+        exp =  [100000, f2_2016]
+        assert ans['_FEI_ec_c'] == exp
 
     def test_expand1d(self):
         x = [1, 2, 3]
