@@ -3,7 +3,6 @@
 $(function() {
     var TableModel = Backbone.Model.extend({
         defaults: {
-            year: 2015,
             row_labels: [
                 'Individual Income Tax Liability Change',
                 'Payroll Tax Liability Change',
@@ -480,12 +479,14 @@ $(function() {
     var tablesObj = $('[data-tables]').detach().data('tables');
     var resultYears = tablesObj['result_years'];
     var tooltips = tablesObj['tooltips'];
+    var firstYear = resultYears[0];
     delete tablesObj['result_years'];
     delete tablesObj['tooltips'];
 
     var tables = [];
     _.each(_.keys(tablesObj), function(key) {
         tablesObj[key]['reference'] = key;
+        tablesObj[key]['year'] = firstYear;
         tables.push(tablesObj[key]);
     });
 
