@@ -80,7 +80,7 @@ dqversion_info = dropq._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
-START_YEAR = int(os.environ.get('START_YEAR', 2015))
+START_YEAR = int(os.environ.get('START_YEAR', 2016))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
@@ -90,7 +90,7 @@ TAXCALC_COMING_SOON_FIELDS = [
     '_Dividend_rt1', '_Dividend_thd1',
     '_Dividend_rt2', '_Dividend_thd2',
     '_Dividend_rt3', '_Dividend_thd3',
-    '_BE_cg_per', '_BE_cg_trn'
+    '_BE_CG_trn', '_FEI_ec_c'
     ]
 
 TAXCALC_HIDDEN_FIELDS = [
@@ -528,23 +528,10 @@ def default_policy(first_budget_year):
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
-    #Behavior Effects not in params.json yet. Add in the appropriate info so that
-    #the params dictionary has the right info
-    # value, col_label, long_name, description, irs_ref, notes
-    be_params = []
-    be_inc_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Income Effect',
-                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-    be_sub_param = {'value':[0], 'col_label':['Behavior Effect'], 'long_name':'Substitution Effect',
-                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-    be_cg_per_param = {'value':[0], 'col_label':['label'], 'long_name':'Persistent',
-                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-    be_cg_trn_param= {'value':[0], 'col_label':['label'], 'long_name':'Transitory',
-                    'description': 'Behavior Effects', 'irs_ref':'', 'notes':''}
-    be_params.append(('_BE_inc', be_inc_param))
-    be_params.append(('_BE_sub', be_sub_param))
-    be_params.append(('_BE_cg_per', be_cg_per_param))
-    be_params.append(('_BE_cg_trn', be_cg_trn_param))
-    for k,v in be_params:
+    BEHAVIOR_DEFAULT_PARAMS_JSON = taxcalc.Behavior.default_data(metadata=True,
+                                                                 start_year=first_budget_year)
+
+    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.iteritems():
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
