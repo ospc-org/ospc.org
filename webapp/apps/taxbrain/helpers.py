@@ -298,9 +298,6 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
         else:
             ans[i] = int(ans[i-1] * (1.0 + irates[i-1]))
 
-
-    print "x is ", x
-    print "ans is ", ans
     return ans
 
 
@@ -369,6 +366,21 @@ def package_up_vars(user_values, first_budget_year):
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
             del user_values[k]
+
+    def discover_cpi_flag(param):
+        ''' Helper function to discover the CPI setting for this parameter'''
+        cpi_flag_from_user = user_values.get(param + "_cpi", None)
+        if cpi_flag_from_user is None:
+            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
+
+        if cpi_flag_from_user is None:
+            attributes = dd_meta[param]
+            cpi_flag = attributes['cpi_inflated']
+        else:
+            cpi_flag = cpi_flag_from_user
+        return cpi_flag
+
+
     name_stems = {}
     ans = {}
     #Find the 'broken out' array values, these have special treatment
@@ -390,16 +402,8 @@ def package_up_vars(user_values, first_budget_year):
             default_data = dd["_" + k]
             param = "_" + k
 
-        # What is the CPI setting for this parameter?
-        cpi_flag_from_user = user_values.get(param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
-
-        if cpi_flag_from_user is None:
-            attributes = dd_meta[param]
-            cpi_flag = attributes['cpi_inflated']
-        else:
-            cpi_flag = cpi_flag_from_user
+        # Discover the CPI setting for this parameter
+        cpi_flag = discover_cpi_flag(param)
 
         # get max number of years to advance
         _max = 0
@@ -420,13 +424,6 @@ def package_up_vars(user_values, first_budget_year):
             for new_arr, user_val in zip(expnded_defaults, user_arr):
                 new_arr[idx] = int(user_val)
             del user_values[name]
-        """for name in vals:
-            idx = int(name[-1]) # either 0, 1, 2, 3
-            user_arr = user_values[name]
-            for new_arr, user_val in zip(expnded_defaults, user_arr):
-                new_arr[idx] = int(user_val)
-            del user_values[name]"""
-        #user_mask = [[None] * len(default_data[0])]*_max
         ans[param] = expnded_defaults
 
     #Process remaining values set by user
@@ -445,15 +442,8 @@ def package_up_vars(user_values, first_budget_year):
 
         default_data = dd[param]
 
-        # What is the CPI setting for this parameter?
-        cpi_flag_from_user = user_values.get(param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            attributes = dd_meta[param]
-            cpi_flag = attributes['cpi_inflated']
-        else:
-            cpi_flag = cpi_flag_from_user
+        # Discover the CPI setting for this parameter
+        cpi_flag = discover_cpi_flag(param)
 
         if len(v) < default_data:
             v = propagate_user_list(v,

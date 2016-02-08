@@ -44,9 +44,6 @@ class TaxInputTests(TestCase):
 
         f1_2017 = int(74000 * (1.0 + irates[1]))
         f2_2017 = int(f2_2016 * (1.0 + irates[1]))
-        #f3_2017 = int(f3_2016 * (1.0 + irates[1]))
-        #f4_2017 = int(f4_2016 * (1.0 + irates[1]))
-        #f5_2017 = int(f5_2016 * (1.0 + irates[1]))
     
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, f2_2016, 50400, 75300, 37650],
@@ -75,11 +72,6 @@ class TaxInputTests(TestCase):
                     }
 
         ans = package_up_vars(values, first_budget_year=FBY)
-
-        exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
-                [38000, 74000, None, None, None, None],
-                [40000, None, None, None, None, None],
-                [41000, None, None, None, None, None]]
 
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
