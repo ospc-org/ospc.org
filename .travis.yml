@@ -1,0 +1,28 @@
+language: python
+
+python:
+  - "2.7"
+
+install:
+  # Install conda
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update conda
+  - conda create -n webappdev python=$TRAVIS_PYTHON_VERSION pytest setuptools 
+  - source activate webappdev
+  - conda install -c ospc --file conda-requirements.txt
+  - echo -n 'git+https://' >> requirements.txt
+  - echo -n $OSPC_GITHUB >> requirements.txt
+  - echo '@github.com/OpenSourcePolicyCenter/dropq.git@0.6.1#egg=dropq-0.6.1-py2.7.egg' >> requirements.txt
+  - pip install -r requirements.txt
+  - pip install -r requirements_dev.txt
+  - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
+
+before_script:
+  - python manage.py syncdb --noinput
+  - python manage.py migrate --fake
+
+script:
+  - python manage.py test webapp/apps/taxbrain
