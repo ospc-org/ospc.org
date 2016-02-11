@@ -6,7 +6,7 @@ import os
 from mock import Mock
 import sys
 MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
+                'matplotlib', 'matplotlib.ticker', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
 
@@ -53,7 +53,7 @@ def dynamic_input(request, pk):
     """
 
     # Only acceptable year for dynamic simulations right now
-    start_year=2016
+    start_year=2015
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
@@ -72,7 +72,7 @@ def dynamic_input(request, pk):
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
             # set the start year
-            start_year = 2016
+            start_year = 2015
 
             #get microsim data 
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -119,8 +119,8 @@ def dynamic_input(request, pk):
 
         # Probably a GET request, load a default form
         start_year = request.REQUEST.get('start_year', start_year)
-        if int(start_year) != 2016:
-            return HttpResponse('Dynamic simulation must have a start year of 2016!', status=403)
+        if int(start_year) != 2015:
+            return HttpResponse('Dynamic simulation must have a start year of 2015!', status=403)
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))
