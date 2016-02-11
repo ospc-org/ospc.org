@@ -5,8 +5,8 @@ import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.ticker', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
 
@@ -38,8 +38,9 @@ from .helpers import (default_parameters, submit_ogusa_calculation, job_submitte
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-import ogusa
-ogversion_info = ogusa._version.get_versions()
+version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
+with open(version_path, "r") as f:
+    ogversion_info = json.load(f)
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 

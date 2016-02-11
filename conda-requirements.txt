@@ -1,7 +1,4 @@
-numba
+nomkl
 taxcalc
-reportlab
-boto
 gevent
-pillow
 ogusa
