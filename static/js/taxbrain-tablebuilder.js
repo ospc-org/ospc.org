@@ -213,8 +213,8 @@ $(function() {
                 <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
-                  <li data-difference="false" class="active"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.diagnostic %>" href="#">Diagnostic</a></li>\
-                  <li data-difference="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.difference %>" href="#">Difference</a></li>\
+                  <li data-difference="false" class="active"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.diagnostic %>" href="#">Diagnostic Table</a></li>\
+                  <li data-difference="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.difference %>" href="#">Difference Table</a></li>\
                 </ul>\
                 <br>\
                 <br>\
