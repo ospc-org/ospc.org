@@ -171,7 +171,12 @@ def dynamic_finished(request):
     ser_model = serializers.serialize('json', [dsi])
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
-    params = {k:inputs[k] for k in ogusa.parameters.USER_MODIFIABLE_PARAMS}
+
+    usermods_path = os.path.join(os.path.split(__file__)[0], "ogusa_user_modifiable.json")
+    with open(usermods_path, "r") as f:
+         ump = json.load(f)
+         USER_MODIFIABLE_PARAMS = ump["USER_MODIFIABLE_PARAMS"]
+    params = {k:inputs[k] for k in USER_MODIFIABLE_PARAMS}
 
     #Create the path information for debugging info to include in the email
     baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid=guid)
