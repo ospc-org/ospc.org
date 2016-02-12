@@ -7,8 +7,8 @@ import sys
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.ticker', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+                
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from ..taxbrain.helpers import TaxCalcParam, package_up_vars
@@ -93,8 +93,9 @@ tcversion_info = taxcalc._version.get_versions()
 #ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
                   #u'dirty': False, u'version': u'0.1.1', u'error': None}
 
-import ogusa
-ogversion_info = ogusa._version.get_versions()
+version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
+with open(version_path, "r") as f:
+    ogversion_info = json.load(f)
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
@@ -128,11 +129,10 @@ def convert_to_floats(tsi):
 # Create a list of default parameters
 def default_parameters(first_budget_year):
 
-    # OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters()
 
-    OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters(True, guid='',
-            user_modifiable=True, metadata=True)
-
+    param_path = os.path.join(os.path.split(__file__)[0], "ogusa_parameters.json")
+    with open(param_path, "r") as f:
+        OGUSA_DEFAULT_PARAMS_JSON = json.load(f)
 
     default_ogusa_params = {}
     for k,v in OGUSA_DEFAULT_PARAMS_JSON.iteritems():

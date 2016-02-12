@@ -5,8 +5,8 @@ import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.ticker', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
 
@@ -38,8 +38,9 @@ from .helpers import (default_parameters, submit_ogusa_calculation, job_submitte
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-import ogusa
-ogversion_info = ogusa._version.get_versions()
+version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
+with open(version_path, "r") as f:
+    ogversion_info = json.load(f)
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
@@ -170,7 +171,12 @@ def dynamic_finished(request):
     ser_model = serializers.serialize('json', [dsi])
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
-    params = {k:inputs[k] for k in ogusa.parameters.USER_MODIFIABLE_PARAMS}
+
+    usermods_path = os.path.join(os.path.split(__file__)[0], "ogusa_user_modifiable.json")
+    with open(usermods_path, "r") as f:
+         ump = json.load(f)
+         USER_MODIFIABLE_PARAMS = ump["USER_MODIFIABLE_PARAMS"]
+    params = {k:inputs[k] for k in USER_MODIFIABLE_PARAMS}
 
     #Create the path information for debugging info to include in the email
     baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid=guid)
