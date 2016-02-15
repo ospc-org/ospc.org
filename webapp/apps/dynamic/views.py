@@ -159,7 +159,7 @@ def dynamic_finished(request):
     guids = dsi.guids
     guids = normalize(guids)
     #Get the celery ID and IP address of the job
-    celery_id, hostname = submitted_ids[0]
+    celery_id, ip_addr = submitted_ids[0]
     #Get the globally unique ID of the job
     _, guid = guids[0]
     result = ogusa_get_results(submitted_ids, status=status)
@@ -201,7 +201,7 @@ def dynamic_finished(request):
                            job_id=job_id, params=params)
         cc_txt = cc_txt.format(url=result_url, microsim_url=microsim_url,
                                  job_id=job_id, params=params,
-                                 hostname=hostname, baseline=baseline,
+                                 hostname=ip_addr, baseline=baseline,
                                  policy=policy)
     elif status == "FAILURE":
         text = failure_text()
