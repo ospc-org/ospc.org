@@ -5,8 +5,8 @@ import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
 
@@ -33,16 +33,17 @@ from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
                       ogusa_get_results, ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
-                      cc_text, cc_failure_text)
+                      cc_text_finished, cc_text_failure, dynamic_params_from_model,
+                      send_cc_email)
 
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-import ogusa
-ogversion_info = ogusa._version.get_versions()
+version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
+with open(version_path, "r") as f:
+    ogversion_info = json.load(f)
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
-
 
 
 @permission_required('taxbrain.view_inputs')
@@ -53,7 +54,7 @@ def dynamic_input(request, pk):
     """
 
     # Only acceptable year for dynamic simulations right now
-    start_year=2016
+    start_year=2015
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
@@ -72,7 +73,7 @@ def dynamic_input(request, pk):
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
             # set the start year
-            start_year = 2016
+            start_year = 2015
 
             #get microsim data 
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -105,7 +106,7 @@ def dynamic_input(request, pk):
                     raise Http404
 
                 model.save()
-                job_submitted(model.user_email, model.job_ids)
+                job_submitted(model.user_email, model)
                 return redirect('show_job_submitted', model.pk)
 
             else:
@@ -119,8 +120,8 @@ def dynamic_input(request, pk):
 
         # Probably a GET request, load a default form
         start_year = request.REQUEST.get('start_year', start_year)
-        if int(start_year) != 2016:
-            return HttpResponse('Dynamic simulation must have a start year of 2016!', status=403)
+        if int(start_year) != 2015:
+            return HttpResponse('Dynamic simulation must have a start year of 2015!', status=403)
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))
@@ -142,7 +143,8 @@ def dynamic_input(request, pk):
 
 def dynamic_finished(request):
     """
-    This view sends an email
+    This view sends an email to the job submitter that the dynamic job
+    is done. It also sends CC emails to the CC list.
     """
 
     job_id = request.GET['job_id']
@@ -151,32 +153,15 @@ def dynamic_finished(request):
     dsi = qs[0]
     email_addr = dsi.user_email
 
-
     # We know the results are ready so go get them from the server
     job_ids = dsi.job_ids
     submitted_ids = normalize(job_ids)
-    guids = dsi.guids
-    guids = normalize(guids)
-    #Get the celery ID and IP address of the job
-    celery_id, hostname = submitted_ids[0]
-    #Get the globally unique ID of the job
-    _, guid = guids[0]
     result = ogusa_get_results(submitted_ids, status=status)
     dsi.tax_result = result
     dsi.creation_date = datetime.datetime.now()
     dsi.save()
 
-    #Get the user-input from the model in a way we can render
-    ser_model = serializers.serialize('json', [dsi])
-    user_inputs = json.loads(ser_model)
-    inputs = user_inputs[0]['fields']
-    params = {k:inputs[k] for k in ogusa.parameters.USER_MODIFIABLE_PARAMS}
-
-    #Create the path information for debugging info to include in the email
-    baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid=guid)
-    policy = "/home/ubuntu/dropQ/OUTPUT_REFORM_{guid}".format(guid=guid)
-
-    #DynamicOutputUrl.objects.filter(model_pk=5)
+    params = dynamic_params_from_model(dsi)
     hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
     microsim_url = hostname + "/taxbrain/" + str(dsi.micro_sim.pk)
     #Create a new output model instance
@@ -188,43 +173,28 @@ def dynamic_finished(request):
         unique_url.unique_inputs = dsi
         unique_url.model_pk = dsi.pk
         unique_url.save()
-        result_url = "{host}/dynamic/results/{pk}".format(host=hostname, pk=unique_url.pk)
+        result_url = "{host}/dynamic/results/{pk}".format(host=hostname,
+                                                          pk=unique_url.pk)
         text = success_text()
-        cc_txt = cc_text()
         text = text.format(url=result_url, microsim_url=microsim_url,
                            job_id=job_id, params=params)
-        cc_txt = cc_txt.format(url=result_url, microsim_url=microsim_url,
-                                 job_id=job_id, params=params,
-                                 hostname=hostname, baseline=baseline,
-                                 policy=policy)
+        cc_txt, subj_txt = cc_text_finished(url=result_url)
+
     elif status == "FAILURE":
         text = failure_text()
         text = text.format(traceback=result['job_fail'], microsim_url=microsim_url,
                            job_id=job_id, params=params)
 
-        cc_txt = cc_failure_text()
-        cc_txt = cc_txt.format(traceback=result['job_fail'],
-                               microsim_url=microsim_url,
-                               job_id=job_id, params=params,
-                               hostname=hostname, baseline=baseline,
-                               policy=policy)
+        cc_txt, subj_txt = cc_text_failure(traceback=result['job_fail'])
     else:
-        raise ValueError("status must be either 'SUCESS' or 'FAILURE'")
+        raise ValueError("status must be either 'SUCCESS' or 'FAILURE'")
 
     send_mail(subject="Your TaxBrain simulation has completed!",
         message = text,
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
 
-    other_email_addrs = os.environ.get('CC_EMAIL_ADDRESSES', None)
-    if other_email_addrs:
-        other_email_addrs = other_email_addrs.split(',')
-        send_mail(subject="A TaxBrain simulation has completed!",
-            message = cc_txt,
-            from_email = "Open Source Policy Center <mailing@ospc.org>",
-            recipient_list = other_email_addrs)
-
-
+    send_cc_email(cc_txt, subj_txt, dsi)
     response = HttpResponse('')
 
     return response

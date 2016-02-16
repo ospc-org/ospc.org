@@ -3,12 +3,13 @@ import requests
 import dropq
 import json
 import sys
+from django.core import serializers
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
+MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
+                
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from ..taxbrain.helpers import TaxCalcParam, package_up_vars
@@ -93,8 +94,9 @@ tcversion_info = taxcalc._version.get_versions()
 #ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
                   #u'dirty': False, u'version': u'0.1.1', u'error': None}
 
-import ogusa
-ogversion_info = ogusa._version.get_versions()
+version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
+with open(version_path, "r") as f:
+    ogversion_info = json.load(f)
 ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
@@ -128,11 +130,10 @@ def convert_to_floats(tsi):
 # Create a list of default parameters
 def default_parameters(first_budget_year):
 
-    # OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters()
 
-    OGUSA_DEFAULT_PARAMS_JSON = ogusa.parameters.get_full_parameters(True, guid='',
-            user_modifiable=True, metadata=True)
-
+    param_path = os.path.join(os.path.split(__file__)[0], "ogusa_parameters.json")
+    with open(param_path, "r") as f:
+        OGUSA_DEFAULT_PARAMS_JSON = json.load(f)
 
     default_ogusa_params = {}
     for k,v in OGUSA_DEFAULT_PARAMS_JSON.iteritems():
@@ -140,10 +141,7 @@ def default_parameters(first_budget_year):
         if 'value' in v:
             v['value'] = [v['value']]
         param = TaxCalcParam(k,v, first_budget_year)
-        print "key is ", k
-        print "param.nice_id is ", param.nice_id
         default_ogusa_params[param.nice_id] = param
-
 
     return default_ogusa_params
 
@@ -301,16 +299,15 @@ def ogusa_get_results(job_ids, status):
     return results
 
 
-def job_submitted(email_addr, job_id):
+def job_submitted(email_addr, model):
     """
-    Send an email to say that a job was submitted
+    Send emails to say that a job was submitted
     """
 
-    url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_id)
-
-    submitted_ids_and_ips = normalize(job_id)
+    job_ids = model.job_ids
+    url = "http://www.ospc.org/taxbrain/dynamic/{job}".format(job=job_ids)
+    submitted_ids_and_ips = normalize(job_ids)
     submitted_id, submitted_ip = submitted_ids_and_ips[0]
-
     send_mail(subject="Your TaxBrain simulation has been submitted!",
         message = """Hello!
 
@@ -321,6 +318,64 @@ def job_submitted(email_addr, job_id):
         The TaxBrain Team""".format(url=url, job=submitted_id),
         from_email = "Open Source Policy Center <mailing@ospc.org>",
         recipient_list = [email_addr])
+
+    email_txt, subj_txt = cc_text_submitted()
+    send_cc_email(email_txt, subj_txt, model)
+    return
+
+
+def dynamic_params_from_model(model):
+    '''Get user-submitted dynamic parameters from a DynamicSaveInputs model'''
+    ser_model = serializers.serialize('json', [model])
+    user_inputs = json.loads(ser_model)
+    inputs = user_inputs[0]['fields']
+
+    # Read user-modifiable parameters list from file
+    usermods_path = os.path.join(os.path.split(__file__)[0],
+                                 "ogusa_user_modifiable.json")
+    with open(usermods_path, "r") as f:
+         ump = json.load(f)
+         USER_MODIFIABLE_PARAMS = ump["USER_MODIFIABLE_PARAMS"]
+    params = {k:inputs[k] for k in USER_MODIFIABLE_PARAMS}
+    return params
+
+
+def send_cc_email(email_txt, subject_txt, model):
+    ''' Send email_txt in a CC email to the users on the
+        CC_EMAIL_ADDRESSES list
+    '''
+
+    pk = model.micro_sim.pk
+    job_ids = model.job_ids
+    submitted_ids = normalize(job_ids)
+    #Get the celery ID and IP address of the job
+    job_id, ip_addr = submitted_ids[0]
+
+    #Get the globally unique ID of the job
+    guids = model.guids
+    guids = normalize(guids)
+    _, guid = guids[0]
+
+    #Get the user-input from the model in a way we can render
+    params = dynamic_params_from_model(model)
+
+    #Create the path information for debugging info to include in the email
+    baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid=guid)
+    policy = "/home/ubuntu/dropQ/OUTPUT_REFORM_{guid}".format(guid=guid)
+    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+    microsim_url = hostname + "/taxbrain/" + str(pk)
+    cc_txt = email_txt.format(microsim_url=microsim_url,
+                              job_id=job_id, params=params,
+                              hostname=ip_addr, baseline=baseline,
+                              policy=policy)
+
+    other_email_addrs = os.environ.get('CC_EMAIL_ADDRESSES', None)
+    if other_email_addrs:
+        other_email_addrs = other_email_addrs.split(',')
+        send_mail(subject=subject_txt,
+                  message=cc_txt,
+                  from_email="Open Source Policy Center <mailing@ospc.org>",
+                  recipient_list=other_email_addrs)
 
     return
 
@@ -456,17 +511,13 @@ def failure_text():
     return message
 
 
-def cc_text():
+def cc_text_base():
     '''
-    The text of the email to send to the CC list when a simulation completes
+    The base text of the email to send to the CC list when a simulation
+    starts or completes
     '''
-    message = """Hello!
-
-    Someone has just finished a dynamic scoring simulation! Just navigate to
-    {url} and have a look!
-
-    This dynamic simulation has job ID {job_id} was based on the microsimulation
-    results found here:
+    message = """This dynamic simulation has job ID {job_id} and was based on the
+    microsimulation results found here:
 
     {microsim_url}
 
@@ -483,7 +534,39 @@ def cc_text():
     return message
 
 
-def cc_failure_text():
+def cc_text_finished(url):
+    '''
+    The text of the email to send to the CC list when a simulation completes
+    '''
+    message = """Hello!
+
+    Someone has just finished a dynamic scoring simulation! Just navigate to
+    {url} and have a look! """
+
+    message = message.format(url=url)
+    message += cc_text_base()
+    subject_text = "A TaxBrain simulation has completed!"
+
+    return message, subject_text
+
+
+def cc_text_submitted():
+    '''
+    The text of the email to send to the CC list when a simulation is
+    submitted.
+    '''
+    message = """Hello!
+
+    Someone has just submitted a dynamic scoring simulation!
+    """
+
+    message += cc_text_base()
+    subject_text = "A TaxBrain simulation has been submitted!"
+
+    return message, subject_text
+
+
+def cc_text_failure(traceback):
     '''
     The text of the email to send to the CC list when a simulation fails
     '''
@@ -491,21 +574,10 @@ def cc_failure_text():
 
     Someone has just had a failure in running a dynamic scoring simulation. 
     The tracebrack generated by the failed job is:
-    {traceback}
 
-    This dynamic simulation has job ID {job_id} was based on the microsimulation
-    results found here:
+    """
+    message += traceback
+    message += cc_text_base()
+    subject_text = "A TaxBrain simulation has completed!"
 
-    {microsim_url}
-
-    They used the following macroeconomic model parameters: {params}
-
-    The hostname for the node that computed the result is: {hostname}
-
-    The path for the baseline run is: {baseline}
-
-    The path for the policy run is: {policy}
-
-    Best,
-    The TaxBrain Team"""
-    return message
+    return message, subject_text
