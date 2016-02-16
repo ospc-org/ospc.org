@@ -16,6 +16,8 @@
     <!-- Styles -->
     <link href="{% static 'css/vendor/share-button/share-button.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/taxbrain.css' %}" rel="stylesheet">
+    {% block style %}
+    {% endblock %}
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -28,7 +30,7 @@
   <body>
 
   {% block content %}
-  
+
   {% endblock %}
 
   <footer>
@@ -58,7 +60,7 @@
         <div class="footer-sub-address">
           <div class="vcard">
             Powered by the <a class="url fn org" href="http://www.ospc.org/">Open Source Policy Center</a>
-          </div>            
+          </div>
         </div>
         <div class="footer-sub-u">
           <!--
@@ -68,8 +70,8 @@
         </div>
       </div>
     </div>
-    
-  </footer> 
+
+  </footer>
 
   <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
   <script src="{% static 'js/vendor/jquery/jquery.min.js' %}"></script>
@@ -79,6 +81,7 @@
   <!-- Scripts -->
   <script src="{% static 'js/site.js' %}"></script>
   <script src="{% static 'js/taxbrain.js' %}"></script>
-
+  {% block bottom_scripts %}
+  {% endblock %}
   </body>
 </html>

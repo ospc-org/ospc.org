@@ -36,6 +36,10 @@ from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       submit_dropq_calculation, dropq_results_ready, dropq_get_results)
+from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+                        PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
+                        REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
+                        INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -271,6 +275,18 @@ def output_detail(request, pk):
     first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
+    tables["tooltips"] = {
+        'diagnostic': DIAGNOSTIC_TOOLTIP,
+        'difference': DIFFERENCE_TOOLTIP,
+        'payroll': PAYROLL_TOOLTIP,
+        'income': INCOME_TOOLTIP,
+        'base': BASE_TOOLTIP,
+        'reform': REFORM_TOOLTIP,
+        'expanded': EXPANDED_TOOLTIP,
+        'adjusted': ADJUSTED_TOOLTIP,
+        'bins': INCOME_BINS_TOOLTIP,
+        'deciles': INCOME_DECILES_TOOLTIP
+    }
     inputs = url.unique_inputs
     is_registered = True if request.user.is_authenticated() else False
 
@@ -278,10 +294,10 @@ def output_detail(request, pk):
         'locals':locals(),
         'unique_url':url,
         'taxcalc_version':taxcalc_version,
-        'tables':tables,
-        'created_on':created_on,
-        'first_year':first_year,
-        'is_registered':is_registered
+        'tables': json.dumps(tables),
+        'created_on': created_on,
+        'first_year': first_year,
+        'is_registered': is_registered
     }
 
     return render(request, 'taxbrain/results.html', context)
