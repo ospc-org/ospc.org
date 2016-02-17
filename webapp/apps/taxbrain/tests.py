@@ -3,7 +3,7 @@ from django.test import TestCase
 from .models import TaxSaveInputs
 from .models import convert_to_floats
 from .helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                     format_csv, arrange_totals_by_row)
+                     format_csv, arrange_totals_by_row, default_taxcalc_data)
 import taxcalc
 from taxcalc import Policy
 
@@ -250,3 +250,18 @@ class TaxInputTests(TestCase):
         exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
         assert ans == exp
 
+    def test_default_taxcalc_data(self):
+        import math
+        dd = default_taxcalc_data(taxcalc.policy.Policy, start_year=2017)
+        dd_meta = default_taxcalc_data(taxcalc.policy.Policy, start_year=2017, metadata=True)
+        floored_std_aged = list(map(math.floor, dd['_STD_Aged'][0]))
+        assert dd['_STD_Aged'] == [floored_std_aged]
+        assert dd_meta['_STD_Aged']['value'] == [floored_std_aged]
+
+        floored_ii_em_ps = list(map(math.floor, dd['_II_em_ps'][0]))
+        assert dd['_II_em_ps'] == [floored_ii_em_ps]
+        assert dd_meta['_II_em_ps']['value'] == [floored_ii_em_ps]
+
+        floored_ii_em = [math.floor(dd['_II_em'][0])]
+        assert dd['_II_em'] == floored_ii_em
+        assert dd_meta['_II_em']['value'] == floored_ii_em

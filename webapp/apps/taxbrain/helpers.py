@@ -70,6 +70,30 @@ def arrange_totals_by_row(tots, keys):
         out[key] = vals
     return out
 
+def round_all_to_nearest_int(values):
+    ''' round every value to the nearest integer '''
+    try:
+        rounded = map(round, values)
+    except TypeError:
+        rounded = [map(round, val) for val in values]
+
+    return rounded
+
+
+def default_taxcalc_data(cls, start_year, metadata=False):
+    ''' Call the default data function on the given class for the given
+        start year with meatadata flag
+    '''
+    dd = cls.default_data(metadata=metadata, start_year=start_year)
+    if metadata:
+        for k in dd:
+            dd[k]['value'] = round_all_to_nearest_int(dd[k]['value'])
+    else:
+        for k in dd:
+            dd[k] = round_all_to_nearest_int(dd[k])
+    return dd
+
+
 #
 # Prepare user params to send to DropQ/Taxcalc
 #
@@ -355,11 +379,13 @@ def leave_name_in(key, val, dd):
 
 
 def package_up_vars(user_values, first_budget_year):
-    dd = taxcalc.policy.Policy.default_data(start_year=first_budget_year)
-    dd_meta = taxcalc.policy.Policy.default_data(metadata=True,
-                                                 start_year=first_budget_year)
-    growth_dd = taxcalc.growth.Growth.default_data(start_year=first_budget_year)
-    behavior_dd = taxcalc.Behavior.default_data(start_year=first_budget_year)
+    dd = default_taxcalc_data(taxcalc.policy.Policy, start_year=first_budget_year)
+    dd_meta = default_taxcalc_data(taxcalc.policy.Policy,
+                                   start_year=first_budget_year, metadata=True)
+    growth_dd = default_taxcalc_data(taxcalc.growth.Growth,
+                                     start_year=first_budget_year)
+
+    behavior_dd = default_taxcalc_data(taxcalc.Behavior, start_year=first_budget_year)
     dd.update(growth_dd)
     dd.update(behavior_dd)
     for k, v in user_values.items():
@@ -606,15 +632,18 @@ class TaxCalcParam(object):
 # Create a list of default policy
 def default_policy(first_budget_year):
 
-    TAXCALC_DEFAULT_PARAMS_JSON = taxcalc.policy.Policy.default_data(metadata=True,
-                                                                     start_year=first_budget_year)
+    TAXCALC_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.policy.Policy,
+                                                       metadata=True,
+                                                       start_year=first_budget_year)
+
     default_taxcalc_params = {}
     for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
-    BEHAVIOR_DEFAULT_PARAMS_JSON = taxcalc.Behavior.default_data(metadata=True,
-                                                                 start_year=first_budget_year)
+    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.Behavior,
+                                                        metadata=True,
+                                                        start_year=first_budget_year)
 
     for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.iteritems():
         param = TaxCalcParam(k,v, first_budget_year)
