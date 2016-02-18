@@ -26,10 +26,12 @@ from django.contrib.auth.models import User
 from django import forms
 
 from djqscsv import render_to_csv_response
-from .forms import DynamicInputsModelForm, has_field_errors
+from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm, 
+                    has_field_errors)
 from .models import DynamicSaveInputs, DynamicOutputUrl
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
+from ..taxbrain.helpers import default_policy
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
                       ogusa_get_results, ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
@@ -139,6 +141,102 @@ def dynamic_input(request, pk):
         form_personal_exemp.add_error(None, "Some fields have errors.")
 
     return render(request, 'dynamic/dynamic_input_form.html', init_context)
+
+
+def dynamic_behavioral(request, pk):
+    """
+    This view handles the dynamic behavioral input page and calls the function that
+    handles the calculation on the inputs.
+    """
+
+    if request.method=='POST':
+        # Client is attempting to send inputs, validate as form data
+        fields = dict(request.REQUEST)
+        import pdb;pdb.set_trace()
+        strip_empty_lists(fields)
+        dyn_mod_form = DynamicBehavioralInputsModelForm(start_year, fields)
+
+        if dyn_mod_form.is_valid():
+            model = dyn_mod_form.save()
+
+            curr_dict = dict(model.__dict__)
+            for key, value in curr_dict.items():
+                print "got this ", key, value
+
+            # get macrosim data from form
+            worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
+
+            #get microsim data 
+            outputsurl = OutputUrl.objects.get(pk=pk)
+            model.micro_sim = outputsurl
+            taxbrain_model = outputsurl.unique_inputs
+            taxbrain_dict = dict(taxbrain_model.__dict__)
+            growth_fixup(taxbrain_dict)
+            for key, value in taxbrain_dict.items():
+                if type(value) == type(unicode()):
+                    try:
+                        taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
+                    except ValueError:
+                        taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                else:
+                    print "missing this: ", key
+
+            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+            benefit_surtax_fixup(microsim_data)
+
+            # start calc job
+            submitted_ids = submit_behavioral_calculation(worker_data, int(start_year), microsim_data)
+            if submitted_ids:
+                model.job_ids = denormalize(submitted_ids)
+                model.first_year = int(start_year)
+
+                model.save()
+                return redirect('tax_results', model.pk)
+
+            else:
+                raise HttpResponseServerError
+
+        else:
+            # received POST but invalid results, return to form with errors
+            form_personal_exemp = dyn_mod_form
+
+    else:
+
+        # Probably a GET request, load a default form
+        start_year = request.REQUEST.get('start_year')
+        form_personal_exemp = DynamicBehavioralInputsModelForm(first_year=start_year)
+
+    taxcalc_default_params = default_policy(int(start_year))
+
+    init_context = {
+        'form': form_personal_exemp,
+        'params': taxcalc_default_params,
+        'taxcalc_version': taxcalc_version,
+        'start_year': start_year,
+        'pk': pk
+    }
+
+    if has_field_errors(form_personal_exemp):
+        form_personal_exemp.add_error(None, "Some fields have errors.")
+
+    return render(request, 'dynamic/behavior.html', init_context)
+
+
+
+
+def dynamic_landing(request, pk):
+    """
+    This view gives a landing page to choose a type of dynamic simulation that
+    is linked to the microsim
+    """
+    init_context = {
+            'pk': pk,
+            'is_authenticated': request.user.is_authenticated(),
+            'start_year': request.GET['start_year']
+             }
+
+    return render_to_response('dynamic/landing.html', init_context)
+
 
 
 def dynamic_finished(request):

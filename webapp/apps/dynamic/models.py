@@ -54,6 +54,40 @@ class DynamicSaveInputs(models.Model):
         )
 
 
+class DynamicBehaviorSaveInputs(models.Model):
+    """
+    This model contains all the parameters for the dynamic behavioral tax
+    model and the tax result.
+
+   """
+
+    # Behavioral Effects
+    BE_inc = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_sub = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_CG_per = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_CG_trn = CommaSeparatedField(default=None, blank=True, null=True)
+
+    # Job IDs when running a job
+    job_ids = SeparatedValuesField(blank=True, default=None, null=True)
+
+    # Starting Year of the reform calculation
+    first_year = models.IntegerField(default=None, null=True)
+    # Result
+    tax_result = JSONField(default=None, blank=True, null=True)
+    # Creation DateTime
+    creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+
+    micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
+                                  on_delete=models.SET_NULL)
+
+    class Meta:
+        permissions = (
+            ("view_inputs", "Allowed to view Taxbrain."),
+        )
+
+
+
+
 class DynamicOutputUrl(models.Model):
     """
     This model creates a unique url for each calculation.

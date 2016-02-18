@@ -15,6 +15,9 @@ def bool_like(x):
 
 OGUSA_DEFAULT_PARAMS = default_parameters(2015)
 
+class DynamicBehavioralInputsModelForm(PersonalExemptionForm):
+    pass
+
 #class DynamicInputsModelForm(PersonalExemptionForm):
 class DynamicInputsModelForm(ModelForm):
 

@@ -171,7 +171,6 @@ def personal_results(request):
 
         # Probably a GET request, load a default form
         form_personal_exemp = PersonalExemptionForm(first_year=start_year)
-        # start_year = request['QUERY_STRING']
 
     taxcalc_default_params = default_policy(int(start_year))
 
