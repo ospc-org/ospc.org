@@ -70,12 +70,17 @@ def arrange_totals_by_row(tots, keys):
         out[key] = vals
     return out
 
-def round_all_to_nearest_int(values):
+def round_gt_one_to_nearest_int(values):
     ''' round every value to the nearest integer '''
+    def round_gt_one(x):
+        if x >= 1.0:
+            return round(x)
+        else:
+            return x
     try:
-        rounded = map(round, values)
+        rounded = map(round_gt_one, values)
     except TypeError:
-        rounded = [map(round, val) for val in values]
+        rounded = [map(round_gt_one, val) for val in values]
 
     return rounded
 
@@ -87,10 +92,10 @@ def default_taxcalc_data(cls, start_year, metadata=False):
     dd = cls.default_data(metadata=metadata, start_year=start_year)
     if metadata:
         for k in dd:
-            dd[k]['value'] = round_all_to_nearest_int(dd[k]['value'])
+            dd[k]['value'] = round_gt_one_to_nearest_int(dd[k]['value'])
     else:
         for k in dd:
-            dd[k] = round_all_to_nearest_int(dd[k])
+            dd[k] = round_gt_one_to_nearest_int(dd[k])
     return dd
 
 
