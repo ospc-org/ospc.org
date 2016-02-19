@@ -18,7 +18,6 @@ OGUSA_DEFAULT_PARAMS = default_parameters(2015)
 class DynamicBehavioralInputsModelForm(PersonalExemptionForm):
     pass
 
-#class DynamicInputsModelForm(PersonalExemptionForm):
 class DynamicInputsModelForm(ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
