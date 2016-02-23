@@ -296,7 +296,8 @@ def output_detail(request, pk):
         'tables': json.dumps(tables),
         'created_on': created_on,
         'first_year': first_year,
-        'is_registered': is_registered
+        'is_registered': is_registered,
+        'is_micro': True
     }
 
     return render(request, 'taxbrain/results.html', context)

@@ -28,15 +28,24 @@ from django import forms
 from djqscsv import render_to_csv_response
 from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm, 
                     has_field_errors)
-from .models import DynamicSaveInputs, DynamicOutputUrl
+from .models import (DynamicSaveInputs, DynamicOutputUrl,
+                     DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
-from ..taxbrain.helpers import default_policy
+from ..taxbrain.helpers import (default_policy, submit_dropq_calculation, dropq_results_ready,
+                                dropq_get_results, taxcalc_results_to_tables)
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
                       ogusa_get_results, ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
                       cc_text_finished, cc_text_failure, dynamic_params_from_model,
-                      send_cc_email)
+                      send_cc_email, default_behavior_parameters)
+from ..taxbrain.constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+                                  PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
+                                  REFORM_TOOLTIP, EXPANDED_TOOLTIP,
+                                  ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
+                                  INCOME_DECILES_TOOLTIP)
+
+
 
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
@@ -152,8 +161,9 @@ def dynamic_behavioral(request, pk):
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
-        import pdb;pdb.set_trace()
         strip_empty_lists(fields)
+        start_year = request.GET['start_year']
+        fields['first_year'] = start_year
         dyn_mod_form = DynamicBehavioralInputsModelForm(start_year, fields)
 
         if dyn_mod_form.is_valid():
@@ -184,17 +194,17 @@ def dynamic_behavioral(request, pk):
             microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
             benefit_surtax_fixup(microsim_data)
 
+
             # start calc job
-            submitted_ids = submit_behavioral_calculation(worker_data, int(start_year), microsim_data)
-            if submitted_ids:
+            submitted_ids = submit_dropq_calculation(microsim_data, int(start_year))
+            if not submitted_ids:
+                no_inputs = True
+                form_personal_exemp = personal_inputs
+            else:
                 model.job_ids = denormalize(submitted_ids)
                 model.first_year = int(start_year)
-
                 model.save()
-                return redirect('tax_results', model.pk)
-
-            else:
-                raise HttpResponseServerError
+                return redirect('behavior_results', model.pk)
 
         else:
             # received POST but invalid results, return to form with errors
@@ -218,6 +228,37 @@ def dynamic_behavioral(request, pk):
 
     if has_field_errors(form_personal_exemp):
         form_personal_exemp.add_error(None, "Some fields have errors.")
+
+    return render(request, 'dynamic/behavior.html', init_context)
+
+
+def edit_dynamic_behavioral(request, pk):
+    """
+    This view handles the editing of previously entered inputs
+    """
+    try:
+        url = DynamicBehaviorOutputUrl.objects.get(pk=pk)
+    except:
+        raise Http404
+
+    model = DynamicBehaviorSaveInputs.objects.get(pk=url.model_pk)
+    start_year = model.first_year
+    #Get the user-input from the model in a way we can render
+    ser_model = serializers.serialize('json', [model])
+    user_inputs = json.loads(ser_model)
+    inputs = user_inputs[0]['fields']
+
+    form_personal_exemp = DynamicBehavioralInputsModelForm(first_year=start_year, instance=model)
+    behavior_default_params = default_behavior_parameters(int(start_year))
+
+    init_context = {
+        'form': form_personal_exemp,
+        'params': behavior_default_params,
+        'taxcalc_version': taxcalc_version,
+        'start_year': str(start_year),
+        'pk': pk
+
+    }
 
     return render(request, 'dynamic/behavior.html', init_context)
 
@@ -343,5 +384,79 @@ def ogusa_results(request, pk):
     }
 
     return render(request, 'dynamic/results.html', context)
+
+
+def behavior_results(request, pk):
+    """
+    This view allows the app to wait for the taxcalc results to be
+    returned.
+    """
+    model = DynamicBehaviorSaveInputs.objects.get(pk=pk)
+    job_ids = model.job_ids
+    submitted_ids = normalize(job_ids)
+    if dropq_results_ready(submitted_ids):
+        model.tax_result = dropq_get_results(submitted_ids)
+        model.creation_date = datetime.datetime.now()
+        model.save()
+
+        unique_url = DynamicBehaviorOutputUrl()
+        if request.user.is_authenticated():
+            current_user = User.objects.get(pk=request.user.id)
+            unique_url.user = current_user
+        unique_url.unique_inputs = model
+        unique_url.model_pk = model.pk
+        unique_url.save()
+
+        return redirect('behavior_output', unique_url.pk)
+
+    return render_to_response('dynamic/not_ready.html', {'raw_results':'raw_results'})
+
+
+def behavior_output(request, pk):
+    """
+    This view handles the partial equilibrium results page.
+    """
+    try:
+        url = DynamicBehaviorOutputUrl.objects.get(pk=pk)
+    except:
+        raise Http404
+
+    if url.taxcalc_vers != None:
+        pass
+    else:
+        url.taxcalc_vers = taxcalc_version
+        url.save()
+
+    output = url.unique_inputs.tax_result
+    first_year = url.unique_inputs.first_year
+    created_on = url.unique_inputs.creation_date
+    tables = taxcalc_results_to_tables(output, first_year)
+    tables["tooltips"] = {
+        'diagnostic': DIAGNOSTIC_TOOLTIP,
+        'difference': DIFFERENCE_TOOLTIP,
+        'payroll': PAYROLL_TOOLTIP,
+        'income': INCOME_TOOLTIP,
+        'base': BASE_TOOLTIP,
+        'reform': REFORM_TOOLTIP,
+        'expanded': EXPANDED_TOOLTIP,
+        'adjusted': ADJUSTED_TOOLTIP,
+        'bins': INCOME_BINS_TOOLTIP,
+        'deciles': INCOME_DECILES_TOOLTIP
+    }
+    inputs = url.unique_inputs
+    is_registered = True if request.user.is_authenticated() else False
+
+    context = {
+        'locals':locals(),
+        'unique_url':url,
+        'taxcalc_version':taxcalc_version,
+        'tables': json.dumps(tables),
+        'created_on': created_on,
+        'first_year': first_year,
+        'is_registered': is_registered,
+        'is_behavior': True
+    }
+
+    return render(request, 'taxbrain/results.html', context)
 
 

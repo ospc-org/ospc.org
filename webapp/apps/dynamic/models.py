@@ -130,3 +130,21 @@ class DynamicOutputUrl(models.Model):
             'pk': self.pk
         }
         return reverse('output_detail', kwargs=kwargs)
+
+
+class DynamicBehaviorOutputUrl(models.Model):
+    """
+    This model creates a unique url for the partial equilibrium
+    """
+    unique_inputs = models.ForeignKey(DynamicBehaviorSaveInputs, default=None)
+    user = models.ForeignKey(User, null=True, default=None)
+    model_pk = models.IntegerField(default=None, null=True)
+    uuid = UUIDField(auto=True, default=None, null=True)
+    taxcalc_vers = models.CharField(blank=True, default=None, null=True,
+        max_length=50)
+
+    def get_absolute_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        return reverse('output_detail', kwargs=kwargs)

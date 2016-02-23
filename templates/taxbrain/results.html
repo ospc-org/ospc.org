@@ -57,8 +57,13 @@
     <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="#">version {{ unique_url.taxcalc_vers }}</a> TaxBrain. (ID: 10045)</p>
     <div class="result-table">
       <div class="result-table-controls">
+        {% if is_micro %}
         <a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
-        {% if is_registered %}
+        {% endif %}
+        {% if is_behavior %}
+        <a href="/dynamic/behavioral/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
+        {% endif %}
+        {% if is_registered and is_micro %}
         <a href="/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Link to Dynamic Simulations</a>
         {% endif %}
       </div>

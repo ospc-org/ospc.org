@@ -71,20 +71,20 @@
 
                 <table style="width:100%">
                 <tr padding="15px">
+                    <td padding-bottom="1em">
+                    <a href="/dynamic/behavioral/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Partial Equilibrium Macro Simulation</a>
+                    </td>
+                    <td>
+                      {% flatblock "dynamic_behavioral_blurb" %}
+                    </td>
+                </tr>
+                <tr padding="15px">
                     <td>
                     <a href="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Overlapping Generations Simulation</a>
                     </td>
                     <td>
                       {% flatblock "dynamic_olg_blurb" %}
-                    </td>      
-                </tr>
-                <tr padding="15px">
-                    <td padding-bottom="1em">
-                    <a href="/dynamic/behavioral/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Behavioral Macro Simulation</a>
                     </td>
-                    <td>
-                      {% flatblock "dynamic_behavioral_blurb" %}
-                    </td>        
                 </tr>
                 <tr padding="15px">
                     <td padding-bottom="1em">
@@ -92,7 +92,7 @@
                     </td>
                     <td>
                       {% flatblock "dynamic_macro_el_blurb" %}
-                    </td>        
+                    </td>
                 </tr>
                 </table>
           </div>

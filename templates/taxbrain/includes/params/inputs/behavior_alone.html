@@ -1,0 +1,26 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}behavior{% endblock %}
+{% block input_section_title %}Behavior{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Behavior</h1>
+  {% flatblock "taxbrain_behavior_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Taxable Income</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.BE_inc %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.BE_sub %}
+
+<h2>Capital Gains</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.BE_CG_per %}
+
+{% endblock %}
+
+{% block provide_if_no_continue %}{% endblock %}
+

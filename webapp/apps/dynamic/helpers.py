@@ -12,7 +12,7 @@ MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
                 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-from ..taxbrain.helpers import TaxCalcParam, package_up_vars
+from ..taxbrain.helpers import TaxCalcParam, package_up_vars, default_taxcalc_data
 from django.core.mail import send_mail
 import requests
 from requests.exceptions import Timeout, RequestException
@@ -127,9 +127,23 @@ def convert_to_floats(tsi):
     return {k: numberfy(v) for k, v in attrs.items() if v}
 
 
-# Create a list of default parameters
-def default_parameters(first_budget_year):
+def default_behavior_parameters(first_budget_year):
+    ''' Create a list of default Behavior parameters '''
+    default_behavior_params = {}
+    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.Behavior,
+                                                        metadata=True,
+                                                        start_year=first_budget_year)
 
+    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.iteritems():
+        param = TaxCalcParam(k,v, first_budget_year)
+        default_behavior_params[param.nice_id] = param
+
+    return default_behavior_params
+
+
+
+def default_parameters(first_budget_year):
+    ''' Create a list of default parameters '''
 
     param_path = os.path.join(os.path.split(__file__)[0], "ogusa_parameters.json")
     with open(param_path, "r") as f:
