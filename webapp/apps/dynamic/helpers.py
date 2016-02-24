@@ -18,12 +18,21 @@ import requests
 from requests.exceptions import Timeout, RequestException
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
+dropq_workers = os.environ.get('DROPQ_WORKERS', '')
+DROPQ_WORKERS = dropq_workers.split(",")
 OGUSA_WORKER_IDX = 0
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
 OGUSA_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.ogusa_row_names
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
+
+
+ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
+ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
+ELASTIC_RESULTS_TABLE_LABELS = {
+        'elasticity_gdp': 'Elasticity of GDP wrt Average Marginal Tax Rate'
+        }
 
 OGUSA_RESULTS_TABLE_LABELS = {
     'df_ogusa': 'Difference between Base and User plan',
@@ -141,6 +150,28 @@ def default_behavior_parameters(first_budget_year):
     return default_behavior_params
 
 
+def default_elasticity_parameters(first_budget_year):
+    ''' Create a list of default Elasticity parameters '''
+    default_elasticity_params = {}
+    default_value = 0.54
+    adj_long_name = ("Elasticity of GDP with respect to average marginal "
+                     "tax rate.")
+    adj_descr = ("The default value of {0} is from a 2011 paper by Barro "
+                 "and Redlick".format(default_value))
+
+    elasticity_of_gdp = {'value':[default_value], 'col_label':"",
+                         'long_name': adj_long_name,
+                         'description': adj_descr,
+                         'irs_ref':'', 'notes':''}
+
+    ELASTICITY_DEFAULT_PARAMS_JSON = {'elastic_gdp': elasticity_of_gdp}
+
+    for k,v in ELASTICITY_DEFAULT_PARAMS_JSON.iteritems():
+        param = TaxCalcParam(k,v, first_budget_year)
+        default_elasticity_params[param.nice_id] = param
+
+    return default_elasticity_params
+
 
 def default_parameters(first_budget_year):
     ''' Create a list of default parameters '''
@@ -257,6 +288,55 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     return job_ids, guids
 
 
+def submit_elastic_calculation(mods, first_budget_year):
+    ''' Submit the elasticity of GDP dynamic simulation '''
+
+    print "mods is ", mods
+    user_mods = package_up_vars(mods, first_budget_year)
+    if not bool(user_mods):
+        return False
+    print "user_mods is ", user_mods
+    print "submit work"
+    user_mods={first_budget_year:user_mods}
+    years = list(range(0,NUM_BUDGET_YEARS))
+
+    hostnames = DROPQ_WORKERS
+    num_hosts = len(hostnames)
+    data = {}
+    data['user_mods'] = json.dumps(user_mods)
+    job_ids = []
+    hostname_idx = 0
+    for y in years:
+        year_submitted = False
+        attempts = 0
+        while not year_submitted:
+            data['year'] = str(y)
+            theurl = "http://{hn}/elastic_gdp_start_job".format(hn=hostnames[hostname_idx])
+            try:
+                response = requests.post(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
+                if response.status_code == 200:
+                    print "submitted: ", str(y), hostnames[hostname_idx]
+                    year_submitted = True
+                    job_ids.append((response.text, hostnames[hostname_idx]))
+                    hostname_idx = (hostname_idx + 1) % num_hosts
+                else:
+                    print "FAILED: ", str(y), hostnames[hostname_idx]
+                    hostname_idx = (hostname_idx + 1) % num_hosts
+                    attempts += 1
+            except Timeout:
+                print "Couldn't submit to: ", hostnames[hostname_idx]
+                hostname_idx = (hostname_idx + 1) % num_hosts
+                attempts += 1
+            except RequestException as re:
+                print "Something unexpected happened: ", re
+                hostname_idx = (hostname_idx + 1) % num_hosts
+                attempts += 1
+            if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
+                print "Exceeded max attempts. Bailing out."
+                raise IOError()
+
+    return job_ids
+
 
 # Might not be needed because this would be handled on the worker node side
 def ogusa_results_ready(job_ids):
@@ -272,6 +352,40 @@ def ogusa_results_ready(job_ids):
                 print "got one!: ", id_
 
     return all(jobs_done)
+
+
+def elastic_get_results(job_ids):
+    ans = []
+    for idx, id_hostname in enumerate(job_ids):
+        id_, hostname = id_hostname
+        result_url = "http://{hn}/dropq_get_result".format(hn=hostname)
+        job_response = requests.get(result_url, params={'job_id':id_})
+        if job_response.status_code == 200: # Valid response
+            ans.append(job_response.json())
+
+    elasticity_gdp = {}
+    for result in ans:
+        elasticity_gdp.update(result['elasticity_gdp'])
+
+
+    if ENFORCE_REMOTE_VERSION_CHECK:
+        versions = [r.get('taxcalc_version', None) for r in ans]
+        if not all([ver==taxcalc_version for ver in versions]):
+            msg ="Got different taxcalc versions from workers. Bailing out"
+            print msg
+            raise IOError(msg)
+        versions = [r.get('dropq_version', None) for r in ans]
+        if not all([same_version(ver, dropq_version) for ver in versions]):
+            msg ="Got different dropq versions from workers. Bailing out"
+            print msg
+            raise IOError(msg)
+
+    elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
+                                        ELASTIC_RESULTS_TOTAL_ROW_KEYS)
+
+    results = {'elasticity_gdp': elasticity_gdp}
+
+    return results
 
 def ogusa_get_results(job_ids, status):
     '''
@@ -394,12 +508,99 @@ def send_cc_email(email_txt, subject_txt, model):
     return
 
 
+def elast_results_to_tables(results, first_budget_year):
+    """
+    Take various results from elastiticty calculation, 
+    Return organized and labeled table results for display
+    """
+    num_years = NUM_BUDGET_YEARS
+    years = list(range(first_budget_year,
+                       first_budget_year + num_years))
+
+    tables = {}
+
+    for table_id in results:
+
+        if table_id == 'elasticity_gdp':
+            row_keys = ELASTIC_RESULTS_TOTAL_ROW_KEYS 
+            row_labels = ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS 
+            col_labels = years
+            col_formats = [ [1, '%', 5] for y in col_labels]
+
+            table_data = results[table_id]
+            #Displaying as a percentage, so multiply by 100
+            for k, v in table_data.iteritems():
+                table_data[k] = list(v)
+            multi_year_cells = False
+
+        else:
+            raise ValueError("Not a valid key")
+
+        table = {
+            'col_labels': col_labels,
+            'cols': [],
+            'label': ELASTIC_RESULTS_TABLE_LABELS[table_id],
+            'rows': [],
+            'multi_valued': multi_year_cells
+        }
+
+        for col_key, label in enumerate(col_labels):
+            table['cols'].append({
+                'label': label,
+                'divisor': col_formats[col_key][0],
+                'units': col_formats[col_key][1],
+                'decimals': col_formats[col_key][2],
+            })
+
+        col_count = len(col_labels)
+        for row_key in row_keys:
+            row = {
+                'label': row_labels[row_key],
+                'cells': []
+            }
+
+            for col_key in range(0, col_count):
+                cell = {
+                    'year_values': {},
+                    'format': {
+                        'divisor': table['cols'][col_key]['divisor'],
+                        'decimals': table['cols'][col_key]['decimals'],
+                    }
+                }
+
+                if multi_year_cells:
+                    for yi, year in enumerate(years):
+                        value = table_data["{0}_{1}".format(row_key, yi)][col_key]
+                        if value[-1] == "%":
+                            value = value[:-1]
+                        cell['year_values'][year] = value
+
+                    cell['first_value'] = cell['year_values'][first_budget_year]
+
+                else:
+                    value = table_data[row_key][col_key]
+                    if value[-1] == "%":
+                            value = value[:-1]
+                    cell['value'] = value
+
+                row['cells'].append(cell)
+
+            table['rows'].append(row)
+
+        tables[table_id] = table
+
+
+    tables['result_years'] = years
+    return tables
+
+
+
 def ogusa_results_to_tables(results, first_budget_year):
     """
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
-    num_years = 10 
+    num_years = NUM_BUDGET_YEARS
     years = list(range(first_budget_year,
                        first_budget_year + num_years))
 

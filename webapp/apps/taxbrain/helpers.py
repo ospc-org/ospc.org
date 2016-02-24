@@ -371,6 +371,8 @@ def leave_name_in(key, val, dd):
 
     if key in dd:
         return True
+    elif key in ["elastic_gdp"]:
+        return True
     else:
         print "Don't have this pair: ", key, val
         underscore_name_in_defaults = "_" + key in dd
@@ -393,6 +395,8 @@ def package_up_vars(user_values, first_budget_year):
     behavior_dd = default_taxcalc_data(taxcalc.Behavior, start_year=first_budget_year)
     dd.update(growth_dd)
     dd.update(behavior_dd)
+    dd.update({"elastic_gdp":[0.54]})
+    dd_meta.update({"elastic_gdp":{'values':[0.54], 'cpi_inflated':False}})
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
@@ -1099,6 +1103,8 @@ def dropq_get_results(job_ids):
             msg ="Got different dropq versions from workers. Bailing out"
             print msg
             raise IOError(msg)
+
+    import pdb;pdb.set_trace()
 
     fiscal_tots = arrange_totals_by_row(fiscal_tots,
                                         TAXCALC_RESULTS_TOTAL_ROW_KEYS)
