@@ -60,6 +60,7 @@
       </div>
       <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="#">version {{ unique_url.taxcalc_vers }}</a> TaxBrain. (ID: 10045)</p>
       <p class="meta">The microsimulation upon which this dynamic simulation was based can be found <a href="{{microsim_url}}">here</a> </p>
+      <a href="/dynamic/macro/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
     </div>
 
     <div class="result-table">
