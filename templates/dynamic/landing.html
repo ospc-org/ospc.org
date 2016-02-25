@@ -41,17 +41,6 @@
 
     <form class="inputs-form" method="post" action="/dynamic/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
-      <!-- <div class="inputs-sidebar">
-        <ul class="nav sidebar-nav">
-          <li class="get-started"><a href="#get-started">Get Started</a></li>
-          <li><a href="#dynamic-sim">Macroeconomic Parameters</a></li>
-        </ul>
-        <div class="sidebar-button">
-          <a href="#" ></a>
-          <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Start Macro Simulation!">
-        </div>
-    </div> -->
-    <!-- sidebar -->
 
       <div class="result-table">
         <div id="get-started" class="inputs-block inputs-block-intro">
@@ -78,6 +67,7 @@
                       {% flatblock "dynamic_behavioral_blurb" %}
                     </td>
                 </tr>
+                {% if is_authenticated %}
                 <tr padding="15px">
                     <td>
                     <a href="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Overlapping Generations Simulation</a>
@@ -86,6 +76,7 @@
                       {% flatblock "dynamic_olg_blurb" %}
                     </td>
                 </tr>
+                {% endif %}
                 <tr padding="15px">
                     <td padding-bottom="1em">
                      <a href="/dynamic/macro/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Macro Elasticities Simulation</a>

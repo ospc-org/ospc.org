@@ -176,6 +176,13 @@ class TaxInputTests(TestCase):
         exp =  [100000, f2_2016]
         assert ans['_FEI_ec_c'] == exp
 
+    def test_package_up_vars_Behavioral_params(self):
+        user_values = {'FICA_ss_trt': [0.11],
+                       'BE_inc': [0.04]}
+        ans = package_up_vars(user_values, first_budget_year=FBY)
+        assert ans['_BE_inc'] == [0.04]
+
+
     def test_expand1d(self):
         x = [1, 2, 3]
         assert expand_1D(x, 5) == [1, 2, 3, None, None]

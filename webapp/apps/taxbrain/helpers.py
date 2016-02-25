@@ -397,6 +397,12 @@ def package_up_vars(user_values, first_budget_year):
     dd.update(behavior_dd)
     dd.update({"elastic_gdp":[0.54]})
     dd_meta.update({"elastic_gdp":{'values':[0.54], 'cpi_inflated':False}})
+    dd_meta.update(default_taxcalc_data(taxcalc.Behavior,
+                                        start_year=first_budget_year,
+                                        metadata=True))
+    dd_meta.update(default_taxcalc_data(taxcalc.policy.Policy,
+                                        start_year=first_budget_year,
+                                        metadata=True))
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
@@ -404,13 +410,14 @@ def package_up_vars(user_values, first_budget_year):
 
     def discover_cpi_flag(param):
         ''' Helper function to discover the CPI setting for this parameter'''
+
         cpi_flag_from_user = user_values.get(param + "_cpi", None)
         if cpi_flag_from_user is None:
             cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
 
         if cpi_flag_from_user is None:
-            attributes = dd_meta[param]
-            cpi_flag = attributes['cpi_inflated']
+            attrs = dd_meta[param]
+            cpi_flag = attrs.get('cpi_inflated', False)
         else:
             cpi_flag = cpi_flag_from_user
         return cpi_flag
@@ -1003,6 +1010,7 @@ def submit_dropq_calculation(mods, first_budget_year):
     if not bool(user_mods):
         return False
     print "user_mods is ", user_mods
+    import pdb;pdb.set_trace()
     print "submit work"
     user_mods={first_budget_year:user_mods}
     years = list(range(0,NUM_BUDGET_YEARS))
@@ -1103,8 +1111,6 @@ def dropq_get_results(job_ids):
             msg ="Got different dropq versions from workers. Bailing out"
             print msg
             raise IOError(msg)
-
-    import pdb;pdb.set_trace()
 
     fiscal_tots = arrange_totals_by_row(fiscal_tots,
                                         TAXCALC_RESULTS_TOTAL_ROW_KEYS)

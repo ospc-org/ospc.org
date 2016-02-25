@@ -293,6 +293,7 @@ def submit_elastic_calculation(mods, first_budget_year):
 
     print "mods is ", mods
     user_mods = package_up_vars(mods, first_budget_year)
+
     if not bool(user_mods):
         return False
     print "user_mods is ", user_mods

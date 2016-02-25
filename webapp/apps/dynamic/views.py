@@ -86,9 +86,6 @@ def dynamic_input(request, pk):
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
-            # set the start year
-            start_year = 2015
-
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
@@ -176,6 +173,15 @@ def dynamic_behavioral(request, pk):
             curr_dict = dict(model.__dict__)
             for key, value in curr_dict.items():
                 print "got this ", key, value
+
+            for key, value in curr_dict.items():
+                if type(value) == type(unicode()):
+                    try:
+                        curr_dict[key] = [float(x) for x in value.split(',') if x]
+                    except ValueError:
+                        curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                else:
+                    print "missing this: ", key
 
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
@@ -265,6 +271,16 @@ def dynamic_elasticities(request, pk):
             for k,v in elasticity_default_params.items():
                 if k in curr_dict and not curr_dict[k]:
                     curr_dict[k] = elasticity_default_params[k].col_fields[0].values
+
+            for key, value in curr_dict.items():
+                if type(value) == type(unicode()):
+                    try:
+                        curr_dict[key] = [float(x) for x in value.split(',') if x]
+                    except ValueError:
+                        curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                else:
+                    print "missing this: ", key
+
 
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
@@ -628,8 +644,10 @@ def behavior_output(request, pk):
         'bins': INCOME_BINS_TOOLTIP,
         'deciles': INCOME_DECILES_TOOLTIP
     }
-    inputs = url.unique_inputs
+    dbsi = url.unique_inputs
     is_registered = True if request.user.is_authenticated() else False
+    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+    microsim_url = hostname + "/taxbrain/" + str(dbsi.micro_sim.pk)
 
     context = {
         'locals':locals(),
@@ -639,7 +657,8 @@ def behavior_output(request, pk):
         'created_on': created_on,
         'first_year': first_year,
         'is_registered': is_registered,
-        'is_behavior': True
+        'is_behavior': True,
+        'microsim_url': microsim_url
     }
 
     return render(request, 'taxbrain/results.html', context)
