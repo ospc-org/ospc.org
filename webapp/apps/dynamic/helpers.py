@@ -526,12 +526,12 @@ def elast_results_to_tables(results, first_budget_year):
             row_keys = ELASTIC_RESULTS_TOTAL_ROW_KEYS 
             row_labels = ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS 
             col_labels = years
-            col_formats = [ [1, '%', 5] for y in col_labels]
+            col_formats = [ [1, '%', 1] for y in col_labels]
 
             table_data = results[table_id]
             #Displaying as a percentage, so multiply by 100
             for k, v in table_data.iteritems():
-                table_data[k] = list(v)
+                table_data[k] = list(map(str, map(lambda x: 100.*x, map(float, v))))
             multi_year_cells = False
 
         else:

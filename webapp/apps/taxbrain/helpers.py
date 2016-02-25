@@ -1010,7 +1010,6 @@ def submit_dropq_calculation(mods, first_budget_year):
     if not bool(user_mods):
         return False
     print "user_mods is ", user_mods
-    import pdb;pdb.set_trace()
     print "submit work"
     user_mods={first_budget_year:user_mods}
     years = list(range(0,NUM_BUDGET_YEARS))
