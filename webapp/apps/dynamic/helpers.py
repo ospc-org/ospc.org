@@ -299,7 +299,7 @@ def submit_elastic_calculation(mods, first_budget_year):
     print "user_mods is ", user_mods
     print "submit work"
     user_mods={first_budget_year:user_mods}
-    years = list(range(0,NUM_BUDGET_YEARS))
+    years = list(range(1,NUM_BUDGET_YEARS))
 
     hostnames = DROPQ_WORKERS
     num_hosts = len(hostnames)
@@ -381,6 +381,7 @@ def elastic_get_results(job_ids):
             print msg
             raise IOError(msg)
 
+    elasticity_gdp[u'gdp_elasticity_0'] = u'NA'
     elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
                                         ELASTIC_RESULTS_TOTAL_ROW_KEYS)
 
@@ -518,6 +519,12 @@ def elast_results_to_tables(results, first_budget_year):
     years = list(range(first_budget_year,
                        first_budget_year + num_years))
 
+    def format_float_values(x):
+        try:
+            return 100. * float(x)
+        except ValueError:
+            return x
+
     tables = {}
 
     for table_id in results:
@@ -531,7 +538,7 @@ def elast_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             #Displaying as a percentage, so multiply by 100
             for k, v in table_data.iteritems():
-                table_data[k] = list(map(str, map(lambda x: 100.*x, map(float, v))))
+                table_data[k] = list(map(str, map(format_float_values, v)))
             multi_year_cells = False
 
         else:
