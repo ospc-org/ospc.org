@@ -40,7 +40,7 @@
 
     <div class="result-header">
       <div class="result-header-control">
-        <h1>{% flatblock "taxbrain_results_header" %}</h1>
+        <h1>{% flatblock "elasticity_results_header" %}</h1>
         for
         <div class="dropdown dropdown-select dropdown-inline data-switch">
           <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
@@ -60,6 +60,7 @@
       </div>
       <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="#">version {{ unique_url.taxcalc_vers }}</a> TaxBrain. (ID: 10045)</p>
       <p class="meta">The microsimulation upon which this dynamic simulation was based can be found <a href="{{microsim_url}}">here</a> </p>
+      <a href="/dynamic/macro/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
     </div>
 
     <div class="result-table">
@@ -80,8 +81,7 @@
         </div>
       </div>
 
-      {% include 'taxbrain/includes/results/table.html' with table=tables.df_ogusa %}
-
+      {% include 'taxbrain/includes/results/elasticity_table.html' with table=tables.elasticity_gdp %}
 
     </div>
 

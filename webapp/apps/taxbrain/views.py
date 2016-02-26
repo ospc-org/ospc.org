@@ -171,7 +171,6 @@ def personal_results(request):
 
         # Probably a GET request, load a default form
         form_personal_exemp = PersonalExemptionForm(first_year=start_year)
-        # start_year = request['QUERY_STRING']
 
     taxcalc_default_params = default_policy(int(start_year))
 
@@ -297,7 +296,8 @@ def output_detail(request, pk):
         'tables': json.dumps(tables),
         'created_on': created_on,
         'first_year': first_year,
-        'is_registered': is_registered
+        'is_registered': is_registered,
+        'is_micro': True
     }
 
     return render(request, 'taxbrain/results.html', context)

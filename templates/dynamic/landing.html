@@ -35,46 +35,58 @@
         <div class="taxbrain-build">
           <h2>Code Build</h2>
           <p><a href="https://github.com/open-source-economics/Tax-Calculator">Version {{ taxcalc_version }} - GitHub</a></p>
-          <p><a href="https://github.com/open-source-economics/OG-USA">Version {{ ogusa_version }} - GitHub</a></p>
         </div>
       </div>
     </section>
 
-    <form class="inputs-form" method="post" action="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}">
+    <form class="inputs-form" method="post" action="/dynamic/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
-      <div class="inputs-sidebar">
-        <ul class="nav sidebar-nav">
-          <li class="get-started"><a href="#get-started">Get Started</a></li>
-          <li><a href="#dynamic-sim">Macroeconomic Parameters</a></li>
-        </ul>
-        <div class="sidebar-button">
-          <a href="#" ></a>
-          <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Start Macro Simulation!">
-        </div>
-      </div> <!-- sidebar -->
 
-      <div class="inputs-main">
-
-        {% for error in form.non_field_errors %}
-            <div class="alert alert-danger text-center lert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              {{ error }}
-            </div>
-        {% endfor %}
-
+      <div class="result-table">
         <div id="get-started" class="inputs-block inputs-block-intro">
           <div class="inputs-block-header">
-            <h1>Get Started</h1>
-           {% flatblock "dynamic_get_started_blurb" %}
-            <div>
-              You are looking at default parameters for {{start_year}}.
-            </div>
+            <h1>Choose a Dynamic Simulation Type</h1>
+           {% flatblock "dynamic_landing_blurb" %}
           </div>
         </div>
+        <div class="inputs-block-header">
 
-        {% include 'dynamic/includes/params/inputs/dynamic.html' %}
+                <style type="text/css">
+                    td
+                    {
+                        padding:20px 15px 20px 15px;
+                        }
+                </style>
+
+                <table style="width:100%">
+                <tr padding="15px">
+                    <td padding-bottom="1em">
+                    <a href="/dynamic/behavioral/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Partial Equilibrium Macro Simulation</a>
+                    </td>
+                    <td>
+                      {% flatblock "dynamic_behavioral_blurb" %}
+                    </td>
+                </tr>
+                {% if is_authenticated %}
+                <tr padding="15px">
+                    <td>
+                    <a href="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Overlapping Generations Simulation</a>
+                    </td>
+                    <td>
+                      {% flatblock "dynamic_olg_blurb" %}
+                    </td>
+                </tr>
+                {% endif %}
+                <tr padding="15px">
+                    <td padding-bottom="1em">
+                     <a href="/dynamic/macro/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Macro Elasticities Simulation</a>
+                    </td>
+                    <td>
+                      {% flatblock "dynamic_macro_el_blurb" %}
+                    </td>
+                </tr>
+                </table>
+          </div>
 
       </div> <!-- main -->
     </form> <!-- form -->

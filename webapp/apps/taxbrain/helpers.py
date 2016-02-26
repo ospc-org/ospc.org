@@ -371,6 +371,8 @@ def leave_name_in(key, val, dd):
 
     if key in dd:
         return True
+    elif key in ["elastic_gdp"]:
+        return True
     else:
         print "Don't have this pair: ", key, val
         underscore_name_in_defaults = "_" + key in dd
@@ -393,6 +395,14 @@ def package_up_vars(user_values, first_budget_year):
     behavior_dd = default_taxcalc_data(taxcalc.Behavior, start_year=first_budget_year)
     dd.update(growth_dd)
     dd.update(behavior_dd)
+    dd.update({"elastic_gdp":[0.54]})
+    dd_meta.update({"elastic_gdp":{'values':[0.54], 'cpi_inflated':False}})
+    dd_meta.update(default_taxcalc_data(taxcalc.Behavior,
+                                        start_year=first_budget_year,
+                                        metadata=True))
+    dd_meta.update(default_taxcalc_data(taxcalc.policy.Policy,
+                                        start_year=first_budget_year,
+                                        metadata=True))
     for k, v in user_values.items():
         if not leave_name_in(k, v, dd):
             print "Removing ", k, v
@@ -400,13 +410,14 @@ def package_up_vars(user_values, first_budget_year):
 
     def discover_cpi_flag(param):
         ''' Helper function to discover the CPI setting for this parameter'''
+
         cpi_flag_from_user = user_values.get(param + "_cpi", None)
         if cpi_flag_from_user is None:
             cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
 
         if cpi_flag_from_user is None:
-            attributes = dd_meta[param]
-            cpi_flag = attributes['cpi_inflated']
+            attrs = dd_meta[param]
+            cpi_flag = attrs.get('cpi_inflated', False)
         else:
             cpi_flag = cpi_flag_from_user
         return cpi_flag

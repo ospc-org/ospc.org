@@ -1,0 +1,14 @@
+{% extends 'taxbrain/input_base.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+<h1>Please wait while your dynamic calculation is running.</h1>
+
+<script type="text/javascript">
+	setTimeout(function(){
+	   window.location.reload(1);
+	}, 5000);
+</script>
+{% endblock %}

@@ -18,7 +18,7 @@
           <h2 class="sr-only">TaxBrain</h2>
           <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
         </div>
-        {% flatblock "taxbrain_dynamic_subheader" %}
+        {% flatblock "elastic_dynamic_subheader" %}
         <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
         <div class="what-is">
           <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
@@ -35,17 +35,16 @@
         <div class="taxbrain-build">
           <h2>Code Build</h2>
           <p><a href="https://github.com/open-source-economics/Tax-Calculator">Version {{ taxcalc_version }} - GitHub</a></p>
-          <p><a href="https://github.com/open-source-economics/OG-USA">Version {{ ogusa_version }} - GitHub</a></p>
         </div>
       </div>
     </section>
 
-    <form class="inputs-form" method="post" action="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}">
+    <form class="inputs-form" method="post" action="/dynamic/macro/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
       <div class="inputs-sidebar">
         <ul class="nav sidebar-nav">
           <li class="get-started"><a href="#get-started">Get Started</a></li>
-          <li><a href="#dynamic-sim">Macroeconomic Parameters</a></li>
+          <li><a href="#behavior">Elasticity of GDP</a></li>
         </ul>
         <div class="sidebar-button">
           <a href="#" ></a>
@@ -66,16 +65,15 @@
 
         <div id="get-started" class="inputs-block inputs-block-intro">
           <div class="inputs-block-header">
-            <h1>Get Started</h1>
-           {% flatblock "dynamic_get_started_blurb" %}
+            <h1>Elasticity of GDP wrt Ave. Marginal Tax Rates</h1>
+           {% flatblock "dynamic_elasticity_get_started_blurb" %}
             <div>
               You are looking at default parameters for {{start_year}}.
             </div>
           </div>
         </div>
 
-        {% include 'dynamic/includes/params/inputs/dynamic.html' %}
-
+        {% include 'dynamic/includes/params/inputs/elastic.html' %}
       </div> <!-- main -->
     </form> <!-- form -->
     <div class="push"></div>
