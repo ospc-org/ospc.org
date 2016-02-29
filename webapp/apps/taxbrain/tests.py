@@ -183,6 +183,12 @@ class TaxInputTests(TestCase):
         assert ans['_BE_inc'] == [0.04]
 
 
+    def test_package_up_vars_multi_year(self):
+        user_values = {'SS_Earnings_c': [118500, 999999]}
+        ans = package_up_vars(user_values, first_budget_year=2016)
+        import pdb;pdb.set_trace()
+        assert ans['_SS_Earnings_c'] == [118500.0, 999999.0]
+
     def test_expand1d(self):
         x = [1, 2, 3]
         assert expand_1D(x, 5) == [1, 2, 3, None, None]
