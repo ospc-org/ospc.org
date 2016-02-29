@@ -1063,7 +1063,7 @@ def dropq_results_ready(job_ids):
                 jobs_done[idx] = True
                 print "got one!: ", id_
 
-    return all(jobs_done)
+    return jobs_done
 
 def dropq_get_results(job_ids):
     ans = []

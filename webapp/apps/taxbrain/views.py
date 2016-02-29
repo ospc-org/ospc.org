@@ -235,10 +235,14 @@ def tax_results(request, pk):
     """
     model = TaxSaveInputs.objects.get(pk=pk)
     job_ids = model.job_ids
-    submitted_ids = normalize(job_ids)
-    if dropq_results_ready(submitted_ids):
-        model.tax_result = dropq_get_results(submitted_ids)
-
+    jobs_to_check = model.jobs_not_ready
+    if not jobs_to_check:
+        jobs_to_check = normalize(job_ids)
+    else:
+        jobs_to_check = normalize(jobs_to_check)
+    jobs_ready = dropq_results_ready(jobs_to_check)
+    if all(jobs_ready):
+        model.tax_result = dropq_get_results(normalize(job_ids))
         model.creation_date = datetime.datetime.now()
         model.save()
 
@@ -249,8 +253,14 @@ def tax_results(request, pk):
         unique_url.unique_inputs = model
         unique_url.model_pk = model.pk
         unique_url.save()
-
         return redirect(unique_url)
+    else:
+        jobs_not_ready = [sub_id for (sub_id, job_ready) in
+                              zip(jobs_to_check, jobs_ready) if not job_ready]
+        jobs_not_ready = denormalize(jobs_not_ready)
+        model.jobs_not_ready = jobs_not_ready
+        model.save()
+
 
     return render_to_response('taxbrain/not_ready.html', {'raw_results':'raw_results'})
 
