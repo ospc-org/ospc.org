@@ -26,3 +26,4 @@ django-debug-toolbar==1.2.1
 django_import_export
 yolk==0.4.3
 django-ipware
+requests_mock

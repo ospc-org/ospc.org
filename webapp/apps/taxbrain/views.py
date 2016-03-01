@@ -34,8 +34,12 @@ from djqscsv import render_to_csv_response
 
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
-from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      submit_dropq_calculation, dropq_results_ready, dropq_get_results)
+from .helpers import default_policy, taxcalc_results_to_tables, format_csv
+from .compute import DropqCompute
+
+dropq_compute = DropqCompute()
+#submit_dropq_calculation, dropq_results_ready, dropq_get_results
+
 from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                         REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
@@ -149,7 +153,7 @@ def personal_results(request):
                 print "BEGIN DROPQ WORK FROM: unknown IP"
 
             # start calc job
-            submitted_ids = submit_dropq_calculation(worker_data, int(start_year))
+            submitted_ids = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -236,8 +240,8 @@ def tax_results(request, pk):
     model = TaxSaveInputs.objects.get(pk=pk)
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
-    if dropq_results_ready(submitted_ids):
-        model.tax_result = dropq_get_results(submitted_ids)
+    if dropq_compute.dropq_results_ready(submitted_ids):
+        model.tax_result = dropq_compute.dropq_get_results(submitted_ids)
 
         model.creation_date = datetime.datetime.now()
         model.save()

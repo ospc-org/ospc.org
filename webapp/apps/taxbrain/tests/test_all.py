@@ -1,8 +1,8 @@
 from django.test import TestCase
 
-from .models import TaxSaveInputs
-from .models import convert_to_floats
-from .helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
+from ..models import TaxSaveInputs
+from ..models import convert_to_floats
+from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
 import taxcalc
 from taxcalc import Policy
