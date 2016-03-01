@@ -27,12 +27,11 @@ class DropqCompute(object):
         pass
 
     def remote_submit_job(self, theurl, data, timeout):
-        import pdb;pdb.set_trace()
-        response = requests.post(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
+        response = requests.post(theurl, data=data, timeout=timeout)
         return response
 
     def remote_results_ready(self, theurl, params):
-        job_response = requests.get(thuerl, params=params)
+        job_response = requests.get(theurl, params=params)
         return job_response
 
     def remote_retrieve_results(self, theurl, params):
@@ -62,7 +61,6 @@ class DropqCompute(object):
                 data['year'] = str(y)
                 theurl = "http://{hn}/dropq_start_job".format(hn=hostnames[hostname_idx])
                 try:
-                    #response = requests.post(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
                     if response.status_code == 200:
                         print "submitted: ", str(y), hostnames[hostname_idx]
@@ -92,7 +90,7 @@ class DropqCompute(object):
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
             result_url = "http://{hn}/dropq_query_result".format(hn=hostname)
-            job_response = requests.get(result_url, params={'job_id':id_})
+            job_response = self.remote_results_ready(result_url, params={'job_id':id_})
             if job_response.status_code == 200: # Valid response
                 rep = job_response.text
                 if rep == 'YES':
@@ -106,7 +104,7 @@ class DropqCompute(object):
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
             result_url = "http://{hn}/dropq_get_result".format(hn=hostname)
-            job_response = requests.get(result_url, params={'job_id':id_})
+            job_response = self.remote_retrieve_results(result_url, params={'job_id':id_})
             if job_response.status_code == 200: # Valid response
                 ans.append(job_response.json())
 
@@ -158,21 +156,28 @@ class DropqCompute(object):
         return results
 
 
-@requests_mock.Mocker()
 class MockCompute(DropqCompute):
 
     def __init__(self):
-        pass
+        self.count = 0
 
-    def remote_submit_job(self, theurl, data, timeout, m):
-        m.register_uri('POST', 'dropq_start_job', text='resp')
-        return DropqCompute.remote_submit_job(self, theurl, data, timeout)
+    def remote_submit_job(self, theurl, data, timeout):
+        with requests_mock.Mocker() as mock:
+            mock.register_uri('POST', '/dropq_start_job', text='424242')
+            return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
-    def remote_results_ready(self, theurl, params, m):
-        m.register_uri('GET', 'dropq_query_result', text='resp')
-        return DropqCompute.remote_results_ready(self, theurl, params)
+    def remote_results_ready(self, theurl, params):
+        with requests_mock.Mocker() as mock:
+            mock.register_uri('GET', '/dropq_query_result', text='YES')
+            return DropqCompute.remote_results_ready(self, theurl, params)
 
-    def remote_retrieve_results(self, theurl, params, m):
-        m.register_uri('GET', 'dropq_get_result', text='resp')
-        return DropqCompute.remote_retrieve_results(self, theurl, params)
+    def remote_retrieve_results(self, theurl, params):
+        mock_path = os.path.join(os.path.split(__file__)[0], "tests"
+                                 "response_year_{0}.json")
+        with open(mock_path.format(self.count), 'r') as f:
+            text = f.read()
+        self.count += 1
+        with requests_mock.Mocker() as mock:
+            mock.register_uri('GET', '/dropq_get_result', text=text)
+            return DropqCompute.remote_retrieve_results(self, theurl, params)
 

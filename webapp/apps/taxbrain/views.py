@@ -35,10 +35,9 @@ from djqscsv import render_to_csv_response
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
 from .helpers import default_policy, taxcalc_results_to_tables, format_csv
-from .compute import DropqCompute
+from .compute import DropqCompute, MockCompute
 
 dropq_compute = DropqCompute()
-#submit_dropq_calculation, dropq_results_ready, dropq_get_results
 
 from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
