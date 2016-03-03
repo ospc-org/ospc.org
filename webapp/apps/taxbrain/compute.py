@@ -172,7 +172,7 @@ class MockCompute(DropqCompute):
             return DropqCompute.remote_results_ready(self, theurl, params)
 
     def remote_retrieve_results(self, theurl, params):
-        mock_path = os.path.join(os.path.split(__file__)[0], "tests"
+        mock_path = os.path.join(os.path.split(__file__)[0], "tests",
                                  "response_year_{0}.json")
         with open(mock_path.format(self.count), 'r') as f:
             text = f.read()
