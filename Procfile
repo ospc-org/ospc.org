@@ -1,1 +1,1 @@
-web: newrelic-admin run-program gunicorn webapp.wsgi --log-file -
+web: newrelic-admin run-program waitress-serve --port=$PORT webapp.wsgi:application
