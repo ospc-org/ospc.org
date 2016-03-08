@@ -308,6 +308,11 @@ def dynamic_elasticities(request, pk):
                     print "missing this: ", key
 
             microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+
+            #Don't need to pass around the microsim results
+            if 'tax_result' in microsim_data:
+                del microsim_data['tax_result']
+
             benefit_surtax_fixup(microsim_data)
 
             microsim_data.update(worker_data)
@@ -576,7 +581,7 @@ def elastic_results(request, pk):
     model = DynamicElasticitySaveInputs.objects.get(pk=pk)
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
-    if dropq_compute.dropq_results_ready(submitted_ids):
+    if all(dropq_compute.dropq_results_ready(submitted_ids)):
         model.tax_result = elastic_get_results(submitted_ids)
         model.creation_date = datetime.datetime.now()
         model.save()
