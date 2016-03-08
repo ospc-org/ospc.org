@@ -334,12 +334,6 @@ class TaxSaveInputs(models.Model):
     medical_years = models.FloatField(default=None, blank=True, null=True,
         validators=[MinValueValidator(0), MaxValueValidator(10)])
 
-    # Behavioral Effects
-    BE_inc = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_sub = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_CG_per = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_CG_trn = CommaSeparatedField(default=None, blank=True, null=True)
-
     # Growth Assumptions
     factor_adjustment = CommaSeparatedField(default=None, blank=True, null=True)
     factor_target = CommaSeparatedField(default=None, blank=True, null=True)

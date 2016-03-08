@@ -638,13 +638,6 @@ def default_policy(first_budget_year):
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
-    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.Behavior,
-                                                        metadata=True,
-                                                        start_year=first_budget_year)
-
-    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.iteritems():
-        param = TaxCalcParam(k,v, first_budget_year)
-        default_taxcalc_params[param.nice_id] = param
 
     #Growth assumptions not in default data yet. Add in the appropriate info so that
     #the params dictionary has the right info
