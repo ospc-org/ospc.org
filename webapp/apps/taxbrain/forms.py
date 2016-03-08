@@ -104,7 +104,7 @@ class PersonalExemptionForm(ModelForm):
         self.add_errors_on_extra_inputs()
 
     def add_errors_on_extra_inputs(self):
-        ALLOWED_EXTRAS = {'has_errors', 'start_year'}
+        ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken'}
         all_inputs = set(self.data.keys())
         allowed_inputs= set(self.fields.keys())
         extra_inputs = all_inputs - allowed_inputs - ALLOWED_EXTRAS

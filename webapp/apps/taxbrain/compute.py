@@ -158,8 +158,13 @@ class DropqCompute(object):
 
 class MockCompute(DropqCompute):
 
-    def __init__(self):
+    __slots__ = ('count', 'num_times_to_wait')
+
+    def __init__(self, num_times_to_wait=0):
         self.count = 0
+        # Number of times to respond 'No' before
+        # replying that a job is ready
+        self.num_times_to_wait = num_times_to_wait
 
     def remote_submit_job(self, theurl, data, timeout):
         with requests_mock.Mocker() as mock:
@@ -168,7 +173,11 @@ class MockCompute(DropqCompute):
 
     def remote_results_ready(self, theurl, params):
         with requests_mock.Mocker() as mock:
-            mock.register_uri('GET', '/dropq_query_result', text='YES')
+            if self.num_times_to_wait > 0:
+                mock.register_uri('GET', '/dropq_query_result', text='NO')
+                self.num_times_to_wait -= 1
+            else:
+                mock.register_uri('GET', '/dropq_query_result', text='YES')
             return DropqCompute.remote_results_ready(self, theurl, params)
 
     def remote_retrieve_results(self, theurl, params):

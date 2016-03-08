@@ -626,6 +626,21 @@ class TaxCalcParam(object):
                         self.min = self.min[1:]
 
 
+# Create a list of default Behavior parameters
+def default_behavior(first_budget_year):
+
+    default_behavior_params = {}
+    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.Behavior,
+                                                        metadata=True,
+                                                        start_year=first_budget_year)
+
+    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.iteritems():
+        param = TaxCalcParam(k,v, first_budget_year)
+        default_behavior_params[param.nice_id] = param
+
+    return default_behavior_params
+
+
 # Create a list of default policy
 def default_policy(first_budget_year):
 

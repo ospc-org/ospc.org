@@ -38,17 +38,17 @@ class TaxBrainViewsTests(TestCase):
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
                 u'ID_BenefitSurtax_Switch_6': [u'True'],
                 u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016'}
+                u'start_year': u'2016', 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         processing_url = response.url
         # Go to processing page
-        self.failUnless(response.url.endswith("processing/1/"))
+        self.failUnless(response.url[:-2].endswith("processing/"))
         # Go to results page
         response = self.client.get(processing_url)
-        self.failUnless(response.url.endswith("taxbrain/1/"))
+        self.failUnless(response.url[:-2].endswith("taxbrain/"))
 
 
     def test_taxbrain_post_no_behavior_entries(self):

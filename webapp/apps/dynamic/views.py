@@ -33,7 +33,7 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
-from ..taxbrain.helpers import default_policy, taxcalc_results_to_tables
+from ..taxbrain.helpers import default_policy, taxcalc_results_to_tables, default_behavior
 from ..taxbrain.compute import DropqCompute
 
 dropq_compute = DropqCompute()
@@ -204,6 +204,11 @@ def dynamic_behavioral(request, pk):
                     print "missing this: ", key
 
             microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+
+            #Don't need to pass around the microsim results
+            if 'tax_result' in microsim_data:
+                del microsim_data['tax_result']
+
             benefit_surtax_fixup(microsim_data)
 
             microsim_data.update(worker_data)
@@ -229,11 +234,11 @@ def dynamic_behavioral(request, pk):
         start_year = request.REQUEST.get('start_year')
         form_personal_exemp = DynamicBehavioralInputsModelForm(first_year=start_year)
 
-    taxcalc_default_params = default_policy(int(start_year))
+    behavior_default_params = default_behavior(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,
-        'params': taxcalc_default_params,
+        'params': behavior_default_params,
         'taxcalc_version': taxcalc_version,
         'start_year': start_year,
         'pk': pk
@@ -597,7 +602,7 @@ def behavior_results(request, pk):
     model = DynamicBehaviorSaveInputs.objects.get(pk=pk)
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
-    if dropq_compute.dropq_results_ready(submitted_ids):
+    if all(dropq_compute.dropq_results_ready(submitted_ids)):
         model.tax_result = dropq_compute.dropq_get_results(submitted_ids)
         model.creation_date = datetime.datetime.now()
         model.save()
