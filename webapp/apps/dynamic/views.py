@@ -33,8 +33,10 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
-from ..taxbrain.helpers import (default_policy, submit_dropq_calculation, dropq_results_ready,
-                                dropq_get_results, taxcalc_results_to_tables)
+from ..taxbrain.helpers import default_policy, taxcalc_results_to_tables
+from ..taxbrain.compute import DropqCompute
+
+dropq_compute = DropqCompute()
 from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
                       ogusa_get_results, ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
@@ -207,7 +209,7 @@ def dynamic_behavioral(request, pk):
             microsim_data.update(worker_data)
 
             # start calc job
-            submitted_ids = submit_dropq_calculation(microsim_data, int(start_year))
+            submitted_ids = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -569,7 +571,7 @@ def elastic_results(request, pk):
     model = DynamicElasticitySaveInputs.objects.get(pk=pk)
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
-    if dropq_results_ready(submitted_ids):
+    if dropq_compute.dropq_results_ready(submitted_ids):
         model.tax_result = elastic_get_results(submitted_ids)
         model.creation_date = datetime.datetime.now()
         model.save()
@@ -595,8 +597,8 @@ def behavior_results(request, pk):
     model = DynamicBehaviorSaveInputs.objects.get(pk=pk)
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
-    if dropq_results_ready(submitted_ids):
-        model.tax_result = dropq_get_results(submitted_ids)
+    if dropq_compute.dropq_results_ready(submitted_ids):
+        model.tax_result = dropq_compute.dropq_get_results(submitted_ids)
         model.creation_date = datetime.datetime.now()
         model.save()
 

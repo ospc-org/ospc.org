@@ -12,4 +12,4 @@ class PagesViewsTestCase(TestCase):
 
     def test_news(self):
         resp = self.client.get('/news/')
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 302)
