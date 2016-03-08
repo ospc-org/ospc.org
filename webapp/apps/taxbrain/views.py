@@ -243,9 +243,9 @@ def tax_results(request, pk):
         jobs_to_check = normalize(job_ids)
     else:
         jobs_to_check = normalize(jobs_to_check)
-    jobs_ready = dropq_results_ready(jobs_to_check)
+    jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
     if all(jobs_ready):
-        model.tax_result = dropq_get_results(normalize(job_ids))
+        model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
         model.creation_date = datetime.datetime.now()
         model.save()
 

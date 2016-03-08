@@ -97,7 +97,7 @@ class DropqCompute(object):
                     jobs_done[idx] = True
                     print "got one!: ", id_
 
-        return all(jobs_done)
+        return jobs_done
 
     def dropq_get_results(self, job_ids):
         ans = []
