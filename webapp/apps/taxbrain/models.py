@@ -348,6 +348,7 @@ class TaxSaveInputs(models.Model):
 
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
+    jobs_not_ready = SeparatedValuesField(blank=True, default=None, null=True)
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)

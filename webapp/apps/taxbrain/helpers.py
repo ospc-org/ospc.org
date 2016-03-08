@@ -468,7 +468,7 @@ def package_up_vars(user_values, first_budget_year):
         # Discover the CPI setting for this parameter
         cpi_flag = discover_cpi_flag(param)
 
-        if len(v) < default_data:
+        if len(v) < len(default_data):
             v = propagate_user_list(v,
                                     num_years=len(default_data),
                                     cpi=cpi_flag,
