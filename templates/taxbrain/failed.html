@@ -1,0 +1,16 @@
+{% extends 'taxbrain/input_base.html' %}
+
+{% load staticfiles %}
+
+{% block content %}
+{% include 'taxbrain/header.html' %}
+
+<div class="container">
+    <div class="row">
+        <div class="columns medium-6 medium-offset-3 end text-center">
+            <h1>Sorry! Your calculation failed. Please re-enter parameters at try again :(.</h1>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
