@@ -43,11 +43,7 @@ class TaxBrainViewsTests(TestCase):
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
-        processing_url = response.url
-        # Go to processing page
-        self.failUnless(response.url[:-2].endswith("processing/"))
         # Go to results page
-        response = self.client.get(processing_url)
         self.failUnless(response.url[:-2].endswith("taxbrain/"))
 
 

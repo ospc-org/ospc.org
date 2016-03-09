@@ -226,8 +226,10 @@ class MockCompute(DropqCompute):
 
     def remote_submit_job(self, theurl, data, timeout):
         with requests_mock.Mocker() as mock:
-            mock.register_uri('POST', '/dropq_start_job', text='424242')
-            mock.register_uri('POST', '/elastic_gdp_start_job', text='424242')
+            resp = {'job_id': '424242', 'qlength':2}
+            resp = json.dumps(resp)
+            mock.register_uri('POST', '/dropq_start_job', text=resp)
+            mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
     def remote_results_ready(self, theurl, params):
