@@ -65,6 +65,7 @@ class DropqCompute(object):
         data['user_mods'] = json.dumps(user_mods)
         job_ids = []
         hostname_idx = 0
+        max_queue_length = 0
         for y in years:
             year_submitted = False
             attempts = 0
@@ -73,11 +74,14 @@ class DropqCompute(object):
                 theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
+                    response_d = response.json()
                     if response.status_code == 200:
                         print "submitted: ", str(y), hostnames[hostname_idx]
                         year_submitted = True
-                        job_ids.append((response.text, hostnames[hostname_idx]))
+                        job_ids.append((response_d['job_id'], hostnames[hostname_idx]))
                         hostname_idx = (hostname_idx + 1) % num_hosts
+                        if response_d['qlength'] > max_queue_length:
+                            max_queue_length = response_d['qlength']
                     else:
                         print "FAILED: ", str(y), hostnames[hostname_idx]
                         hostname_idx = (hostname_idx + 1) % num_hosts
@@ -94,7 +98,7 @@ class DropqCompute(object):
                     print "Exceeded max attempts. Bailing out."
                     raise IOError()
 
-        return job_ids
+        return job_ids, max_queue_length
 
     def dropq_results_ready(self, job_ids):
         jobs_done = [False] * len(job_ids)
