@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="author" content="">
     <meta name="description" content="">
+    <meta name="csrf-token" content="{{ csrf_token }}">
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
 
     <title>Welcome to TaxBrain | TaxBrain</title>
@@ -16,6 +17,18 @@
     <!-- Styles -->
     <link href="{% static 'css/vendor/share-button/share-button.min.css' %}" rel="stylesheet">
     <link href="{% static 'css/taxbrain.css' %}" rel="stylesheet">
+    <style>
+      html, body {
+        height: 100%;
+      }
+      #container {
+        min-height: 100%;
+        margin: 0 auto -232px;
+      }
+      footer, .push {
+        min-height: 232px; /* '.push' must be the same height as 'footer' */
+      }
+    </style>
     {% block style %}
     {% endblock %}
 
@@ -28,11 +41,12 @@
   </head>
 
   <body>
-
+  <div id="container">
   {% block content %}
 
   {% endblock %}
-
+  <div class="push"></div>
+  </div>
   <footer>
     <div class="footer-main">
       <div class="container">

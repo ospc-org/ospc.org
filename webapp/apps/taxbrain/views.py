@@ -21,7 +21,7 @@ from django.core import serializers
 from django.core.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, render_to_response, get_object_or_404, redirect
 from django.template import loader, Context
 from django.template.context import RequestContext
@@ -268,9 +268,13 @@ def tax_results(request, pk):
         jobs_not_ready = denormalize(jobs_not_ready)
         model.jobs_not_ready = jobs_not_ready
         model.save()
-
-
-    return render_to_response('taxbrain/not_ready.html', {'raw_results':'raw_results'})
+    if request.method == 'POST':
+        # if not ready yet, insert number of minutes remaining
+        import random
+        return JsonResponse({'eta': random.random()}, status=202)
+        # else return a status of 200
+    else:
+        return render_to_response('taxbrain/not_ready.html', {'raw_results':'raw_results'}, context_instance=RequestContext(request))
 
 
 def output_detail(request, pk):
