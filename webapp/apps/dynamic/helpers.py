@@ -155,8 +155,10 @@ def default_elasticity_parameters(first_budget_year):
     default_value = 0.0
     adj_long_name = ("Elasticity of GDP with respect to 1 - average marginal "
                      "tax rate.")
-    adj_descr = ("The default value of {0} is from a 2011 paper by Barro "
-                 "and Redlick".format(default_value))
+    adj_descr = ("This parameter describes how many percent GDP will change "
+                 "for each 1 percent change in 1 - the average "
+                 "marginal tax rate, weighted by wage income, in the "
+                 "preceeding year.")
 
     elasticity_of_gdp = {'value':[default_value], 'col_label':"",
                          'long_name': adj_long_name,
