@@ -1,0 +1,22 @@
+{
+  "name": "webapp-public",
+  "version": "1.0.0",
+  "description": "Taxbrain Web Application ========================",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OpenSourcePolicyCenter/webapp-public.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OpenSourcePolicyCenter/webapp-public/issues"
+  },
+  "homepage": "https://github.com/OpenSourcePolicyCenter/webapp-public#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^1.6.0",
+    "less": "^2.6.1",
+    "path": "^0.12.7"
+  }
+}

@@ -12,34 +12,38 @@
             <div class="progress">
               <div class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%">
                 <span class="sr-only">45% Complete</span>
-              </div>
             </div>
-            <h4>About <span id="eta"></span> minutes remaining</h4>
         </div>
+        <h4>About <span id="eta"></span> remaining</h4>
     </div>
+</div>
 </div>
 
 {% endblock %}
 
 {% block bottom_scripts %}
+<script type="text/javascript" src="{% static 'js/vendor/moment/moment.min.js' %}"></script>
 <script type="text/javascript">
-    $(function() {
-        var origEta = 1;
-        setInterval(function() {
-            $.ajax(window.location.href, {
-               type: 'post',
-               data: { csrfmiddlewaretoken: $('meta[name="csrf-token"]').attr('content') },
-               success: function(data, textStatus, xhr) {
-                    if (xhr.status === 202) {
-                        origEta = origEta ? origEta : data.eta;
-                        $('.progress-bar').css('width', (1 - (data.eta / origEta)) * 100 + '%');
-                        $('#eta').text(data.eta);
-                    } else if (xhr.status === 200) {
-                        window.location.reload(1);
-                    }
-               }
-            })
-        }, 6000);
-    });
+$(function() {
+    var origEta = 1;
+
+    function ajaxEta() {
+        $.ajax(window.location.href, {
+            type: 'post',
+            data: { csrfmiddlewaretoken: $('meta[name="csrf-token"]').attr('content') },
+            success: function(data, textStatus, xhr) {
+                if (xhr.status === 202) {
+                    origEta = origEta ? origEta : data.eta;
+                    $('.progress-bar').css('width', (1 - (data.eta / origEta)) * 100 + '%');
+                    $('#eta').text(moment.duration(data.eta, 'minutes').humanize());
+                } else if (xhr.status === 200) {
+                  window.location.reload(1);
+                }
+            }
+        });
+    }
+    ajaxEta();
+    setInterval(ajaxEta, 2000);
+});
 </script>
 {% endblock %}

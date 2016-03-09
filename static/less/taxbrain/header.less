@@ -1,8 +1,19 @@
+html, body {
+  height: 100%;
+}
+#container {
+  min-height: 100%;
+  margin: 0 auto -232px;
+}
+footer, .push {
+  min-height: 232px; /* '.push' must be the same height as 'footer' */
+}
+
 // Header
 
 .taxbrain-hero {
   background-color: #047099;
-  
+
   .taxbrain-hero-block {
     margin: 0 auto;
     max-width: 770px;
@@ -100,7 +111,7 @@
   h2 {
     text-align: center;
   }
-  
+
   .taxbrain-history {
     font-family: @font-verb-cond;
     font-size: 17px;
