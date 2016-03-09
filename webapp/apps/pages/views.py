@@ -2,12 +2,12 @@ from django.http import Http404
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView
-
 from webapp.apps.register.forms import SubscribeForm
-
 from django.core.context_processors import csrf
-
 from django.conf import settings
+import os
+
+BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
 
 def settings_context_processor(request):
     return {'BLOG_URL': settings.BLOG_URL}

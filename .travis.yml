@@ -25,4 +25,4 @@ before_script:
   - python manage.py migrate --fake
 
 script:
-  - python manage.py test webapp/apps/taxbrain
+  - python manage.py test webapp/apps/
