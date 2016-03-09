@@ -38,15 +38,37 @@ class TaxBrainViewsTests(TestCase):
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
                 u'ID_BenefitSurtax_Switch_6': [u'True'],
                 u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016'}
+                u'start_year': u'2016', 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         processing_url = response.url
         # Go to processing page
-        self.failUnless(response.url.endswith("processing/1/"))
+        self.failUnless(response.url[:-2].endswith("processing/"))
         # Go to results page
         response = self.client.get(processing_url)
-        self.failUnless(response.url.endswith("taxbrain/1/"))
+        self.failUnless(response.url[:-2].endswith("taxbrain/"))
+
+
+    def test_taxbrain_post_no_behavior_entries(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
+        # Provide behavioral input
+        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
+                u'ID_BenefitSurtax_Switch_0': [u'True'],
+                u'ID_BenefitSurtax_Switch_3': [u'True'],
+                u'ID_BenefitSurtax_Switch_2': [u'True'],
+                u'ID_BenefitSurtax_Switch_5': [u'True'],
+                u'ID_BenefitSurtax_Switch_4': [u'True'],
+                u'ID_BenefitSurtax_Switch_6': [u'True'],
+                u'has_errors': [u'False'], u'BE_inc': [u'0.1'],
+                u'start_year': u'2016'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that we get a 400
+        self.assertEqual(response.status_code, 400)
 

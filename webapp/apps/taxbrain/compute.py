@@ -19,6 +19,7 @@ ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'Tr
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
 TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
+ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 
 
 class DropqCompute(object):
@@ -39,6 +40,16 @@ class DropqCompute(object):
         return job_response
 
     def submit_dropq_calculation(self, mods, first_budget_year):
+        url_template = "http://{hn}/dropq_start_job"
+        return self.submit_calculation(mods, first_budget_year, url_template)
+
+    def submit_elastic_calculation(self, mods, first_budget_year):
+        url_template = "http://{hn}/elastic_gdp_start_job"
+        return self.submit_calculation(mods, first_budget_year, url_template,
+                                       start_budget_year=1)
+
+    def submit_calculation(self, mods, first_budget_year, url_template,
+                           start_budget_year=0):
         print "mods is ", mods
         user_mods = package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
@@ -46,7 +57,7 @@ class DropqCompute(object):
         print "user_mods is ", user_mods
         print "submit work"
         user_mods={first_budget_year:user_mods}
-        years = list(range(0,NUM_BUDGET_YEARS))
+        years = list(range(start_budget_year,NUM_BUDGET_YEARS))
 
         hostnames = DROPQ_WORKERS
         num_hosts = len(hostnames)
@@ -59,7 +70,7 @@ class DropqCompute(object):
             attempts = 0
             while not year_submitted:
                 data['year'] = str(y)
-                theurl = "http://{hn}/dropq_start_job".format(hn=hostnames[hostname_idx])
+                theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
                     if response.status_code == 200:
@@ -155,20 +166,66 @@ class DropqCompute(object):
 
         return results
 
+    def elastic_get_results(self, job_ids):
+        ans = []
+        for idx, id_hostname in enumerate(job_ids):
+            id_, hostname = id_hostname
+            result_url = "http://{hn}/dropq_get_result".format(hn=hostname)
+            job_response = self.remote_retrieve_results(result_url, params={'job_id':id_})
+            if job_response.status_code == 200: # Valid response
+                ans.append(job_response.json())
+
+        elasticity_gdp = {}
+        for result in ans:
+            elasticity_gdp.update(result['elasticity_gdp'])
+
+
+        if ENFORCE_REMOTE_VERSION_CHECK:
+            versions = [r.get('taxcalc_version', None) for r in ans]
+            if not all([ver==taxcalc_version for ver in versions]):
+                msg ="Got different taxcalc versions from workers. Bailing out"
+                print msg
+                raise IOError(msg)
+            versions = [r.get('dropq_version', None) for r in ans]
+            if not all([same_version(ver, dropq_version) for ver in versions]):
+                msg ="Got different dropq versions from workers. Bailing out"
+                print msg
+                raise IOError(msg)
+
+        elasticity_gdp[u'gdp_elasticity_0'] = u'NA'
+        elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
+                                            ELASTIC_RESULTS_TOTAL_ROW_KEYS)
+
+        results = {'elasticity_gdp': elasticity_gdp}
+
+        return results
+
+
+
 
 class MockCompute(DropqCompute):
 
-    def __init__(self):
+    __slots__ = ('count', 'num_times_to_wait')
+
+    def __init__(self, num_times_to_wait=0):
         self.count = 0
+        # Number of times to respond 'No' before
+        # replying that a job is ready
+        self.num_times_to_wait = num_times_to_wait
 
     def remote_submit_job(self, theurl, data, timeout):
         with requests_mock.Mocker() as mock:
             mock.register_uri('POST', '/dropq_start_job', text='424242')
+            mock.register_uri('POST', '/elastic_gdp_start_job', text='424242')
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
     def remote_results_ready(self, theurl, params):
         with requests_mock.Mocker() as mock:
-            mock.register_uri('GET', '/dropq_query_result', text='YES')
+            if self.num_times_to_wait > 0:
+                mock.register_uri('GET', '/dropq_query_result', text='NO')
+                self.num_times_to_wait -= 1
+            else:
+                mock.register_uri('GET', '/dropq_query_result', text='YES')
             return DropqCompute.remote_results_ready(self, theurl, params)
 
     def remote_retrieve_results(self, theurl, params):
@@ -181,3 +238,14 @@ class MockCompute(DropqCompute):
             mock.register_uri('GET', '/dropq_get_result', text=text)
             return DropqCompute.remote_retrieve_results(self, theurl, params)
 
+class ElasticMockCompute(MockCompute):
+
+
+    def remote_retrieve_results(self, theurl, params):
+        self.count += 1
+        text = (u'{"elasticity_gdp": {"gdp_elasticity_1": "0.00310"}, '
+                '"dropq_version": "0.6.a96303", "taxcalc_version": '
+                '"0.6.10d462"}')
+        with requests_mock.Mocker() as mock:
+            mock.register_uri('GET', '/dropq_get_result', text=text)
+            return DropqCompute.remote_retrieve_results(self, theurl, params)

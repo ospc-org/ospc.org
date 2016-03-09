@@ -104,6 +104,11 @@ def personal_results(request):
         fields['first_year'] = fields['start_year']
         personal_inputs = PersonalExemptionForm(start_year, fields)
 
+        # If an attempt is made to post data we don't accept
+        # raise a 400
+        if personal_inputs.non_field_errors():
+            return HttpResponse("Bad Input!", status=400)
+
         # Accept the POST if the form is valid, or if the form has errors
         # we don't check again so it is OK if the form is invalid the second
         # time
