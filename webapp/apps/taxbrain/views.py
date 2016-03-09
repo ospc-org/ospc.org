@@ -338,9 +338,11 @@ def output_detail(request, pk):
                 if exp_num_minutes > 0:
                     return JsonResponse({'eta': exp_num_minutes}, status=202)
                 else:
+                    print "exiting at this place"
                     return JsonResponse({}, status=200)
 
             else:
+                print "rendering not ready yet"
                 return render_to_response('taxbrain/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
 
 
