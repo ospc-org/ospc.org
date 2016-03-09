@@ -22,6 +22,10 @@ TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 
 
+class JobFailError(Exception):
+    '''An Exception to raise when a remote jobs has failed'''
+    pass
+
 class DropqCompute(object):
 
     def __init__(self):
@@ -111,6 +115,9 @@ class DropqCompute(object):
                 if rep == 'YES':
                     jobs_done[idx] = True
                     print "got one!: ", id_
+                elif rep == 'FAIL':
+                    msg = '{0} failed on host: {1}'.format(id_, hostname)
+                    raise JobFailError(msg)
 
         return jobs_done
 
