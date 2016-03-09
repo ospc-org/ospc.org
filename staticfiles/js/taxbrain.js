@@ -4,16 +4,6 @@
 //  Input page
 //
 
-// sidebar - affix
-taxbrain_input_form = $('.inputs-form').first();
-
-$('.inputs-sidebar').affix({
-  offset: {
-    top: function(){return (taxbrain_input_form.offset().top + 30);},
-    bottom: 271
-  }
-});
-
 // sidebar - scrollspy
 $('body').scrollspy({
   target: '.inputs-sidebar'
