@@ -313,7 +313,7 @@ def output_detail(request, pk):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
             model.creation_date = datetime.datetime.now()
             model.save()
-            return redirect(unique_url)
+            return redirect(url)
         else:
             jobs_not_ready = [sub_id for (sub_id, job_ready) in
                                 zip(jobs_to_check, jobs_ready) if not job_ready]
@@ -329,8 +329,11 @@ def output_detail(request, pk):
                 exp_num_minutes = dt.total_seconds() / 60.
                 exp_num_minutes = round(exp_num_minutes, 2)
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
-                return JsonResponse({'eta': exp_num_minutes}, status=202)
-                # else return a status of 200
+                if exp_num_minutes > 0:
+                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                else:
+                    return JsonResponse({}, status=200)
+
             else:
                 return render_to_response('taxbrain/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
 
