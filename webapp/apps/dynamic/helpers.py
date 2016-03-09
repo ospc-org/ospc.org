@@ -152,7 +152,7 @@ def default_behavior_parameters(first_budget_year):
 def default_elasticity_parameters(first_budget_year):
     ''' Create a list of default Elasticity parameters '''
     default_elasticity_params = {}
-    default_value = 0.54
+    default_value = 0.0
     adj_long_name = ("Elasticity of GDP with respect to 1 - average marginal "
                      "tax rate.")
     adj_descr = ("The default value of {0} is from a 2011 paper by Barro "
