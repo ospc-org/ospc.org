@@ -9,7 +9,7 @@ from ...taxbrain.models import TaxSaveInputs
 from ...taxbrain.models import convert_to_floats
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                                  format_csv, arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.compute import DropqCompute, MockCompute
+from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
 
@@ -97,7 +97,7 @@ class DynamicViewsTests(TestCase):
         webapp_views.dropq_compute = MockCompute()
         from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
-        dynamic_views.dropq_compute = MockCompute(num_times_to_wait=1)
+        dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
         # Do the microsim
         data = {u'ID_BenefitSurtax_Switch_1': [u'True'],

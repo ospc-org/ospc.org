@@ -42,8 +42,8 @@ from .helpers import (default_parameters, submit_ogusa_calculation, job_submitte
                       failure_text, normalize, denormalize, strip_empty_lists,
                       cc_text_finished, cc_text_failure, dynamic_params_from_model,
                       send_cc_email, default_behavior_parameters,
-                      submit_elastic_calculation, elast_results_to_tables,
-                      default_elasticity_parameters, elastic_get_results)
+                      elast_results_to_tables, default_elasticity_parameters)
+
 from ..taxbrain.constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                                   PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                                   REFORM_TOOLTIP, EXPANDED_TOOLTIP,
@@ -314,11 +314,11 @@ def dynamic_elasticities(request, pk):
                 del microsim_data['tax_result']
 
             benefit_surtax_fixup(microsim_data)
-
             microsim_data.update(worker_data)
 
             # start calc job
-            submitted_ids = submit_elastic_calculation(microsim_data, int(start_year))
+            submitted_ids = dropq_compute.submit_elastic_calculation(microsim_data,
+                                                                     int(start_year))
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -582,7 +582,7 @@ def elastic_results(request, pk):
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
     if all(dropq_compute.dropq_results_ready(submitted_ids)):
-        model.tax_result = elastic_get_results(submitted_ids)
+        model.tax_result = dropq_compute.elastic_get_results(submitted_ids)
         model.creation_date = datetime.datetime.now()
         model.save()
 

@@ -13,6 +13,7 @@ MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from ..taxbrain.helpers import TaxCalcParam, package_up_vars, default_taxcalc_data
+from ..taxbrain.compute import ELASTIC_RESULTS_TOTAL_ROW_KEYS 
 from django.core.mail import send_mail
 import requests
 from requests.exceptions import Timeout, RequestException
@@ -27,8 +28,6 @@ ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'Tr
 OGUSA_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.ogusa_row_names
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
-
-ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
 ELASTIC_RESULTS_TABLE_LABELS = {
         'elasticity_gdp': 'Elasticity of GDP wrt Average Marginal Tax Rate'
@@ -288,57 +287,6 @@ def submit_ogusa_calculation(mods, first_budget_year, microsim_data):
     return job_ids, guids
 
 
-def submit_elastic_calculation(mods, first_budget_year):
-    ''' Submit the elasticity of GDP dynamic simulation '''
-
-    print "mods is ", mods
-    user_mods = package_up_vars(mods, first_budget_year)
-
-    if not bool(user_mods):
-        return False
-    print "user_mods is ", user_mods
-    print "submit work"
-    user_mods={first_budget_year:user_mods}
-    years = list(range(1,NUM_BUDGET_YEARS))
-
-    hostnames = DROPQ_WORKERS
-    num_hosts = len(hostnames)
-    data = {}
-    data['user_mods'] = json.dumps(user_mods)
-    job_ids = []
-    hostname_idx = 0
-    for y in years:
-        year_submitted = False
-        attempts = 0
-        while not year_submitted:
-            data['year'] = str(y)
-            theurl = "http://{hn}/elastic_gdp_start_job".format(hn=hostnames[hostname_idx])
-            try:
-                response = requests.post(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
-                if response.status_code == 200:
-                    print "submitted: ", str(y), hostnames[hostname_idx]
-                    year_submitted = True
-                    job_ids.append((response.text, hostnames[hostname_idx]))
-                    hostname_idx = (hostname_idx + 1) % num_hosts
-                else:
-                    print "FAILED: ", str(y), hostnames[hostname_idx]
-                    hostname_idx = (hostname_idx + 1) % num_hosts
-                    attempts += 1
-            except Timeout:
-                print "Couldn't submit to: ", hostnames[hostname_idx]
-                hostname_idx = (hostname_idx + 1) % num_hosts
-                attempts += 1
-            except RequestException as re:
-                print "Something unexpected happened: ", re
-                hostname_idx = (hostname_idx + 1) % num_hosts
-                attempts += 1
-            if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
-                print "Exceeded max attempts. Bailing out."
-                raise IOError()
-
-    return job_ids
-
-
 # Might not be needed because this would be handled on the worker node side
 def ogusa_results_ready(job_ids):
     jobs_done = [False] * len(job_ids)
@@ -354,40 +302,6 @@ def ogusa_results_ready(job_ids):
 
     return all(jobs_done)
 
-
-def elastic_get_results(job_ids):
-    ans = []
-    for idx, id_hostname in enumerate(job_ids):
-        id_, hostname = id_hostname
-        result_url = "http://{hn}/dropq_get_result".format(hn=hostname)
-        job_response = requests.get(result_url, params={'job_id':id_})
-        if job_response.status_code == 200: # Valid response
-            ans.append(job_response.json())
-
-    elasticity_gdp = {}
-    for result in ans:
-        elasticity_gdp.update(result['elasticity_gdp'])
-
-
-    if ENFORCE_REMOTE_VERSION_CHECK:
-        versions = [r.get('taxcalc_version', None) for r in ans]
-        if not all([ver==taxcalc_version for ver in versions]):
-            msg ="Got different taxcalc versions from workers. Bailing out"
-            print msg
-            raise IOError(msg)
-        versions = [r.get('dropq_version', None) for r in ans]
-        if not all([same_version(ver, dropq_version) for ver in versions]):
-            msg ="Got different dropq versions from workers. Bailing out"
-            print msg
-            raise IOError(msg)
-
-    elasticity_gdp[u'gdp_elasticity_0'] = u'NA'
-    elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
-                                        ELASTIC_RESULTS_TOTAL_ROW_KEYS)
-
-    results = {'elasticity_gdp': elasticity_gdp}
-
-    return results
 
 def ogusa_get_results(job_ids, status):
     '''
