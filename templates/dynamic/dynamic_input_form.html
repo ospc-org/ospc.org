@@ -42,6 +42,7 @@
 
     <form class="inputs-form" method="post" action="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
+<<<<<<< HEAD
       <div class="container">
         <div class="row">
           <div class="col-xs-3">
@@ -73,6 +74,18 @@
                     {{ error }}
                   </div>
               {% endfor %}
+=======
+      <div class="inputs-sidebar">
+        <ul class="nav sidebar-nav">
+          <li class="get-started"><a href="#get-started">Get Started</a></li>
+          <li><a href="#dynamic-sim">Macroeconomic Parameters</a></li>
+        </ul>
+        <div class="sidebar-button">
+          <a href="#" ></a>
+          <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Start Dynamic Simulation!">
+        </div>
+      </div> <!-- sidebar -->
+>>>>>>> a5ce643...  Start Macro Simulation! -> Start Dynamic Simulation!
 
               <div id="get-started" class="inputs-block inputs-block-intro">
                 <div class="inputs-block-header">

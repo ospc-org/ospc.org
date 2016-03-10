@@ -41,6 +41,7 @@
 
     <form class="inputs-form" method="post" action="/dynamic/macro/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
+<<<<<<< HEAD
       <div class="container">
         <div class="row">
           <div class="col-xs-3">
@@ -57,6 +58,18 @@
           </div>
           <div class="col-xs-9">
             <div class="inputs-main">
+=======
+      <div class="inputs-sidebar">
+        <ul class="nav sidebar-nav">
+          <li class="get-started"><a href="#get-started">Get Started</a></li>
+          <li><a href="#behavior">Elasticity of GDP</a></li>
+        </ul>
+        <div class="sidebar-button">
+          <a href="#" ></a>
+          <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Start Dynamic Simulation!">
+        </div>
+      </div> <!-- sidebar -->
+>>>>>>> a5ce643...  Start Macro Simulation! -> Start Dynamic Simulation!
 
               {% for error in form.non_field_errors %}
                   <div class="alert alert-danger text-center lert-dismissible" role="alert">
