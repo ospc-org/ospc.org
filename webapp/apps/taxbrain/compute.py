@@ -22,6 +22,10 @@ TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 
 
+class JobFailError(Exception):
+    '''An Exception to raise when a remote jobs has failed'''
+    pass
+
 class DropqCompute(object):
 
     def __init__(self):
@@ -111,6 +115,9 @@ class DropqCompute(object):
                 if rep == 'YES':
                     jobs_done[idx] = True
                     print "got one!: ", id_
+                elif rep == 'FAIL':
+                    msg = '{0} failed on host: {1}'.format(id_, hostname)
+                    raise JobFailError(msg)
 
         return jobs_done
 
@@ -219,8 +226,10 @@ class MockCompute(DropqCompute):
 
     def remote_submit_job(self, theurl, data, timeout):
         with requests_mock.Mocker() as mock:
-            mock.register_uri('POST', '/dropq_start_job', text='424242')
-            mock.register_uri('POST', '/elastic_gdp_start_job', text='424242')
+            resp = {'job_id': '424242', 'qlength':2}
+            resp = json.dumps(resp)
+            mock.register_uri('POST', '/dropq_start_job', text=resp)
+            mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
     def remote_results_ready(self, theurl, params):

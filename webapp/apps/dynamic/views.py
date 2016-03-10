@@ -214,7 +214,7 @@ def dynamic_behavioral(request, pk):
             microsim_data.update(worker_data)
 
             # start calc job
-            submitted_ids = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
+            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -317,7 +317,7 @@ def dynamic_elasticities(request, pk):
             microsim_data.update(worker_data)
 
             # start calc job
-            submitted_ids = dropq_compute.submit_elastic_calculation(microsim_data,
+            submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
                                                                      int(start_year))
             if not submitted_ids:
                 no_inputs = True

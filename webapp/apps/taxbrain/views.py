@@ -36,7 +36,7 @@ from djqscsv import render_to_csv_response
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
 from .helpers import default_policy, taxcalc_results_to_tables, format_csv
-from .compute import DropqCompute, MockCompute
+from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
 
@@ -308,7 +308,13 @@ def output_detail(request, pk):
             jobs_to_check = normalize(job_ids)
         else:
             jobs_to_check = normalize(jobs_to_check)
-        jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+
+        try:
+            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+        except JobFailError as jfe:
+            print jfe
+            return render_to_response('taxbrain/failed.html')
+
         if all(jobs_ready):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
             model.creation_date = datetime.datetime.now()
@@ -332,9 +338,10 @@ def output_detail(request, pk):
                 if exp_num_minutes > 0:
                     return JsonResponse({'eta': exp_num_minutes}, status=202)
                 else:
-                    return JsonResponse({'eta': 0}, status=200)
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
 
             else:
+                print "rendering not ready yet"
                 return render_to_response('taxbrain/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
 
 
