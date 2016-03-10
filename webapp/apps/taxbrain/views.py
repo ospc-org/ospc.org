@@ -178,9 +178,8 @@ def personal_results(request):
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
                 cur_dt = datetime.datetime.utcnow()
-                future_offset = datetime.timedelta(seconds=((1 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
                 expected_completion = cur_dt + future_offset
-                print "expected completion is ", expected_completion
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
                 return redirect(unique_url)
