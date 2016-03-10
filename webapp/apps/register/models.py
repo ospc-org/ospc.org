@@ -15,7 +15,7 @@ class Subscriber(models.Model):
     subscribe_date = models.DateField(auto_now_add=True)
 
     def confirm_url(self, hostname, secure = False):
-      return "{host}{path}?{params}".format(
+        return "{host}{path}?{params}".format(
             host = hostname,
             path = reverse('register_user'),
             params = urllib.urlencode({'k': self.confirm_key})
@@ -24,14 +24,15 @@ class Subscriber(models.Model):
     def send_subscribe_confirm_email(self):
         hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
         print(self.email)
-        send_mail(subject="Thank you for joining the conversation on American tax policy",
+        send_mail(
+            subject="Thank you for joining the conversation on American tax policy",
             message = """Welcome!
 
-            Thank you for registering with ospc.org. This is the best way to stay up to date on
+            Thank you for joining the ospc.org community. This is the best way to stay up to date on
             the latest news from the Open Source Policy Center. We also invite you to beta test
-            the TaxBrain webapp.
-
-
-            Please visit {url} to confirm your subscription""".format(url = self.confirm_url(hostname)),
+            the TaxBrain webapp. Please visit {url} to confirm your subscription""".format(
+                url = self.confirm_url(hostname)
+            ),
             from_email = "Open Source Policy Center <mailing@ospc.org>",
-            recipient_list = [self.email])
+            recipient_list = [self.email]
+        )

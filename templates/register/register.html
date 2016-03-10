@@ -4,19 +4,16 @@
   <div class="row">
     <div class="columns col-md-12">
       <div id="flat-wrapper">
-        <header id="flat-logo">
-          <p>You have signed up for the mailing list and are invited to join the beta test of TaxBrain!</p>
-        </header>
-
         <h2>Register</h2>
         <form action="/register/" method="post">{% csrf_token %}
         <table>
         {{ form.as_table }}
         </table>
 
-        <input type="submit" value="Register">
+        <input type="submit" value="Register" class="btn btn-sm btn-primary">
 
         </form>
+        <br>
       </div>
     </div>
   </div>
