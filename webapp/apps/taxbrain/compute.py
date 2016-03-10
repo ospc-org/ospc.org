@@ -22,6 +22,10 @@ TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 
 
+class JobFailError(Exception):
+    '''An Exception to raise when a remote jobs has failed'''
+    pass
+
 class DropqCompute(object):
 
     def __init__(self):
@@ -65,6 +69,7 @@ class DropqCompute(object):
         data['user_mods'] = json.dumps(user_mods)
         job_ids = []
         hostname_idx = 0
+        max_queue_length = 0
         for y in years:
             year_submitted = False
             attempts = 0
@@ -73,11 +78,13 @@ class DropqCompute(object):
                 theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
+                    response_d = response.json()
                     if response.status_code == 200:
-                        print "submitted: ", str(y), hostnames[hostname_idx]
                         year_submitted = True
-                        job_ids.append((response.text, hostnames[hostname_idx]))
+                        job_ids.append((response_d['job_id'], hostnames[hostname_idx]))
                         hostname_idx = (hostname_idx + 1) % num_hosts
+                        if response_d['qlength'] > max_queue_length:
+                            max_queue_length = response_d['qlength']
                     else:
                         print "FAILED: ", str(y), hostnames[hostname_idx]
                         hostname_idx = (hostname_idx + 1) % num_hosts
@@ -94,7 +101,7 @@ class DropqCompute(object):
                     print "Exceeded max attempts. Bailing out."
                     raise IOError()
 
-        return job_ids
+        return job_ids, max_queue_length
 
     def dropq_results_ready(self, job_ids):
         jobs_done = [False] * len(job_ids)
@@ -107,6 +114,9 @@ class DropqCompute(object):
                 if rep == 'YES':
                     jobs_done[idx] = True
                     print "got one!: ", id_
+                elif rep == 'FAIL':
+                    msg = '{0} failed on host: {1}'.format(id_, hostname)
+                    raise JobFailError(msg)
 
         return jobs_done
 
@@ -215,8 +225,10 @@ class MockCompute(DropqCompute):
 
     def remote_submit_job(self, theurl, data, timeout):
         with requests_mock.Mocker() as mock:
-            mock.register_uri('POST', '/dropq_start_job', text='424242')
-            mock.register_uri('POST', '/elastic_gdp_start_job', text='424242')
+            resp = {'job_id': '424242', 'qlength':2}
+            resp = json.dumps(resp)
+            mock.register_uri('POST', '/dropq_start_job', text=resp)
+            mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
     def remote_results_ready(self, theurl, params):
@@ -240,7 +252,6 @@ class MockCompute(DropqCompute):
 
 class ElasticMockCompute(MockCompute):
 
-
     def remote_retrieve_results(self, theurl, params):
         self.count += 1
         text = (u'{"elasticity_gdp": {"gdp_elasticity_1": "0.00310"}, '
@@ -249,3 +260,11 @@ class ElasticMockCompute(MockCompute):
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_get_result', text=text)
             return DropqCompute.remote_retrieve_results(self, theurl, params)
+
+
+class MockFailedCompute(MockCompute):
+
+    def remote_results_ready(self, theurl, params):
+        with requests_mock.Mocker() as mock:
+            mock.register_uri('GET', '/dropq_query_result', text='FAIL')
+            return DropqCompute.remote_results_ready(self, theurl, params)

@@ -1,0 +1,15 @@
+{
+  "name": "webapp-public",
+  "description": "Taxbrain Web Application ========================",
+  "homepage": "https://github.com/OpenSourcePolicyCenter/webapp-public",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6"
+  }
+}

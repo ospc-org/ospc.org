@@ -2,3 +2,11 @@
 *.db
 *.env
 db.sqlite3
+
+node_modules
+bower_components
+
+src/django-flatblocks
+src/dropq
+webapp_test.sh
+puf.csv.gz

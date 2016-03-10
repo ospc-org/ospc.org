@@ -1,6 +1,7 @@
 import csv
 import pdfkit
 import json
+import pytz
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -21,7 +22,7 @@ from django.core import serializers
 from django.core.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, render_to_response, get_object_or_404, redirect
 from django.template import loader, Context
 from django.template.context import RequestContext
@@ -35,7 +36,7 @@ from djqscsv import render_to_csv_response
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
 from .helpers import default_policy, taxcalc_results_to_tables, format_csv
-from .compute import DropqCompute, MockCompute
+from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
 
@@ -49,6 +50,7 @@ tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
+JOB_PROC_TIME_IN_SECONDS = 30
 
 def benefit_surtax_fixup(mod):
     _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
@@ -95,7 +97,6 @@ def personal_results(request):
     start_year = '2016'
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
         has_errors = make_bool(request.POST['has_errors'])
@@ -146,7 +147,6 @@ def personal_results(request):
 
             worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
             benefit_surtax_fixup(worker_data)
-
             # About to begin calculation, log event
             ip = get_real_ip(request)
             if ip is not None:
@@ -157,7 +157,7 @@ def personal_results(request):
                 print "BEGIN DROPQ WORK FROM: unknown IP"
 
             # start calc job
-            submitted_ids = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
+            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -166,7 +166,23 @@ def personal_results(request):
                 model.job_ids = job_ids
                 model.first_year = int(start_year)
                 model.save()
-                return redirect('tax_results', model.pk)
+                unique_url = OutputUrl()
+                if request.user.is_authenticated():
+                    current_user = User.objects.get(pk=request.user.id)
+                    unique_url.user = current_user
+                if unique_url.taxcalc_vers != None:
+                    pass
+                else:
+                    unique_url.taxcalc_vers = taxcalc_version
+
+                unique_url.unique_inputs = model
+                unique_url.model_pk = model.pk
+                cur_dt = datetime.datetime.utcnow()
+                future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                expected_completion = cur_dt + future_offset
+                unique_url.exp_comp_datetime = expected_completion
+                unique_url.save()
+                return redirect(unique_url)
 
         else:
             # received POST but invalid results, return to form with errors
@@ -236,89 +252,97 @@ def edit_personal_results(request, pk):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-def tax_results(request, pk):
-    """
-    This view allows the app to wait for the taxcalc results to be
-    returned.
-    """
-    model = TaxSaveInputs.objects.get(pk=pk)
-    job_ids = model.job_ids
-    jobs_to_check = model.jobs_not_ready
-    if not jobs_to_check:
-        jobs_to_check = normalize(job_ids)
-    else:
-        jobs_to_check = normalize(jobs_to_check)
-    jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
-    if all(jobs_ready):
-        model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
-        model.creation_date = datetime.datetime.now()
-        model.save()
-
-        unique_url = OutputUrl()
-        if request.user.is_authenticated():
-            current_user = User.objects.get(pk=request.user.id)
-            unique_url.user = current_user
-        unique_url.unique_inputs = model
-        unique_url.model_pk = model.pk
-        unique_url.save()
-        return redirect(unique_url)
-    else:
-        jobs_not_ready = [sub_id for (sub_id, job_ready) in
-                              zip(jobs_to_check, jobs_ready) if not job_ready]
-        jobs_not_ready = denormalize(jobs_not_ready)
-        model.jobs_not_ready = jobs_not_ready
-        model.save()
-
-
-    return render_to_response('taxbrain/not_ready.html', {'raw_results':'raw_results'})
-
-
 def output_detail(request, pk):
     """
-    This view handles the results page.
+    This view is the single page of diplaying a progress bar for how
+    close the job is to finishing, and then it will also display the
+    job results if the job is done. Finally, it will render a 'job failed'
+    page if the job has failed.
     """
+
     try:
         url = OutputUrl.objects.get(pk=pk)
     except:
         raise Http404
 
-    if url.taxcalc_vers != None:
-        pass
+    model = url.unique_inputs
+    if model.tax_result:
+        output = url.unique_inputs.tax_result
+        first_year = url.unique_inputs.first_year
+        created_on = url.unique_inputs.creation_date
+        tables = taxcalc_results_to_tables(output, first_year)
+        tables["tooltips"] = {
+            'diagnostic': DIAGNOSTIC_TOOLTIP,
+            'difference': DIFFERENCE_TOOLTIP,
+            'payroll': PAYROLL_TOOLTIP,
+            'income': INCOME_TOOLTIP,
+            'base': BASE_TOOLTIP,
+            'reform': REFORM_TOOLTIP,
+            'expanded': EXPANDED_TOOLTIP,
+            'adjusted': ADJUSTED_TOOLTIP,
+            'bins': INCOME_BINS_TOOLTIP,
+            'deciles': INCOME_DECILES_TOOLTIP
+        }
+        inputs = url.unique_inputs
+        is_registered = True if request.user.is_authenticated() else False
+
+        context = {
+            'locals':locals(),
+            'unique_url':url,
+            'taxcalc_version':taxcalc_version,
+            'tables': json.dumps(tables),
+            'created_on': created_on,
+            'first_year': first_year,
+            'is_registered': is_registered,
+            'is_micro': True
+        }
+
+        return render(request, 'taxbrain/results.html', context)
+
     else:
-        url.taxcalc_vers = taxcalc_version
-        url.save()
 
-    output = url.unique_inputs.tax_result
-    first_year = url.unique_inputs.first_year
-    created_on = url.unique_inputs.creation_date
-    tables = taxcalc_results_to_tables(output, first_year)
-    tables["tooltips"] = {
-        'diagnostic': DIAGNOSTIC_TOOLTIP,
-        'difference': DIFFERENCE_TOOLTIP,
-        'payroll': PAYROLL_TOOLTIP,
-        'income': INCOME_TOOLTIP,
-        'base': BASE_TOOLTIP,
-        'reform': REFORM_TOOLTIP,
-        'expanded': EXPANDED_TOOLTIP,
-        'adjusted': ADJUSTED_TOOLTIP,
-        'bins': INCOME_BINS_TOOLTIP,
-        'deciles': INCOME_DECILES_TOOLTIP
-    }
-    inputs = url.unique_inputs
-    is_registered = True if request.user.is_authenticated() else False
+        job_ids = model.job_ids
+        jobs_to_check = model.jobs_not_ready
+        if not jobs_to_check:
+            jobs_to_check = normalize(job_ids)
+        else:
+            jobs_to_check = normalize(jobs_to_check)
 
-    context = {
-        'locals':locals(),
-        'unique_url':url,
-        'taxcalc_version':taxcalc_version,
-        'tables': json.dumps(tables),
-        'created_on': created_on,
-        'first_year': first_year,
-        'is_registered': is_registered,
-        'is_micro': True
-    }
+        try:
+            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+        except JobFailError as jfe:
+            print jfe
+            return render_to_response('taxbrain/failed.html')
 
-    return render(request, 'taxbrain/results.html', context)
+        if all(jobs_ready):
+            model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
+            model.creation_date = datetime.datetime.now()
+            model.save()
+            return redirect(url)
+        else:
+            jobs_not_ready = [sub_id for (sub_id, job_ready) in
+                                zip(jobs_to_check, jobs_ready) if not job_ready]
+            jobs_not_ready = denormalize(jobs_not_ready)
+            model.jobs_not_ready = jobs_not_ready
+            model.save()
+            if request.method == 'POST':
+                # if not ready yet, insert number of minutes remaining
+                exp_comp_dt = url.exp_comp_datetime
+                utc_now = datetime.datetime.utcnow()
+                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                dt = exp_comp_dt - utc_now
+                exp_num_minutes = dt.total_seconds() / 60.
+                exp_num_minutes = round(exp_num_minutes, 2)
+                exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
+                if exp_num_minutes > 0:
+                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                else:
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
+
+            else:
+                print "rendering not ready yet"
+                return render_to_response('taxbrain/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
+
 
 @permission_required('taxbrain.view_inputs')
 def csv_output(request, pk):
