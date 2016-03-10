@@ -42,42 +42,53 @@
 
     <form class="inputs-form" method="post" action="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
-      <div class="inputs-sidebar">
-        <ul class="nav sidebar-nav">
-          <li class="get-started"><a href="#get-started">Get Started</a></li>
-          <li><a href="#dynamic-sim">Macroeconomic Parameters</a></li>
-        </ul>
-        <div class="sidebar-button">
-          <a href="#" ></a>
-          <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Start Dynamic Simulation!">
-        </div>
-      </div> <!-- sidebar -->
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-3">
+            <div class="inputs-sidebar" data-spy="affix" data-offset-top="320">
+              <ul class="nav sidebar-nav">
+                <li class="get-started"><a href="#get-started">Get Started</a></li>
+                <li><a href="#dynamic-sim">Macroeconomic Parameters</a></li>
+              </ul>
+              <div class="sidebar-button">
+                <a href="#" ></a>
+                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate disabled" disabled type="submit" value="Start Dynamic Simulation!">
+                <div class="construction text-center">
+                  <div class="progress progress-striped" style="width: 100%">
+                    <div class="progress-bar active progress-bar-custom" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+                  </div>
+                </div>
+              </div>
+            </div> <!-- sidebar -->
+          </div>
+          <div class="col-xs-9">
+            <div class="inputs-main">
 
-      <div class="inputs-main">
+              {% for error in form.non_field_errors %}
+                  <div class="alert alert-danger text-center lert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ error }}
+                  </div>
+              {% endfor %}
 
-        {% for error in form.non_field_errors %}
-            <div class="alert alert-danger text-center lert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              {{ error }}
-            </div>
-        {% endfor %}
+              <div id="get-started" class="inputs-block inputs-block-intro">
+                <div class="inputs-block-header">
+                  <h1>Get Started</h1>
+                 {% flatblock "dynamic_get_started_blurb" %}
+                  <div>
+                    You are looking at default parameters for {{start_year}}.
+                  </div>
+                </div>
+              </div>
 
-        <div id="get-started" class="inputs-block inputs-block-intro">
-          <div class="inputs-block-header">
-            <h1>Get Started</h1>
-           {% flatblock "dynamic_get_started_blurb" %}
-            <div>
-              You are looking at default parameters for {{start_year}}.
-            </div>
+              {% include 'dynamic/includes/params/inputs/dynamic.html' %}
+
+            </div> <!-- main -->
           </div>
         </div>
-
-        {% include 'dynamic/includes/params/inputs/dynamic.html' %}
-
-      </div> <!-- main -->
+      </div>
     </form> <!-- form -->
-    <div class="push"></div>
   </div> <!-- /wrapper -->
 {% endblock %}

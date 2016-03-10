@@ -103,6 +103,7 @@
 
               <div id="get-started" class="inputs-block inputs-block-intro">
                 <div class="inputs-block-header">
+                  {% flatblock "taxbrain_above_get_started_blurb" %}
                   <h1>Get Started</h1>
                   {% flatblock "taxbrain_get_started_blurb" %}
                   <div>
@@ -135,7 +136,6 @@
               {% include 'taxbrain/includes/params/inputs/other_taxes.html' %}
               {% include 'taxbrain/includes/params/inputs/refundable_credit.html' %}
               {% include 'taxbrain/includes/params/inputs/growth.html' %}
-
             </div> <!-- main -->
           </div>
         </div>
