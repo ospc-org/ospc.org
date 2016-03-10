@@ -25,6 +25,7 @@
 <script type="text/javascript" src="{% static 'js/vendor/moment/moment.min.js' %}"></script>
 <script type="text/javascript">
 $(function() {
+<<<<<<< HEAD
     var origEta;
 
     function insertEta(eta) {
@@ -32,6 +33,9 @@ $(function() {
         $('.progress-bar').css('width', (1 - (eta / origEta)) * 100 + '%');
         $('#eta').text(moment.duration(eta, 'minutes').humanize());
     }
+=======
+    var origEta = 1;
+>>>>>>> 91ff36e... Added moment for humanize
 
     function ajaxEta() {
         $.ajax(window.location.href, {
@@ -39,12 +43,20 @@ $(function() {
             data: { csrfmiddlewaretoken: $('meta[name="csrf-token"]').attr('content') },
             success: function(data, textStatus, xhr) {
                 if (xhr.status === 202) {
+<<<<<<< HEAD
                     insertEta(data.eta);
                 } else if (xhr.status === 200) {
                     insertEta(data.eta);
                     setTimeout(function() {
                         window.location.reload(1);
                     }, 5000)
+=======
+                    origEta = origEta ? origEta : data.eta;
+                    $('.progress-bar').css('width', (1 - (data.eta / origEta)) * 100 + '%');
+                    $('#eta').text(moment.duration(data.eta, 'minutes').humanize());
+                } else if (xhr.status === 200) {
+                  window.location.reload(1);
+>>>>>>> 91ff36e... Added moment for humanize
                 }
             }
         });

@@ -338,7 +338,11 @@ def output_detail(request, pk):
                 if exp_num_minutes > 0:
                     return JsonResponse({'eta': exp_num_minutes}, status=202)
                 else:
+<<<<<<< HEAD
                     return JsonResponse({'eta': 0}, status=200)
+=======
+                    return JsonResponse({}, status=200)
+>>>>>>> 91ff36e... Added moment for humanize
 
             else:
                 return render_to_response('taxbrain/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
