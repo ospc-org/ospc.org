@@ -30,7 +30,7 @@ OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
 ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
 ELASTIC_RESULTS_TABLE_LABELS = {
-        'elasticity_gdp': 'Elasticity of GDP wrt Average Marginal Tax Rate'
+        'elasticity_gdp': 'Elasticity of GDP wrt 1 - Average Marginal Tax Rate'
         }
 
 OGUSA_RESULTS_TABLE_LABELS = {
@@ -152,11 +152,13 @@ def default_behavior_parameters(first_budget_year):
 def default_elasticity_parameters(first_budget_year):
     ''' Create a list of default Elasticity parameters '''
     default_elasticity_params = {}
-    default_value = 0.54
-    adj_long_name = ("Elasticity of GDP with respect to average marginal "
+    default_value = 0.0
+    adj_long_name = ("Elasticity of GDP with respect to 1 - average marginal "
                      "tax rate.")
-    adj_descr = ("The default value of {0} is from a 2011 paper by Barro "
-                 "and Redlick".format(default_value))
+    adj_descr = ("This parameter describes how many percent GDP will change "
+                 "for each 1 percent change in 1 - the average "
+                 "marginal tax rate, weighted by wage income, in the "
+                 "preceeding year.")
 
     elasticity_of_gdp = {'value':[default_value], 'col_label':"",
                          'long_name': adj_long_name,
