@@ -337,7 +337,7 @@ def output_detail(request, pk):
                 if exp_num_minutes > 0:
                     return JsonResponse({'eta': exp_num_minutes}, status=202)
                 else:
-                    return JsonResponse({'eta': 0}, status=200)
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
 
             else:
                 print "rendering not ready yet"
