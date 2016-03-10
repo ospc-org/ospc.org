@@ -41,40 +41,47 @@
 
     <form class="inputs-form" method="post" action="/dynamic/behavioral/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
-      <div class="inputs-sidebar">
-        <ul class="nav sidebar-nav">
-          <li class="get-started"><a href="#get-started">Get Started</a></li>
-          <li><a href="#behavior">Behavior</a></li>
-        </ul>
-        <div class="sidebar-button">
-          <a href="#" ></a>
-          <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Start Macro Simulation!">
-        </div>
-      </div> <!-- sidebar -->
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-3">
+            <div class="inputs-sidebar" data-spy="affix" data-offset-top="320">
+              <ul class="nav sidebar-nav">
+                <li class="get-started"><a href="#get-started">Get Started</a></li>
+                <li><a href="#behavior">Behavior</a></li>
+              </ul>
+              <div class="sidebar-button">
+                <a href="#" ></a>
+                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Start Macro Simulation!">
+              </div>
+            </div> <!-- sidebar -->
+          </div>
+          <div class="col-xs-9">
+            <div class="inputs-main">
 
-      <div class="inputs-main">
+              {% for error in form.non_field_errors %}
+                  <div class="alert alert-danger text-center lert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ error }}
+                  </div>
+              {% endfor %}
 
-        {% for error in form.non_field_errors %}
-            <div class="alert alert-danger text-center lert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              {{ error }}
-            </div>
-        {% endfor %}
+              <div id="get-started" class="inputs-block inputs-block-intro">
+                <div class="inputs-block-header">
+                  <h1>Partial Equilibrium Dynamic Simulation</h1>
+                 {% flatblock "dynamic_behavior_get_started_blurb" %}
+                  <div>
+                    You are looking at default parameters for {{start_year}}.
+                  </div>
+                </div>
+              </div>
 
-        <div id="get-started" class="inputs-block inputs-block-intro">
-          <div class="inputs-block-header">
-            <h1>Partial Equilibrium Dynamic Simulation</h1>
-           {% flatblock "dynamic_behavior_get_started_blurb" %}
-            <div>
-              You are looking at default parameters for {{start_year}}.
-            </div>
+              {% include 'taxbrain/includes/params/inputs/behavior_alone.html' %}
+            </div> <!-- main -->
           </div>
         </div>
-
-        {% include 'taxbrain/includes/params/inputs/behavior_alone.html' %}
-      </div> <!-- main -->
+      </div>
     </form> <!-- form -->
     <div class="push"></div>
   </div> <!-- /wrapper -->
