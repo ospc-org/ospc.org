@@ -252,7 +252,6 @@ class MockCompute(DropqCompute):
 
 class ElasticMockCompute(MockCompute):
 
-
     def remote_retrieve_results(self, theurl, params):
         self.count += 1
         text = (u'{"elasticity_gdp": {"gdp_elasticity_1": "0.00310"}, '
@@ -261,3 +260,11 @@ class ElasticMockCompute(MockCompute):
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_get_result', text=text)
             return DropqCompute.remote_retrieve_results(self, theurl, params)
+
+
+class MockFailedCompute(MockCompute):
+
+    def remote_results_ready(self, theurl, params):
+        with requests_mock.Mocker() as mock:
+            mock.register_uri('GET', '/dropq_query_result', text='FAIL')
+            return DropqCompute.remote_results_ready(self, theurl, params)
