@@ -1,5 +1,5 @@
 nomkl
-conda==4.0.3
+conda==3.19.0
 taxcalc
 gevent
 pillow
