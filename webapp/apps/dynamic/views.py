@@ -375,8 +375,7 @@ def edit_dynamic_behavioral(request, pk):
         'params': behavior_default_params,
         'taxcalc_version': taxcalc_version,
         'start_year': str(start_year),
-        'pk': pk
-
+        'pk': model.micro_sim.pk
     }
 
     return render(request, 'dynamic/behavior.html', init_context)
@@ -401,6 +400,7 @@ def edit_dynamic_elastic(request, pk):
 
     form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year, instance=model)
     elasticity_default_params = default_elasticity_parameters(int(start_year))
+
 
     init_context = {
         'form': form_personal_exemp,
