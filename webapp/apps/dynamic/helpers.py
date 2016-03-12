@@ -157,7 +157,7 @@ def default_elasticity_parameters(first_budget_year):
                      "tax rate.")
     adj_descr = ("This parameter describes how many percent GDP will change "
                  "for each 1 percent change in 1 - the average "
-                 "marginal tax rate, weighted by wage income, in the "
+                 "marginal tax rate, weighted by income, in the "
                  "preceeding year.")
 
     elasticity_of_gdp = {'value':[default_value], 'col_label':"",
