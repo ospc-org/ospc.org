@@ -28,7 +28,7 @@ class Subscriber(models.Model):
             message = """Welcome!
 
             Thank you for registering with ospc.org. This is the best way to stay up to date on
-            the latest news from the Open Source Policy Center. We also invite you to beta test
+            the latest news from the Open Source Policy Center. We also invite you to try
             the TaxBrain webapp.
 
 
