@@ -25,4 +25,4 @@ before_script:
   - python manage.py migrate --fake
 
 script:
-  - pytest webapp/apps/
+  - py.test webapp/apps/
