@@ -36,13 +36,15 @@ from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
 from ..taxbrain.helpers import default_policy, taxcalc_results_to_tables, default_behavior
 from ..taxbrain.compute import DropqCompute
 
-dropq_compute = DropqCompute()
-from .helpers import (default_parameters, submit_ogusa_calculation, job_submitted,
-                      ogusa_get_results, ogusa_results_to_tables, success_text,
+from .helpers import (default_parameters, job_submitted,
+                      ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
                       cc_text_finished, cc_text_failure, dynamic_params_from_model,
                       send_cc_email, default_behavior_parameters,
                       elast_results_to_tables, default_elasticity_parameters)
+
+from .compute import DynamicCompute
+dynamic_compute = DynamicCompute()
 
 from ..taxbrain.constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                                   PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -62,7 +64,6 @@ ogusa_version = ".".join([ogversion_info['version'],
                          ogversion_info['full-revisionid'][:6]])
 
 
-@permission_required('taxbrain.view_inputs')
 def dynamic_input(request, pk):
     """
     This view handles the dynamic input page and calls the function that
@@ -105,10 +106,15 @@ def dynamic_input(request, pk):
 
 
             microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+
+            #Don't need to pass around the microsim results
+            if 'tax_result' in microsim_data:
+                del microsim_data['tax_result']
+
             benefit_surtax_fixup(microsim_data)
 
             # start calc job
-            submitted_ids, guids = submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
+            submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
             if submitted_ids:
                 model.job_ids = denormalize(submitted_ids)
                 model.guids = denormalize(guids)
@@ -134,11 +140,10 @@ def dynamic_input(request, pk):
 
         # Probably a GET request, load a default form
         start_year = request.REQUEST.get('start_year', start_year)
-        if int(start_year) != 2015:
-            return HttpResponse('Dynamic simulation must have a start year of 2015!', status=403)
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))
+    disabled_flag = os.environ.get('OGUSA_DISABLED', '')
 
     init_context = {
         'form': form_personal_exemp,
@@ -146,7 +151,8 @@ def dynamic_input(request, pk):
         'taxcalc_version': taxcalc_version,
         'ogusa_version': ogusa_version,
         'start_year': start_year,
-        'pk': pk
+        'pk': pk,
+        'is_disabled': disabled_flag
     }
 
     if has_field_errors(form_personal_exemp):
@@ -443,7 +449,7 @@ def dynamic_finished(request):
     # We know the results are ready so go get them from the server
     job_ids = dsi.job_ids
     submitted_ids = normalize(job_ids)
-    result = ogusa_get_results(submitted_ids, status=status)
+    result = dynamic_compute.ogusa_get_results(submitted_ids, status=status)
     dsi.tax_result = result
     dsi.creation_date = datetime.datetime.now()
     dsi.save()

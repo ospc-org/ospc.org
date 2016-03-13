@@ -12,55 +12,7 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_v
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
-
-START_YEAR = u'2016'
-
-def do_micro_sim(client, reform):
-    '''do the proper sequence of HTTP calls to run a microsim'''
-    #Monkey patch to mock out running of compute jobs
-    import sys
-    from webapp.apps.taxbrain import views
-    webapp_views = sys.modules['webapp.apps.taxbrain.views']
-    webapp_views.dropq_compute = MockCompute()
-    from webapp.apps.dynamic import views
-    dynamic_views = sys.modules['webapp.apps.dynamic.views']
-    dynamic_views.dropq_compute = MockCompute(num_times_to_wait=2)
-
-    response = client.post('/taxbrain/', reform)
-    # Check that redirect happens
-    assert response.status_code == 302
-    assert response.url[:-2].endswith("taxbrain/")
-    return response
-
-
-def do_behavioral_sim(client, microsim_response, pe_reform):
-    # Link to dynamic simulation
-    model_num = microsim_response.url[-2:]
-    dynamic_landing = '/dynamic/{0}?start_year={1}'.format(model_num, START_YEAR)
-    response = client.get(dynamic_landing)
-    assert response.status_code == 200
-
-    # Go to behavioral input page
-    dynamic_behavior = '/dynamic/behavioral/{0}?start_year={1}'.format(model_num, START_YEAR)
-    response = client.get(dynamic_behavior)
-    assert response.status_code == 200
-
-    # Do the partial equilibrium job submission
-    response = client.post(dynamic_behavior, pe_reform)
-    assert response.status_code == 302
-
-    print(response)
-    assert response.url[:-2].endswith("processing/")
-
-    #Check that we are not done processing
-    not_ready_page = client.get(response.url)
-    not_ready_page.status_code == 200
-
-    #Check should get a redirect this time
-    response = client.get(response.url)
-    assert response.status_code == 302
-    assert response.url[:-2].endswith("behavior_results/")
-    return response
+from .utils import *
 
 
 class DynamicBehavioralViewsTests(TestCase):
