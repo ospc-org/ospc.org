@@ -34,7 +34,7 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
 from ..taxbrain.helpers import default_policy, taxcalc_results_to_tables, default_behavior
-from ..taxbrain.compute import DropqCompute
+from ..taxbrain.views import dropq_compute
 
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
@@ -413,7 +413,7 @@ def edit_dynamic_elastic(request, pk):
         'params': elasticity_default_params,
         'taxcalc_version': taxcalc_version,
         'start_year': str(start_year),
-        'pk': pk
+        'pk': model.micro_sim.pk
     }
 
     return render(request, 'dynamic/elasticity.html', init_context)

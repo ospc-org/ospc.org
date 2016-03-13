@@ -25,7 +25,7 @@ def do_micro_sim(client, reform):
     webapp_views.dropq_compute = MockCompute()
     from webapp.apps.dynamic import views
     dynamic_views = sys.modules['webapp.apps.dynamic.views']
-    dynamic_views.dropq_compute = MockCompute(num_times_to_wait=2)
+    dynamic_views.dropq_compute = MockCompute(num_times_to_wait=1)
 
     response = client.post('/taxbrain/', reform)
     # Check that redirect happens
@@ -62,6 +62,37 @@ def do_behavioral_sim(client, microsim_response, pe_reform, start_year=START_YEA
     assert response.status_code == 302
     assert response.url[:-2].endswith("behavior_results/")
     return response
+
+
+def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_YEAR):
+    # Link to dynamic simulation
+    model_num = microsim_response.url[-2:]
+    dynamic_landing = '/dynamic/{0}?start_year={1}'.format(model_num, start_year)
+    response = client.get(dynamic_landing)
+    assert response.status_code == 200
+
+    # Go to macro input page
+    dynamic_egdp = '/dynamic/macro/{0}?start_year={1}'.format(model_num, start_year)
+    response = client.get(dynamic_egdp)
+    assert response.status_code == 200
+
+    # Do the macro job submission
+    response = client.post(dynamic_egdp, egdp_reform)
+    assert response.status_code == 302
+
+    print(response)
+    assert response.url[:-2].endswith("macro_processing/")
+
+    #Check that we are not done processing
+    not_ready_page = client.get(response.url)
+    not_ready_page.status_code == 200
+
+    #Check should get a redirect this time
+    next_response = client.get(response.url)
+    assert next_response.status_code == 302
+    assert next_response.url[:-2].endswith("macro_results/")
+    return next_response
+
 
 
 def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year):
