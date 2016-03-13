@@ -46,7 +46,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
-        self.failUnless(response.url[:-2].endswith("taxbrain/"))
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
 
     def test_taxbrain_post_no_behavior_entries(self):
@@ -90,7 +91,8 @@ class TaxBrainViewsTests(TestCase):
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
-        self.failUnless(response.url[:-2].endswith("taxbrain/"))
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
         self.failUnless("Your calculation failed" in str(response))

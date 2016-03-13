@@ -133,7 +133,6 @@ class DynamicViewsTests(TestCase):
         self.failUnless(response.url[:-2].endswith("macro_processing/"))
 
         #Check that we are not done processing
-        import pdb;pdb.set_trace()
         not_ready_page = self.client.get(response.url)
         self.assertEqual(not_ready_page.status_code, 200)
 
