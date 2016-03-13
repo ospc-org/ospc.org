@@ -10,6 +10,8 @@ from ..compute import DropqCompute, MockCompute, MockFailedCompute
 import taxcalc
 from taxcalc import Policy
 
+START_YEAR = 2016
+
 class TaxBrainViewsTests(TestCase):
     ''' Test the views of this app. '''
 
@@ -38,13 +40,14 @@ class TaxBrainViewsTests(TestCase):
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
                 u'ID_BenefitSurtax_Switch_6': [u'True'],
                 u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken':'abc123'}
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
-        self.failUnless(response.url[:-2].endswith("taxbrain/"))
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
 
     def test_taxbrain_post_no_behavior_entries(self):
@@ -62,7 +65,7 @@ class TaxBrainViewsTests(TestCase):
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
                 u'ID_BenefitSurtax_Switch_6': [u'True'],
                 u'has_errors': [u'False'], u'BE_inc': [u'0.1'],
-                u'start_year': u'2016'}
+                u'start_year': unicode(START_YEAR)}
 
         response = self.client.post('/taxbrain/', data)
         # Check that we get a 400
@@ -83,12 +86,13 @@ class TaxBrainViewsTests(TestCase):
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
                 u'ID_BenefitSurtax_Switch_6': [u'True'],
                 u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken':'abc123'}
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
-        self.failUnless(response.url[:-2].endswith("taxbrain/"))
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
         self.failUnless("Your calculation failed" in str(response))

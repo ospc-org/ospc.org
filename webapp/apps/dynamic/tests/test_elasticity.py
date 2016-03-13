@@ -15,14 +15,19 @@ from taxcalc import Policy
 from .utils import *
 
 
-class DynamicBehavioralViewsTests(TestCase):
-    ''' Test the partial equilibrium dynamic views of this app. '''
+class DynamicElasticityViewsTests(TestCase):
+    ''' Test the elasticity of GDP dynamic views of this app. '''
 
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
 
-    def test_behavioral_edit(self):
+    def test_elasticity_edit(self):
+        import sys
+        from webapp.apps.taxbrain import views
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
         # Do the microsim
         reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
                 u'ID_BenefitSurtax_Switch_0': [u'True'],
@@ -44,26 +49,29 @@ class DynamicBehavioralViewsTests(TestCase):
         reform[u'II_em'] += [u'4335']
         micro3 = do_micro_sim(self.client, reform)
 
-        # Do the partial equilibrium simulation based on the third microsim
-        pe_reform = {u'BE_inc': [u'0.4']}
-        pe_response = do_behavioral_sim(self.client, micro3, pe_reform)
+        from webapp.apps.dynamic import views
+        dynamic_views = sys.modules['webapp.apps.dynamic.views']
+        dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
+
+        # Do the elasticity of GDP simulation based on the third microsim
+        egdp_reform = {u'elasticity_gdp': [u'0.4']}
+        egdp_response = do_elasticity_sim(self.client, micro3, egdp_reform)
         orig_micro_model_num = micro3.url[-2:-1]
 
-        # Now edit this partial equilibrium sim
-        # Go to behavioral input page
-        behavior_num = pe_response.url[pe_response.url[:-1].rfind('/')+1:-1]
-        dynamic_behavior_edit = '/dynamic/behavioral/edit/{0}?start_year={1}'.format(behavior_num, START_YEAR)
+        # Now edit this elasticity of gdp sim
+        # Go to macro input page
+        egdp_num = egdp_response.url[egdp_response.url[:-1].rfind('/')+1:-1]
+        dynamic_macro_edit = '/dynamic/macro/edit/{0}?start_year={1}'.format(egdp_num, START_YEAR)
         #Redirect first
-        response = self.client.get(dynamic_behavior_edit)
+        response = self.client.get(dynamic_macro_edit)
         self.assertEqual(response.status_code, 301)
         #Now load the page
         rep2 = self.client.get(response.url)
         page = rep2.content
         # Read the page to find the linked microsim. It should be the third
         # microsim above
-        idx = page.find('dynamic/behavioral')
-        idx_ms_num_start = idx + 19
+        idx = page.find('dynamic/macro')
+        idx_ms_num_start = idx + 14
         idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/') 
         microsim_model_num = page[idx_ms_num_start:idx_ms_num_end]
         assert microsim_model_num == orig_micro_model_num
-

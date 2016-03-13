@@ -31,7 +31,7 @@ class DropqCompute(object):
     def __init__(self):
         pass
 
-    def remote_submit_job(self, theurl, data, timeout):
+    def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
 
@@ -209,8 +209,6 @@ class DropqCompute(object):
         results = {'elasticity_gdp': elasticity_gdp}
 
         return results
-
-
 
 
 class MockCompute(DropqCompute):

@@ -57,13 +57,13 @@ class DynamicViewsTests(TestCase):
         self.failUnless(response.url[:-2].endswith("taxbrain/"))
 
         # Link to dynamic simulation
-        model_num = response.url[-2:]
-        dynamic_landing = '/dynamic/{0}?start_year={1}'.format(model_num, START_YEAR)
+        model_num = response.url[-2:-1]
+        dynamic_landing = '/dynamic/{0}/?start_year={1}'.format(model_num, START_YEAR)
         response = self.client.get(dynamic_landing)
         self.assertEqual(response.status_code, 200)
 
         # Go to behavioral input page
-        dynamic_behavior = '/dynamic/behavioral/{0}?start_year={1}'.format(model_num, START_YEAR)
+        dynamic_behavior = '/dynamic/behavioral/{0}/?start_year={1}'.format(model_num, START_YEAR)
         response = self.client.get(dynamic_behavior)
         self.assertEqual(response.status_code, 200)
 
@@ -110,22 +110,23 @@ class DynamicViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
-        self.failUnless(response.url[:-2].endswith("taxbrain/"))
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
         # Link to dynamic simulation
-        model_num = response.url[-2:]
-        dynamic_landing = '/dynamic/{0}?start_year={1}'.format(model_num, START_YEAR)
+        model_num = response.url[link_idx+1:-1]
+        dynamic_landing = '/dynamic/{0}/?start_year={1}'.format(model_num, START_YEAR)
         response = self.client.get(dynamic_landing)
         self.assertEqual(response.status_code, 200)
 
-        # Go to behavioral input page
-        dynamic_behavior = '/dynamic/macro/{0}?start_year={1}'.format(model_num, START_YEAR)
-        response = self.client.get(dynamic_behavior)
+        # Go to macro input page
+        dynamic_egdp = '/dynamic/macro/{0}/?start_year={1}'.format(model_num, START_YEAR)
+        response = self.client.get(dynamic_egdp)
         self.assertEqual(response.status_code, 200)
 
         # Do the elasticity job submission
         el_data = {'elastic_gdp': [u'0.55']}
-        response = self.client.post(dynamic_behavior, el_data)
+        response = self.client.post(dynamic_egdp, el_data)
         self.assertEqual(response.status_code, 302)
 
         print(response)
