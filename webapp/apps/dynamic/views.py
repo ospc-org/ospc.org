@@ -70,12 +70,11 @@ def dynamic_input(request, pk):
     handles the calculation on the inputs.
     """
 
-    # Only acceptable year for dynamic simulations right now
-    start_year=2015
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
-        fields['first_year'] = start_year
+        fields['first_year'] = fields['start_year']
+        start_year = fields['start_year']
         strip_empty_lists(fields)
         dyn_mod_form = DynamicInputsModelForm(start_year, fields)
 
@@ -139,7 +138,7 @@ def dynamic_input(request, pk):
     else:
 
         # Probably a GET request, load a default form
-        start_year = request.REQUEST.get('start_year', start_year)
+        start_year = request.REQUEST.get('start_year')
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))
