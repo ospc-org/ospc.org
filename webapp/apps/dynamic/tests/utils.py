@@ -95,7 +95,7 @@ def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_Y
 
 
 
-def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year):
+def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year, increment=0):
 
     import sys
     from webapp.apps.taxbrain import views
@@ -103,7 +103,7 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year):
     webapp_views.dropq_compute = MockCompute()
     from webapp.apps.dynamic import views
     dynamic_views = sys.modules['webapp.apps.dynamic.views']
-    dynamic_views.dynamic_compute = MockDynamicCompute()
+    dynamic_views.dynamic_compute = MockDynamicCompute(increment=increment)
 
     # Go to the dynamic landing page
     model_num = microsim_response.url[-2:]

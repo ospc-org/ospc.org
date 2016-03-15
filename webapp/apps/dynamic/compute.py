@@ -158,11 +158,20 @@ class DynamicCompute(DropqCompute):
 
 class MockDynamicCompute(DynamicCompute):
 
-    __slots__ = ('count', 'num_times_to_wait')
+    __slots__ = ('count', 'num_times_to_wait', 'increment')
+
+    def __init__(self, **kwargs):
+        if 'increment' in kwargs:
+            self.increment = kwargs['increment']
+            del kwargs['increment']
+        else:
+            self.increment = 0
+        super(MockDynamicCompute, self).__init__(**kwargs)
 
     def remote_submit_job(self, theurl, data, timeout):
         with requests_mock.Mocker() as mock:
-            resp = {'job_id': 'ogusa424242', 'guid': 'guia123456789'}
+            job_id = 'ogusa' + str(424242 + self.increment)
+            resp = {'job_id': job_id, 'guid': 'guia123456789'}
             resp = json.dumps(resp)
             mock.register_uri('POST', '/ogusa_start_job', text=resp)
             return DynamicCompute.remote_submit_job(self, theurl, data, timeout)

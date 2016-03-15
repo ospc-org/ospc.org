@@ -14,6 +14,7 @@ from ...taxbrain.compute import DropqCompute, MockCompute
 import taxcalc
 from taxcalc import Policy
 from .utils import *
+from ..models import DynamicSaveInputs
 
 START_YEAR = 2016
 
@@ -51,6 +52,15 @@ class DynamicOGUSAViewsTests(TestCase):
 
         # Do a 2016 microsim
         micro_2016 = do_micro_sim(self.client, reform)
+        start_year = 2016
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.43']}
-        ogusa_response2 = do_ogusa_sim(self.client, micro_2016, ogusa_reform, start_year)
+        ogusa_response2 = do_ogusa_sim(self.client, micro_2016, ogusa_reform, start_year, increment=1)
+
+        # Do a callback to say that the result is ready
+        #self.client.get('/dynamic/dynamic_finished/?job_id=ogusa424243&status=SUCCESS')
+        job_id = 'ogusa424243'
+        qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
+        dsi = qs[0]
+        assert dsi.frisch == u'0.43'
+        assert dsi.first_year == 2016
