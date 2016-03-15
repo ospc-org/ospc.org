@@ -80,6 +80,7 @@ class DropqCompute(object):
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
                     response_d = response.json()
                     if response.status_code == 200:
+                        print "submitted: ", hostnames[hostname_idx]
                         year_submitted = True
                         job_ids.append((response_d['job_id'], hostnames[hostname_idx]))
                         hostname_idx = (hostname_idx + 1) % num_hosts
