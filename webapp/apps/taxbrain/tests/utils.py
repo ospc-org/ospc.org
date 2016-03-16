@@ -27,8 +27,6 @@ def do_micro_sim(client, reform):
     response = client.post('/taxbrain/', reform)
     # Check that redirect happens
     assert response.status_code == 302
-    assert response.url[:-2].endswith("taxbrain/")
+    idx = response.url[:-1].rfind('/')
+    assert response.url[:idx].endswith("taxbrain")
     return response
-
-
-

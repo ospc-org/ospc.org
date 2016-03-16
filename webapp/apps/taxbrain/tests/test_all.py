@@ -29,6 +29,11 @@ def test_compute():
     hostnames = compute.DROPQ_WORKERS[compute.DROPQ_WORKER_OFFSET:
         compute.DROPQ_WORKER_OFFSET + compute.NUM_BUDGET_YEARS]
     assert hostnames == [1,2,3,4,5]
+    #Reset to original values
+    compute.DROPQ_WORKERS = ['localhost:5050']
+    compute.DROPQ_WORKER_OFFSET = 0
+    compute.NUM_BUDGET_YEARS = 2
+
 
 def cycler(max):
     count = 0
