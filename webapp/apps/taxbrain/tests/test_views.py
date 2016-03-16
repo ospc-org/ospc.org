@@ -9,6 +9,7 @@ from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
 from ..compute import DropqCompute, MockCompute, MockFailedCompute
 import taxcalc
 from taxcalc import Policy
+from .utils import *
 
 START_YEAR = 2016
 
@@ -96,3 +97,17 @@ class TaxBrainViewsTests(TestCase):
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
         self.failUnless("Your calculation failed" in str(response))
+
+    def test_taxbrain_has_growth_params(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
+        reform = {'factor_adjustment': [u'0.03'],
+                  'FICA_ss_trt': [u'0.11'],
+                  'start_year': unicode(START_YEAR),
+                  'has_errors': [u'False'],
+                  'growth_choice': u'factor_adjustment'
+                  }
+        micro = do_micro_sim(self.client, reform)

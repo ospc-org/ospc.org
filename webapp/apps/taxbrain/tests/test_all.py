@@ -4,10 +4,31 @@ from ..models import TaxSaveInputs
 from ..models import convert_to_floats
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
+from ...taxbrain import compute as compute
 import taxcalc
 from taxcalc import Policy
 
 FBY = 2015
+
+
+def test_compute():
+    assert compute
+    compute.DROPQ_WORKERS = [1,2,3,4,5,6,7,8,9,10]
+    compute.DROPQ_WORKER_OFFSET = 0
+    compute.NUM_BUDGET_YEARS = 5
+    hostnames = compute.DROPQ_WORKERS[compute.DROPQ_WORKER_OFFSET:
+        compute.DROPQ_WORKER_OFFSET + compute.NUM_BUDGET_YEARS]
+    assert hostnames == [1,2,3,4,5]
+    compute.increment_dropq_offset()
+    assert compute.DROPQ_WORKER_OFFSET == 5
+    hostnames = compute.DROPQ_WORKERS[compute.DROPQ_WORKER_OFFSET:
+        compute.DROPQ_WORKER_OFFSET + compute.NUM_BUDGET_YEARS]
+    assert hostnames == [6,7,8,9,10]
+    compute.increment_dropq_offset()
+    assert compute.DROPQ_WORKER_OFFSET == 0
+    hostnames = compute.DROPQ_WORKERS[compute.DROPQ_WORKER_OFFSET:
+        compute.DROPQ_WORKER_OFFSET + compute.NUM_BUDGET_YEARS]
+    assert hostnames == [1,2,3,4,5]
 
 def cycler(max):
     count = 0

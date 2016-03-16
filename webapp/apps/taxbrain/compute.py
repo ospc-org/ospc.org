@@ -15,11 +15,16 @@ START_YEAR = int(os.environ.get('START_YEAR', 2016))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
+DROPQ_WORKER_OFFSET = 0
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
 TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
+
+def increment_dropq_offset():
+    global DROPQ_WORKER_OFFSET
+    DROPQ_WORKER_OFFSET = (DROPQ_WORKER_OFFSET + NUM_BUDGET_YEARS) % len(DROPQ_WORKERS)
 
 
 class JobFailError(Exception):
@@ -63,7 +68,8 @@ class DropqCompute(object):
         user_mods={first_budget_year:user_mods}
         years = list(range(start_budget_year,NUM_BUDGET_YEARS))
 
-        hostnames = DROPQ_WORKERS
+        hostnames = DROPQ_WORKERS[DROPQ_WORKER_OFFSET: DROPQ_WORKER_OFFSET + NUM_BUDGET_YEARS]
+        print "hostnames: ", hostnames
         num_hosts = len(hostnames)
         data = {}
         data['user_mods'] = json.dumps(user_mods)
@@ -102,6 +108,7 @@ class DropqCompute(object):
                     print "Exceeded max attempts. Bailing out."
                     raise IOError()
 
+        increment_dropq_offset()
         return job_ids, max_queue_length
 
     def dropq_results_ready(self, job_ids):
