@@ -203,8 +203,6 @@ class TaxInputTests(TestCase):
         assert ans['_FEI_ec_c'] == exp
 
     def test_package_up_eitc(self):
-        values = {"FEI_ec_c": [100000.]}
-
         values = {'EITC_rt_2': [0.44], 'EITC_rt_0': [0.08415], 'EITC_rt_1': [0.374, 0.39],
                   'EITC_rt_3': [0.495], 'EITC_prt_1': [0.17578],
                   'EITC_prt_0': [0.08415, 0.09], 'EITC_prt_3': [0.23166],
