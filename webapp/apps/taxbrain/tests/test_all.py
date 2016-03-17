@@ -202,6 +202,22 @@ class TaxInputTests(TestCase):
         exp =  [100000, f2_2016]
         assert ans['_FEI_ec_c'] == exp
 
+    def test_package_up_eitc(self):
+        values = {"FEI_ec_c": [100000.]}
+
+        values = {'EITC_rt_2': [0.44], 'EITC_rt_0': [0.08415], 'EITC_rt_1': [0.374, 0.39],
+                  'EITC_rt_3': [0.495], 'EITC_prt_1': [0.17578],
+                  'EITC_prt_0': [0.08415, 0.09], 'EITC_prt_3': [0.23166],
+                  'EITC_prt_2': [0.23166]}
+
+        ans = package_up_vars(values, first_budget_year=FBY)
+
+        assert ans == {'_EITC_rt': [[0.08415, 0.374, 0.44, 0.495],
+                                    [0.08415, 0.39, 0.44, 0.495]],
+                       '_EITC_prt': [[0.08415, 0.17578, 0.23166, 0.23166],
+                                     [0.09, 0.17578, 0.23166, 0.23166]]}
+
+
     def test_package_up_vars_Behavioral_params(self):
         user_values = {'FICA_ss_trt': [0.11],
                        'BE_inc': [0.04]}

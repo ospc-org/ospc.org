@@ -270,7 +270,7 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
 
     Parameters:
     -----------
-    x : list from user to progagate forward in time. The first value is for
+    x : list from user to propagate forward in time. The first value is for
         year 'first_budget_year'. The value at index i is the value for
         budget year first_budget_year + i. 
 
@@ -290,6 +290,8 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
     # x can't be empty
     assert x
 
+    is_rate = any([ i < 1.0 for i in x])
+
     pp = Policy(start_year=2013)
     pp.set_year(first_budget_year)
     # irates are rates for 2015, 2016, and 2017
@@ -306,7 +308,9 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
         if i < len(x):
             ans[i] = x[i]
         else:
-            ans[i] = int(ans[i-1] * (1.0 + irates[i-1]))
+            newval = ans[i-1] * (1.0 + irates[i-1])
+            ans[i] = newval if is_rate else int(newval)
+
 
     return ans
 
@@ -448,7 +452,7 @@ def package_up_vars(user_values, first_budget_year):
                                                cpi=cpi_flag,
                                                first_budget_year=first_budget_year)
             for new_arr, user_val in zip(expnded_defaults, user_arr):
-                new_arr[idx] = int(user_val)
+                new_arr[idx] = int(user_val) if user_val > 1.0 else user_val
             del user_values[name]
         ans[param] = expnded_defaults
 
