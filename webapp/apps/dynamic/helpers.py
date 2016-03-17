@@ -189,6 +189,17 @@ def default_parameters(first_budget_year):
         param = TaxCalcParam(k,v, first_budget_year)
         default_ogusa_params[param.nice_id] = param
 
+    #Add user email
+    val = {"col_label": ["Email address to contact when job is done."],
+           "description": ("OGUSA jobs take a long time. We'll email you when "
+                           "your job is done."),
+           "long_name": "User email address",
+           "inflatable": False,
+           "value": [""]}
+
+    param = TaxCalcParam("user_email", val, first_budget_year)
+    default_ogusa_params[param.nice_id] = param
+
     return default_ogusa_params
 
 

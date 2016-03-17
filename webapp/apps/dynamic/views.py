@@ -81,6 +81,10 @@ def dynamic_input(request, pk):
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
+            #Can't proceed if there is no email address
+            if not (request.user.is_authenticated() or model.user_email):
+               return HttpResponse('Dynamic simulation must have a start year of 2015!', status=403)
+
             curr_dict = dict(model.__dict__)
             for key, value in curr_dict.items():
                 print "got this ", key, value
@@ -121,8 +125,6 @@ def dynamic_input(request, pk):
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
                     model.user_email = current_user.email
-                else:
-                    raise Http404
 
                 model.save()
                 job_submitted(model.user_email, model)
@@ -151,7 +153,8 @@ def dynamic_input(request, pk):
         'ogusa_version': ogusa_version,
         'start_year': start_year,
         'pk': pk,
-        'is_disabled': disabled_flag
+        'is_disabled': disabled_flag,
+        'not_logged_in': not request.user.is_authenticated()
     }
 
     if has_field_errors(form_personal_exemp):

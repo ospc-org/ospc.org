@@ -64,3 +64,51 @@ class DynamicOGUSAViewsTests(TestCase):
         dsi = qs[0]
         assert dsi.frisch == u'0.43'
         assert dsi.first_year == 2016
+
+    def test_ogusa_not_logged_in_no_email_fails(self):
+        # Do the microsim
+        start_year = 2015
+        self.client.logout()
+        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
+                u'ID_BenefitSurtax_Switch_0': [u'True'],
+                u'ID_BenefitSurtax_Switch_3': [u'True'],
+                u'ID_BenefitSurtax_Switch_2': [u'True'],
+                u'ID_BenefitSurtax_Switch_5': [u'True'],
+                u'ID_BenefitSurtax_Switch_4': [u'True'],
+                u'ID_BenefitSurtax_Switch_6': [u'True'],
+                u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(start_year), 'csrfmiddlewaretoken': 'abc123'}
+
+        # Do a 2015 microsim
+        micro_2015 = do_micro_sim(self.client, reform)
+
+        # Do the ogusa simulation based on this microsim
+        ogusa_reform = {u'frisch': [u'0.42']}
+        ogusa_status_code = 403  # Should raise an error on no email address
+        ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform,
+                                      start_year, exp_status_code=ogusa_status_code)
+
+
+    def test_ogusa_not_logged_with_email_succeeds(self):
+        # Do the microsim
+        start_year = 2015
+        self.client.logout()
+        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
+                u'ID_BenefitSurtax_Switch_0': [u'True'],
+                u'ID_BenefitSurtax_Switch_3': [u'True'],
+                u'ID_BenefitSurtax_Switch_2': [u'True'],
+                u'ID_BenefitSurtax_Switch_5': [u'True'],
+                u'ID_BenefitSurtax_Switch_4': [u'True'],
+                u'ID_BenefitSurtax_Switch_6': [u'True'],
+                u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(start_year),
+                'csrfmiddlewaretoken': 'abc123'}
+
+        # Do a 2015 microsim
+        micro_2015 = do_micro_sim(self.client, reform)
+
+        # Do the ogusa simulation based on this microsim
+        ogusa_reform = {u'frisch': [u'0.42'], u'user_email': 'test@example.com'}
+        ogusa_status_code = 403  # Should raise an error on no email address
+        ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform,
+                                      start_year)

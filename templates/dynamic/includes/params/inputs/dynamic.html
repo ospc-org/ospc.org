@@ -16,6 +16,9 @@
 <h2>Macroeconomic Parameters</h2>
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.g_y_annual %}
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.frisch %}
+{% if not_logged_in %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.user_email %}
+{% endif %}
 
 {% endblock %}
 

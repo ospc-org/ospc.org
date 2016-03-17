@@ -54,10 +54,11 @@ class DynamicViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
-        self.failUnless(response.url[:-2].endswith("taxbrain/"))
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
         # Link to dynamic simulation
-        model_num = response.url[-2:-1]
+        model_num = response.url[link_idx+1:-1]
         dynamic_landing = '/dynamic/{0}/?start_year={1}'.format(model_num, START_YEAR)
         response = self.client.get(dynamic_landing)
         self.assertEqual(response.status_code, 200)
@@ -82,7 +83,8 @@ class DynamicViewsTests(TestCase):
         #Check should get a redirect this time
         response = self.client.get(response.url)
         self.assertEqual(response.status_code, 302)
-        self.failUnless(response.url[:-2].endswith("behavior_results/"))
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("behavior_results/"))
 
  
     def test_elastic_post(self):
