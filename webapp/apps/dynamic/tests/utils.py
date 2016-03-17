@@ -95,7 +95,8 @@ def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_Y
 
 
 
-def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year, increment=0):
+def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
+                 increment=0, exp_status_code=302):
 
     import sys
     from webapp.apps.taxbrain import views
@@ -119,6 +120,6 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year, increment=
 
     # Submit the OGUSA job submission
     response = client.post(dynamic_ogusa, ogusa_reform)
-    assert response.status_code == 302
+    assert response.status_code == exp_status_code
     return response
 
