@@ -22,8 +22,6 @@ TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
-dropq_workers = os.environ.get('DROPQ_WORKERS', '')
-DROPQ_WORKERS = dropq_workers.split(",")
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
