@@ -6,7 +6,7 @@ import requests
 from requests.exceptions import Timeout, RequestException
 import requests_mock
 from ..taxbrain.compute import DropqCompute, MockCompute
-from .helpers import increment_ogusa_worker, OGUSA_WORKER_IDX, filter_ogusa_only
+from .helpers import increment_ogusa_worker_idx, get_ogusa_worker_idx, filter_ogusa_only
 
 dqversion_info = dropq._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
@@ -52,7 +52,8 @@ class DynamicCompute(DropqCompute):
         data['first_year'] = first_budget_year
         job_ids = []
         guids = []
-        hostname_idx = OGUSA_WORKER_IDX
+        hostname_idx = get_ogusa_worker_idx()
+        print "hostname_idx is", hostname_idx
         submitted = False
         registered = False
         attempts = 0
@@ -71,15 +72,15 @@ class DynamicCompute(DropqCompute):
                     attempts += 1
             except Timeout:
                 print "Couldn't submit to: ", hostnames[hostname_idx]
-                increment_ogusa_worker()
+                increment_ogusa_worker_idx()
                 attempts += 1
             except RequestException as re:
                 print "Something unexpected happened: ", re
-                increment_ogusa_worker()
+                increment_ogusa_worker_idx()
                 attempts += 1
             if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
                 print "Exceeded max attempts. Bailing out."
-                increment_ogusa_worker()
+                increment_ogusa_worker_idx()
                 raise IOError()
 
         params = DEFAULT_PARAMS.copy()
@@ -112,7 +113,7 @@ class DynamicCompute(DropqCompute):
 
         # We increment upon exceptions to submit, but once we have submitted and
         # registered, increment again to move to the next OGUSA worker node
-        increment_ogusa_worker()
+        increment_ogusa_worker_idx()
         return job_ids, guids
 
     def ogusa_get_results(self, job_ids, status):
