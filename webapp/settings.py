@@ -38,6 +38,7 @@ from django.conf import global_settings
 
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
     'webapp.apps.pages.views.settings_context_processor',
+    'webapp.context_processors.google_analytics',
 )
 
 # Application definition
@@ -174,3 +175,6 @@ else:
 MANDRILL_API_KEY=os.environ.get('MANDRILL_API_KEY')
 EMAIL_BACKEND = 'djrill.mail.backends.djrill.DjrillBackend'
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
+
+GOOGLE_ANALYTICS_PROPERTY_ID = os.environ.get("GOOGLE_ANALYTICS_PROPERTY_ID", "")
+GOOGLE_ANALYTICS_DOMAIN = os.environ.get("GOOGLE_ANALYTICS_DOMAIN", "")
