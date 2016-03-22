@@ -289,7 +289,7 @@ def propagate_user_list(x, defaults, cpi, first_budget_year):
     # x can't be empty
     assert x
 
-    num_years = len(defaults)
+    num_years = max(len(defaults), len(x))
 
     is_rate = any([ i < 1.0 for i in x])
 
@@ -439,6 +439,9 @@ def package_up_vars(user_values, first_budget_year):
         # Discover the CPI setting for this parameter
         cpi_flag = discover_cpi_flag(param)
 
+        # Handle wildcards from user
+        has_wildcards = any([ v=='*' for v in vals])
+
         # get max number of years to advance
         _max = 0
         for name in vals:
@@ -450,7 +453,7 @@ def package_up_vars(user_values, first_budget_year):
         for name in sorted(vals):
             idx = int(name[-1]) # either 0, 1, 2, 3
             user_arr = user_values[name]
-            if len(user_arr) < expnded_defaults:
+            if len(user_arr) < expnded_defaults or has_wildcards:
                 user_arr = propagate_user_list(user_arr,
                                                expnded_defaults,
                                                cpi=cpi_flag,
@@ -461,14 +464,14 @@ def package_up_vars(user_values, first_budget_year):
         ans[param] = expnded_defaults
 
     #Process remaining values set by user
-    for k, v in user_values.items():
+    for k, vals in user_values.items():
         if k in dd:
             param = k
         elif k.endswith("_cpi"):
             if k[:-4] in dd:
-                ans[k] = v
+                ans[k] = vals
             else:
-                ans['_' + k] = v
+                ans['_' + k] = vals
             continue
         else:
             #add a leading underscore
@@ -479,13 +482,16 @@ def package_up_vars(user_values, first_budget_year):
         # Discover the CPI setting for this parameter
         cpi_flag = discover_cpi_flag(param)
 
-        if len(v) < len(default_data):
-            v = propagate_user_list(v,
+        # Handle wildcards from user
+        has_wildcards = any([ v=='*' for v in vals])
+
+        if len(vals) < len(default_data) or has_wildcards:
+            vals = propagate_user_list(vals,
                                     default_data,
                                     cpi=cpi_flag,
                                     first_budget_year=first_budget_year)
 
-        ans[param] = v
+        ans[param] = vals
 
     return ans
 

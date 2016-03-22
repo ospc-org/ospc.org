@@ -104,6 +104,13 @@ class TaxInputTests(TestCase):
         assert len(ans) == 1
 
 
+    def test_package_up_vars_wildcards(self):
+        values = {"AMT_tthd": ['*','*',204000.]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        exp =  [185400., 186300., 204000.]
+        assert ans['_AMT_tthd'] == exp
+
+
     def test_package_up_vars_CTC(self):
         values = {"CTC_c": [2000.0]}
         ans = package_up_vars(values, first_budget_year=FBY)
