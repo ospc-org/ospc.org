@@ -22,6 +22,7 @@ install:
 
 before_script:
   - python manage.py syncdb --noinput
+  - python manage.py migrate taxbrain
   - python manage.py migrate --fake
 
 script:
