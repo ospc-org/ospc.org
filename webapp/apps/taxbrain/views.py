@@ -62,6 +62,15 @@ def make_bool(x):
     b = True if x == 'True' else False
     return b
 
+def convert_val(x):
+    if x == "*":
+        return x
+    try:
+        return float(x)
+    except ValueError:
+        return make_bool(x)
+
+
 def growth_fixup(mod):
     if mod['growth_choice']:
         if mod['growth_choice'] == 'factor_adjustment':
@@ -138,10 +147,7 @@ def personal_results(request):
 
             for key, value in curr_dict.items():
                 if type(value) == type(unicode()):
-                    try:
-                        curr_dict[key] = [float(x) for x in value.split(',') if x]
-                    except ValueError:
-                        curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                    curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
                 else:
                     print "missing this: ", key
 

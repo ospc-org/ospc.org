@@ -30,7 +30,8 @@ def do_micro_sim(client, reform):
     response = client.post('/taxbrain/', reform)
     # Check that redirect happens
     assert response.status_code == 302
-    assert response.url[:-2].endswith("taxbrain/")
+    idx = response.url[:-1].rfind('/')
+    assert response.url[:idx].endswith("taxbrain")
     return response
 
 
@@ -107,13 +108,14 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
     dynamic_views.dynamic_compute = MockDynamicCompute(increment=increment)
 
     # Go to the dynamic landing page
-    model_num = microsim_response.url[-2:]
-    dynamic_landing = '/dynamic/{0}?start_year={1}'.format(model_num, start_year)
+    idx = microsim_response.url[:-1].rfind('/')
+    model_num = microsim_response.url[idx+1:-1]
+    dynamic_landing = '/dynamic/{0}/?start_year={1}'.format(model_num, start_year)
     response = client.get(dynamic_landing)
     assert response.status_code == 200
 
     # Go to OGUSA input page
-    dynamic_ogusa = '/dynamic/ogusa/{0}?start_year={1}'.format(model_num, start_year)
+    dynamic_ogusa = '/dynamic/ogusa/{0}/?start_year={1}'.format(model_num, start_year)
 
     response = client.get(dynamic_ogusa)
     assert response.status_code == 200

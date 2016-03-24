@@ -1,38 +1,63 @@
 from django.test import TestCase
 
-from ..models import TaxSaveInputs
+from ..models import TaxSaveInputs, WorkerNodesCounter
 from ..models import convert_to_floats
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ...taxbrain import compute as compute
+from ..views import convert_val
 import taxcalc
 from taxcalc import Policy
+import pytest
 
 FBY = 2015
 
-
+@pytest.mark.django_db
 def test_compute():
     assert compute
     compute.DROPQ_WORKERS = [1,2,3,4,5,6,7,8,9,10]
-    compute.DROPQ_WORKER_OFFSET = 0
     compute.NUM_BUDGET_YEARS = 5
-    hostnames = compute.DROPQ_WORKERS[compute.DROPQ_WORKER_OFFSET:
-        compute.DROPQ_WORKER_OFFSET + compute.NUM_BUDGET_YEARS]
+    wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+    dropq_worker_offset = wnc.current_offset
+    hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
+        dropq_worker_offset + compute.NUM_BUDGET_YEARS]
     assert hostnames == [1,2,3,4,5]
-    compute.increment_dropq_offset()
-    assert compute.DROPQ_WORKER_OFFSET == 5
-    hostnames = compute.DROPQ_WORKERS[compute.DROPQ_WORKER_OFFSET:
-        compute.DROPQ_WORKER_OFFSET + compute.NUM_BUDGET_YEARS]
+    wnc.current_offset = (dropq_worker_offset + compute.NUM_BUDGET_YEARS) % len(compute.DROPQ_WORKERS)
+    wnc.save()
+
+    assert wnc.current_offset == 5
+    dropq_worker_offset = wnc.current_offset
+    hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
+        dropq_worker_offset + compute.NUM_BUDGET_YEARS]
     assert hostnames == [6,7,8,9,10]
-    compute.increment_dropq_offset()
-    assert compute.DROPQ_WORKER_OFFSET == 0
-    hostnames = compute.DROPQ_WORKERS[compute.DROPQ_WORKER_OFFSET:
-        compute.DROPQ_WORKER_OFFSET + compute.NUM_BUDGET_YEARS]
+    wnc.current_offset = (dropq_worker_offset + compute.NUM_BUDGET_YEARS) % len(compute.DROPQ_WORKERS)
+    wnc.save()
+
+    assert wnc.current_offset == 0
+    dropq_worker_offset = wnc.current_offset
+    hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
+        dropq_worker_offset+ compute.NUM_BUDGET_YEARS]
     assert hostnames == [1,2,3,4,5]
     #Reset to original values
     compute.DROPQ_WORKERS = ['localhost:5050']
-    compute.DROPQ_WORKER_OFFSET = 0
+    wnc.current_offset = 0
+    wnc.save()
     compute.NUM_BUDGET_YEARS = 2
+
+
+def test_convert_val():
+    field = u'*,*,130000'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = ['*', '*', 130000.0]
+    assert out == exp
+    field = u'False'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = [False]
+    assert out == exp
+    field = u'0.12,0.13,0.14'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = [0.12, 0.13, 0.14]
+    assert out == exp
 
 
 def cycler(max):
@@ -77,6 +102,13 @@ class TaxInputTests(TestCase):
 
         assert ans['_II_brk2'] == exp
         assert len(ans) == 1
+
+
+    def test_package_up_vars_wildcards(self):
+        values = {"AMT_tthd": ['*','*',204000.]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        exp =  [185400., 186300., 204000.]
+        assert ans['_AMT_tthd'] == exp
 
 
     def test_package_up_vars_CTC(self):
