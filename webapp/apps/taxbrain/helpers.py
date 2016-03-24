@@ -10,7 +10,8 @@ import time
 from mock import Mock
 import sys
 MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits', 'mpl_toolkits.mplot3d']
+                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
+                'mpl_toolkits.mplot3d', 'pandas']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import taxcalc

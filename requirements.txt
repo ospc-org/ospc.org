@@ -3,14 +3,11 @@ argparse==1.2.1
 dj-database-url==0.3.0
 dj-static==0.0.6
 django-toolbelt==0.0.1
-gunicorn==19.1.1
 waitress
 static3==0.5.1
 wsgiref==0.1.2
 -e git+https://github.com/funkybob/django-flatblocks.git#egg=django-flatblocks
 djrill
-pytest-django
-pytest-xdist
 psycopg2==2.5.4
 django-user-accounts
 django-uuidfield==0.5.0
@@ -19,8 +16,6 @@ newrelic==2.58.2.45
 pdfkit==0.4.1
 django-hermes
 mock
-celery>=3.1
-django-celery
 jsonfield
 eventlet
 django-debug-toolbar==1.2.1

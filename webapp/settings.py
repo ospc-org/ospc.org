@@ -64,7 +64,6 @@ INSTALLED_APPS = (
     'account',
     'gunicorn',
     'hermes',
-    'djcelery',
     'import_export',
     'storages'
 )
