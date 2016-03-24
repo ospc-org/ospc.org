@@ -86,10 +86,10 @@ class DropqCompute(object):
                 theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
-                    response_d = response.json()
                     if response.status_code == 200:
                         print "submitted: ", hostnames[hostname_idx]
                         year_submitted = True
+                        response_d = response.json()
                         job_ids.append((response_d['job_id'], hostnames[hostname_idx]))
                         hostname_idx = (hostname_idx + 1) % num_hosts
                         if response_d['qlength'] > max_queue_length:
@@ -275,3 +275,31 @@ class MockFailedCompute(MockCompute):
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_query_result', text='FAIL')
             return DropqCompute.remote_results_ready(self, theurl, params)
+
+class NodeDownCompute(MockCompute):
+
+    __slots__ = ('count', 'num_times_to_wait', 'switch')
+
+    def __init__(self, **kwargs):
+        if 'switch' in kwargs:
+            self.switch = kwargs['switch']
+            del kwargs['switch']
+        else:
+            self.switch = 0
+        self.count = 0
+        self.num_times_to_wait = 0
+        super(MockCompute, self).__init__(**kwargs)
+
+
+    def remote_submit_job(self, theurl, data, timeout):
+        with requests_mock.Mocker() as mock:
+            resp = {'job_id': '424242', 'qlength':2}
+            resp = json.dumps(resp)
+            if (self.switch % 2 == 0):
+                mock.register_uri('POST', '/dropq_start_job', status_code=502)
+                mock.register_uri('POST', '/elastic_gdp_start_job', status_code=502)
+            else:
+                mock.register_uri('POST', '/dropq_start_job', text=resp)
+                mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
+            self.switch += 1
+            return DropqCompute.remote_submit_job(self, theurl, data, timeout)
