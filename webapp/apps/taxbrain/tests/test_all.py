@@ -5,6 +5,7 @@ from ..models import convert_to_floats
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ...taxbrain import compute as compute
+from ..views import convert_val
 import taxcalc
 from taxcalc import Policy
 
@@ -33,6 +34,21 @@ def test_compute():
     compute.DROPQ_WORKERS = ['localhost:5050']
     compute.DROPQ_WORKER_OFFSET = 0
     compute.NUM_BUDGET_YEARS = 2
+
+
+def test_convert_val():
+    field = u'*,*,130000'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = ['*', '*', 130000.0]
+    assert out == exp
+    field = u'False'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = [False]
+    assert out == exp
+    field = u'0.12,0.13,0.14'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = [0.12, 0.13, 0.14]
+    assert out == exp
 
 
 def cycler(max):

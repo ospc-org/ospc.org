@@ -264,7 +264,7 @@ def expand_list(x, num_years):
         return expand_1D(x, num_years)
 
 
-def propagate_user_list(x, num_years, cpi, first_budget_year):
+def propagate_user_list(x, defaults, cpi, first_budget_year):
     """
     Dispatch to either expand_1D or expand2D depending on the dimension of x
 
@@ -274,8 +274,7 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
         year 'first_budget_year'. The value at index i is the value for
         budget year first_budget_year + i. 
 
-    num_years: int 
-               Number of budget years to expand
+    defaults: list of default values; our result must be at least this long
 
     cpi: Bool
 
@@ -289,6 +288,8 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
     """
     # x can't be empty
     assert x
+
+    num_years = len(defaults)
 
     is_rate = any([ i < 1.0 for i in x])
 
@@ -306,7 +307,10 @@ def propagate_user_list(x, num_years, cpi, first_budget_year):
     ans = [None] * num_years
     for i in range(num_years):
         if i < len(x):
-            ans[i] = x[i]
+            if x[i] == '*':
+                ans[i] = defaults[i]
+            else:
+                ans[i] = x[i]
         else:
             newval = ans[i-1] * (1.0 + irates[i-1])
             ans[i] = newval if is_rate else int(newval)
@@ -448,7 +452,7 @@ def package_up_vars(user_values, first_budget_year):
             user_arr = user_values[name]
             if len(user_arr) < expnded_defaults:
                 user_arr = propagate_user_list(user_arr,
-                                               num_years=len(expnded_defaults),
+                                               expnded_defaults,
                                                cpi=cpi_flag,
                                                first_budget_year=first_budget_year)
             for new_arr, user_val in zip(expnded_defaults, user_arr):
@@ -477,7 +481,7 @@ def package_up_vars(user_values, first_budget_year):
 
         if len(v) < len(default_data):
             v = propagate_user_list(v,
-                                    num_years=len(default_data),
+                                    default_data,
                                     cpi=cpi_flag,
                                     first_budget_year=first_budget_year)
 
