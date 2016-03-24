@@ -18,6 +18,8 @@ install:
   - echo '@github.com/OpenSourcePolicyCenter/dropq.git@0.6.1#egg=dropq-0.6.1-py2.7.egg' >> requirements.txt
   - pip install -r requirements.txt
   - pip install -r requirements_dev.txt
+  - pip install pytest-django
+  - pip install pytest-xdist
   - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
 
 before_script:
