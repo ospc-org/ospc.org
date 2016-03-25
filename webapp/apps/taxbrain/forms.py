@@ -31,6 +31,15 @@ class PersonalExemptionForm(ModelForm):
         for _id, default in all_defaults:
             self._meta.widgets[_id].attrs['placeholder'] = default
 
+        # If a stored instance is passed,
+        # set CPI flags based on the values in this instance
+        if 'instance' in kwargs:
+            instance = kwargs['instance']
+            cpi_flags = [attr for attr in dir(instance) if attr.endswith('_cpi')]
+            for flag in cpi_flags:
+                if getattr(instance, flag) is not None and flag in self._meta.widgets:
+                    self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
+
         super(PersonalExemptionForm, self).__init__(*args, **kwargs)
 
     def get_comp_data(self, comp_key, param_id, col, required_length):

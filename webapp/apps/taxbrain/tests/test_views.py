@@ -138,3 +138,27 @@ class TaxBrainViewsTests(TestCase):
                   'growth_choice': u'factor_adjustment'
                   }
         micro = do_micro_sim(self.client, reform)
+
+    def test_taxbrain_edit_cpi_flags_show_correctly(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = { u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123', u'AMT_CG_thd2_cpi':u'False',
+                u'AMT_CG_thd1_cpi':u'False'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num = response.url[link_idx+1:-1]
+        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(model_num, START_YEAR)
+        edit_page = self.client.get(edit_micro)
+        self.assertEqual(edit_page.status_code, 200)
+        cpi_flag = edit_page.context['form']['AMT_CG_thd2_cpi'].field.widget.attrs['placeholder']
+        self.assertEqual(cpi_flag, False)
