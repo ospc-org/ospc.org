@@ -90,14 +90,6 @@ def normalize(x):
     return ans
 
 
-def increment_ogusa_worker_idx():
-    global OGUSA_WORKER_IDX
-    OGUSA_WORKER_IDX = (OGUSA_WORKER_IDX + 1) % len(OGUSA_WORKERS)
-
-def get_ogusa_worker_idx():
-    global OGUSA_WORKER_IDX
-    return OGUSA_WORKER_IDX
-
 #
 # Prepare user params to send to DropQ/Taxcalc
 #

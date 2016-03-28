@@ -4,6 +4,7 @@ from django.test import Client
 from django.contrib.auth.models import User
 import mock
 import os
+import pytest
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -114,6 +115,7 @@ class DynamicOGUSAViewsTests(TestCase):
                                       start_year)
 
 
+    @pytest.mark.django_db
     def test_ogusa_round_robins(self):
         # Do the microsim
         start_year = 2015
@@ -123,7 +125,6 @@ class DynamicOGUSAViewsTests(TestCase):
         from webapp.apps.dynamic import helpers
         from webapp.apps.dynamic import compute
         # Monkey patch the variables we need to test
-        helpers.OGUSA_WORKER_IDX = 0
         helpers.OGUSA_WORKERS = ['host1', 'host2', 'host3']
         compute.OGUSA_WORKERS = ['host1', 'host2', 'host3']
 
@@ -142,7 +143,8 @@ class DynamicOGUSAViewsTests(TestCase):
         micro_2015 = do_micro_sim(self.client, reform)
 
         #Assert the the worker node index has been reset to 0
-        assert helpers.get_ogusa_worker_idx() == 0
+        onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+        assert onc.current_idx == 0
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42']}
@@ -151,7 +153,7 @@ class DynamicOGUSAViewsTests(TestCase):
                                       start_year)
 
         #Assert the the worker node index has incremented
-        assert helpers.get_ogusa_worker_idx() == 1
+        assert onc.current_idx == 1
 
         ogusa_reform = {u'frisch': [u'0.42']}
         ogusa_status_code = 403  # Should raise an error on no email address
@@ -159,4 +161,4 @@ class DynamicOGUSAViewsTests(TestCase):
                                       start_year)
 
         #Assert the the worker node index has incremented again
-        assert helpers.get_ogusa_worker_idx() == 2
+        assert onc.current_idx == 2
