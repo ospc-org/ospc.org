@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 
-from views import homepage, aboutpage, newspage, newsdetailpage
+from .views import homepage, aboutpage, newspage, newsdetailpage
 
 
 urlpatterns = patterns('',
