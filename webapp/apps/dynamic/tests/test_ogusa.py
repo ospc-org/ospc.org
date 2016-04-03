@@ -15,7 +15,7 @@ from ...taxbrain.compute import DropqCompute, MockCompute
 import taxcalc
 from taxcalc import Policy
 from .utils import *
-from ..models import DynamicSaveInputs
+from ...dynamic.models import DynamicSaveInputs, OGUSAWorkerNodesCounter
 
 START_YEAR = 2016
 
@@ -110,7 +110,6 @@ class DynamicOGUSAViewsTests(TestCase):
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42'], u'user_email': 'test@example.com'}
-        ogusa_status_code = 403  # Should raise an error on no email address
         ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform,
                                       start_year)
 
@@ -148,17 +147,17 @@ class DynamicOGUSAViewsTests(TestCase):
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42']}
-        ogusa_status_code = 403  # Should raise an error on no email address
         ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform,
                                       start_year)
 
         #Assert the the worker node index has incremented
+        onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         assert onc.current_idx == 1
 
-        ogusa_reform = {u'frisch': [u'0.42']}
-        ogusa_status_code = 403  # Should raise an error on no email address
+        ogusa_reform = {u'frisch': [u'0.43']}
         ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform,
                                       start_year)
 
         #Assert the the worker node index has incremented again
+        onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         assert onc.current_idx == 2
