@@ -6,7 +6,8 @@ import requests
 from requests.exceptions import Timeout, RequestException
 import requests_mock
 from ..taxbrain.compute import DropqCompute, MockCompute
-from .helpers import increment_ogusa_worker_idx, get_ogusa_worker_idx, filter_ogusa_only
+from .models import OGUSAWorkerNodesCounter
+from .helpers import filter_ogusa_only
 
 dqversion_info = dropq._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
@@ -52,7 +53,14 @@ class DynamicCompute(DropqCompute):
         data['first_year'] = first_budget_year
         job_ids = []
         guids = []
-        hostname_idx = get_ogusa_worker_idx()
+
+        onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+        # Get the current value mod'd to the current worker set
+        ogusa_worker_idx = onc.current_idx % len(OGUSA_WORKERS)
+        # Increment for next time
+        onc.current_idx = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
+        onc.save()
+        hostname_idx = ogusa_worker_idx
         print "hostname_idx is", hostname_idx
         submitted = False
         registered = False
@@ -72,15 +80,21 @@ class DynamicCompute(DropqCompute):
                     attempts += 1
             except Timeout:
                 print "Couldn't submit to: ", hostnames[hostname_idx]
-                increment_ogusa_worker_idx()
+                # Increment to next ogusa node
+                onc.current_offset = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
+                onc.save()
                 attempts += 1
             except RequestException as re:
                 print "Something unexpected happened: ", re
-                increment_ogusa_worker_idx()
+                # Increment to next ogusa node
+                onc.current_offset = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
+                onc.save()
                 attempts += 1
             if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
                 print "Exceeded max attempts. Bailing out."
-                increment_ogusa_worker_idx()
+                # Increment to next ogusa node
+                onc.current_offset = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
+                onc.save()
                 raise IOError()
 
         params = DEFAULT_PARAMS.copy()
@@ -111,9 +125,6 @@ class DynamicCompute(DropqCompute):
                 print "Exceeded max attempts. Bailing out."
                 raise IOError()
 
-        # We increment upon exceptions to submit, but once we have submitted and
-        # registered, increment again to move to the next OGUSA worker node
-        increment_ogusa_worker_idx()
         return job_ids, guids
 
     def ogusa_get_results(self, job_ids, status):
