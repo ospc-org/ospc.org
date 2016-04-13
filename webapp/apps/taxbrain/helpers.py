@@ -312,10 +312,12 @@ def propagate_user_list(x, defaults, cpi, first_budget_year):
                 ans[i] = defaults[i]
             else:
                 ans[i] = x[i]
+
+        if ans[i] is not None:
+            continue
         else:
             newval = ans[i-1] * (1.0 + irates[i-1])
             ans[i] = newval if is_rate else int(newval)
-
 
     return ans
 
@@ -478,13 +480,17 @@ def package_up_vars(user_values, first_budget_year):
             #add a leading underscore
             param = "_" + k
 
+        # Handle wildcards from user
+        has_wildcards = any([ v=='*' for v in vals])
+
         default_data = dd[param]
+        _max = len(max(default_data, vals))
+
+        if has_wildcards:
+            default_data = expand_list(default_data, _max)
 
         # Discover the CPI setting for this parameter
         cpi_flag = discover_cpi_flag(param)
-
-        # Handle wildcards from user
-        has_wildcards = any([ v=='*' for v in vals])
 
         if len(vals) < len(default_data) or has_wildcards:
             vals = propagate_user_list(vals,
