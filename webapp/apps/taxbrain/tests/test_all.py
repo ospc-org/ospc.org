@@ -3,7 +3,8 @@ from django.test import TestCase
 from ..models import TaxSaveInputs, WorkerNodesCounter
 from ..models import convert_to_floats
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                     format_csv, arrange_totals_by_row, default_taxcalc_data)
+                     format_csv, arrange_totals_by_row, default_taxcalc_data,
+                     default_policy)
 from ...taxbrain import compute as compute
 from ..views import convert_val
 import taxcalc
@@ -359,3 +360,8 @@ class TaxInputTests(TestCase):
         assert dd_meta['_II_em']['value'] == floored_ii_em
 
         assert dd_raw['_II_rt6'] == dd['_II_rt6']
+
+    def test_default_taxcalc_data_cpi_flags_on_II_credit(self):
+        taxcalc_default_params = default_policy(int(FBY))
+        assert taxcalc_default_params['II_credit'].inflatable 
+        assert taxcalc_default_params['II_credit_ps'].inflatable 
