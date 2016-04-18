@@ -12,7 +12,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 import os
 
-SECRET_KEY = os.environ.get('SECRET_KEY', '')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'default_secret_key')
 
 # Allow all host headers
 ALLOWED_HOSTS = ['*']
@@ -146,7 +146,7 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto.S3BotoStorage"
 # Amazon S3 settings.
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ID", "")
-AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_HOST = os.environ.get("AWS_S3_HOST", None)
 
 # Tell django-storages that when coming up with the URL for an item in S3 storage, keep
@@ -171,7 +171,7 @@ if DEBUG:
 else:
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
-MANDRILL_API_KEY=os.environ.get('MANDRILL_API_KEY')
+MANDRILL_API_KEY=os.environ.get('MANDRILL_API_KEY', 'default_mandrill_key')
 EMAIL_BACKEND = 'djrill.mail.backends.djrill.DjrillBackend'
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
 

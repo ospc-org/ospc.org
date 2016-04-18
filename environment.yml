@@ -1,0 +1,13 @@
+name: ospc-webapp-public
+channels:
+  - https://conda.binstar.org/ospc
+  - defaults
+dependencies:
+  - pip
+  - python>=2.7
+  - numba
+  - taxcalc
+  - reportlab
+  - boto
+  - gevent
+  - pillow
