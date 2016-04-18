@@ -84,7 +84,8 @@ def dynamic_input(request, pk):
 
             #Can't proceed if there is no email address
             if not (request.user.is_authenticated() or model.user_email):
-               return HttpResponse('Dynamic simulation must have a start year of 2015!', status=403)
+               msg = 'Dynamic simulation must have an email address to send notification to!'
+               return HttpResponse(msg, status=403)
 
             curr_dict = dict(model.__dict__)
             for key, value in curr_dict.items():

@@ -89,6 +89,9 @@ class DynamicOGUSAViewsTests(TestCase):
         ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform,
                                       start_year, exp_status_code=ogusa_status_code)
 
+        msg = 'Dynamic simulation must have an email address to send notification to!'
+        assert ogusa_response.content == msg
+
 
     def test_ogusa_not_logged_with_email_succeeds(self):
         # Do the microsim
