@@ -171,8 +171,8 @@ if DEBUG:
 else:
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
-MANDRILL_API_KEY=os.environ.get('MANDRILL_API_KEY')
-EMAIL_BACKEND = 'djrill.mail.backends.djrill.DjrillBackend'
+SENDGRID_API_KEY=os.environ.get('SENDGRID_API_KEY')
+EMAIL_BACKEND = "sgbackend.SendGridBackend"
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
 
 GOOGLE_ANALYTICS_PROPERTY_ID = os.environ.get("GOOGLE_ANALYTICS_PROPERTY_ID", "")
