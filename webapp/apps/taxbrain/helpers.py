@@ -267,7 +267,7 @@ def expand_list(x, num_years):
         return expand_1D(x, num_years)
 
 
-def propagate_user_list(x, defaults, cpi, first_budget_year):
+def propagate_user_list(x, name, defaults, cpi, first_budget_year):
     """
     Dispatch to either expand_1D or expand2D depending on the dimension of x
 
@@ -278,6 +278,8 @@ def propagate_user_list(x, defaults, cpi, first_budget_year):
         budget year first_budget_year + i. 
 
     defaults: list of default values; our result must be at least this long
+
+    name: the parameter name for looking up the indexing rate
 
     cpi: Bool
 
@@ -300,7 +302,7 @@ def propagate_user_list(x, defaults, cpi, first_budget_year):
     pp.set_year(first_budget_year)
     # irates are rates for 2015, 2016, and 2017
     if cpi:
-        irates = pp.indexing_rates_for_update(param_name='II_brk2',
+        irates = pp.indexing_rates_for_update(param_name=name,
                                               calyear=first_budget_year,
                                               num_years_to_expand=num_years)
     else:
@@ -459,8 +461,8 @@ def package_up_vars(user_values, first_budget_year):
             idx = int(name[-1]) # either 0, 1, 2, 3
             user_arr = user_values[name]
             if len(user_arr) < expnded_defaults or has_wildcards:
-                user_arr = propagate_user_list(user_arr,
-                                               expnded_defaults,
+                user_arr = propagate_user_list(user_arr, name=param,
+                                               defaults=expnded_defaults,
                                                cpi=cpi_flag,
                                                first_budget_year=first_budget_year)
             for new_arr, user_val in zip(expnded_defaults, user_arr):
@@ -495,8 +497,8 @@ def package_up_vars(user_values, first_budget_year):
         cpi_flag = discover_cpi_flag(param)
 
         if len(vals) < len(default_data) or has_wildcards:
-            vals = propagate_user_list(vals,
-                                    default_data,
+            vals = propagate_user_list(vals, name=param,
+                                    defaults=default_data,
                                     cpi=cpi_flag,
                                     first_budget_year=first_budget_year)
 

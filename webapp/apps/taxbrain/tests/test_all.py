@@ -115,7 +115,14 @@ class TaxInputTests(TestCase):
     def test_package_up_vars_wildcards_2016(self):
         values = {"SS_Earnings_c": ['*','*',230000.]}
         ans = package_up_vars(values, first_budget_year=2016)
-        exp =  [118500., 120099, 230000.]
+        exp =  [118500., 124176, 230000.]
+        assert ans['_SS_Earnings_c'] == exp
+
+
+    def test_package_up_vars_wildcards_2019(self):
+        values = {"SS_Earnings_c": ['*','*','*', 400000.]}
+        ans = package_up_vars(values, first_budget_year=2016)
+        exp =  [118500., 124176, 129652, 400000. ]
         assert ans['_SS_Earnings_c'] == exp
 
 
