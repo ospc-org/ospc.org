@@ -251,7 +251,19 @@ def dynamic_params_from_model(model):
     with open(usermods_path, "r") as f:
          ump = json.load(f)
          USER_MODIFIABLE_PARAMS = ump["USER_MODIFIABLE_PARAMS"]
+
+    # Read ogusa parameters list from file
+    ogusa_params_path = os.path.join(os.path.split(__file__)[0],
+                                 "ogusa_parameters.json")
+    with open(ogusa_params_path, "r") as f:
+         OGUSA_PARAMS = json.load(f)
+
     params = {k:inputs[k] for k in USER_MODIFIABLE_PARAMS}
+
+    for k, v in params.items():
+        if v == '':
+            params[k] = str(OGUSA_PARAMS[k]['value'])
+
     return params
 
 

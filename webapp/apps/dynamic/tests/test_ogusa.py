@@ -16,6 +16,7 @@ import taxcalc
 from taxcalc import Policy
 from .utils import *
 from ...dynamic.models import DynamicSaveInputs, OGUSAWorkerNodesCounter
+from ..helpers import dynamic_params_from_model
 
 START_YEAR = 2016
 
@@ -115,6 +116,38 @@ class DynamicOGUSAViewsTests(TestCase):
         ogusa_reform = {u'frisch': [u'0.42'], u'user_email': 'test@example.com'}
         ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform,
                                       start_year)
+
+
+    def test_ogusa_with_params_show_up_in_email(self):
+        # Do the microsim
+        start_year = 2016
+        self.client.logout()
+        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
+                u'ID_BenefitSurtax_Switch_0': [u'True'],
+                u'ID_BenefitSurtax_Switch_3': [u'True'],
+                u'ID_BenefitSurtax_Switch_2': [u'True'],
+                u'ID_BenefitSurtax_Switch_5': [u'True'],
+                u'ID_BenefitSurtax_Switch_4': [u'True'],
+                u'ID_BenefitSurtax_Switch_6': [u'True'],
+                u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(start_year),
+                'csrfmiddlewaretoken': 'abc123'}
+
+        # Do a 2016 microsim
+        micro_2016 = do_micro_sim(self.client, reform)
+
+        # Do the ogusa simulation based on this microsim
+        FRISCH_PARAM = u'0.49'
+        ogusa_reform = {u'frisch': [FRISCH_PARAM], u'user_email': 'test@example.com'}
+        ogusa_response = do_ogusa_sim(self.client, micro_2016, ogusa_reform,
+                                      start_year)
+
+        last_slash_idx = ogusa_response.url[:-1].rfind('/')
+        model_num = int(ogusa_response.url[last_slash_idx+1:-1])
+        dsi = DynamicSaveInputs.objects.get(pk=model_num)
+        ans = dynamic_params_from_model(dsi)
+        assert ans[u'frisch'] == FRISCH_PARAM
+        assert ans[u'g_y_annual'] == u'0.03'
 
 
     @pytest.mark.django_db
