@@ -22,6 +22,8 @@ INT_TO_NTH_MAP = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',
                   'seventh', 'eighth', 'nineth', 'tenth']
 
 SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
+SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
+                                 '_EITC_MaxEligAge'}
 
 def int_to_nth(x):
     if x < 1:
@@ -617,12 +619,15 @@ class TaxCalcParam(object):
         # we assume we can CPI inflate if first value isn't a ratio
         first_value = self.col_fields[0].values[0]
         inflatable_params = SPECIAL_INFLATABLE_PARAMS
+        non_inflatable_params = SPECIAL_NON_INFLATABLE_PARAMS
         if 'inflatable' in attributes:
             self.inflatable = attributes['inflatable']
         elif self.tc_id in inflatable_params:
             self.inflatable = True
+        elif self.tc_id in non_inflatable_params:
+            self.inflatable = False
         else:
-            self.inflatable = first_value > 1 and self.tc_id != '_ACTC_ChildNum'
+            self.inflatable = first_value > 1
 
 
         if self.inflatable:
