@@ -262,7 +262,7 @@ def dynamic_params_from_model(model):
 
     for k, v in params.items():
         if v == '':
-            params[k] = OGUSA_PARAMS[k]['value']
+            params[k] = str(OGUSA_PARAMS[k]['value'])
 
     return params
 

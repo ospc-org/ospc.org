@@ -146,8 +146,8 @@ class DynamicOGUSAViewsTests(TestCase):
         model_num = int(ogusa_response.url[last_slash_idx+1:-1])
         dsi = DynamicSaveInputs.objects.get(pk=model_num)
         ans = dynamic_params_from_model(dsi)
-        ans[u'frisch'] == FRISCH_PARAM
-        ans[u'g_y_annual'] == u'0.03'
+        assert ans[u'frisch'] == FRISCH_PARAM
+        assert ans[u'g_y_annual'] == u'0.03'
 
 
     @pytest.mark.django_db
