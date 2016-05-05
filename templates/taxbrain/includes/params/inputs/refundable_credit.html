@@ -26,6 +26,10 @@
 <h2>Additional additional child tax credit (Lee-Rubio)</h2>
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.CTC_additional %}
 
+<h2>Age eligibility requirements for Earned Income Tax Credit</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.EITC_MinEligAge %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.EITC_MaxEligAge %}
+
 {% endblock %}
 
 {% block next_section_shortname %}growth{% endblock %}

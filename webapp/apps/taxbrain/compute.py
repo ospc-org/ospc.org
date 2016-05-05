@@ -136,7 +136,12 @@ class DropqCompute(object):
             result_url = "http://{hn}/dropq_get_result".format(hn=hostname)
             job_response = self.remote_retrieve_results(result_url, params={'job_id':id_})
             if job_response.status_code == 200: # Valid response
-                ans.append(job_response.json())
+                try:
+                    ans.append(job_response.json())
+                except ValueError:
+                    # Got back a bad response. Get the text and re-raise
+                    msg = 'PROBLEM WITH RESPONSE. TEXT RECEIVED: {}'
+                    raise ValueError(msg)
 
         mY_dec = {}
         mX_dec = {}
