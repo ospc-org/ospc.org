@@ -64,7 +64,7 @@ def make_bool(x):
     return b
 
 def convert_val(x):
-    if x == "*":
+    if x in [u"*", "*"] or x.strip() in [u"*", "*"]:
         return x
     try:
         return float(x)
