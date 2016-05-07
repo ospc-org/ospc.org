@@ -5,6 +5,7 @@ import pandas as pd
 import dropq
 import sys
 import time
+import six
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -24,6 +25,13 @@ INT_TO_NTH_MAP = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',
 SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
 SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
+
+def is_wildcard(x):
+    if isinstance(x, six.string_types):
+        return x in ['*', u'*'] or x.strip() in ['*', u'*']
+    else:
+        return False
+
 
 def int_to_nth(x):
     if x < 1:
@@ -314,7 +322,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year):
     ans = [None] * num_years
     for i in range(num_years):
         if i < len(x):
-            if x[i] == '*':
+            if is_wildcard(x[i]):
                 ans[i] = defaults[i]
             else:
                 ans[i] = x[i]
@@ -424,6 +432,12 @@ def package_up_vars(user_values, first_budget_year):
         return cpi_flag
 
 
+    def check_wildcards(x):
+        if isinstance(x, list):
+            return any([check_wildcards(i) for i in x])
+        else:
+            return is_wildcard(x)
+
     name_stems = {}
     ans = {}
     #Find the 'broken out' array values, these have special treatment
@@ -449,7 +463,7 @@ def package_up_vars(user_values, first_budget_year):
         cpi_flag = discover_cpi_flag(param)
 
         # Handle wildcards from user
-        has_wildcards = any([ v=='*' for v in vals])
+        has_wildcards = check_wildcards(vals)
 
         # get max number of years to advance
         _max = 0
@@ -487,10 +501,10 @@ def package_up_vars(user_values, first_budget_year):
             param = "_" + k
 
         # Handle wildcards from user
-        has_wildcards = any([ v=='*' for v in vals])
+        has_wildcards = check_wildcards(vals)
 
         default_data = dd[param]
-        _max = len(max(default_data, vals))
+        _max = max(len(default_data), len(vals))
 
         if has_wildcards:
             default_data = expand_list(default_data, _max)

@@ -36,7 +36,7 @@ from djqscsv import render_to_csv_response
 
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
-from .helpers import default_policy, taxcalc_results_to_tables, format_csv
+from .helpers import default_policy, taxcalc_results_to_tables, format_csv, is_wildcard
 from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
@@ -64,7 +64,7 @@ def make_bool(x):
     return b
 
 def convert_val(x):
-    if x == "*":
+    if is_wildcard(x):
         return x
     try:
         return float(x)
