@@ -105,6 +105,22 @@ class TaxInputTests(TestCase):
         assert len(ans) == 1
 
 
+    def test_package_up_vars_unicode_wildcards(self):
+        exp = [0.0089999999999999993, 0.0089999999999999993, 0.018]
+        values = {'_AMED_trt': [u'*','*',0.018]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        assert ans['_AMED_trt'] == exp
+        values = {'_AMED_trt': [u' *','*',0.018]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        assert ans['_AMED_trt'] == exp
+        values = {'_AMED_trt': [u' *',' * ',0.018]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        assert ans['_AMED_trt'] == exp
+        values = {'_AMED_trt': [u' *', u' * ',0.018]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        assert ans['_AMED_trt'] == exp
+
+
     def test_package_up_vars_wildcards(self):
         values = {"AMT_tthd": ['*','*',204000.]}
         ans = package_up_vars(values, first_budget_year=FBY)

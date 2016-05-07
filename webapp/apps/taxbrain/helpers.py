@@ -26,6 +26,13 @@ SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
 SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
 
+def is_wildcard(x):
+    if isinstance(x, six.string_types):
+        return x in ['*', u'*'] or x.strip() in ['*', u'*']
+    else:
+        return False
+
+
 def int_to_nth(x):
     if x < 1:
         return None
@@ -315,7 +322,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year):
     ans = [None] * num_years
     for i in range(num_years):
         if i < len(x):
-            if x[i] == '*':
+            if is_wildcard(x[i]):
                 ans[i] = defaults[i]
             else:
                 ans[i] = x[i]
@@ -429,11 +436,7 @@ def package_up_vars(user_values, first_budget_year):
         if isinstance(x, list):
             return any([check_wildcards(i) for i in x])
         else:
-            if isinstance(x, six.string_types):
-                return x in ['*', u'*'] or x.strip() in ['*', u'*']
-            else:
-                return False
-
+            return is_wildcard(x)
 
     name_stems = {}
     ans = {}
