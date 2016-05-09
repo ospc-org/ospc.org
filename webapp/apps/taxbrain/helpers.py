@@ -473,7 +473,6 @@ def package_up_vars(user_values, first_budget_year):
         # Discover the CPI setting for this parameter
         cpi_flag = discover_cpi_flag(param)
 
-        # Handle wildcards from user
         # get max number of years to advance
         _max = 0
         for name in vals:
@@ -485,6 +484,7 @@ def package_up_vars(user_values, first_budget_year):
         for name in sorted(vals):
             idx = int(name[-1]) # either 0, 1, 2, 3
             user_arr = user_values[name]
+            # Handle wildcards from user
             has_wildcards = check_wildcards(user_arr)
             if len(user_arr) < expnded_defaults or has_wildcards:
                 user_arr = propagate_user_list(user_arr, name=param,
