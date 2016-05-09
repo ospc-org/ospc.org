@@ -105,6 +105,52 @@ class TaxInputTests(TestCase):
         assert len(ans) == 1
 
 
+    def test_package_up_multivalue_param_with_wildcard(self):
+        values = {"II_brk2_0": [u'*', 38000., 40000., 41000],
+                    "II_brk2_1": [72250., 74000.],
+                    "II_brk2_2": [36500.]
+                    }
+
+        ans = package_up_vars(values, first_budget_year=FBY)
+
+        pp = Policy(start_year=2013)
+        pp.set_year(FBY)
+        # irates are rates for 2015, 2016, and 2017
+        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+                                            num_years_to_expand=3)
+
+        # User choices propagate through to all future years
+        # The user has specified part of the parameter up to 2017.
+        # So, we choose to fill in the propagated value, which is
+        # either inflated or not.
+
+        f2_2016 = int(36500 * (1.0 + irates[0]))
+        f3_2016 = int(50200 * (1.0 + irates[0]))
+        f4_2016 = int(74900 * (1.0 + irates[0]))
+        f5_2016 = int(37450 * (1.0 + irates[0]))
+
+        f1_2017 = int(74000 * (1.0 + irates[1]))
+        f2_2017 = int(f2_2016 * (1.0 + irates[1]))
+
+        f1_2018 = int(f1_2017 * (1.0 + irates[2]))
+        f2_2018 = int(f2_2017 * (1.0 + irates[2]))
+
+        exp =  [[37450, 72250, 36500, 50200, 74900, 37450],
+                [38000, 74000, f2_2016, 50400, 75300, 37650],
+                [40000, f1_2017, f2_2017, None, None, None],
+                [41000, f1_2018, f2_2018, None, None, None]]
+
+        assert ans['_II_brk2'] == exp
+
+
+    def test_package_up_multivalue_param_with_wildcard2(self):
+        values = {"AMED_thd_0": [u'*', 250000]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        exp = [[200000, 250000.0, 125000.0, 200000.0, 200000.0, 125000.0],
+               [250000, None, None, None, None, None]]
+        assert ans['_AMED_thd'] == exp
+
+
     def test_package_up_vars_unicode_wildcards(self):
         exp = [0.0089999999999999993, 0.0089999999999999993, 0.018]
         values = {'_AMED_trt': [u'*','*',0.018]}
