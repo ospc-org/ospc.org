@@ -277,7 +277,8 @@ def expand_list(x, num_years):
         return expand_1D(x, num_years)
 
 
-def propagate_user_list(x, name, defaults, cpi, first_budget_year):
+def propagate_user_list(x, name, defaults, cpi, first_budget_year,
+                        multi_param_idx=-1):
     """
     Dispatch to either expand_1D or expand2D depending on the dimension of x
 
@@ -294,6 +295,12 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year):
     cpi: Bool
 
     first_budget_year: int 
+
+    multi_param_idx: int, optional. If this parameter is multi-valued, this
+        is the index for which the values for 'x' apply. So, for exampe, if
+        multi_param_idx=0, the values for x are typically for the 'single'
+        filer status. -1 indidcates that this is not a multi-valued
+        parameter
 
     Returns:
     --------
@@ -323,7 +330,11 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year):
     for i in range(num_years):
         if i < len(x):
             if is_wildcard(x[i]):
-                ans[i] = defaults[i]
+                if multi_param_idx > -1:
+                    ans[i] = defaults[multi_param_idx][i]
+                else:
+                    ans[i] = defaults[i]
+
             else:
                 ans[i] = x[i]
 
@@ -462,9 +473,6 @@ def package_up_vars(user_values, first_budget_year):
         # Discover the CPI setting for this parameter
         cpi_flag = discover_cpi_flag(param)
 
-        # Handle wildcards from user
-        has_wildcards = check_wildcards(vals)
-
         # get max number of years to advance
         _max = 0
         for name in vals:
@@ -476,11 +484,14 @@ def package_up_vars(user_values, first_budget_year):
         for name in sorted(vals):
             idx = int(name[-1]) # either 0, 1, 2, 3
             user_arr = user_values[name]
+            # Handle wildcards from user
+            has_wildcards = check_wildcards(user_arr)
             if len(user_arr) < expnded_defaults or has_wildcards:
                 user_arr = propagate_user_list(user_arr, name=param,
                                                defaults=expnded_defaults,
                                                cpi=cpi_flag,
-                                               first_budget_year=first_budget_year)
+                                               first_budget_year=first_budget_year,
+                                               multi_param_idx=idx)
             for new_arr, user_val in zip(expnded_defaults, user_arr):
                 new_arr[idx] = int(user_val) if user_val > 1.0 else user_val
             del user_values[name]
