@@ -331,7 +331,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
         if i < len(x):
             if is_wildcard(x[i]):
                 if multi_param_idx > -1:
-                    ans[i] = defaults[multi_param_idx][i]
+                    ans[i] = defaults[i][multi_param_idx]
                 else:
                     ans[i] = defaults[i]
 
