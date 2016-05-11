@@ -87,6 +87,13 @@
   <!-- Scripts -->
   <script src="{% static 'js/site.js' %}"></script>
   <script src="{% static 'js/taxbrain.js' %}"></script>
+  <script type="text/javascript">
+    $('.what-is a').click(function() {
+      setTimeout(function() {
+        $('.inputs-sidebar').data('bs.affix').options.offset = $('#affix-offset').height();
+      }, 1000);
+    });
+  </script>
   {% block bottom_scripts %}
   {% endblock %}
   </body>
