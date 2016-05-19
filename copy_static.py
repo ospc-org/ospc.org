@@ -36,7 +36,7 @@ for root, dirs, files in os.walk("."):
             continue
         if f.endswith(".css") or f.endswith(".js"):
             full_path = os.path.join(root, f)[2:]
-            bucket_path = full_path[2:]
+            bucket_path = full_path
             print(bucket_path)
             ext = f[f.rfind('.')+1:]
             print(content_type[ext])
