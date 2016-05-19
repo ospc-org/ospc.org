@@ -29,12 +29,7 @@ def login(request):
             error_context = {'error_msg': error_msg, 'log_user': log_user}
             return render(request, 'register/login.html', error_context)
 
-    else:
-        log_user = LoginForm()
-
-    log_context = {'log_user': log_user}
-
-    return render(request, 'register/login.html', log_context)
+    return render(request, 'register/login.html')
 
 def loggedin(request):
     return render_to_response('register/loggedin.html',
@@ -48,6 +43,8 @@ def logout(request):
     return HttpResponseRedirect(request.META.get('HTTP_REFFER', '/'))
 
 def register_user(request):
+    confirm_key = request.GET.get('k')
+    subscriber = Subscriber.objects.filter(confirm_key = confirm_key).get()
     if request.method == 'POST':
         form = MyRegistrationForm(request.POST)
         if form.is_valid():
@@ -56,9 +53,13 @@ def register_user(request):
             form.instance.user_permissions.add(permission)
             return HttpResponseRedirect('/register_success')
         else:
-            args = {'form': form} #Present the user the form with errors to correct.
+            args = {
+                'form': form,
+                'username': subscriber.email.split('@')[0] if len(subscriber.email.split('@')[0]) <= 30 else '',
+                'email': subscriber.email,
+                'confirm_key': confirm_key
+            } #Present the user the form with errors to correct.
     else:
-        confirm_key = request.GET.get('k')
         if not confirm_key:
             raise NotImplementedError(
                 "We do not handle the case where the user does not have a registration key.")
@@ -66,14 +67,14 @@ def register_user(request):
             raise NotImplementedError(
                 "We do not handle the case where the user has an incorrect registration key.")
         else:
-            subscriber = Subscriber.objects.filter(confirm_key = confirm_key).get()
             subscriber.active = True
             subscriber.save()
-            args = {}
-            args['form'] = MyRegistrationForm(initial = {
+            args = {
                 'username': subscriber.email.split('@')[0] if len(subscriber.email.split('@')[0]) <= 30 else '',
-                'email': subscriber.email
-            })
+                'email': subscriber.email,
+                'confirm_key': confirm_key
+            }
+
     args.update(csrf(request))
     return render_to_response('register/post-signup-register.html', args)
 
