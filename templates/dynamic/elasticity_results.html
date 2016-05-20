@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="wrapper">
-
+  <div id="affix-offset">
     <nav class="logobar" role="navigation">
       <a class="logobar-brand" href="/">
         <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
@@ -37,7 +37,8 @@
         </div>
       </div>
     </section>
-
+  </div>
+    
     <div class="result-header">
       <div class="result-header-control">
         <h1>{% flatblock "elasticity_results_header" %}</h1>

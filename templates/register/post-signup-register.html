@@ -1,22 +1,41 @@
 {% extends 'pages/home.html' %}
 {% block content %}
-<div class="container">
-  <div class="row">
-    <div class="columns col-md-12">
-      <div id="flat-wrapper">
-        <header id="flat-logo">
-          <p>You have signed up for the mailing list and are invited to try TaxBrain!</p>
-        </header>
-
-        <h2>Register</h2>
-        <form action="/register/" method="post">{% csrf_token %}
-        <table>
-        {{ form.as_table }}
-        </table>
-
-        <input type="submit" value="Register">
-
-        </form>
+<div class="row">
+  <div class="columns col-sm-12 col-md-6 col-md-offset-3">
+    <div id="flat-wrapper">
+      <header id="flat-logo">
+        <h2>You have signed up for the mailing list and are invited to try TaxBrain!</h2>
+      </header>
+      <div class="panel panel-default">
+        <div class="panel-heading">Register</div>
+        <div class="panel-body">
+          <form action="/register/?k={{confirm_key}}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="id_username">Username:</label>
+              <input class="form-control" id="id_username" maxlength="30" name="username" type="text" value="{{username}}" />
+              <p class="help-block">Required. 30 characters or fewer. Letters, digits and @/./+/-/_ only.</p>
+              <span class="text-danger">{{form.errors.username}}</span>
+            </div>
+            <div class="form-group">
+              <label for="id_email">Email:</label>
+              <input class="form-control" id="id_email" name="email" type="email" value="{{email}}">
+              <span class="text-danger">{{form.errors.email}}</span>
+            </div>
+            <div class="form-group">
+              <label for="id_password1">Password:</label>
+              <input class="form-control" id="id_password1" name="password1" type="password" />
+              <span class="text-danger">{{form.errors.password1}}</span>
+            </div>
+            <div class="form-group">
+              <label for="id_password2">Password confirmation:</label>
+              <input class="form-control" id="id_password2" name="password2" type="password"  />
+              <p class="help-block">Enter the same password as above, for verification.</p>
+              <span class="text-danger">{{form.errors.password2}}</span>
+            </div>
+            <input class="btn btn-primary btn-block" type="submit" value="Register" />
+          </form>
+        </div>
       </div>
     </div>
   </div>

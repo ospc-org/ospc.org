@@ -6,6 +6,7 @@
 
 {% block content %}
 <div class="wrapper">
+  <div id="affix-offset">
     <nav class="logobar" role="navigation">
       <a class="logobar-brand" href="/">
         <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
@@ -38,6 +39,7 @@
         </div>
       </div>
     </section>
+  </div>
 
     <form class="inputs-form" method="post" action="/dynamic/behavioral/{{pk}}/?start_year={{start_year}}">
       {% csrf_token %}
