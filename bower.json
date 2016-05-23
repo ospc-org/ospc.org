@@ -10,6 +10,7 @@
     "tests"
   ],
   "dependencies": {
-    "bootstrap": "^3.3.6"
+    "bootstrap": "^3.3.6",
+    "bootstrap-block-grid": "^1.1.7"
   }
 }
