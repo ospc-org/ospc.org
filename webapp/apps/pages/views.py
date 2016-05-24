@@ -61,3 +61,39 @@ def newspage(request):
 
 def newsdetailpage(request):
     return redirect(BLOG_URL)
+
+def _discover_widgets():
+    '''stubbed out data I wish to recieve from some widget discovery mechanism'''
+    tre_widget = dict()
+    tre_widget['title'] = 'Tax Reform Explorer'
+    tre_widget['src'] = 'http://bcollins-outbox.s3.amazonaws.com/tax-reform-explorer.html'
+    tre_widget['include_email'] = True
+
+    widgets = dict()
+    widgets['taxreformexplorer'] = tre_widget
+
+    return widgets
+
+def widgetpage(request, widget_id):
+
+    widgets = _discover_widgets()
+
+    if widget_id not in widgets.keys():
+        raise ValueError('Invalid Widget Id {0}'.format(widget_id))
+
+    widget = widgets[widget_id]
+
+    form = subscribeform(request)
+    if request.method == 'POST' and form.is_valid():
+        return check_email(request)
+
+    test_1 = render(request, 'pages/widget.html', {
+        'csrv_token': csrf(request)['csrf_token'],
+        'email_form': form,
+        'widget_title': widget['title'],
+        'widget_url': widget['src'],
+        'section': {
+            'title': 'Widget',
+        }
+    })
+    return test_1
