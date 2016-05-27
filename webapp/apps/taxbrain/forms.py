@@ -5,7 +5,8 @@ from django.utils.translation import ugettext_lazy as _
 from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       int_to_nth, is_string, string_to_float_array, check_wildcards,
-                      default_taxcalc_data, expand_list, propagate_user_list)
+                      default_taxcalc_data, expand_list, propagate_user_list,
+                      convert_val)
 import taxcalc
                       
 
@@ -30,6 +31,8 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
 
     has_wildcards = check_wildcards(param_values)
     if len(param_values) < new_len or has_wildcards:
+        #Only process wildcards and floats from this point on
+        param_values = [convert_val(x) for x in param_values]
         # Discover the CPI setting for this parameter
         cpi_flag = form.discover_cpi_flag(param_name, form.cleaned_data)
 

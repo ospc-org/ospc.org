@@ -179,7 +179,6 @@ class TaxBrainViewsTests(TestCase):
                 'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
 
         response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
@@ -199,6 +198,50 @@ class TaxBrainViewsTests(TestCase):
         webapp_views.dropq_compute = MockCompute()
 
         data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+
+    def test_taxbrain_wildcard_in_validation_params_OK(self):
+        """
+        Set upper threshold for income tax bracket 1 to *, 38000
+        Set upper threshold for income tax bracket 2 to *, *, 39500
+        should be OK
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, 38000'],
+                u'II_brk2_0': [u'*, *, 39500'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/', data)
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+    def test_taxbrain_wildcard_in_validation_params_gives_error(self):
+        """
+        Set upper threshold for income tax bracket 1 to *, 38000
+        Set upper threshold for income tax bracket 2 to *, *, 39500
+        Set CPI flag for upper threshold for income tax brack to false
+        so should give an error
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, 38000'],
+                u'II_brk2_0': [u'*, *, 39500'],
                 u'start_year': unicode(START_YEAR),
                 'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
 

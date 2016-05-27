@@ -38,6 +38,20 @@ def check_wildcards(x):
     else:
         return is_wildcard(x)
 
+
+def make_bool(x):
+    b = True if x == 'True' else False
+    return b
+
+
+def convert_val(x):
+    if is_wildcard(x):
+        return x
+    try:
+        return float(x)
+    except ValueError:
+        return make_bool(x)
+
 def int_to_nth(x):
     if x < 1:
         return None
