@@ -32,6 +32,11 @@ def is_wildcard(x):
     else:
         return False
 
+def check_wildcards(x):
+    if isinstance(x, list):
+        return any([check_wildcards(i) for i in x])
+    else:
+        return is_wildcard(x)
 
 def int_to_nth(x):
     if x < 1:
@@ -308,8 +313,9 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
     based on the last value the user specified
 
     """
-    # x can't be empty
-    assert x
+    # x must have a real first value
+    assert len(x) > 0
+    assert x[0]
 
     num_years = max(len(defaults), len(x))
 
@@ -443,11 +449,6 @@ def package_up_vars(user_values, first_budget_year):
         return cpi_flag
 
 
-    def check_wildcards(x):
-        if isinstance(x, list):
-            return any([check_wildcards(i) for i in x])
-        else:
-            return is_wildcard(x)
 
     name_stems = {}
     ans = {}

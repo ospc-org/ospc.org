@@ -4,12 +4,56 @@ from django.utils.translation import ugettext_lazy as _
 
 from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
-                      int_to_nth, is_string, string_to_float_array)
+                      int_to_nth, is_string, string_to_float_array, check_wildcards,
+                      default_taxcalc_data, expand_list, propagate_user_list)
+import taxcalc
                       
 
 def bool_like(x):
     b = True if x == 'True' or x == True else False
     return b
+
+def parameter_name(param):
+    if not param.startswith("_"):
+        param = "_" + param
+
+    is_multi_param = any(param.endswith("_" + suffix) for suffix in ("0", "1", "2", "3"))
+    if is_multi_param:
+        return param[:-2]
+    else:
+        return param
+
+def expand_unless_empty(param_values, param_name, param_column_name, form, new_len):
+
+    if param_values == []:
+        return param_values
+
+    has_wildcards = check_wildcards(param_values)
+    if len(param_values) < new_len or has_wildcards:
+        # Discover the CPI setting for this parameter
+        cpi_flag = form.discover_cpi_flag(param_name, form.cleaned_data)
+
+        # get max number of years to advance
+        default_data = form._default_taxcalc_data[param_name]
+        expnded_defaults = expand_list(default_data, new_len)
+
+        is_multi_param = any(param_column_name.endswith("_" + suffix) for suffix in ("0", "1", "2", "3"))
+        if is_multi_param:
+            idx = int(param_column_name[-1])
+        else:
+            idx = -1
+
+        param_values = propagate_user_list(param_values,
+                                            name=param_name,
+                                            defaults=expnded_defaults,
+                                            cpi=cpi_flag,
+                                            first_budget_year=form._first_year,
+                                            multi_param_idx=idx)
+
+        param_values = [float(x) for x in param_values]
+
+    return param_values
+
 
 
 TAXCALC_DEFAULTS_2016 = default_policy(2016)
@@ -20,6 +64,13 @@ class PersonalExemptionForm(ModelForm):
     def __init__(self, first_year, *args, **kwargs):
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
+
+        self._default_meta = default_taxcalc_data(taxcalc.policy.Policy,
+                               start_year=self._first_year, metadata=True)
+
+
+        self._default_taxcalc_data = default_taxcalc_data(taxcalc.policy.Policy,
+                                         start_year=self._first_year)
         # Defaults are set in the Meta, but we need to swap
         # those outs here in the init because the user may
         # have chosen a different start year
@@ -42,7 +93,23 @@ class PersonalExemptionForm(ModelForm):
 
         super(PersonalExemptionForm, self).__init__(*args, **kwargs)
 
-    def get_comp_data(self, comp_key, param_id, col, required_length):
+    def discover_cpi_flag(self, param, user_values):
+        ''' Helper function to discover the CPI setting for this parameter'''
+
+        cpi_flag_from_user = user_values.get(param + "_cpi", None)
+        if cpi_flag_from_user is None:
+            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
+        if cpi_flag_from_user is None:
+            cpi_flag_from_user = user_values.get(param[1:] + "_cpi", None)
+
+        if cpi_flag_from_user is None:
+            attrs = self._default_meta[param]
+            cpi_flag = attrs.get('cpi_inflated', False)
+        else:
+            cpi_flag = cpi_flag_from_user
+        return cpi_flag
+
+    def get_comp_data(self, comp_key, param_id, col, param_values):
         """
         Get the data necessary for a min/max validation comparison, given:
             param_id - The webapp-internal TC parameter ID
@@ -53,50 +120,95 @@ class PersonalExemptionForm(ModelForm):
                * the name of another param - we should use that param's
                  corresponding column field. If values have been submitted for
                  it, use them. Otherwise use its defaults
-             required_len - The number of values we need to compare against
+             param_values - either user supplied or default values of the
+                            parameter
 
-        After finding the proper data, expand it to the required_length by
-        repeating the final value.
+        After finding the proper data, expand it to the required length.
+        Either the parameter specified by comp_key, or the parameter referred
+        by param_id may need to be extended and have wildcard entries
+        replaced.
 
-        @todo: CPI inflate the final value to fill instead of simply repeating
+        Returns: dict
+                 'source': text for error reporting
+                 'comp_data': a sequence of values associated with param
+                 'epx_col_values': a (possibly) expanded set of column values
+                                   for comparison against comp_data
+            
         """
 
-        base_param = self._default_params[param_id]
-        base_col = base_param.col_fields[col]
+        len_param_values = len(param_values)
+        param_name = "_" + param_id
+        param_column_name = param_name + "_" + str(col)
 
         if is_number(comp_key):
-            comp_data = [comp_key]
             source = "the static value"
+            new_len = len_param_values
+            comp_data = [comp_key]
+            len_diff = len_param_values - len(comp_data)
+            # No inflation of static values, just repeat
+            if len_diff > 0:
+                comp_data += [comp_data[-1]] * len_diff
+            col_values = param_values
+
         elif comp_key == 'default':
-            comp_data = base_col.values
             source = "this field's default"
+            new_len = len_param_values
+            # Grab the default values and expand if necessary
+            base_param = self._default_params[param_id]
+            base_col = base_param.col_fields[col]
+            comp_data = base_col.values
+            len_diff = len_param_values - len(comp_data)
+            if len_diff > 0:
+                # comp_data += [comp_data[-1]] * len_diff
+                new_data = expand_unless_empty(comp_data, param_name,
+                                   param_column_name, self, new_len)
+                comp_data = new_data
+            col_values = param_values
+
         elif comp_key in self._default_params:
+            # Comparing two parameters against each other, either of
+            # which might be expanded and have wildcards
             other_param = self._default_params[comp_key]
             other_col = other_param.col_fields[col]
             other_values = None
+            other_param_name = parameter_name(other_col.id)
+            other_param_column_name = other_col.id
+            new_len = len_param_values
 
             if other_col.id in self.cleaned_data:
                 other_values_raw = self.cleaned_data[other_col.id]
-                other_values = string_to_float_array(other_values_raw)
+                try:
+                    other_values = string_to_float_array(other_values_raw)
+                    new_len = max(len_param_values, len(other_values))
+                    other_values = expand_unless_empty(other_values, other_param_name,
+                                            other_param_column_name, self,
+                                            new_len)
+
+                except ValueError as ve:
+                    # Assume wildcards here
+                    other_values_list = other_values_raw.split(',')
+                    new_len = max(len_param_values, len(other_values_list))
+                    other_values = expand_unless_empty(other_values_list, other_param_name,
+                                        other_param_column_name, self,
+                                        new_len)
 
             if other_values:
                 comp_data = other_values
                 source = other_param.name + "'s value"
             else:
                 other_defaults = other_col.values
-                comp_data = other_defaults
+                comp_data = expand_unless_empty(other_defaults, other_param_name,
+                                   other_param_column_name, self, new_len)
                 source = other_param.name + "'s default"
+            col_values = expand_unless_empty(param_values, param_name, param_column_name, self, new_len)
         else:
             raise ValueError('Unknown comp keyword "{0}"'.format(comp_key))
 
         if len(comp_data) < 1:
             raise ValueError('No comparison data found for kw'.format(comp_key))
 
-        len_diff = required_length - len(comp_data)
-        if len_diff > 0:
-            comp_data += [comp_data[-1]] * len_diff
-
-        return {'source': source, 'comp_data': comp_data}
+        assert len(comp_data) == len(col_values)
+        return {'source': source, 'comp_data': comp_data, 'exp_col_values': col_values}
 
     def clean(self):
         """
@@ -145,7 +257,14 @@ class PersonalExemptionForm(ModelForm):
 
             for col, col_field in enumerate(param.col_fields):
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
-                submitted_col_values = string_to_float_array(submitted_col_values_raw)
+                try:
+                    submitted_col_values = string_to_float_array(submitted_col_values_raw)
+                except ValueError as ve:
+                    # Assuming wildcard notation here
+                    submitted_col_values_list = submitted_col_values_raw.split(',')
+                    param_name = parameter_name(col_field.id)
+                    submitted_col_values = expand_unless_empty(submitted_col_values_list, param_name, col_field.id, self, len(submitted_col_values_list))
+
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
@@ -157,11 +276,12 @@ class PersonalExemptionForm(ModelForm):
                     col_values = default_col_values
 
                 if param.max is not None:
-                    comp = self.get_comp_data(param.max, param_id, col, len(col_values))
+                    comp = self.get_comp_data(param.max, param_id, col, col_values)
                     source = comp['source']
                     maxes = comp['comp_data']
+                    exp_col_values = comp['exp_col_values']
 
-                    for i, value in enumerate(col_values):
+                    for i, value in enumerate(exp_col_values):
                         if value > maxes[i]:
                             if len(col_values) == 1:
                                 self.add_error(col_field.id,
@@ -175,11 +295,12 @@ class PersonalExemptionForm(ModelForm):
                                                    source, maxes[i]))
 
                 if param.min is not None:
-                    comp = self.get_comp_data(param.min, param_id, col, len(col_values))
+                    comp = self.get_comp_data(param.min, param_id, col, col_values)
                     source = comp['source']
                     mins = comp['comp_data']
+                    exp_col_values = comp['exp_col_values']
 
-                    for i, value in enumerate(col_values):
+                    for i, value in enumerate(exp_col_values):
                         if value < mins[i]:
                             if len(col_values) == 1:
                                 self.add_error(col_field.id,
@@ -209,12 +330,6 @@ class PersonalExemptionForm(ModelForm):
                     attrs['disabled'] = True
 
                 if param.tc_id == '_ID_BenefitSurtax_Switch':
-                    """switches = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(6)]
-                    print "getting the model attribute"
-                    for switch in switches:
-                        print "switch is ", switch
-                        val = getattr(model, switch)
-                        print "val is ", val"""
                     attrs['checked'] = False
                     widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                 else:

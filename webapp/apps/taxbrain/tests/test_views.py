@@ -162,3 +162,47 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(edit_page.status_code, 200)
         cpi_flag = edit_page.context['form']['AMT_CG_thd2_cpi'].field.widget.attrs['placeholder']
         self.assertEqual(cpi_flag, False)
+
+    def test_taxbrain_wildcard_params_with_validation_is_OK(self):
+        """
+        Set upper threshold for income tax bracket 1 to *, *, 38000
+        income tax bracket 2 will inflate above 38000 so should give
+        no error
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 15000'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+
+    def test_taxbrain_wildcard_params_with_validation_gives_error(self):
+        """
+        Set upper threshold for income tax bracket 1 to *, *, 38000
+        Set CPI flag for income tax bracket 2 to False
+        In 2018, income tax bracket 2 will still be 37625 if CPI flag
+        is false so should give an error
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True

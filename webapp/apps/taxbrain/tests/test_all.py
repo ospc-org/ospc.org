@@ -158,6 +158,15 @@ class TaxInputTests(TestCase):
                [250000, None, None, None, None, None]]
         assert ans['_AMED_thd'] == exp
 
+    def test_package_up_taxbrackets_with_wildcard4(self):
+        values = {"AMED_thd_0": [u'*', u'*', 250000]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        exp = [[200000, 250000.0, 125000.0, 200000.0, 200000.0, 125000.0],
+               [200000, None, None, None, None, None],
+               [250000, None, None, None, None, None]]
+        assert ans['_AMED_thd'] == exp
+
+
 
     def test_package_up_vars_unicode_wildcards(self):
         exp = [0.0089999999999999993, 0.0089999999999999993, 0.018]
