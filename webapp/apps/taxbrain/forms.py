@@ -159,7 +159,6 @@ class PersonalExemptionForm(ModelForm):
             comp_data = base_col.values
             len_diff = len_param_values - len(comp_data)
             if len_diff > 0:
-                # comp_data += [comp_data[-1]] * len_diff
                 new_data = expand_unless_empty(comp_data, param_name,
                                    param_column_name, self, new_len)
                 comp_data = new_data
