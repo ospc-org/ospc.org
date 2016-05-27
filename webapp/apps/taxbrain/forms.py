@@ -25,6 +25,20 @@ def parameter_name(param):
         return param
 
 def expand_unless_empty(param_values, param_name, param_column_name, form, new_len):
+    ''' Take a list of parameters and, unless the list is empty, fill in any
+    wildcards and/or expand the list to the desired number of years, using
+    the proper inflation rates if necessary
+
+    If the list is empty, return it.
+
+    param_values: list of current values
+    param_name: name of the parameter
+    param_column_name: eg. _II_brk2_1 (names the sub-field)
+    form: The form object that has some data for the calculation
+    new_len: the new desired length of the return list
+
+    Returns: list of length new_len, unless the empty list is passed
+    '''
 
     if param_values == []:
         return param_values
@@ -36,7 +50,6 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
         # Discover the CPI setting for this parameter
         cpi_flag = form.discover_cpi_flag(param_name, form.cleaned_data)
 
-        # get max number of years to advance
         default_data = form._default_taxcalc_data[param_name]
         expnded_defaults = expand_list(default_data, new_len)
 
