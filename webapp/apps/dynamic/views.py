@@ -572,7 +572,7 @@ def ogusa_results(request, pk):
     context = {
         'locals':locals(),
         'unique_url':url,
-        'taxcalc_version':taxcalc_version,
+        'ogusa_version':url.ogusa_vers,
         'tables':tables,
         'created_on':created_on,
         'first_year':first_year,
