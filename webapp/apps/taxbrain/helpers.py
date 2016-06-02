@@ -329,7 +329,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
     """
     # x must have a real first value
     assert len(x) > 0
-    assert x[0]
+    assert x[0] not in ("", None)
 
     num_years = max(len(defaults), len(x))
 
