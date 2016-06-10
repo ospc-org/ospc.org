@@ -34,7 +34,8 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
-from ..taxbrain.helpers import default_policy, taxcalc_results_to_tables, default_behavior
+from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
+                                convert_val)
 from ..taxbrain.views import dropq_compute
 
 from .helpers import (default_parameters, job_submitted,
@@ -188,10 +189,7 @@ def dynamic_behavioral(request, pk):
 
             for key, value in curr_dict.items():
                 if type(value) == type(unicode()):
-                    try:
-                        curr_dict[key] = [float(x) for x in value.split(',') if x]
-                    except ValueError:
-                        curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                    curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
                 else:
                     print "missing this: ", key
 
@@ -206,10 +204,7 @@ def dynamic_behavioral(request, pk):
             growth_fixup(taxbrain_dict)
             for key, value in taxbrain_dict.items():
                 if type(value) == type(unicode()):
-                    try:
-                        taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
-                    except ValueError:
-                        taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                    taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
                 else:
                     print "missing this: ", key
 
@@ -310,10 +305,7 @@ def dynamic_elasticities(request, pk):
             growth_fixup(taxbrain_dict)
             for key, value in taxbrain_dict.items():
                 if type(value) == type(unicode()):
-                    try:
-                        taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
-                    except ValueError:
-                        taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                        taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
                 else:
                     print "missing this: ", key
 
