@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.test import Client
 import mock
 import os
+import json
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -66,4 +67,30 @@ class DynamicBehavioralViewsTests(TestCase):
         idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/') 
         microsim_model_num = page[idx_ms_num_start:idx_ms_num_end]
         assert microsim_model_num == orig_micro_model_num
+
+    def test_behavioral_reform_with_wildcard(self):
+        # Do the microsim
+        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
+                u'ID_BenefitSurtax_Switch_0': [u'True'],
+                u'ID_BenefitSurtax_Switch_3': [u'True'],
+                u'ID_BenefitSurtax_Switch_2': [u'True'],
+                u'ID_BenefitSurtax_Switch_5': [u'True'],
+                u'ID_BenefitSurtax_Switch_4': [u'True'],
+                u'ID_BenefitSurtax_Switch_6': [u'True'],
+                u'SS_Earnings_c': [u'*,*,*,*,1.0e99'],
+                u'has_errors': [u'False'],
+                u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
+
+        micro1 = do_micro_sim(self.client, reform)
+
+        # Do the partial equilibrium simulation based on the microsim
+        pe_reform = {u'BE_sub': [u'0.25']}
+        pe_response = do_behavioral_sim(self.client, micro1, pe_reform)
+        orig_micro_model_num = micro1.url[-2:-1]
+        from webapp.apps.dynamic import views
+        post = views.dropq_compute.last_posted
+        # Verify that partial equilibrium job submitted with proper
+        # SS_Earnings_c with wildcards filled in properly
+        reform = json.loads(post['user_mods'])
+        assert reform["2016"][u'_SS_Earnings_c'][0]  == 118500.0
 
