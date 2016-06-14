@@ -1,3 +1,6 @@
+
+import os
+
 from django.http import Http404
 from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
@@ -5,7 +8,8 @@ from django.views.generic import TemplateView, DetailView
 from webapp.apps.register.forms import SubscribeForm
 from django.core.context_processors import csrf
 from django.conf import settings
-import os
+
+import requests
 
 BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
 
@@ -62,17 +66,20 @@ def newspage(request):
 def newsdetailpage(request):
     return redirect(BLOG_URL)
 
+
 def _discover_widgets():
     '''stubbed out data I wish to recieve from some widget discovery mechanism'''
-    tre_widget = dict()
-    tre_widget['title'] = 'Tax Reform Explorer'
-    tre_widget['src'] = 'http://bcollins-outbox.s3.amazonaws.com/tax-reform-explorer.html'
-    tre_widget['include_email'] = True
 
-    widgets = dict()
-    widgets['taxreformexplorer'] = tre_widget
+    manifest_url = os.environ.get('TAXPLOT_MANIFEST_URL')
 
-    return widgets
+    if not manifest_url:
+        raise ValueError('TAXPLOT_MANIFEST_URL environment variable not set')
+
+    resp = requests.get(manifest_url)
+    resp.raise_for_status()
+
+    widgets = resp.json()
+    return { w['plot_id'] : w for w in widgets }
 
 def widgetpage(request, widget_id):
 
@@ -83,17 +90,18 @@ def widgetpage(request, widget_id):
 
     widget = widgets[widget_id]
 
-    form = subscribeform(request)
-    if request.method == 'POST' and form.is_valid():
-        return check_email(request)
+    #form = subscribeform(request)
+    #if request.method == 'POST' and form.is_valid():
+        #return check_email(request)
 
-    test_1 = render(request, 'pages/widget.html', {
+    form = None
+
+    return render(request, 'pages/widget.html', {
         'csrv_token': csrf(request)['csrf_token'],
         'email_form': form,
-        'widget_title': widget['title'],
-        'widget_url': widget['src'],
+        'widget_title': widget['plot_name'],
+        'widget_url': widget['plot_url'],
         'section': {
             'title': 'Widget',
         }
     })
-    return test_1
