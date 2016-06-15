@@ -356,7 +356,27 @@ def dynamic_elasticities(request, pk):
                 model.job_ids = denormalize(submitted_ids)
                 model.first_year = int(start_year)
                 model.save()
-                return redirect('elastic_results', model.pk)
+
+                unique_url = DynamicElasticityOutputUrl()
+                if request.user.is_authenticated():
+                    current_user = User.objects.get(pk=request.user.id)
+                    unique_url.user = current_user
+
+                if unique_url.taxcalc_vers != None:
+                    pass
+                else:
+                    unique_url.taxcalc_vers = taxcalc_version
+
+                unique_url.unique_inputs = model
+                unique_url.model_pk = model.pk
+
+                cur_dt = datetime.datetime.utcnow()
+                future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                expected_completion = cur_dt + future_offset
+                unique_url.exp_comp_datetime = expected_completion
+                unique_url.save()
+
+                return redirect('elastic_results', unique_url.pk)
 
         else:
             # received POST but invalid results, return to form with errors
@@ -529,7 +549,7 @@ def show_job_submitted(request, pk):
     return render_to_response('dynamic/submitted.html', {'job_id': submitted_id})
 
 
-def elastic_output(request, pk):
+def elastic_results(request, pk):
     """
     This view handles the results page.
     """
@@ -544,27 +564,71 @@ def elastic_output(request, pk):
         url.taxcalc_vers = taxcalc_version
         url.save()
 
-    output = url.unique_inputs.tax_result
-    first_year = url.unique_inputs.first_year
-    created_on = url.unique_inputs.creation_date
-    tables = elast_results_to_tables(output, first_year)
-    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-    microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
+    model = url.unique_inputs
+    if model.tax_result:
+        output = model.tax_result
+        first_year = model.first_year
+        created_on = model.creation_date
+        tables = elast_results_to_tables(output, first_year)
+        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+        microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
 
-    context = {
-        'locals':locals(),
-        'unique_url':url,
-        'taxcalc_version':taxcalc_version,
-        'tables':tables,
-        'created_on':created_on,
-        'first_year':first_year,
-        'microsim_url':microsim_url
-    }
+        context = {
+            'locals':locals(),
+            'unique_url':url,
+            'taxcalc_version':taxcalc_version,
+            'tables':tables,
+            'created_on':created_on,
+            'first_year':first_year,
+            'microsim_url':microsim_url
+        }
 
+        return render(request, 'dynamic/elasticity_results.html', context)
 
-    return render(request, 'dynamic/elasticity_results.html', context)
+    else:
 
+        job_ids = model.job_ids
+        jobs_to_check = model.jobs_not_ready
+        if not jobs_to_check:
+            jobs_to_check = normalize(job_ids)
+        else:
+            jobs_to_check = normalize(jobs_to_check)
 
+        try:
+            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+        except JobFailError as jfe:
+            print jfe
+            return render_to_response('taxbrain/failed.html')
+
+        if all(jobs_ready):
+            model.tax_result = dropq_compute.elastic_get_results(normalize(job_ids))
+            model.creation_date = datetime.datetime.now()
+            model.save()
+            return redirect(url)
+
+        else:
+            jobs_not_ready = [sub_id for (sub_id, job_ready) in
+                                zip(jobs_to_check, jobs_ready) if not job_ready]
+            jobs_not_ready = denormalize(jobs_not_ready)
+            model.jobs_not_ready = jobs_not_ready
+            model.save()
+            if request.method == 'POST':
+                # if not ready yet, insert number of minutes remaining
+                exp_comp_dt = url.exp_comp_datetime
+                utc_now = datetime.datetime.utcnow()
+                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                dt = exp_comp_dt - utc_now
+                exp_num_minutes = dt.total_seconds() / 60.
+                exp_num_minutes = round(exp_num_minutes, 2)
+                exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
+                if exp_num_minutes > 0:
+                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                else:
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
+
+            else:
+                print "rendering not ready yet"
+                return render_to_response('dynamic/not_ready.html', {'eta':'100'}, context_instance=RequestContext(request))
 
 
 def ogusa_results(request, pk):
@@ -602,32 +666,6 @@ def ogusa_results(request, pk):
     return render(request, 'dynamic/results.html', context)
 
 
-def elastic_results(request, pk):
-    """
-    This view allows the app to wait for the taxcalc results to be
-    returned.
-    """
-
-    model = DynamicElasticitySaveInputs.objects.get(pk=pk)
-    job_ids = model.job_ids
-    submitted_ids = normalize(job_ids)
-    if all(dropq_compute.dropq_results_ready(submitted_ids)):
-        model.tax_result = dropq_compute.elastic_get_results(submitted_ids)
-        model.creation_date = datetime.datetime.now()
-        model.save()
-
-        unique_url = DynamicElasticityOutputUrl()
-        if request.user.is_authenticated():
-            current_user = User.objects.get(pk=request.user.id)
-            unique_url.user = current_user
-        unique_url.unique_inputs = model
-        unique_url.model_pk = model.pk
-        unique_url.save()
-
-        return redirect('elastic_output', unique_url.pk)
-
-    return render_to_response('dynamic/not_ready.html', {'raw_results':'raw_results'})
-
 
 def behavior_results(request, pk):
     """
@@ -647,6 +685,7 @@ def behavior_results(request, pk):
     model = url.unique_inputs
 
     if model.tax_result:
+
         output = model.tax_result
         first_year = model.first_year
         created_on = model.creation_date
@@ -682,7 +721,6 @@ def behavior_results(request, pk):
 
     else:
 
-        #url = DynamicBehaviorSaveInputs.objects.get(pk=pk)
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
@@ -701,7 +739,6 @@ def behavior_results(request, pk):
             model.creation_date = datetime.datetime.now()
             model.save()
             return redirect(url)
-            return redirect('behavior_results', url.pk)
         else:
             jobs_not_ready = [sub_id for (sub_id, job_ready) in
                                 zip(jobs_to_check, jobs_ready) if not job_ready]
