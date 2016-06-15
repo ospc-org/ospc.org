@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/static/css/site.css" rel="stylesheet">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="static 'static/js/vendor/html5shiv/html5shiv.min.js'"></script>
+      <script src="static 'js/vendor/respond/respond.min.js'"></script>
+    <![endif]-->
+  </head>
+<style>
+  #widget-iframe { 
+    height: {{ best_height }};
+    width: {{ best_width }};
+  }
+
+  #email-button {
+    background-color: #21bfd5 !important;
+    color: #ffffff !important;
+  }
+
+</style>
+
+
+  <div class="wrapper">
+    <div class="container">
+
+      <div class="page-header">
+        <h1 class="text-center">{{ widget_title }}</h1>
+      </div>
+
+      <iframe id="widget-iframe"
+	      src="{{ widget_url }}"
+	      scrolling="auto"
+       	      frameborder="0" ></iframe>
+
+        <div class="row">
+            <div class="col-md-1">
+		<img id="logoImg" src="//avatars0.githubusercontent.com/u/8301070?v=3&s=75"></img>
+	    </div>
+            <div class="col-md-11">
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.</p>
+            </div>
+        </div>
+    </div> <!-- container -->
+
+    {% if include_email %}
+
+      <section class="join join-complete" id="join-mailinglist">
+        <h2>Join the community</h2>
+        <div class="input-container">
+          <div class="input-group">
+          <form action="{% url 'about' %}" method="post">{% csrf_token %}
+            <span class="input-group-btn">
+            {{ email_form.email }}
+            {{ email_form.email.errors }}
+            <input type="submit" class="btn btn-join" value="Sign Up"/>
+            </span>
+          </form>
+          </div>
+        </div>
+      </section>
+
+    {% endif %}
+
+</html>

@@ -97,10 +97,16 @@ def widgetpage(request, widget_id):
     request.get_host()
     embed_url = os.path.join('http://',request.get_host(), 'widgets', 'embed', widget_id)
 
+    if request.method == 'GET':
+        include_email = request.GET.get('includeEmail', '') == '1'
+    else:
+        include_email = False
+
     return render(request, 'pages/widget.html', {
         'csrv_token': csrf(request)['csrf_token'],
         'email_form': form,
         'embed_url': embed_url,
+        'include_email': include_email,
         'best_width': widget.get('best_width'),
         'best_height': widget.get('best_height'),
         'widget_title': widget['plot_name'],
@@ -124,9 +130,16 @@ def embedpage(request, widget_id):
     if request.method == 'POST' and form.is_valid():
         return check_email(request)
 
+    if request.method == 'GET':
+        include_email = request.GET.get('includeEmail', '') == '1'
+    else:
+        include_email = False
+
     return render(request, 'pages/embed.html', {
         'best_width': widget.get('best_width'),
         'best_height': widget.get('best_height'),
         'widget_title': widget['plot_name'],
         'widget_url': widget['plot_url'],
+        'email_form': form,
+        'include_email': include_email,
     })

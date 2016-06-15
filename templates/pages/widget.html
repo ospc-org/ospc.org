@@ -17,10 +17,6 @@
     color: #ffffff !important;
   }
 
-  #embed_code { 
-    background: hsl(220, 80%, 90%); 
-  }
-
   #embed_pre {
     white-space: pre-wrap;
     background: hsl(30,80%,90%);
@@ -57,11 +53,13 @@
         </div>
     </div> <!-- container -->
 
+    {% if include_email %}
+
       <section class="join join-complete" id="join-mailinglist">
         <h2>Join the community</h2>
         <div class="input-container">
           <div class="input-group">
-`          <form action="{% url 'about' %}" method="post">{% csrf_token %}
+          <form action="{% url 'about' %}" method="post">{% csrf_token %}
             <span class="input-group-btn">
             {{ email_form.email }}
             {{ email_form.email.errors }}
@@ -71,7 +69,7 @@
           </div>
         </div>
       </section>
-
+{% endif %}
 
 {% comment %}
     <!-- https://github.com/OpenSourcePolicyCenter/webapp-public/issues/56 -->
@@ -109,7 +107,7 @@
         </div>
       </section>
       <section class="contact-info">
-	      {{% flatblock "reach_out_community_link" %}
+	      {% flatblock "reach_out_community_link" %}
         <ul class="contact-social">
           <li class="contact-twitter"><a href="#">Post link on Twitter</a></li>
           <li class="contact-facebook"><a href="#">Share on Facebook</a></li>
