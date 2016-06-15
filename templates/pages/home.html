@@ -48,6 +48,9 @@
             <li class="{% if section.active_nav == 'apps' %}current{% endif %}">
               <a href="/taxbrain">Apps</a>
             </li>
+            <li class="{% if section.active_nav == 'gallery' %}current{% endif %}">
+              <a href="/gallery">gallery</a>
+            </li>
             <li class="{% if section.active_nav == 'about' %}current{% endif %}">
               <a href="/about">About</a>
             </li>
@@ -138,11 +141,9 @@
 
   {% endblock %}
   </style>
-  <script>
   {% block extrajs %}
 
   {% endblock %}
-  </script>
 
   </body>
 </html>

@@ -1,0 +1,109 @@
+{% extends 'pages/home.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="text-center">
+  <h1>Visualization Widget Gallery</h1>
+  {% flatblock "gallery_page_description" %}
+</div>
+<br /><br />
+<div class="row">
+  <div class="col-sm-12">
+    <div class="block-grid-md-2 block-grid-sm-1 block-grid-lg-3" id="thumbnails">
+
+    </div>
+  </div>
+</div>
+{% comment %}
+    <!-- https://github.com/OpenSourcePolicyCenter/webapp-public/issues/56 -->
+    <div class="section-header">
+      <h2>What People Are Saying</h2>
+    </div>
+
+    <section class="news-items">
+      <div class="container">
+        <p class="text-right"><a href="#" class="see-all">See all news</a></p>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="news-item tagged">
+              <h4><a href="#">Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</a></h4>
+              <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="news-item tagged">
+              <h4><a href="#">Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</a></h4>
+              <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+{% endcomment %}
+
+    <div class="container">
+      <section class="sponsor-info">
+        <h2>Our Sponsor</h2>
+        <div>
+          <img src="{% static 'images/logo-aei.png' %}" alt="AEI" class="img-responsive">
+        </div>
+      </section>
+      <section class="contact-info">
+        {% flatblock "reach_out_community_link" %}
+        <ul class="contact-social">
+          <li class="contact-twitter"><a href="#">Post link on Twitter</a></li>
+          <li class="contact-facebook"><a href="#">Share on Facebook</a></li>
+          <li class="contact-linkedin"><a href="#">Discuss on LinkedIn</a></li>
+        </ul>
+        <div class="contact-info-break"></div>
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-5">
+            <h3>MATT JENSEN</h3>
+            <p>+1 202 862 5941</p>
+            <p>matt.jensen@aei.org</p>
+          </div>
+          <!--
+          <div class="col-sm-5">
+            <h3>PERSON NAME, PH.D.</h3>
+            <p>+1 555 555-3333 voice<br>
+            hello@mediacontactinfo.us</p>
+            <p>Company name PR<br>
+            1000 N Streetname Ave Suite 34<br>
+            Washington, DC 10000</p>
+          </div>
+          -->
+        </div>
+      </section>
+    </div>
+
+
+    <div class="push"></div>
+  </div> <!-- /wrapper -->
+{% endblock %}
+
+{% block extrajs %}
+<script type="text/javascript">
+  $.ajax('{{manifest_url}}', {
+    success: function(json) {
+      for (var i = 0; i < json.length; i++) {
+        $('<div class="thumbnail" style="border: none">\
+          <a href="/widgets/' + json[i].plot_id + '" target="_blank">\
+            <img src="' + json[i].thumbnail_url + '" alt="' + json[i].plot_id + '">\
+          </a>\
+          <div class="caption">\
+            <a href="/widgets/' + json[i].plot_id + '" target="_blank">\
+              <h2>' + json[i].plot_name + '</h2>\
+            </a>\
+            <p>' + json[i].short_description + '</p>\
+          </div>\
+        </div>\
+      ').appendTo('#thumbnails');
+      }
+    }
+  });
+</script>
+{% endblock %}
