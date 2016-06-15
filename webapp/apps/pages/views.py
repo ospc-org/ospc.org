@@ -90,18 +90,43 @@ def widgetpage(request, widget_id):
 
     widget = widgets[widget_id]
 
-    #form = subscribeform(request)
-    #if request.method == 'POST' and form.is_valid():
-        #return check_email(request)
+    form = subscribeform(request)
+    if request.method == 'POST' and form.is_valid():
+        return check_email(request)
 
-    form = None
+    request.get_host()
+    embed_url = os.path.join('//',request.get_host(), 'widgets', 'embed', widget_id)
 
     return render(request, 'pages/widget.html', {
         'csrv_token': csrf(request)['csrf_token'],
         'email_form': form,
+        'embed_url': embed_url,
+        'best_width': widget.get('best_width'),
+        'best_height': widget.get('best_height'),
         'widget_title': widget['plot_name'],
         'widget_url': widget['plot_url'],
         'section': {
             'title': 'Widget',
         }
+    })
+
+def embedpage(request, widget_id):
+    form = subscribeform(request)
+
+    widgets = _discover_widgets()
+
+    if widget_id not in widgets.keys():
+        raise ValueError('Invalid Widget Id {0}'.format(widget_id))
+
+    widget = widgets[widget_id]
+
+    form = subscribeform(request)
+    if request.method == 'POST' and form.is_valid():
+        return check_email(request)
+
+    return render(request, 'pages/embed.html', {
+        'best_width': widget.get('best_width'),
+        'best_height': widget.get('best_height'),
+        'widget_title': widget['plot_name'],
+        'widget_url': widget['plot_url'],
     })
