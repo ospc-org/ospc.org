@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="wrapper">
-
+  <div id="affix-offset">
     <nav class="logobar" role="navigation">
       <a class="logobar-brand" href="/">
         <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
@@ -37,6 +37,7 @@
         </div>
       </div>
     </section>
+  </div>
 
     <div class="result-header">
       <div class="result-header-control">
@@ -58,7 +59,7 @@
           </ul>
         </div>
       </div>
-      <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="#">version {{ unique_url.taxcalc_vers }}</a> TaxBrain. (ID: 10045)</p>
+      <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="https://anaconda.org/ospc/ogusa">version {{ ogusa_version }}</a> of the OGUSA package. (ID: 10045)</p>
       <p class="meta">The microsimulation upon which this dynamic simulation was based can be found <a href="{{microsim_url}}">here</a> </p>
     </div>
 

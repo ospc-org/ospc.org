@@ -19,7 +19,7 @@ $('.inputs-form a, .btn-explore').click(function(event) {
     event.preventDefault();
     var target = this.hash;
     if (this.href != '#') {
-      $('body').animate({
+      $('body, html').animate({
         scrollTop: $(target).offset().top
       }, 700);
     }

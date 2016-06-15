@@ -333,6 +333,16 @@ class TaxInputTests(TestCase):
                                      [0.09, 0.17578, 0.23166, 0.23166]]}
 
 
+    def test_package_up_eitc_with_zeros(self):
+        values = {'EITC_rt_0': [0.0]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        assert ans == {'_EITC_rt': [[0.0, 0.34, 0.4, 0.45]]}
+
+    def test_package_up_id_charity_frt_with_zeros(self):
+        values = {'ID_Charity_frt': [u'*', u'*', 0.0]}
+        ans = package_up_vars(values, first_budget_year=FBY)
+        assert ans == {'_ID_Charity_frt': [0.0, 0.0, 0.0]}
+
     def test_package_up_vars_Behavioral_params(self):
         user_values = {'FICA_ss_trt': [0.11],
                        'BE_inc': [0.04]}
