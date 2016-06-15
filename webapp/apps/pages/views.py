@@ -95,7 +95,7 @@ def widgetpage(request, widget_id):
         return check_email(request)
 
     request.get_host()
-    embed_url = os.path.join('//',request.get_host(), 'widgets', 'embed', widget_id)
+    embed_url = os.path.join('http://',request.get_host(), 'widgets', 'embed', widget_id)
 
     return render(request, 'pages/widget.html', {
         'csrv_token': csrf(request)['csrf_token'],
