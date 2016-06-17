@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 
-from views import homepage, aboutpage, newspage, newsdetailpage, widgetpage, gallerypage
+from views import homepage, aboutpage, newspage, newsdetailpage, gallerypage
 
 urlpatterns = patterns('',
     url(r'^$', homepage, name='home'),
