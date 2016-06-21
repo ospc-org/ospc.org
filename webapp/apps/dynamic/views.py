@@ -730,7 +730,7 @@ def behavior_results(request, pk):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
             model.creation_date = datetime.datetime.now()
             model.save()
-            return redirect(url)
+            return redirect('behavior_results', url.pk)
         else:
             jobs_not_ready = [sub_id for (sub_id, job_ready) in
                                 zip(jobs_to_check, jobs_ready) if not job_ready]

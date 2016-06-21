@@ -64,7 +64,7 @@ class DynamicBehaviorSaveInputs(models.Model):
     # Behavioral Effects
     BE_inc = CommaSeparatedField(default=None, blank=True, null=True)
     BE_sub = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_CG_per = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_cg = CommaSeparatedField(default=None, blank=True, null=True)
     BE_CG_trn = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Job IDs when running a job
