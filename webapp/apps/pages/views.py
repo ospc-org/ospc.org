@@ -117,6 +117,9 @@ def widgetpage(request, widget_id):
         'widget_title': widget['plot_name'],
         'widget_url': widget['plot_url'],
         'long_description': widget['long_description'],
+        'Concept_credit': widget['Concept_credit'],
+        'Development_credit': widget['Development_credit'],
+        'OSS_credit': widget['OSS_credit'],
         'section': {
             'title': 'Widget',
         }
