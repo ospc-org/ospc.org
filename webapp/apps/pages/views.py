@@ -116,6 +116,7 @@ def widgetpage(request, widget_id):
         'best_height': widget.get('best_height'),
         'widget_title': widget['plot_name'],
         'widget_url': widget['plot_url'],
+        'long_description': widget['long_description'],
         'section': {
             'title': 'Widget',
         }
