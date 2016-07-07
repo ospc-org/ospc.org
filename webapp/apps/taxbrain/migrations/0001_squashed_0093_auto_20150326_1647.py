@@ -1025,22 +1025,22 @@ class Migration(migrations.Migration):
         migrations.RenameField(
             model_name='taxsaveinputs',
             old_name='charity_ceiling_assets',
-            new_name='ID_Charity_crt_Asset',
+            new_name='ID_Charity_crt_noncash',
         ),
         migrations.AlterField(
             model_name='taxsaveinputs',
-            name='ID_Charity_crt_Asset',
+            name='ID_Charity_crt_noncash',
             field=webapp.apps.taxbrain.models.CommaSeparatedField(default=0.3, max_length=200, null=True, blank=True),
             preserve_default=True,
         ),
         migrations.RenameField(
             model_name='taxsaveinputs',
             old_name='charity_ceiling_cash',
-            new_name='ID_Charity_crt_Cash',
+            new_name='ID_Charity_crt_all',
         ),
         migrations.AlterField(
             model_name='taxsaveinputs',
-            name='ID_Charity_crt_Cash',
+            name='ID_Charity_crt_all',
             field=webapp.apps.taxbrain.models.CommaSeparatedField(default=0.5, max_length=200, null=True, blank=True),
             preserve_default=True,
         ),
@@ -1484,13 +1484,13 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name='taxsaveinputs',
-            name='ID_Charity_crt_Asset',
+            name='ID_Charity_crt_noncash',
             field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
             preserve_default=True,
         ),
         migrations.AlterField(
             model_name='taxsaveinputs',
-            name='ID_Charity_crt_Cash',
+            name='ID_Charity_crt_all',
             field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
             preserve_default=True,
         ),
