@@ -1,0 +1,149 @@
+{% extends 'pages/home.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+
+<style>
+  #widget-iframe { 
+    height: {{ best_height }};
+    width: {{ best_width }};
+  }
+
+  #email-button {
+    background-color: #21bfd5 !important;
+    color: #ffffff !important;
+  }
+
+  #embed_pre {
+    white-space: pre-wrap;
+    background: hsl(30,80%,90%);
+  }
+
+</style>
+
+
+  <div class="wrapper">
+    <div class="container">
+
+      <div class="page-header">
+        <h1 class="text-center">{{ widget_title }}</h1>
+      </div>
+
+      <iframe id="widget-iframe"
+	      src="{{ widget_url }}"
+	      scrolling="auto"
+       	      frameborder="0" ></iframe>
+
+        <div class="row">
+            <div class="col-md-1">
+		      <img id="logoImg" src="//avatars0.githubusercontent.com/u/8301070?v=3&s=75"></img>
+	         </div>
+            <div class="col-md-11">
+              <p>{{ long_description | safe }} </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+              <p>Concept by: {{ Concept_credit | safe }} </p>
+            </div>
+            <div class="col-md-4">
+              <p>Development by: {{ Development_credit | safe }} </p>
+            </div>
+            <div class="col-md-4">
+              <p>Open Source Software used: {{ OSS_credit | safe }} </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+		    <h3>Embed this plot:</h3>
+		    <pre id="embed_pre"><code id="embed_code">&lt;iframe id="widget-iframe" src="{{ embed_url }}" style="height:{{ best_height }};width:{{ best_width}};" scrolling="auto" frameborder="0" &gt;&lt;/iframe&gt;</code></pre>
+	    </div>
+        </div>
+    </div> <!-- container -->
+
+    {% if include_email %}
+
+      <section class="join join-complete" id="join-mailinglist">
+        <h2>Join the community</h2>
+        <div class="input-container">
+          <div class="input-group">
+          <form action="{% url 'about' %}" method="post">{% csrf_token %}
+            <span class="input-group-btn">
+            {{ email_form.email }}
+            {{ email_form.email.errors }}
+            <input type="submit" class="btn btn-join" value="Sign Up"/>
+            </span>
+          </form>
+          </div>
+        </div>
+      </section>
+{% endif %}
+
+{% comment %}
+    <!-- https://github.com/OpenSourcePolicyCenter/webapp-public/issues/56 -->
+    <div class="section-header">
+      <h2>What People Are Saying</h2>
+    </div>
+    
+    <section class="news-items">
+      <div class="container">
+        <p class="text-right"><a href="#" class="see-all">See all news</a></p>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="news-item tagged">
+              <h4><a href="#">Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</a></h4>
+              <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="news-item tagged">
+              <h4><a href="#">Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</a></h4>
+              <p>Vestibulum id ligula porta felis euismod semper. Curabitur blandit tempus porttitor.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+{% endcomment %}
+
+    <div class="container">
+      <section class="sponsor-info">
+        <h2>Our Sponsor</h2>
+        <div>
+          <img src="{% static 'images/logo-aei.png' %}" alt="AEI" class="img-responsive">
+        </div>
+      </section>
+      <section class="contact-info">
+	      {% flatblock "reach_out_community_link" %}
+        <ul class="contact-social">
+          <li class="contact-twitter"><a href="#">Post link on Twitter</a></li>
+          <li class="contact-facebook"><a href="#">Share on Facebook</a></li>
+          <li class="contact-linkedin"><a href="#">Discuss on LinkedIn</a></li>
+        </ul>
+        <div class="contact-info-break"></div>
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-5">
+            <h3>MATT JENSEN</h3>
+            <p>+1 202 862 5941</p>
+            <p>matt.jensen@aei.org</p>
+          </div>
+          <!--
+          <div class="col-sm-5">
+            <h3>PERSON NAME, PH.D.</h3>
+            <p>+1 555 555-3333 voice<br>
+            hello@mediacontactinfo.us</p>
+            <p>Company name PR<br>
+            1000 N Streetname Ave Suite 34<br>
+            Washington, DC 10000</p>
+          </div>
+          -->
+        </div>
+      </section>
+    </div>
+    <div class="push"></div>
+  </div> <!-- /wrapper -->
+{% endblock %}
