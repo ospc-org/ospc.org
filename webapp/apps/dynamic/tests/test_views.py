@@ -69,7 +69,7 @@ class DynamicViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Do the partial equilibrium job submission
-        pe_data = {u'BE_inc': [u'0.4']}
+        pe_data = {u'BE_inc': [u'-0.4']}
         response = self.client.post(dynamic_behavior, pe_data)
         self.assertEqual(response.status_code, 302)
         print(response)
