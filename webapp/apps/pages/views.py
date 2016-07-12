@@ -12,6 +12,7 @@ from django.conf import settings
 import requests
 
 BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
+EMAIL_DEFAULT = '1'
 
 def settings_context_processor(request):
     return {'BLOG_URL': settings.BLOG_URL}
@@ -103,7 +104,7 @@ def widgetpage(request, widget_id):
     embed_url = os.path.join('http://',request.get_host(), 'widgets', 'embed', widget_id)
 
     if request.method == 'GET':
-        include_email = request.GET.get('includeEmail', '') == '1'
+        include_email = request.GET.get('includeEmail', EMAIL_DEFAULT) == '1'
     else:
         include_email = False
 
