@@ -54,11 +54,20 @@ taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 
-def benefit_surtax_fixup(mod):
+def benefit_surtax_fixup(request, reform, model):
+    """
+    Take the incoming POST, the user reform, and the TaxSaveInputs
+    model and fixup the switches _0, ..., _6 to one array of 
+    bools. Also set the model values correctly based on incoming
+    POST
+    """
     _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
-    mod['ID_BenefitSurtax_Switch'] = [[mod[_id][0] for _id in _ids]]
-    for _id in _ids:
-        del mod[_id]
+    values_from_model = [[reform[_id][0] for _id in _ids]]
+    final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
+    reform['ID_BenefitSurtax_Switch'] = final_values
+    for _id, val in zip(_ids, final_values[0]):
+        del reform[_id]
+        setattr(model, _id, unicode(val))
 
 def growth_fixup(mod):
     if mod['growth_choice']:
@@ -141,7 +150,7 @@ def personal_results(request):
                     print "missing this: ", key
 
             worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
-            benefit_surtax_fixup(worker_data)
+            benefit_surtax_fixup(request.REQUEST, worker_data, model)
             # About to begin calculation, log event
             ip = get_real_ip(request)
             if ip is not None:
