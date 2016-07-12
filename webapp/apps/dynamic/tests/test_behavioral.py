@@ -46,7 +46,7 @@ class DynamicBehavioralViewsTests(TestCase):
         micro3 = do_micro_sim(self.client, reform)
 
         # Do the partial equilibrium simulation based on the third microsim
-        pe_reform = {u'BE_inc': [u'0.4']}
+        pe_reform = {u'BE_inc': [u'-0.4']}
         pe_response = do_behavioral_sim(self.client, micro3, pe_reform)
         orig_micro_model_num = micro3.url[-2:-1]
 
