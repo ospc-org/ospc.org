@@ -345,9 +345,6 @@ class PersonalExemptionForm(ModelForm):
                     attrs['disabled'] = True
 
                 if param.tc_id == '_ID_BenefitSurtax_Switch':
-                    #attrs['checked'] = False
-                    #attrs['value'] = True
-                    #attrs['checked'] = 'unchecked'
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                 else:
