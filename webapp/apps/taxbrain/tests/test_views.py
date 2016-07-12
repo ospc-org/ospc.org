@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test import Client
 import mock
 
-from ..models import TaxSaveInputs
+from ..models import TaxSaveInputs, OutputUrl
 from ..models import convert_to_floats
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
@@ -162,6 +162,65 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(edit_page.status_code, 200)
         cpi_flag = edit_page.context['form']['AMT_CG_thd2_cpi'].field.widget.attrs['placeholder']
         self.assertEqual(cpi_flag, False)
+
+    def test_taxbrain_edit_benefitsurtax_switch_show_correctly(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        # This post has no BenefitSurtax flags, so the model
+        # sets them to False
+        data = { u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num = response.url[link_idx+1:-1]
+
+        out = OutputUrl.objects.get(pk=model_num)
+        tsi = TaxSaveInputs.objects.get(pk=out.model_pk)
+        _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
+        # Verify that generated model has switches all False
+        assert all([(getattr(tsi, switch)) == "False" for switch in _ids])
+        # Now edit this page
+        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(model_num, START_YEAR)
+        edit_page = self.client.get(edit_micro)
+        self.assertEqual(edit_page.status_code, 200)
+
+        # Here we POST flipping two switches. The value of the post is
+        # unimportant. The existence of the switch in the POST indicates
+        # that the user set them to on. So, they must get switched to True
+        next_csrf = str(edit_page.context['csrf_token'])
+        data2 = { u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':next_csrf,
+                'ID_BenefitSurtax_Switch_0':[u'False'],
+                'ID_BenefitSurtax_Switch_1':[u'False']}
+
+        response = self.client.post('/taxbrain/', data2)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num2 = response.url[link_idx+1:-1]
+
+        out2 = OutputUrl.objects.get(pk=model_num2)
+        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
+        assert tsi2.ID_BenefitSurtax_Switch_0 == u'True'
+        assert tsi2.ID_BenefitSurtax_Switch_1 == u'True'
+        assert tsi2.ID_BenefitSurtax_Switch_2 == u'False'
+        assert tsi2.ID_BenefitSurtax_Switch_3 == u'False'
+        assert tsi2.ID_BenefitSurtax_Switch_4 == u'False'
+        assert tsi2.ID_BenefitSurtax_Switch_5 == u'False'
+        assert tsi2.ID_BenefitSurtax_Switch_6 == u'False'
+
 
     def test_taxbrain_wildcard_params_with_validation_is_OK(self):
         """

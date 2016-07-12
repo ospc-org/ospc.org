@@ -119,7 +119,7 @@ def dynamic_input(request, pk):
             if 'tax_result' in microsim_data:
                 del microsim_data['tax_result']
 
-            benefit_surtax_fixup(microsim_data)
+            benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
             # start calc job
             submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
@@ -216,7 +216,7 @@ def dynamic_behavioral(request, pk):
             if 'tax_result' in microsim_data:
                 del microsim_data['tax_result']
 
-            benefit_surtax_fixup(microsim_data)
+            benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
             microsim_data.update(worker_data)
 
@@ -335,7 +335,7 @@ def dynamic_elasticities(request, pk):
             if 'tax_result' in microsim_data:
                 del microsim_data['tax_result']
 
-            benefit_surtax_fixup(microsim_data)
+            benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
             microsim_data.update(worker_data)
 
             # start calc job
