@@ -57,10 +57,6 @@
                   {% endfor %}
                 </select>
               </label>
-              <div id="current-year-alert" class="hidden">
-                This will clear your current inputs.
-                <a href="#" class="alert-link" id="current-year-link">OK, go for it.</a>
-              </div>
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                 <li><a href="#payroll-taxes">Payroll Taxes</a></li>
@@ -146,4 +142,21 @@
     </form> <!-- form -->
     <div class="push"></div>
   </div> <!-- /wrapper -->
+  <div class="modal fade" id="current-year-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Change Start Year</h4>
+        </div>
+        <div class="modal-body">
+          Warning: This will clear your current inputs.
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
+          <a type="button" class="btn btn-primary" id="current-year-link">OK, go for it.</a>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
