@@ -64,11 +64,12 @@ class DynamicBehaviorSaveInputs(models.Model):
     # Behavioral Effects
     BE_inc = CommaSeparatedField(default=None, blank=True, null=True)
     BE_sub = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_CG_per = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_cg = CommaSeparatedField(default=None, blank=True, null=True)
     BE_CG_trn = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
+    jobs_not_ready = SeparatedValuesField(blank=True, default=None, null=True)
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
@@ -97,6 +98,7 @@ class DynamicElasticitySaveInputs(models.Model):
 
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
+    jobs_not_ready = SeparatedValuesField(blank=True, default=None, null=True)
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
@@ -151,6 +153,8 @@ class DynamicBehaviorOutputUrl(models.Model):
     unique_inputs = models.ForeignKey(DynamicBehaviorSaveInputs, default=None)
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
+    # Expected Completion DateTime
+    exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
     uuid = UUIDField(auto=True, default=None, null=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
@@ -169,6 +173,8 @@ class DynamicElasticityOutputUrl(models.Model):
     unique_inputs = models.ForeignKey(DynamicElasticitySaveInputs, default=None)
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
+    # Expected Completion DateTime
+    exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
     uuid = UUIDField(auto=True, default=None, null=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)

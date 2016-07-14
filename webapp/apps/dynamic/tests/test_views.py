@@ -69,20 +69,14 @@ class DynamicViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Do the partial equilibrium job submission
-        pe_data = {u'BE_inc': [u'0.4']}
+        pe_data = {u'BE_inc': [u'-0.4']}
         response = self.client.post(dynamic_behavior, pe_data)
         self.assertEqual(response.status_code, 302)
-
         print(response)
-        self.failUnless(response.url[:-2].endswith("processing/"))
 
-        #Check that we are not done processing
-        not_ready_page = self.client.get(response.url)
-        self.assertEqual(not_ready_page.status_code, 200)
-
-        #Check should get a redirect this time
-        response = self.client.get(response.url)
-        self.assertEqual(response.status_code, 302)
+        #Check should get success this time
+        response_success = self.client.get(response.url)
+        self.assertEqual(response_success.status_code, 200)
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("behavior_results/"))
 
@@ -130,17 +124,11 @@ class DynamicViewsTests(TestCase):
         el_data = {'elastic_gdp': [u'0.55']}
         response = self.client.post(dynamic_egdp, el_data)
         self.assertEqual(response.status_code, 302)
-
         print(response)
-        self.failUnless(response.url[:-2].endswith("macro_processing/"))
 
-        #Check that we are not done processing
-        not_ready_page = self.client.get(response.url)
-        self.assertEqual(not_ready_page.status_code, 200)
-
-        #Check should get a redirect this time
-        response = self.client.get(response.url)
-        self.assertEqual(response.status_code, 302)
+        #Check that we get success this time
+        response_success = self.client.get(response.url)
+        self.assertEqual(response_success.status_code, 200)
         self.failUnless(response.url[:-2].endswith("macro_results/"))
 
  

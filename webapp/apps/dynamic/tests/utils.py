@@ -50,17 +50,11 @@ def do_behavioral_sim(client, microsim_response, pe_reform, start_year=START_YEA
     # Do the partial equilibrium job submission
     response = client.post(dynamic_behavior, pe_reform)
     assert response.status_code == 302
-
     print(response)
-    assert response.url[:-2].endswith("processing/")
 
-    #Check that we are not done processing
-    not_ready_page = client.get(response.url)
-    not_ready_page.status_code == 200
-
-    #Check should get a redirect this time
-    response = client.get(response.url)
-    assert response.status_code == 302
+    # The results page will now succeed
+    next_response = client.get(response.url)
+    assert next_response.status_code == 200
     assert response.url[:-2].endswith("behavior_results/")
     return response
 
@@ -80,20 +74,13 @@ def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_Y
     # Do the macro job submission
     response = client.post(dynamic_egdp, egdp_reform)
     assert response.status_code == 302
-
     print(response)
-    assert response.url[:-2].endswith("macro_processing/")
 
-    #Check that we are not done processing
-    not_ready_page = client.get(response.url)
-    not_ready_page.status_code == 200
-
-    #Check should get a redirect this time
+    # The results page will now succeed
     next_response = client.get(response.url)
-    assert next_response.status_code == 302
-    assert next_response.url[:-2].endswith("macro_results/")
-    return next_response
-
+    assert next_response.status_code == 200
+    assert response.url[:-2].endswith("macro_results/")
+    return response
 
 
 def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
