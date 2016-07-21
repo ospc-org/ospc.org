@@ -1,0 +1,49 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}itemized-deductions{% endblock %}
+{% block input_section_title %}Itemized Deductions{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Itemized Deductions</h1>
+  {% flatblock "taxbrain_itemized_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Medical Deduction</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_Medical_frt %}
+
+<h2>State and Local Taxes</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_StateLocalTax_HC %}
+
+<h2>Real Estate Taxes Deduction Haircut</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_RealEstate_HC %}
+
+<h2>Casualty</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_Casualty_frt %}
+
+<h2>Miscellaneous</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_Miscellaneous_frt %}
+
+<h2>Charity</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_Charity_crt_all %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_Charity_crt_noncash %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_Charity_frt %}
+
+<h2>Itemized Deduction Limitation</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_ps %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_prt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_crt %}
+
+<h2>Surtax on Itemized Deduction Benefits above an AGI Threshold</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_BenefitSurtax_trt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_BenefitSurtax_crt %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.ID_BenefitSurtax_Switch %}
+
+{% endblock %}
+
+{% block next_section_shortname %}regular-taxes{% endblock %}
+

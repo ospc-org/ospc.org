@@ -1,0 +1,25 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}standard-deduction{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Standard Deduction</h1>
+  {% flatblock "taxbrain_standarddeduction_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.STD %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.STD_Aged %}
+
+
+{% endblock %}
+
+{% block next_section_shortname %}itemized-deductions{% endblock %}
+
+
+
+

@@ -1,0 +1,119 @@
+<div class="parameter-block">
+  <div class="parameter-block-header">
+    <h3>Itemized Deductions</h3>
+    <a href="#">Edit</a>
+  </div>
+  <div class="parameter-block-content">
+    <table class="table table-params">
+      <thead>
+        <tr>
+          <th>Medical Deduction</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Floor as a % of Income</th>
+          <td>0.075</td>
+          <td>{{ locals.inputs.medical_floor }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>State and Local Income or Sales Tax</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Haircut</th>
+          <td>1</td>
+          <td>{{ locals.inputs.state_haircut }}</td>
+        </tr>
+        <tr>
+          <th>Limit</th>
+          <td>1</td>
+          <td>{{ locals.inputs.state_limit }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>Casualty</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Floor as a % of Income</th>
+          <td>0.1</td>
+          <td>{{ locals.inputs.casualty_floor }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>Miscellaneous</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Floor as a % of Income</th>
+          <td>0.02</td>
+          <td>{{ locals.inputs.misc_floor }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>Charity</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Ceiling for assets as % of AGI</th>
+          <td>0.3</td>
+          <td>{{ locals.inputs.charity_ceiling_assets }}</td>
+        </tr>
+        <tr>
+          <th>Ceiling for cash as % of AGI</th>
+          <td>0.5</td>
+          <td>{{ locals.inputs.charity_ceiling_cash }}</td>
+        </tr>
+      </tbody>
+
+      <thead>
+        <tr>
+          <th>Itemized Deduction Limitation</th>
+          <th>Default</th>
+          <th>Edited</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th>Phaseout Threshold</th>
+          <td>6</td>
+          <td>{{ locals.inputs.item_phase_out_threshold }}</td>
+        </tr>
+        <tr>
+          <th>Phaseout Rate</th>
+          <td>0.03</td>
+          <td>{{ locals.inputs.item_phase_out_rate }}</td>
+        </tr>
+        <tr>
+          <th>Max % Forfeited</th>
+          <td>0.08</td>
+          <td>{{ locals.inputs.max_perc_forfeited }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
