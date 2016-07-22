@@ -8,7 +8,7 @@ from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       default_taxcalc_data, expand_list, propagate_user_list,
                       convert_val)
 import taxcalc
-                      
+
 
 def bool_like(x):
     b = True if x == 'True' or x == True else False
@@ -96,7 +96,8 @@ class PersonalExemptionForm(ModelForm):
                 all_defaults.append((field.id, field.default_value))
 
         for _id, default in all_defaults:
-            self._meta.widgets[_id].attrs['placeholder'] = default
+            if hasattr(self._meta.widgets[_id], 'attrs'):
+                self._meta.widgets[_id].attrs['placeholder'] = default
 
         # If a stored instance is passed,
         # set CPI flags based on the values in this instance
@@ -106,7 +107,6 @@ class PersonalExemptionForm(ModelForm):
             for flag in cpi_flags:
                 if getattr(instance, flag) is not None and flag in self._meta.widgets:
                     self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
-
         super(PersonalExemptionForm, self).__init__(*args, **kwargs)
 
     def discover_cpi_flag(self, param, user_values):
@@ -149,7 +149,7 @@ class PersonalExemptionForm(ModelForm):
                  'comp_data': a sequence of values associated with param
                  'epx_col_values': a (possibly) expanded set of column values
                                    for comparison against comp_data
-            
+
         """
 
         len_param_values = len(param_values)
@@ -344,9 +344,12 @@ class PersonalExemptionForm(ModelForm):
                 if param.coming_soon:
                     attrs['disabled'] = True
 
-                if param.tc_id == '_ID_BenefitSurtax_Switch':
-                    checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
-                    widgets[field.id] = checkbox
+                #if '_tax_' in param.tc_id or '_exp_' in param.tc_id:
+                 #   item = forms.BooleanField(required=False)
+                  #  widgets[field.id] = item
+                if '_Switch' in param.tc_id:
+                    item = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                    widgets[field.id] = item
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
 

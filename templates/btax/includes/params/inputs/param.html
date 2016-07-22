@@ -12,21 +12,15 @@
   <div class="col-xs-12">
     <label>
       {{ param.name }}
-      {% include 'taxbrain/includes/params/tooltip.html' with text=param.info %}
+      {% include 'btax/includes/params/tooltip.html' with text=param.info %}
     </label>
-
-    {% if param.inflatable %}
-      {% with form|dict_get:param.cpi_field.id as cpi_field %}
-        {% include 'taxbrain/includes/params/cpi_button.html' with cpi=cpi_field %}
-      {% endwith %}
-    {% endif %}
   </div>
 </div>
 <div class="row has-statuses">
 
   {% for field in param.col_fields %}
     <div class="{{ param|col_input_class }}">
-      {% include 'taxbrain/includes/params/inputs/field.html' with field=field %}
+      {% include 'btax/includes/params/inputs/field.html' with field=field %}
     </div>
   {% endfor %}
 

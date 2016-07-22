@@ -1,4 +1,4 @@
-{% extends 'taxbrain/input_base.html' %}
+{% extends 'btax/input_base.html' %}
 {% load staticfiles %}
 {% load flatblocks %}
 {% block style %}
@@ -22,7 +22,7 @@
 {% endblock %}
 {% block content %}
 <div class="wrapper">
-  {% include 'taxbrain/header.html' %}
+  {% include 'btax/header.html' %}
   <div class="result-header">
     <div class="result-header-control">
       <h1>{% flatblock "taxbrain_results_header" %}</h1>
@@ -34,7 +34,7 @@
     <div class="result-table">
       <div class="result-table-controls">
         {% if is_micro %}
-        <a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
+        <a href="/btax/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
         {% if is_behavior %}
         <a href="/dynamic/behavioral/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>

@@ -36,7 +36,10 @@ from djqscsv import render_to_csv_response
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool)
+                      is_wildcard, convert_val, make_bool,
+                      BTAX_BITR, BTAX_DEPREC,
+                      BTAX_OTHER, BTAX_ECON,
+                      group_args_to_btax_depr)
 from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
@@ -56,7 +59,7 @@ JOB_PROC_TIME_IN_SECONDS = 30
 def benefit_surtax_fixup(request, reform, model):
     """
     Take the incoming POST, the user reform, and the TaxSaveInputs
-    model and fixup the switches _0, ..., _6 to one array of 
+    model and fixup the switches _0, ..., _6 to one array of
     bools. Also set the model values correctly based on incoming
     POST
     """
@@ -207,21 +210,24 @@ def personal_results(request):
                " will be accepted if submitted again from this page.")
         form_personal_exemp.add_error(None, msg)
         has_errors = True
-
+    asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
     init_context = {
         'form': form_personal_exemp,
         'params': taxcalc_default_params,
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
         'start_year': start_year,
-        'has_errors': has_errors
+        'has_errors': has_errors,
+        'asset_yr_str': asset_yr_str,
+        'depr_argument_groups': group_args_to_btax_depr(taxcalc_default_params, asset_yr_str)
     }
 
 
     if no_inputs:
         form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
-
-    return render(request, 'taxbrain/input_form.html', init_context)
+    #from pprint import pformat
+    #raise ValueError(str((pformat(vars(init_context['form'])), pformat(init_context['params']))))
+    return render(request, 'btax/input_form.html', init_context)
 
 
 def edit_personal_results(request, pk):
@@ -252,7 +258,7 @@ def edit_personal_results(request, pk):
 
     }
 
-    return render(request, 'taxbrain/input_form.html', init_context)
+    return render(request, 'btax/input_form.html', init_context)
 
 
 def output_detail(request, pk):
@@ -300,7 +306,7 @@ def output_detail(request, pk):
             'is_micro': True
         }
 
-        return render(request, 'taxbrain/results.html', context)
+        return render(request, 'btax/results.html', context)
 
     else:
 
@@ -315,7 +321,7 @@ def output_detail(request, pk):
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
         except JobFailError as jfe:
             print jfe
-            return render_to_response('taxbrain/failed.html')
+            return render_to_response('btax/failed.html')
 
         if all(jobs_ready):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
@@ -344,7 +350,7 @@ def output_detail(request, pk):
 
             else:
                 print "rendering not ready yet"
-                return render_to_response('taxbrain/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
+                return render_to_response('btax/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
 
 
 @permission_required('taxbrain.view_inputs')

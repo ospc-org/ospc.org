@@ -1,0 +1,64 @@
+{% load inputs %}
+{% load utility %}
+
+<div class="row has-statuses">
+
+
+  <div class="col-xs-12">
+    <label>
+      {{ label1 }}
+      {% include 'btax/includes/params/tooltip.html' with text=label1 %}
+    </label>
+    <form action="">
+    <div class="row">
+      <div class="col-xs-1">
+         <input type="radio" name="{{ radio_group_name }}" value="{{ field1.name }}" {% if field1.value %} checked {% endif %} >
+      </div>
+      <div class="col-xs-11">
+        {% for field in param1.col_fields %}
+            <div class="{{ param1|col_input_class }}">
+            {% include 'btax/includes/params/inputs/field.html' with field=field %}
+            </div>
+        {% endfor %}
+      </div>
+    </div>
+    <label>
+    {{ label2 }}
+    {% include 'btax/includes/params/tooltip.html' with text=label2 %}
+    </label>
+    <div class="row">
+      <div class="col-xs-1">
+         <input type="radio" name="{{ radio_group_name }}" value="{{ field2.name }}" {% if field2.value %} checked {% endif %}>
+      </div>
+      <div class="col-xs-11">
+        {% for field in param2.col_fields %}
+            <div class="{{ param2|col_input_class }}">
+            {% include 'btax/includes/params/inputs/field.html' with field=field %}
+            </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-1">
+         <input type="checkbox" name="{{ field3_cb }}" value="{{ field3.name }}" {% if field3.value %} checked {% endif %}>
+      </div>
+      {% for field in param3.col_fields %}
+          <div class="{{ param3|col_input_class }}">
+            {% include 'btax/includes/params/inputs/field.html' with field=field %}
+          </div>
+      {% endfor %}
+    </div>
+    <div class="row">
+      <div class="col-xs-1">
+         <input type="checkbox" name="{{ field4_cb }}" value="{{ field4.name }}" {% if field4.value %} checked {% endif %}>
+      </div>
+      {% for field in param4.col_fields %}
+              <div class="{{ param4|col_input_class }}">
+              {% include 'btax/includes/params/inputs/field.html' with field=field %}
+              </div>
+      {% endfor %}
+
+      </div>
+    </form>
+  </div>
+</div>

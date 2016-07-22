@@ -1,4 +1,4 @@
-{% extends 'taxbrain/input_base.html' %}
+{% extends 'btax/input_base.html' %}
 
 {% load staticfiles %}
 
@@ -20,7 +20,7 @@
         <div class="taxbrain-hero-block">
           <div class="logo">
             <h2 class="sr-only">TaxBrain</h2>
-            <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+            <img src="{% static 'images/btax/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
           </div>
           {% flatblock "taxbrain_subheader" %}
           <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
@@ -43,7 +43,7 @@
         </div>
       </section>
     </div>
-    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}">
+    <form class="inputs-form" method="post" action="/btax/?start_year={{start_year}}">
       {% csrf_token %}
       <input type="hidden" name="has_errors" value="{{ has_errors }}" />
       <div class="container">
@@ -63,19 +63,10 @@
               </div>
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
-                <li><a href="#payroll-taxes">Payroll Taxes</a></li>
-                <li><a href="#social-medicare">Social Security Taxability</a></li>
-                <li><a href="#adjustments">Adjustments</a></li>
-                <li><a href="#exemptions">Exemptions</a></li>
-                <li><a href="#standard-deduction">Standard Deduction</a></li>
-                <li><a href="#personal-credit">Personal Refundable Credit</a></li>
-                <li><a href="#itemized-deductions">Itemized Deductions</a></li>
-                <li><a href="#regular-taxes">Regular Taxes</a></li>
-                <li><a href="#amt">Alternative Minimum Tax</a></li>
-                <li><a href="#nonrefundable-credits">Nonrefundable Credits</a></li>
-                <li><a href="#other-taxes">Other Taxes</a></li>
-                <li><a href="#refundable-credits">Refundable Credits</a></li>
-                <li><a href="#growth">Growth Assumptions</a></li>
+                <li><a href="#taxes">Business Income Tax Rates</a></li>
+                <li><a href="#depreciation">Depreciation</a></li>
+                <li><a href="#other">Other</a></li>
+                <li><a href="#macro-econ">Macroeconomic variables</a></li>
               </ul>
               <div class="sidebar-button">
                 <a href="#" ></a>
@@ -111,6 +102,7 @@
                   {% flatblock "taxbrain_get_started_blurb" %}
                   <div>
                     You are looking at default parameters for {{start_year}}.
+
                     <!--
                     <div class="dropdown dropdown-inline">
                       <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
@@ -126,19 +118,11 @@
                 </div>
               </div>
 
-              {% include 'taxbrain/includes/params/inputs/payroll.html' %}
-              {% include 'taxbrain/includes/params/inputs/soc.html' %}
-              {% include 'taxbrain/includes/params/inputs/adjust.html' %}
-              {% include 'taxbrain/includes/params/inputs/personal_exemp.html' %}
-              {% include 'taxbrain/includes/params/inputs/standard_ded.html' %}
-              {% include 'taxbrain/includes/params/inputs/personal_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/itemize_ded.html' %}
-              {% include 'taxbrain/includes/params/inputs/regular_taxes.html' %}
-              {% include 'taxbrain/includes/params/inputs/amt.html' %}
-              {% include 'taxbrain/includes/params/inputs/nonrefundable_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/other_taxes.html' %}
-              {% include 'taxbrain/includes/params/inputs/refundable_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/growth.html' %}
+
+              {% include 'btax/includes/params/inputs/taxes.html' %}
+              {% include 'btax/includes/params/inputs/depreciation.html' %}
+              {% include 'btax/includes/params/inputs/other.html' %}
+              {% include 'btax/includes/params/inputs/macro_econ.html' %}
             </div> <!-- main -->
           </div>
         </div>

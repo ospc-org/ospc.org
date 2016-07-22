@@ -1,0 +1,27 @@
+{% extends 'btax/input_form_section.html' %}
+
+{% block input_section_shortname %}taxes{% endblock %}
+{% block input_section_title %}Business Income Tax Rates{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Business Income Tax Rates</h1>
+  {% flatblock "taxbrain_payroll_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Top corporate rate</h2>
+{% include 'btax/includes/params/inputs/param.html' with param=params.btax_bitr_corp %}
+
+<h2>Tax pass-throughs at entity level</h2>
+{% include 'btax/includes/params/inputs/param.html' with param=params.btax_bitr_entity_Switch %}
+
+<h2>Rate on pass-throughs</h2>
+{% include 'btax/includes/params/inputs/param.html' with param=params.btax_bitr_pass%}
+
+{% endblock %}
+
+{% block next_section_shortname %}depreciation{% endblock %}

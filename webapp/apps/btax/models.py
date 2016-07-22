@@ -84,8 +84,71 @@ class TaxSaveInputs(models.Model):
     _0 = 0 Kids, _1 = 1 Kid, _2 = 2 Kids, & _3 = 3+ Kids
     """
 
+    btax_bitr_corp = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_bitr_entity_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_bitr_pass = CommaSeparatedField(default=None, blank=True, null=True)
+
+    btax_depr_3yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_5yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_7yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_10yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_15yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_20yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_25yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_27_5yr = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_depr_39yr = CommaSeparatedField(default=None, blank=True, null=True)
+
+
+    btax_depr_3yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_5yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_7yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_10yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_15yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_20yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_25yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_27_5yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_39yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+
+    btax_depr_3yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_5yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_7yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_10yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_15yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_20yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_25yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_27_5yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_39yr_ads_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+
+    btax_depr_3yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_5yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_7yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_10yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_15yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_20yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_25yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_27_5yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_39yr_exp_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+
+    btax_depr_3yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_5yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_7yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_10yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_15yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_20yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_25yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_27_5yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_39yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+
+
+    btax_other_hair = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_other_corpeq = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_other_proptx = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_other_invest = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_econ_nomint = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_econ_inflat = CommaSeparatedField(default=None, null=True, blank=True)
+
     # Parameters used for Social Security.
-    FICA_ss_trt = CommaSeparatedField(default=None, null=True, blank=True)
+    '''FICA_ss_trt = CommaSeparatedField(default=None, null=True, blank=True)
     FICA_mc_trt = CommaSeparatedField(default=None, null=True, blank=True)
     SS_Income_c = CommaSeparatedField(default=None, null=True, blank=True)
     SS_Income_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
@@ -327,7 +390,7 @@ class TaxSaveInputs(models.Model):
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
-
+    '''
     # Inflation adjustments
     inflation = models.FloatField(default=None, blank=True, null=True,
         validators=[MinValueValidator(0.000), MaxValueValidator(1.000)])
