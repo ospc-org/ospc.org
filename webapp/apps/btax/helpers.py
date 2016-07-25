@@ -29,7 +29,7 @@ SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
 
 BTAX_BITR = ['btax_bitr_corp', 'btax_bitr_pass',
                         'btax_bitr_entity_Switch']
-BTAX_DEPREC = ['btax_depr_3yr', 'btax_depr_5yr',
+BTAX_DEPREC = ['btax_depr_allyr', 'btax_depr_3yr', 'btax_depr_5yr',
                'btax_depr_7yr', 'btax_depr_10yr',
                'btax_depr_15yr','btax_depr_20yr', 'btax_depr_25yr',
                'btax_depr_27_5yr', 'btax_depr_39yr']
@@ -727,6 +727,7 @@ def default_policy(first_budget_year):
     for k in BTAX_DEPREC:
         fields = ['{}_{}_Switch'.format(k, tag)
                      for tag in ('gds','ads', 'exp', 'tax')]
+
         for field in fields:
             param = TaxCalcParam(field,
                                  {'col_label': [field],
@@ -745,7 +746,7 @@ def default_policy(first_budget_year):
 def group_args_to_btax_depr(taxcalc_default_params, asset_yr_str):
     depr_field_order = ('gds', 'ads', 'exp', 'tax')
     depr_argument_groups = []
-    for yr in asset_yr_str:
+    for yr in ['all'] + asset_yr_str:
         gds_id = 'btax_depr_{}yr_gds_Switch'.format(yr)
         ads_id = 'btax_depr_{}yr_ads_Switch'.format(yr)
         exp_id = 'btax_depr_{}yr_exp_Switch'.format(yr)
@@ -753,6 +754,19 @@ def group_args_to_btax_depr(taxcalc_default_params, asset_yr_str):
         radio_group_name = 'btax_depr_gds_{}yr_ads'.format(yr)
         field3_cb = 'btax_depr__{}yr_exp'.format(yr)
         field4_cb = 'btax_depr_{}yr_tax'.format(yr)
+
+        if yr == 'all':
+            pretty = "Check all asset years"
+            is_check_all = True
+            label = ''
+            td_style_class = 'table-check-all-item'
+            tr_style_class = 'tr-check-all'
+        else:
+            td_style_class = ''
+            is_check_all = False
+            label = ''
+            tr_style_class = ''
+            pretty = '{}-year'.format(yr.replace('_', '.'))
         depr_argument_groups.append(
             dict(param1=taxcalc_default_params[gds_id],
                  field1=gds_id,
@@ -764,9 +778,14 @@ def group_args_to_btax_depr(taxcalc_default_params, asset_yr_str):
                  field4=tax_id,
                  radio_group_name=radio_group_name,
                  asset_yr_str=yr,
-                 pretty_asset_yr_str=yr.replace('_', '.'),
+                 tr_style_class=tr_style_class,
+                 pretty_asset_yr_str=pretty,
                  field3_cb=field3_cb,
-                 field4_cb=field4_cb)
+                 field4_cb=field4_cb,
+                 is_check_all=is_check_all,
+                 label=label,
+                 td_style_class="table-check-all-item" if yr == 'all' else '')
+
             )
     return depr_argument_groups
 

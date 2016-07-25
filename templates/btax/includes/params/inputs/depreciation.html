@@ -1,3 +1,4 @@
+
 {% extends 'btax/input_form_section.html' %}
 
 {% block input_section_shortname %}depreciation{% endblock %}
@@ -11,15 +12,34 @@
   {% block section_warnings %}
   {% endblock %}
 </div>
-
+<table class="table-bordered table-striped table-check-all">
+<th>
+<td>
+    Asset year life
+</td>
+<td>
+    GDS
+</td>
+<td>
+    ADS
+</td>
+<td>
+    Full expensing?
+</td>
+<td>
+    Tax=economic?
+</td>
+</th>
 {% for args in depr_argument_groups %}
-  <h2>{{ args.pretty_asset_yr_str }}-year asset life</h2>
-  {% include 'btax/includes/params/inputs/gds_ads.html' with param1=args.param1 field1=args.field1 param2=args.param2 field2=args.field2 param3=args.param3 field3=args.field3 param4=args.param4 field4=args.field4 radio_group_name=args.radio_group_name asset_yr_str=args.asset_yr_str field3_cb=args.fields3_cb field4_cb=args.field4_cb %}
+  {% include 'btax/includes/params/inputs/gds_ads.html' with param1=args.param1 field1=args.field1 param2=args.param2 field2=args.field2 param3=args.param3 field3=args.field3 param4=args.param4 field4=args.field4 radio_group_name=args.radio_group_name asset_yr_str=args.asset_yr_str field3_cb=args.fields3_cb field4_cb=args.field4_cb pretty_asset_yr_str=args.pretty_asset_yr_str td_style_class=args.td_style_class label=args.label tr_style_class=args.tr_style_class %}
 {% endfor %}
-
+</table>
 {% endblock %}
 
 {% block next_section_shortname %}other{% endblock %}
+
+
+
 
 
 

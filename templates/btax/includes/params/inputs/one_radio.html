@@ -1,0 +1,12 @@
+{% load inputs %}
+{% load utility %}
+
+<div>
+
+  {% for field in param.col_fields %}
+    <label>
+      {{ label }}
+    </label>
+    <input class="{{ td_style_class }}" type="radio" name="{{ radio_group_name }}" value="{{ field.name }}" {% if field1.value %} checked {% endif %} >
+  {% endfor %}
+</div>
