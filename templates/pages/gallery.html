@@ -88,11 +88,11 @@
     success: function(json) {
       for (var i = 0; i < json.length; i++) {
         $('<div class="thumbnail" style="border: none">\
-          <a href="/widgets/' + json[i].plot_id + '" target="_blank">\
+          <a href="/gallery/' + json[i].plot_id + '" target="_blank">\
             <img src="' + json[i].thumbnail_url + '" alt="' + json[i].plot_id + '">\
           </a>\
           <div class="caption">\
-            <a href="/widgets/' + json[i].plot_id + '" target="_blank">\
+            <a href="/gallery/' + json[i].plot_id + '" target="_blank">\
               <h2>' + json[i].plot_name + '</h2>\
             </a>\
             <p>' + json[i].short_description + '</p>\
