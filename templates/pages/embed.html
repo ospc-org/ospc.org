@@ -41,10 +41,21 @@
 
         <div class="row">
             <div class="col-md-1">
-		<img id="logoImg" src="//avatars0.githubusercontent.com/u/8301070?v=3&s=75"></img>
-	    </div>
+		      <img id="logoImg" src="//avatars0.githubusercontent.com/u/8301070?v=3&s=75"></img>
+	         </div>
             <div class="col-md-11">
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra euismod odio, gravida pellentesque urna varius vitae.</p>
+              <p>{{ long_description | safe }} </p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+              <p>Concept by: {{ Concept_credit | safe }} </p>
+            </div>
+            <div class="col-md-4">
+              <p>Development by: {{ Development_credit | safe }} </p>
+            </div>
+            <div class="col-md-4">
+              <p>Open Source Software used: {{ OSS_credit | safe }} </p>
             </div>
         </div>
     </div> <!-- container -->

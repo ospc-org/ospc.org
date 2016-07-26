@@ -152,4 +152,8 @@ def embedpage(request, widget_id):
         'widget_url': widget['plot_url'],
         'email_form': form,
         'include_email': include_email,
+        'long_description': widget['long_description'],
+        'Concept_credit': widget['Concept_credit'],
+        'Development_credit': widget['Development_credit'],
+        'OSS_credit': widget['OSS_credit'],
     })
