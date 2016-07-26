@@ -1,11 +1,13 @@
 {% load inputs %}
 {% load utility %}
 <div>
-  {% for field in param.col_fields %}
-    <label>
-      {{ label }}
-    </label>
-    <input class="{{ td_style_class }}"  type="checkbox" name="{{ checkbox_name }}" value="{{ field.name }}" {% if field1.value %} checked {% endif %} >
-{% endfor %}
+  {% with form|dict_get:field.id as form_field %}
+    {% for field in param.col_fields %}
+      <label>
+        {{ label }}
+      </label>
+      <input class="{{ td_style_class }}"  type="checkbox" name="{{ checkbox_name }}" value="{{ field.name }}" {% if field1.value %} checked {% endif %} >
+    {% endfor %}
+  {% endwith %}
 </div>
 

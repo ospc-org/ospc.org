@@ -33,16 +33,17 @@ from django import forms
 
 from djqscsv import render_to_csv_response
 
-from .forms import PersonalExemptionForm, has_field_errors
-from .models import TaxSaveInputs, OutputUrl
-from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool,
+from .forms import BTaxExemptionForm, has_field_errors
+from .models import BTaxSaveInputs, OutputUrl
+from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC,
                       BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr)
-from .compute import DropqCompute, MockCompute, JobFailError
+from ..taxbrain.helpers import (taxcalc_results_to_tables, format_csv,
+                      is_wildcard, convert_val, make_bool,)
+from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
-dropq_compute = DropqCompute()
+dropq_compute = DropqComputeBtax()
 
 from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -50,15 +51,15 @@ from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                         INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
 
 
-tcversion_info = taxcalc._version.get_versions()
+BTAX_VERSION_INFO = taxcalc._version.get_versions()
 
-taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
+BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full'][:6]])
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 
 def benefit_surtax_fixup(request, reform, model):
     """
-    Take the incoming POST, the user reform, and the TaxSaveInputs
+    Take the incoming POST, the user reform, and the BTaxSaveInputs
     model and fixup the switches _0, ..., _6 to one array of
     bools. Also set the model values correctly based on incoming
     POST
@@ -112,7 +113,7 @@ def personal_results(request):
         start_year = request.REQUEST['start_year']
         fields = dict(request.REQUEST)
         fields['first_year'] = fields['start_year']
-        personal_inputs = PersonalExemptionForm(start_year, fields)
+        personal_inputs = BTaxExemptionForm(start_year, fields)
 
         # If an attempt is made to post data we don't accept
         # raise a 400
@@ -141,7 +142,7 @@ def personal_results(request):
                 for attr in stored_errors:
                     setattr(model, attr, request.POST[attr])
 
-            # prepare taxcalc params from TaxSaveInputs model
+            # prepare taxcalc params from BTaxSaveInputs model
             curr_dict = dict(model.__dict__)
             growth_fixup(curr_dict)
 
@@ -179,7 +180,7 @@ def personal_results(request):
                 if unique_url.taxcalc_vers != None:
                     pass
                 else:
-                    unique_url.taxcalc_vers = taxcalc_version
+                    unique_url.taxcalc_vers = BTAX_VERSION
 
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
@@ -200,9 +201,9 @@ def personal_results(request):
             start_year = params['start_year'][0]
 
         # Probably a GET request, load a default form
-        form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+        form_personal_exemp = BTaxExemptionForm(first_year=start_year)
 
-    taxcalc_default_params = default_policy(int(start_year))
+    taxcalc_default_params = get_btax_defaults()
 
     has_errors = False
     if has_field_errors(form_personal_exemp):
@@ -214,7 +215,7 @@ def personal_results(request):
     init_context = {
         'form': form_personal_exemp,
         'params': taxcalc_default_params,
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': BTAX_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
@@ -239,20 +240,20 @@ def edit_personal_results(request, pk):
     except:
         raise Http404
 
-    model = TaxSaveInputs.objects.get(pk=url.model_pk)
+    model = BTaxSaveInputs.objects.get(pk=url.model_pk)
     start_year = model.first_year
     #Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = PersonalExemptionForm(first_year=start_year, instance=model)
-    taxcalc_default_params = default_policy(int(start_year))
+    form_personal_exemp = BTaxExemptionForm(first_year=start_year, instance=model)
+    taxcalc_default_params = get_btax_defaults(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,
         'params': taxcalc_default_params,
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': BTAX_VERSION,
         'start_years': START_YEARS,
         'start_year': str(start_year)
 
@@ -298,7 +299,7 @@ def output_detail(request, pk):
         context = {
             'locals':locals(),
             'unique_url':url,
-            'taxcalc_version':taxcalc_version,
+            'taxcalc_version':BTAX_VERSION,
             'tables': json.dumps(tables),
             'created_on': created_on,
             'first_year': first_year,
@@ -393,7 +394,7 @@ def csv_input(request, pk):
                          'medical_inflation', 'medical_years', 'tax_result',
                          'creation_date']
 
-    field_names = [f.name for f in TaxSaveInputs._meta.get_fields(include_parents=False)]
+    field_names = [f.name for f in BTaxSaveInputs._meta.get_fields(include_parents=False)]
     field_names = tuple(filter(filter_names, field_names))
 
     # Create the HttpResponse object with the appropriate CSV header.
@@ -412,7 +413,8 @@ def csv_input(request, pk):
 
     return response
 
-@permission_required('taxbrain.view_inputs')
+@permission_required('taxbrain.view_inputs') # TODO is this decorator wrong
+                                             # for B-Tax? ('taxbrain.view_inputs')
 def pdf_view(request):
     """
     This view creates the pdfs.

@@ -1,19 +1,21 @@
 {% load inputs %}
 {% load utility %}
 <tr class="row has-statuses {{ tr_style_class }}">
-  <td class="{{ td_style_class }}">
+  <td class="{{ td_style_class }} text-center">
     {{ pretty_asset_yr_str }}
   </td>
   <td>
-    {% include 'btax/includes/params/inputs/one_radio.html' with param=param1 radio_group_name=radio_group_name label=label td_style_class=td_style_class %}
+    {% include 'btax/includes/params/inputs/one_radio.html' with param=param1 radio_group_name=radio_group_name label=label td_style_class=td_style_class field=field1 %}
   </td>
   <td>
-    {% include 'btax/includes/params/inputs/one_radio.html' with param=param2 radio_group_name=radio_group_name label=label td_style_class=td_style_class %}
+    {% include 'btax/includes/params/inputs/one_radio.html' with param=param2 radio_group_name=radio_group_name label=label td_style_class=td_style_class field=field2 %}
   </td>
   <td>
-  {% include 'btax/includes/params/inputs/one_checkbox.html' with param=param3 radio_group_name=radio_group_name label=label td_style_class=td_style_class %}
+  {% include 'btax/includes/params/inputs/one_radio.html' with param=param3 radio_group_name=radio_group_name label=label td_style_class=td_style_class field=field3 %}
   </td>
   <td>
-  {% include 'btax/includes/params/inputs/one_checkbox.html' with param=param4 radio_group_name=radio_group_name label=label td_style_class=td_style_class %}
+  {% for field in param4.col_fields %}
+  {% include 'btax/includes/params/inputs/field.html' with field=field %}
+  {% endfor %}
   </td>
 </tr>

@@ -2,91 +2,28 @@ from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
-from .models import TaxSaveInputs
-from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
-                      int_to_nth, is_string, string_to_float_array, check_wildcards,
-                      default_taxcalc_data, expand_list, propagate_user_list,
-                      convert_val)
+from .models import BTaxSaveInputs
+from .helpers import (BTaxField, BTaxParam, get_btax_defaults)
+from ..taxbrain.helpers import (is_number, int_to_nth,
+                                is_string, string_to_float_array,
+                                check_wildcards, expand_list,
+                                propagate_user_list, convert_val)
 import taxcalc
 
-
-def bool_like(x):
-    b = True if x == 'True' or x == True else False
-    return b
-
-def parameter_name(param):
-    if not param.startswith("_"):
-        param = "_" + param
-
-    is_multi_param = any(param.endswith("_" + suffix) for suffix in ("0", "1", "2", "3"))
-    if is_multi_param:
-        return param[:-2]
-    else:
-        return param
-
-def expand_unless_empty(param_values, param_name, param_column_name, form, new_len):
-    ''' Take a list of parameters and, unless the list is empty, fill in any
-    wildcards and/or expand the list to the desired number of years, using
-    the proper inflation rates if necessary
-
-    If the list is empty, return it.
-
-    param_values: list of current values
-    param_name: name of the parameter
-    param_column_name: eg. _II_brk2_1 (names the sub-field)
-    form: The form object that has some data for the calculation
-    new_len: the new desired length of the return list
-
-    Returns: list of length new_len, unless the empty list is passed
-    '''
-
-    if param_values == []:
-        return param_values
-
-    has_wildcards = check_wildcards(param_values)
-    if len(param_values) < new_len or has_wildcards:
-        #Only process wildcards and floats from this point on
-        param_values = [convert_val(x) for x in param_values]
-        # Discover the CPI setting for this parameter
-        cpi_flag = form.discover_cpi_flag(param_name, form.cleaned_data)
-
-        default_data = form._default_taxcalc_data[param_name]
-        expnded_defaults = expand_list(default_data, new_len)
-
-        is_multi_param = any(param_column_name.endswith("_" + suffix) for suffix in ("0", "1", "2", "3"))
-        if is_multi_param:
-            idx = int(param_column_name[-1])
-        else:
-            idx = -1
-
-        param_values = propagate_user_list(param_values,
-                                            name=param_name,
-                                            defaults=expnded_defaults,
-                                            cpi=cpi_flag,
-                                            first_budget_year=form._first_year,
-                                            multi_param_idx=idx)
-
-        param_values = [float(x) for x in param_values]
-
-    return param_values
+from ..taxbrain.forms import (has_field_errors,
+                              bool_like,
+                              parameter_name)
 
 
+BTAX_DEFAULTS = get_btax_defaults()
 
-TAXCALC_DEFAULTS_2016 = default_policy(2016)
 
-
-class PersonalExemptionForm(ModelForm):
+class BTaxExemptionForm(ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
         self._first_year = int(first_year)
-        self._default_params = default_policy(self._first_year)
+        self._default_params = BTAX_DEFAULTS
 
-        self._default_meta = default_taxcalc_data(taxcalc.policy.Policy,
-                               start_year=self._first_year, metadata=True)
-
-
-        self._default_taxcalc_data = default_taxcalc_data(taxcalc.policy.Policy,
-                                         start_year=self._first_year)
         # Defaults are set in the Meta, but we need to swap
         # those outs here in the init because the user may
         # have chosen a different start year
@@ -99,131 +36,7 @@ class PersonalExemptionForm(ModelForm):
             if hasattr(self._meta.widgets[_id], 'attrs'):
                 self._meta.widgets[_id].attrs['placeholder'] = default
 
-        # If a stored instance is passed,
-        # set CPI flags based on the values in this instance
-        if 'instance' in kwargs:
-            instance = kwargs['instance']
-            cpi_flags = [attr for attr in dir(instance) if attr.endswith('_cpi')]
-            for flag in cpi_flags:
-                if getattr(instance, flag) is not None and flag in self._meta.widgets:
-                    self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
-        super(PersonalExemptionForm, self).__init__(*args, **kwargs)
-
-    def discover_cpi_flag(self, param, user_values):
-        ''' Helper function to discover the CPI setting for this parameter'''
-
-        cpi_flag_from_user = user_values.get(param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get(param[1:] + "_cpi", None)
-
-        if cpi_flag_from_user is None:
-            attrs = self._default_meta[param]
-            cpi_flag = attrs.get('cpi_inflated', False)
-        else:
-            cpi_flag = cpi_flag_from_user
-        return cpi_flag
-
-    def get_comp_data(self, comp_key, param_id, col, param_values):
-        """
-        Get the data necessary for a min/max validation comparison, given:
-            param_id - The webapp-internal TC parameter ID
-            col - The column number for the param
-            comp_key - a key that is either:
-               * a static value
-               * the word 'default' - we should use the field's defaults
-               * the name of another param - we should use that param's
-                 corresponding column field. If values have been submitted for
-                 it, use them. Otherwise use its defaults
-             param_values - either user supplied or default values of the
-                            parameter
-
-        After finding the proper data, expand it to the required length.
-        Either the parameter specified by comp_key, or the parameter referred
-        by param_id may need to be extended and have wildcard entries
-        replaced.
-
-        Returns: dict
-                 'source': text for error reporting
-                 'comp_data': a sequence of values associated with param
-                 'epx_col_values': a (possibly) expanded set of column values
-                                   for comparison against comp_data
-
-        """
-
-        len_param_values = len(param_values)
-        param_name = "_" + param_id
-        param_column_name = param_name + "_" + str(col)
-
-        if is_number(comp_key):
-            source = "the static value"
-            new_len = len_param_values
-            comp_data = [comp_key]
-            len_diff = len_param_values - len(comp_data)
-            # No inflation of static values, just repeat
-            if len_diff > 0:
-                comp_data += [comp_data[-1]] * len_diff
-            col_values = param_values
-
-        elif comp_key == 'default':
-            source = "this field's default"
-            new_len = len_param_values
-            # Grab the default values and expand if necessary
-            base_param = self._default_params[param_id]
-            base_col = base_param.col_fields[col]
-            comp_data = base_col.values
-            len_diff = len_param_values - len(comp_data)
-            if len_diff > 0:
-                new_data = expand_unless_empty(comp_data, param_name,
-                                   param_column_name, self, new_len)
-                comp_data = new_data
-            col_values = param_values
-
-        elif comp_key in self._default_params:
-            # Comparing two parameters against each other, either of
-            # which might be expanded and have wildcards
-            other_param = self._default_params[comp_key]
-            other_col = other_param.col_fields[col]
-            other_values = None
-            other_param_name = parameter_name(other_col.id)
-            other_param_column_name = other_col.id
-            new_len = len_param_values
-
-            if other_col.id in self.cleaned_data:
-                other_values_raw = self.cleaned_data[other_col.id]
-                try:
-                    other_values = string_to_float_array(other_values_raw)
-                    new_len = max(len_param_values, len(other_values))
-                    other_values = expand_unless_empty(other_values, other_param_name,
-                                            other_param_column_name, self,
-                                            new_len)
-
-                except ValueError as ve:
-                    # Assume wildcards here
-                    other_values_list = other_values_raw.split(',')
-                    new_len = max(len_param_values, len(other_values_list))
-                    other_values = expand_unless_empty(other_values_list, other_param_name,
-                                        other_param_column_name, self,
-                                        new_len)
-
-            if other_values:
-                comp_data = other_values
-                source = other_param.name + "'s value"
-            else:
-                other_defaults = other_col.values
-                comp_data = expand_unless_empty(other_defaults, other_param_name,
-                                   other_param_column_name, self, new_len)
-                source = other_param.name + "'s default"
-            col_values = expand_unless_empty(param_values, param_name, param_column_name, self, new_len)
-        else:
-            raise ValueError('Unknown comp keyword "{0}"'.format(comp_key))
-
-        if len(comp_data) < 1:
-            raise ValueError('No comparison data found for kw'.format(comp_key))
-
-        assert len(comp_data) == len(col_values)
-        return {'source': source, 'comp_data': comp_data, 'exp_col_values': col_values}
+        super(BTaxExemptionForm, self).__init__(*args, **kwargs)
 
     def clean(self):
         """
@@ -236,7 +49,7 @@ class PersonalExemptionForm(ModelForm):
         Note that this can be defined both on forms and on the model, but is
         only automatically called on form submissions.
         """
-        self.do_taxcalc_validations()
+        self.do_btax_validations()
         self.add_errors_on_extra_inputs()
 
     def add_errors_on_extra_inputs(self):
@@ -247,7 +60,7 @@ class PersonalExemptionForm(ModelForm):
         for _input in extra_inputs:
             self.add_error(None, "Extra input '{0}' not allowed".format(_input))
 
-    def do_taxcalc_validations(self):
+    def do_btax_validations(self):
         """
         Run the validations specified by Taxcalc's param definitions
 
@@ -264,9 +77,6 @@ class PersonalExemptionForm(ModelForm):
         """
 
         for param_id, param in self._default_params.iteritems():
-            if param.coming_soon or param.hidden:
-                continue
-
             if param.max is None and param.min is None:
                 continue
 
@@ -329,12 +139,12 @@ class PersonalExemptionForm(ModelForm):
                                                    source, mins[i]))
 
     class Meta:
-        model = TaxSaveInputs
+        model = BTaxSaveInputs
         exclude = ['creation_date']
         widgets = {}
         labels = {}
 
-        for param in TAXCALC_DEFAULTS_2016.values():
+        for param in BTAX_DEFAULTS.values():
             for field in param.col_fields:
                 attrs = {
                     'class': 'form-control',
@@ -344,9 +154,6 @@ class PersonalExemptionForm(ModelForm):
                 if param.coming_soon:
                     attrs['disabled'] = True
 
-                #if '_tax_' in param.tc_id or '_exp_' in param.tc_id:
-                 #   item = forms.BooleanField(required=False)
-                  #  widgets[field.id] = item
                 if '_Switch' in param.tc_id:
                     item = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = item
@@ -368,18 +175,3 @@ class PersonalExemptionForm(ModelForm):
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
 
 
-def has_field_errors(form):
-    """
-    This allows us to see if we have field_errors, as opposed to only having
-    form.non_field_errors. I would prefer to put this in a template tag, but
-    getting that working with a conditional statement in a template was very
-    challenging.
-    """
-    if not form.errors:
-        return False
-
-    for field in form:
-        if field.errors:
-            return True
-
-    return False
