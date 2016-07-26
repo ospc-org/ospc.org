@@ -101,7 +101,7 @@ def widgetpage(request, widget_id):
         return check_email(request)
 
     request.get_host()
-    embed_url = os.path.join('http://',request.get_host(), 'widgets', 'embed', widget_id)
+    embed_url = os.path.join('http://',request.get_host(), 'gallery', 'embed', widget_id)
 
     if request.method == 'GET':
         include_email = request.GET.get('includeEmail', EMAIL_DEFAULT) == '1'
