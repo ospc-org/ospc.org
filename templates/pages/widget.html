@@ -46,13 +46,13 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-12">
               <p>Concept by: {{ Concept_credit | safe }} </p>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-12">
               <p>Development by: {{ Development_credit | safe }} </p>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-12">
               <p>Open Source Software used: {{ OSS_credit | safe }} </p>
             </div>
         </div>
@@ -113,11 +113,6 @@
     <div class="container">
       <section class="contact-info">
 	      {% flatblock "reach_out_community_link" %}
-        <ul class="contact-social">
-          <li class="contact-twitter"><a href="#">Post link on Twitter</a></li>
-          <li class="contact-facebook"><a href="#">Share on Facebook</a></li>
-          <li class="contact-linkedin"><a href="#">Discuss on LinkedIn</a></li>
-        </ul>
         <div class="contact-info-break"></div>
         <div class="row">
           <div class="col-sm-5 col-sm-offset-5">
@@ -128,6 +123,5 @@
         </div>
       </section>
     </div>
-    <div class="push"></div>
   </div> <!-- /wrapper -->
 {% endblock %}
