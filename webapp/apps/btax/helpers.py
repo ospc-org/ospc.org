@@ -152,7 +152,7 @@ class BTaxParam(object):
 # Create a list of default policy
 def get_btax_defaults():
 
-    TAXCALC_DEFAULT_PARAMS = {}
+    BTAX_DEFAULTS = {}
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
         param = BTaxParam(k,
                          {'col_label': [''],
@@ -162,25 +162,44 @@ def get_btax_defaults():
                           'notes': 'notes',
                           'irs_ref': 'irs_ref',
                           'cpi_inflated': False})
-        TAXCALC_DEFAULT_PARAMS[param.nice_id] = param
+        BTAX_DEFAULTS[param.nice_id] = param
+        print(k,vars(param), [vars(f) for f in param.col_fields])
     for k in BTAX_DEPREC:
         fields = ['{}_{}_Switch'.format(k, tag)
-                     for tag in ('gds','ads',  'tax')]
-        fields += ['{}_{}'.format(k, 'exp')]
+                     for tag in ('gds', 'ads',  'tax')]
+
 
         for field in fields:
             param = BTaxParam(field,
-                                 {'col_label': [''],
-                                  'value': [True,] ,
+                                 {'col_label': [field],
+                                  'value': [''] ,
                                   'description': 'description',
                                   'long_name': '',
                                   'notes': 'notes' + field,
                                   'name': 'name',
                                   'info': 'info'})
-            TAXCALC_DEFAULT_PARAMS[param.nice_id] = param
-
-
-    return TAXCALC_DEFAULT_PARAMS
+            BTAX_DEFAULTS[param.nice_id] = param
+            print(k,vars(param), [vars(f) for f in param.col_fields])
+        for field in ['{}_{}'.format(k, 'exp')]:
+            param = BTaxParam(field,
+                                 {'col_label': [''],
+                                  'value': [50,] ,
+                                  'description': 'description',
+                                  'long_name': '',
+                                  'notes': 'notes' + field,
+                                  'name': 'name',
+                                  'info': 'info'})
+            print(k,vars(param), [vars(f) for f in param.col_fields])
+            BTAX_DEFAULTS[param.nice_id] = param
+        BTaxParam(k, {'col_label': [''],
+                      'value': [fields[0]],
+                      'description': 'desc',
+                      'long_name': '',
+                      'notes': 'n',
+                      'name': 'name',
+                      'info': 'info',})
+    print(BTAX_DEFAULTS.keys())
+    return BTAX_DEFAULTS
 
 BTAX_DEFAULTS = get_btax_defaults()
 
@@ -193,7 +212,7 @@ def group_args_to_btax_depr(taxcalc_default_params, asset_yr_str):
         ads_id = 'btax_depr_{}yr_ads_Switch'.format(yr)
         tax_id = 'btax_depr_{}yr_tax_Switch'.format(yr)
         exp_id = 'btax_depr_{}yr_exp'.format(yr)
-        radio_group_name = 'btax_depr_gds_{}yr_ads'.format(yr)
+        radio_group_name = 'btax_depr_{}yr'.format(yr)
         field3_cb = 'btax_depr__{}yr_exp'.format(yr)
         field4_cb = 'btax_depr_{}yr_tax'.format(yr)
 

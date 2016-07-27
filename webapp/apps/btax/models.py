@@ -74,8 +74,8 @@ class BTaxSaveInputs(models.Model):
     btax_depr_15yr_tax_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
     btax_depr_20yr_tax_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
     btax_depr_25yr_tax_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_27_5yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
-    btax_depr_39yr_tax_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_depr_27_5yr_tax_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_39yr_tax_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
 
     btax_depr_allyr_exp = CommaSeparatedField(default=None, null=True, blank=True)
     btax_depr_3yr_exp = CommaSeparatedField(default=None, null=True, blank=True)

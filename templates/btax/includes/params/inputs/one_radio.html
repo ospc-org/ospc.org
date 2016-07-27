@@ -7,7 +7,7 @@
       <label>
         {{ label }}
       </label>
-      <input class="{{ td_style_class }}" type="radio" name="{{ radio_group_name }}" value="{{ field.name }}" {% if field.value %} checked {% endif %} >
+      <input id="{{ field.id }}" class="{{ td_style_class }}" type="radio" name="{{ radio_group_name }}" value="{{ form_field.name }}" {% if form_field.value %} checked {% endif %} >
     {% endwith %}
   {% endfor %}
 </div>
