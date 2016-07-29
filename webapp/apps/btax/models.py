@@ -29,9 +29,9 @@ class BTaxSaveInputs(models.Model):
     _0 = 0 Kids, _1 = 1 Kid, _2 = 2 Kids, & _3 = 3+ Kids
     """
 
-    btax_bitr_corp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_bitr_entity_Switch = models.NullBooleanField(default=None, blank=True, null=True)
-    btax_bitr_pass = CommaSeparatedField(default=None, blank=True, null=True)
+    btax_betr_corp = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_betr_entity_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_betr_pass = CommaSeparatedField(default=None, blank=True, null=True)
 
     btax_depr_allyr = CommaSeparatedField(default=None, blank=True, null=True)
     btax_depr_3yr = CommaSeparatedField(default=None, blank=True, null=True)

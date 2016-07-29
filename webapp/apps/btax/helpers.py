@@ -3,6 +3,7 @@ import numbers
 import os
 import pandas as pd
 import dropq
+import json
 import string
 import sys
 import time
@@ -22,7 +23,7 @@ from ..taxbrain.helpers import (make_bool, convert_val,
                                 TaxCalcField)
 
 import btax
-
+from btax.util import read_from_egg
 MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
                 'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
                 'mpl_toolkits.mplot3d', 'pandas']
@@ -30,9 +31,9 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 PYTHON_MAJOR_VERSION = sys.version_info.major
 
-BTAX_BITR = ['btax_bitr_corp',
-             'btax_bitr_pass',
-             'btax_bitr_entity_Switch']
+BTAX_BITR = ['btax_betr_corp',
+             'btax_betr_pass',
+             'btax_betr_entity_Switch']
 BTAX_DEPREC = ['btax_depr_allyr', 'btax_depr_3yr', 'btax_depr_5yr',
                'btax_depr_7yr', 'btax_depr_10yr',
                'btax_depr_15yr','btax_depr_20yr', 'btax_depr_25yr',
@@ -103,23 +104,13 @@ class BTaxParam(object):
         # create col params
         self.col_fields = []
 
-        if len(col_labels) == 1:
-            self.col_fields.append(TaxCalcField(
-                self.nice_id,
-                col_labels[0],
-                values_by_col[0],
-                self,
-                first_budget_year
-            ))
-        else:
-            for col, label in enumerate(col_labels):
-                self.col_fields.append(TaxCalcField(
-                    label,
-                    label,
-                    values_by_col[col],
-                    self,
-                    first_budget_year
-                ))
+        self.col_fields.append(TaxCalcField(
+            self.nice_id,
+            attributes['description'],
+            values_by_col[0],
+            self,
+            first_budget_year
+        ))
 
         # we assume we can CPI inflate if first value isn't a ratio
         first_value = self.col_fields[0].values[0]
@@ -150,55 +141,25 @@ class BTaxParam(object):
                         self.min = self.min[1:]
 
 # Create a list of default policy
-def get_btax_defaults():
 
+def get_btax_defaults():
+    from btax import DEFAULTS
+    defaults = dict(DEFAULTS)
+    for k,v in defaults.items():
+        v['col_label'] = ['']
     BTAX_DEFAULTS = {}
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
-        param = BTaxParam(k,
-                         {'col_label': [''],
-                          'value': [[.986]],
-                          'description': 'description',
-                          'long_name': '',
-                          'notes': 'notes',
-                          'irs_ref': 'irs_ref',
-                          'cpi_inflated': False})
+        param = BTaxParam(k,defaults[k])
         BTAX_DEFAULTS[param.nice_id] = param
-        print(k,vars(param), [vars(f) for f in param.col_fields])
     for k in BTAX_DEPREC:
         fields = ['{}_{}_Switch'.format(k, tag)
                      for tag in ('gds', 'ads',  'tax')]
-
-
         for field in fields:
-            param = BTaxParam(field,
-                                 {'col_label': [field],
-                                  'value': [''] ,
-                                  'description': 'description',
-                                  'long_name': '',
-                                  'notes': 'notes' + field,
-                                  'name': 'name',
-                                  'info': 'info'})
+            param = BTaxParam(field, defaults[field])
             BTAX_DEFAULTS[param.nice_id] = param
-            print(k,vars(param), [vars(f) for f in param.col_fields])
         for field in ['{}_{}'.format(k, 'exp')]:
-            param = BTaxParam(field,
-                                 {'col_label': [''],
-                                  'value': [50,] ,
-                                  'description': 'description',
-                                  'long_name': '',
-                                  'notes': 'notes' + field,
-                                  'name': 'name',
-                                  'info': 'info'})
-            print(k,vars(param), [vars(f) for f in param.col_fields])
+            param = BTaxParam(field, defaults[field])
             BTAX_DEFAULTS[param.nice_id] = param
-        BTaxParam(k, {'col_label': [''],
-                      'value': [fields[0]],
-                      'description': 'desc',
-                      'long_name': '',
-                      'notes': 'n',
-                      'name': 'name',
-                      'info': 'info',})
-    print(BTAX_DEFAULTS.keys())
     return BTAX_DEFAULTS
 
 BTAX_DEFAULTS = get_btax_defaults()

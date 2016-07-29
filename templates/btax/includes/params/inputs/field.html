@@ -4,7 +4,7 @@
 
 <div class="form-group{% if form_field.errors %} has-warning{% endif %}">
 
-  {% if form_field.label %}
+  {% if form_field.label and not skip_label %}
     <label for="{{ form_field.id_for_label }}">
       {{ form_field.label }}
     </label>

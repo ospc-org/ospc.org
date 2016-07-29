@@ -15,7 +15,7 @@
   </td>
   <td>
   {% for field in param4.col_fields %}
-  {% include 'btax/includes/params/inputs/field.html' with field=field %}
+  {% include 'btax/includes/params/inputs/field.html' with field=field skip_label=1 %}
   {% endfor %}
   </td>
 </tr>

@@ -13,14 +13,11 @@
   {% endblock %}
 </div>
 
-<h2>Top corporate rate</h2>
-{% include 'btax/includes/params/inputs/param.html' with param=params.btax_bitr_corp %}
+{% include 'btax/includes/params/inputs/param.html' with param=params.btax_betr_corp %}
 
-<h2>Tax pass-throughs at entity level</h2>
-{% include 'btax/includes/params/inputs/param.html' with param=params.btax_bitr_entity_Switch %}
+{% include 'btax/includes/params/inputs/param.html' with param=params.btax_betr_entity_Switch %}
 
-<h2>Rate on pass-throughs</h2>
-{% include 'btax/includes/params/inputs/param.html' with param=params.btax_bitr_pass%}
+{% include 'btax/includes/params/inputs/param.html' with param=params.btax_betr_pass%}
 
 {% endblock %}
 
