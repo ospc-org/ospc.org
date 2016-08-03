@@ -97,7 +97,6 @@ class TaxBrainViewsTests(TestCase):
         # One more redirect
         response = self.client.get(response.url)
         # Check that we successfully load the page
-        response = self.client.get(response.url)
         self.assertEqual(response.status_code, 200)
 
     def test_taxbrain_failed_job(self):
