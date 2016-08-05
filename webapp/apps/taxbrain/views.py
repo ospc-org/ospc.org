@@ -109,7 +109,15 @@ def personal_results(request):
         has_errors = make_bool(request.POST['has_errors'])
         start_year = request.REQUEST['start_year']
         fields = dict(request.REQUEST)
+        # Assume we do the full calculation unless we find out otherwise
+        do_full_calc = False if fields.get('quick_calc') else True
         fields['first_year'] = fields['start_year']
+        if do_full_calc:
+            if 'full_calc' in fields:
+                del fields['full_calc']
+        else:
+            if 'quick_calc' in fields:
+                del fields['quick_calc']
         personal_inputs = PersonalExemptionForm(start_year, fields)
 
         # If an attempt is made to post data we don't accept
@@ -161,7 +169,11 @@ def personal_results(request):
                 print("BEGIN DROPQ WORK FROM: unknown IP")
 
             # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
+            if do_full_calc:
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
+            else:
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(worker_data, int(start_year))
+
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs

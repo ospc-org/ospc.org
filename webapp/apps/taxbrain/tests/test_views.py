@@ -52,6 +52,37 @@ class TaxBrainViewsTests(TestCase):
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
 
+    def test_taxbrain_quick_calc_post(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
+        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
+                u'ID_BenefitSurtax_Switch_0': [u'True'],
+                u'ID_BenefitSurtax_Switch_3': [u'True'],
+                u'ID_BenefitSurtax_Switch_2': [u'True'],
+                u'ID_BenefitSurtax_Switch_5': [u'True'],
+                u'ID_BenefitSurtax_Switch_4': [u'True'],
+                u'ID_BenefitSurtax_Switch_6': [u'True'],
+                u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123',
+                u'quick_calc': 'Quick Calculation!'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        response = self.client.get(response.url)
+        # Check for good response
+        self.assertEqual(response.status_code, 200)
+        # Check that we only retrieve one year of results
+        self.assertEqual(webapp_views.dropq_compute.count, 1)
+
+
     def test_taxbrain_post_no_behavior_entries(self):
         #Monkey patch to mock out running of compute jobs
         import sys

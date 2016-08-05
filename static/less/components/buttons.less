@@ -75,6 +75,31 @@
   }
 }
 
+// tertiary
+.btn-tertiary {
+  background-color: #2ca2cd;
+  border: 0;
+  border-bottom: 2px solid #00877d;
+
+  &:hover, &:focus {
+    border-color: #00877d;
+    background-color: #00877d;
+    color: white;
+  }
+
+  &:active, &.active {
+    border-color: #00877d;
+    background-color: #00877d;
+    .box-shadow(inset 0 1px 2px rgba(0,0,0,.5));
+  }
+
+  &.disabled, &[disabled], fieldset[disabled] & {
+    .opacity(0.3);
+  }
+}
+
+
+
 // okay
 .btn-okay {
   background-color: #25d5c8;
