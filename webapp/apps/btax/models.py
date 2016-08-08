@@ -11,9 +11,16 @@ from uuidfield import UUIDField
 from jsonfield import JSONField
 import datetime
 
-from ..taxbrain.models import (SeparatedValuesField,
-                               OutputUrl, convert_to_floats,
-                               CommaSeparatedField)
+from ..taxbrain.models import (SeparatedValuesField as _SeparatedValuesField,
+                               CommaSeparatedField as _CommaSeparatedField,
+                               convert_to_floats)
+
+class SeparatedValuesField(_SeparatedValuesField):
+    pass
+
+
+class CommaSeparatedField(_CommaSeparatedField):
+    pass
 
 
 class BTaxSaveInputs(models.Model):
@@ -115,3 +122,21 @@ class BTaxSaveInputs(models.Model):
             ("view_inputs", "Allowed to view Taxbrain."),
         )
 
+
+
+class BTaxOutputUrl(models.Model):
+    """
+    This model creates a unique url for each calculation.
+    """
+    unique_inputs = models.ForeignKey(BTaxSaveInputs, default=None)
+    user = models.ForeignKey(User, null=True, default=None)
+    model_pk = models.IntegerField(default=None, null=True)
+    # Expected Completion DateTime
+    exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    uuid = UUIDField(auto=True, default=None, null=True)
+    btax_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
+    def get_absolute_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        return reverse('btax_output_detail', kwargs=kwargs)

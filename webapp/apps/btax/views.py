@@ -10,7 +10,7 @@ MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
                 'mpl_toolkits.mplot3d', 'pandas']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-
+import btax
 import taxcalc
 import dropq
 import datetime
@@ -34,7 +34,7 @@ from django import forms
 from djqscsv import render_to_csv_response
 
 from .forms import BTaxExemptionForm, has_field_errors
-from .models import BTaxSaveInputs, OutputUrl
+from .models import BTaxSaveInputs, BTaxOutputUrl
 from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC,
                       BTAX_OTHER, BTAX_ECON,
@@ -53,7 +53,7 @@ from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                         INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
 
 
-BTAX_VERSION_INFO = taxcalc._version.get_versions()
+BTAX_VERSION_INFO = btax._version.get_versions()
 
 BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full'][:6]])
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
@@ -77,7 +77,6 @@ def btax_results(request):
         fields = dict(REQUEST)
         fields['first_year'] = fields['start_year']
         btax_inputs = BTaxExemptionForm(start_year, fields)
-
         # If an attempt is made to post data we don't accept
         # raise a 400
         if btax_inputs.non_field_errors():
@@ -134,7 +133,7 @@ def btax_results(request):
                 model.job_ids = job_ids
                 model.first_year = int(start_year)
                 model.save()
-                unique_url = OutputUrl()
+                unique_url = BTaxOutputUrl()
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
                     unique_url.user = current_user
@@ -195,7 +194,7 @@ def edit_btax_results(request, pk):
     This view handles the editing of previously entered inputs
     """
     try:
-        url = OutputUrl.objects.get(pk=pk)
+        url = BTaxOutputUrl.objects.get(pk=pk)
     except:
         raise Http404
 
@@ -230,7 +229,7 @@ def output_detail(request, pk):
     """
 
     try:
-        url = OutputUrl.objects.get(pk=pk)
+        url = BTaxOutputUrl.objects.get(pk=pk)
     except:
         raise Http404
 
@@ -313,10 +312,10 @@ def output_detail(request, pk):
                 return render_to_response('btax/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
 
 
-@permission_required('taxbrain.view_inputs')
+@permission_required('btax.view_inputs')
 def csv_output(request, pk):
     try:
-        url = OutputUrl.objects.get(pk=pk)
+        url = BTaxOutputUrl.objects.get(pk=pk)
     except:
         raise Http404
 
@@ -337,10 +336,10 @@ def csv_output(request, pk):
 
     return response
 
-@permission_required('taxbrain.view_inputs')
+@permission_required('btax.view_inputs')
 def csv_input(request, pk):
     try:
-        url = OutputUrl.objects.get(pk=pk)
+        url = BTaxOutputUrl.objects.get(pk=pk)
     except:
         raise Http404
 
@@ -372,8 +371,7 @@ def csv_input(request, pk):
 
     return response
 
-@permission_required('taxbrain.view_inputs') # TODO is this decorator wrong
-                                             # for B-Tax? ('taxbrain.view_inputs')
+@permission_required('btax.view_inputs')
 def pdf_view(request):
     """
     This view creates the pdfs.
