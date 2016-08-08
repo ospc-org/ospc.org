@@ -26,3 +26,30 @@ $.each(asset_yr_str, function(index, value){
     }
   });
 });
+
+$('#start-year-select').change(function() {
+  $('#current-year-link').attr('href', '/btax/?start_year=' + $(this).val());
+  $('#current-year-alert').removeClass('hidden');
+});
+
+// Form Inputs
+// only allow values to be entered if not equal to default
+// if new values entered, show info about default value
+$('.form-group > input.form-control').blur(function() {
+
+  input = $(this)
+  value = input.val()
+  value_default = input.prop('placeholder');
+  value_changed = (value != '') && (value != value_default);
+  group = input.closest('.form-group')
+
+  //console.log('bluring ' + input  + ' with value ' + value + ' with default ' +
+  //  value_default + ' changed ' + value_changed )
+
+  if (value_changed) {
+    group.addClass('edited');
+  } else {
+    input.val(''); // show placeholder instead of value entered that = default
+    group.removeClass('edited');
+  }
+});

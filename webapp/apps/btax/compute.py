@@ -29,7 +29,10 @@ class JobFailError(Exception):
     pass
 
 class DropqComputeBtax(DropqCompute):
-    pass
+    def package_up_vars(self, user_mods, first_budget_year):
+
+        return {k: v for k, v in user_mods.items()
+                if k.startswith(('btax_', 'start_year'))}
 
 
 class MockComputeBtax(MockCompute):

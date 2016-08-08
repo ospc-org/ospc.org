@@ -28,7 +28,7 @@ class JobFailError(Exception):
     pass
 
 class DropqCompute(object):
-
+    package_up_vars = package_up_vars
     def __init__(self):
         pass
 
@@ -56,7 +56,7 @@ class DropqCompute(object):
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0):
         print "mods is ", mods
-        user_mods = package_up_vars(mods, first_budget_year)
+        user_mods = self.package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
             return False
         print "user_mods is ", user_mods

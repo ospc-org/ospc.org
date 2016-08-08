@@ -40,7 +40,9 @@ from .helpers import (get_btax_defaults,
                       BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr)
 from ..taxbrain.helpers import (taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool,)
+                                is_wildcard, convert_val, make_bool)
+from ..taxbrain.views import (benefit_surtax_fixup,
+                              denormalize, normalize)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
 dropq_compute = DropqComputeBtax()
@@ -57,86 +59,47 @@ BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full']
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 
-def benefit_surtax_fixup(request, reform, model):
-    """
-    Take the incoming POST, the user reform, and the BTaxSaveInputs
-    model and fixup the switches _0, ..., _6 to one array of
-    bools. Also set the model values correctly based on incoming
-    POST
-    """
-    _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
-    values_from_model = [[reform[_id][0] for _id in _ids]]
-    final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
-    reform['ID_BenefitSurtax_Switch'] = final_values
-    for _id, val in zip(_ids, final_values[0]):
-        del reform[_id]
-        setattr(model, _id, unicode(val))
 
-def growth_fixup(mod):
-    if mod['growth_choice']:
-        if mod['growth_choice'] == 'factor_adjustment':
-            del mod['factor_target']
-        if mod['growth_choice'] == 'factor_target':
-            del mod['factor_adjustment']
-    else:
-        if 'factor_adjustment' in mod:
-            del mod['factor_adjustment']
-        if 'factor_target' in mod:
-            del mod['factor_target']
-
-    del mod['growth_choice']
-
-
-def denormalize(x):
-    ans = ["#".join([i[0],i[1]]) for i in x]
-    ans = [str(x) for x in ans]
-    return ans
-
-
-def normalize(x):
-    ans = [i.split('#') for i in x]
-    return ans
-
-
-def personal_results(request):
+def btax_results(request):
     """
     This view handles the input page and calls the function that
     handles the calculation on the inputs.
     """
     no_inputs = False
     start_year = '2016'
+    REQUEST = request.REQUEST
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
         has_errors = make_bool(request.POST['has_errors'])
-        start_year = request.REQUEST['start_year']
-        fields = dict(request.REQUEST)
+        start_year = REQUEST['start_year']
+        fields = dict(REQUEST)
         fields['first_year'] = fields['start_year']
-        personal_inputs = BTaxExemptionForm(start_year, fields)
+        btax_inputs = BTaxExemptionForm(start_year, fields)
 
         # If an attempt is made to post data we don't accept
         # raise a 400
-        if personal_inputs.non_field_errors():
+        if btax_inputs.non_field_errors():
             return HttpResponse("Bad Input!", status=400)
 
         # Accept the POST if the form is valid, or if the form has errors
         # we don't check again so it is OK if the form is invalid the second
         # time
-        if personal_inputs.is_valid() or has_errors:
+        if btax_inputs.is_valid() or has_errors:
             stored_errors = None
-            if has_errors and personal_inputs.errors:
+            if has_errors and btax_inputs.errors:
                 msg = ("Form has validation errors, but allowing the user "
                        "to proceed anyway since we already showed them the "
                        "errors once.")
                 msg2 = "Dropping these errors {}"
-                msg2 = msg2.format(personal_inputs.errors)
+                msg2 = msg2.format(btax_inputs.errors)
                 logging.warn(msg)
                 logging.warn(msg2)
-                stored_errors = dict(personal_inputs._errors)
-                personal_inputs._errors = {}
+                stored_errors = dict(btax_inputs._errors)
+                btax_inputs._errors = {}
 
-            model = personal_inputs.save()
+            model = btax_inputs.save()
             if stored_errors:
                 # Force the entered value on to the model
                 for attr in stored_errors:
@@ -144,7 +107,6 @@ def personal_results(request):
 
             # prepare taxcalc params from BTaxSaveInputs model
             curr_dict = dict(model.__dict__)
-            growth_fixup(curr_dict)
 
             for key, value in curr_dict.items():
                 if type(value) == type(unicode()):
@@ -153,7 +115,6 @@ def personal_results(request):
                     print "missing this: ", key
 
             worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
-            benefit_surtax_fixup(request.REQUEST, worker_data, model)
             # About to begin calculation, log event
             ip = get_real_ip(request)
             if ip is not None:
@@ -167,7 +128,7 @@ def personal_results(request):
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
             if not submitted_ids:
                 no_inputs = True
-                form_personal_exemp = personal_inputs
+                form_btax_input = btax_inputs
             else:
                 job_ids = denormalize(submitted_ids)
                 model.job_ids = job_ids
@@ -193,7 +154,7 @@ def personal_results(request):
 
         else:
             # received POST but invalid results, return to form with errors
-            form_personal_exemp = personal_inputs
+            form_btax_input = btax_inputs
 
     else:
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
@@ -201,37 +162,35 @@ def personal_results(request):
             start_year = params['start_year'][0]
 
         # Probably a GET request, load a default form
-        form_personal_exemp = BTaxExemptionForm(first_year=start_year)
+        form_btax_input = BTaxExemptionForm(first_year=start_year)
 
-    taxcalc_default_params = get_btax_defaults()
+    btax_default_params = get_btax_defaults()
 
     has_errors = False
-    if has_field_errors(form_personal_exemp):
+    if has_field_errors(form_btax_input):
         msg = ("Some fields have errors. Values outside of suggested ranges "
                " will be accepted if submitted again from this page.")
-        form_personal_exemp.add_error(None, msg)
+        form_btax_input.add_error(None, msg)
         has_errors = True
     asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
     init_context = {
-        'form': form_personal_exemp,
-        'params': taxcalc_default_params,
+        'form': form_btax_input,
+        'params': btax_default_params,
         'taxcalc_version': BTAX_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
         'asset_yr_str': asset_yr_str,
-        'depr_argument_groups': group_args_to_btax_depr(taxcalc_default_params, asset_yr_str)
+        'depr_argument_groups': group_args_to_btax_depr(btax_default_params, asset_yr_str)
     }
 
 
     if no_inputs:
-        form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
-    #from pprint import pformat
-    #raise ValueError(str((pformat(vars(init_context['form'])), pformat(init_context['params']))))
+        form_btax_input.add_error(None, "Please specify a tax-law change before submitting.")
     return render(request, 'btax/input_form.html', init_context)
 
 
-def edit_personal_results(request, pk):
+def edit_btax_results(request, pk):
     """
     This view handles the editing of previously entered inputs
     """
@@ -247,12 +206,12 @@ def edit_personal_results(request, pk):
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = BTaxExemptionForm(first_year=start_year, instance=model)
-    taxcalc_default_params = get_btax_defaults(int(start_year))
+    form_btax_input = BTaxExemptionForm(first_year=start_year, instance=model)
+    btax_default_params = get_btax_defaults(int(start_year))
 
     init_context = {
-        'form': form_personal_exemp,
-        'params': taxcalc_default_params,
+        'form': form_btax_input,
+        'params': btax_default_params,
         'taxcalc_version': BTAX_VERSION,
         'start_years': START_YEARS,
         'start_year': str(start_year)
@@ -366,7 +325,7 @@ def csv_output(request, pk):
     now = datetime.datetime.now()
     suffix = "".join(map(str, [now.year, now.month, now.day, now.hour, now.minute,
                        now.second]))
-    filename = "taxbrain_outputs_" + suffix + ".csv"
+    filename = "btax_outputs_" + suffix + ".csv"
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
     results = url.unique_inputs.tax_result
@@ -402,7 +361,7 @@ def csv_input(request, pk):
     now = datetime.datetime.now()
     suffix = "".join(map(str, [now.year, now.month, now.day, now.hour, now.minute,
                        now.second]))
-    filename = "taxbrain_inputs_" + suffix + ".csv"
+    filename = "btax_inputs_" + suffix + ".csv"
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
     inputs = url.unique_inputs
@@ -421,6 +380,6 @@ def pdf_view(request):
     """
     pdf = pdfkit.from_url(request.META['HTTP_REFERER'], False)
     response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="tax_results.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="btax_results.pdf"'
 
     return response

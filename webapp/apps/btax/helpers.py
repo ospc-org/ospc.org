@@ -43,7 +43,7 @@ BTAX_OTHER = ['btax_other_hair', 'btax_other_corpeq',
 BTAX_ECON = ['btax_econ_nomint', 'btax_econ_inflat',]
 
 
-# TODO remove this when btax package
+# TODO remove these 2 lines when btax package
 # has versioneer
 from argparse import Namespace
 btax._version = Namespace(get_versions=lambda: {'version': '0.1', 'full': '0.1'})
@@ -140,7 +140,6 @@ class BTaxParam(object):
                     if self.min[0] == '_':
                         self.min = self.min[1:]
 
-# Create a list of default policy
 
 def get_btax_defaults():
     from btax import DEFAULTS
@@ -165,7 +164,7 @@ def get_btax_defaults():
 BTAX_DEFAULTS = get_btax_defaults()
 
 
-def group_args_to_btax_depr(taxcalc_default_params, asset_yr_str):
+def group_args_to_btax_depr(btax_default_params, asset_yr_str):
     depr_field_order = ('gds', 'ads', 'exp', 'tax')
     depr_argument_groups = []
     for yr in ['all'] + asset_yr_str:
@@ -190,13 +189,13 @@ def group_args_to_btax_depr(taxcalc_default_params, asset_yr_str):
             tr_style_class = ''
             pretty = '{}-year'.format(yr.replace('_', '.'))
         depr_argument_groups.append(
-            dict(param1=taxcalc_default_params[gds_id],
+            dict(param1=btax_default_params[gds_id],
                  field1=gds_id,
-                 param2=taxcalc_default_params[ads_id],
+                 param2=btax_default_params[ads_id],
                  field2=ads_id,
-                 param3=taxcalc_default_params[tax_id],
+                 param3=btax_default_params[tax_id],
                  field3=tax_id,
-                 param4=taxcalc_default_params[exp_id],
+                 param4=btax_default_params[exp_id],
                  field4=exp_id,
                  radio_group_name=radio_group_name,
                  asset_yr_str=yr,
