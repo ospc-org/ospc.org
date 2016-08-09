@@ -39,11 +39,14 @@ from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC,
                       BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr)
-from ..taxbrain.helpers import (taxcalc_results_to_tables, format_csv,
-                                is_wildcard, convert_val, make_bool)
+from ..taxbrain.helpers import (format_csv,
+                                is_wildcard,
+                                convert_val,
+                                make_bool)
 from ..taxbrain.views import (benefit_surtax_fixup,
                               denormalize, normalize)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
+from .helpers import btax_results_to_tables
 
 dropq_compute = DropqComputeBtax()
 
@@ -60,6 +63,14 @@ START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 
 
+def make_bool_gds_ads(form_btax_input):
+    for k, v in vars(form_btax_input).items():
+        if any(token in k for token in ('gds', 'ads', 'tax')):
+            setattr(getattr(form_btax_input, k), 'value', make_bool(v))
+            print vars(getattr(form_btax_input, k))
+    return form_btax_input
+
+
 def btax_results(request):
     """
     This view handles the input page and calls the function that
@@ -69,6 +80,7 @@ def btax_results(request):
     start_year = '2016'
     REQUEST = request.REQUEST
     if request.method=='POST':
+        print 'POST'
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
@@ -77,6 +89,7 @@ def btax_results(request):
         fields = dict(REQUEST)
         fields['first_year'] = fields['start_year']
         btax_inputs = BTaxExemptionForm(start_year, fields)
+        btax_inputs = make_bool_gds_ads(btax_inputs)
         # If an attempt is made to post data we don't accept
         # raise a 400
         if btax_inputs.non_field_errors():
@@ -85,7 +98,9 @@ def btax_results(request):
         # Accept the POST if the form is valid, or if the form has errors
         # we don't check again so it is OK if the form is invalid the second
         # time
+        print vars(btax_inputs), has_errors
         if btax_inputs.is_valid() or has_errors:
+            print 'is valid'
             stored_errors = None
             if has_errors and btax_inputs.errors:
                 msg = ("Form has validation errors, but allowing the user "
@@ -124,7 +139,8 @@ def btax_results(request):
                 print "BEGIN DROPQ WORK FROM: unknown IP"
 
             # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
+            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data)
+            print 'submitted_ids', submitted_ids, max_q_length
             if not submitted_ids:
                 no_inputs = True
                 form_btax_input = btax_inputs
@@ -137,10 +153,10 @@ def btax_results(request):
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
                     unique_url.user = current_user
-                if unique_url.taxcalc_vers != None:
+                if unique_url.btax_vers != None:
                     pass
                 else:
-                    unique_url.taxcalc_vers = BTAX_VERSION
+                    unique_url.btax_vers = BTAX_VERSION
 
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
@@ -149,13 +165,16 @@ def btax_results(request):
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
+                print 'redirect', unique_url
                 return redirect(unique_url)
 
         else:
+            print 'invalid inputs'
             # received POST but invalid results, return to form with errors
             form_btax_input = btax_inputs
 
     else:
+        print 'GET'
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
@@ -172,10 +191,13 @@ def btax_results(request):
         form_btax_input.add_error(None, msg)
         has_errors = True
     asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
+    print vars(form_btax_input)
+    form_btax_input = make_bool_gds_ads(form_btax_input)
     init_context = {
         'form': form_btax_input,
+        'make_bool':  make_bool,
         'params': btax_default_params,
-        'taxcalc_version': BTAX_VERSION,
+        'btax_version': BTAX_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
@@ -211,7 +233,7 @@ def edit_btax_results(request, pk):
     init_context = {
         'form': form_btax_input,
         'params': btax_default_params,
-        'taxcalc_version': BTAX_VERSION,
+        'btax_version': BTAX_VERSION,
         'start_years': START_YEARS,
         'start_year': str(start_year)
 
@@ -238,7 +260,7 @@ def output_detail(request, pk):
         output = url.unique_inputs.tax_result
         first_year = url.unique_inputs.first_year
         created_on = url.unique_inputs.creation_date
-        tables = taxcalc_results_to_tables(output, first_year)
+        tables = btax_results_to_tables(output, first_year)
         tables["tooltips"] = {
             'diagnostic': DIAGNOSTIC_TOOLTIP,
             'difference': DIFFERENCE_TOOLTIP,
@@ -257,7 +279,7 @@ def output_detail(request, pk):
         context = {
             'locals':locals(),
             'unique_url':url,
-            'taxcalc_version':BTAX_VERSION,
+            'btax_version':BTAX_VERSION,
             'tables': json.dumps(tables),
             'created_on': created_on,
             'first_year': first_year,
@@ -284,7 +306,9 @@ def output_detail(request, pk):
 
         if all(jobs_ready):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
+
             model.creation_date = datetime.datetime.now()
+            print 'ready', vars(model), model.tax_result, url
             model.save()
             return redirect(url)
         else:
@@ -292,6 +316,7 @@ def output_detail(request, pk):
                                 zip(jobs_to_check, jobs_ready) if not job_ready]
             jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
+            print 'not ready', jobs_not_ready
             model.save()
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining

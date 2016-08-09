@@ -34,6 +34,10 @@ class DropqComputeBtax(DropqCompute):
         return {k: v for k, v in user_mods.items()
                 if k.startswith(('btax_', 'start_year'))}
 
+    def dropq_get_results(self, job_ids):
+        ans = self._get_results_base(job_ids)
+        return ans
+
 
 class MockComputeBtax(MockCompute):
 

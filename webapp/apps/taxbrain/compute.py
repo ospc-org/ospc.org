@@ -28,7 +28,9 @@ class JobFailError(Exception):
     pass
 
 class DropqCompute(object):
-    package_up_vars = package_up_vars
+
+    package_up_vars = package_up_vars # Override if needed, e.g. btax
+
     def __init__(self):
         pass
 
@@ -46,12 +48,21 @@ class DropqCompute(object):
 
     def submit_dropq_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}/dropq_start_job"
-        return self.submit_calculation(mods, first_budget_year, url_template)
+        self.num_budget_years = NUM_BUDGET_YEARS
+        return self.submit_calculation(mods, first_budget_year, url_template,
+                                       start_budget_year=None)
 
     def submit_elastic_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}/elastic_gdp_start_job"
+        self.num_budget_years = NUM_BUDGET_YEARS
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=1)
+
+    def submit_btax_calculation(self, mods, first_budget_year=2015):
+        url_template = "http://{hn}/btax_start_job"
+        self.num_budget_years = 1
+        return self.submit_calculation(mods, first_budget_year, url_template,
+                                       start_budget_year=0)
 
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0):
@@ -62,15 +73,14 @@ class DropqCompute(object):
         print "user_mods is ", user_mods
         print "submit work"
         user_mods={first_budget_year:user_mods}
-        years = list(range(start_budget_year,NUM_BUDGET_YEARS))
-
+        years = self._get_years(start_budget_year, first_budget_year)
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         dropq_worker_offset = wnc.current_offset
         if dropq_worker_offset > len(DROPQ_WORKERS):
             dropq_worker_offset = 0
-        wnc.current_offset = (dropq_worker_offset + NUM_BUDGET_YEARS) % len(DROPQ_WORKERS)
+        wnc.current_offset = (dropq_worker_offset + self.num_budget_years) % len(DROPQ_WORKERS)
         wnc.save()
-        hostnames = DROPQ_WORKERS[dropq_worker_offset: dropq_worker_offset + NUM_BUDGET_YEARS]
+        hostnames = DROPQ_WORKERS[dropq_worker_offset: dropq_worker_offset + self.num_budget_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
         data = {}
@@ -112,6 +122,13 @@ class DropqCompute(object):
 
         return job_ids, max_queue_length
 
+    def _get_years(self, start_budget_year, first_budget_year):
+        if start_budget_year is not None:
+            return list(range(start_budget_year, self.num_budget_years))
+        # The following is just a dummy year for btax
+        # Btax is not currently running in separate years, I don't think.
+        return [first_budget_year]
+
     def dropq_results_ready(self, job_ids):
         jobs_done = [False] * len(job_ids)
         for idx, id_hostname in enumerate(job_ids):
@@ -129,7 +146,7 @@ class DropqCompute(object):
 
         return jobs_done
 
-    def dropq_get_results(self, job_ids):
+    def _get_results_base(self, job_ids):
         ans = []
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
@@ -142,6 +159,10 @@ class DropqCompute(object):
                     # Got back a bad response. Get the text and re-raise
                     msg = 'PROBLEM WITH RESPONSE. TEXT RECEIVED: {}'
                     raise ValueError(msg)
+        return ans
+
+    def dropq_get_results(self, job_ids):
+        ans = self._get_results_base(job_ids)
 
         mY_dec = {}
         mX_dec = {}

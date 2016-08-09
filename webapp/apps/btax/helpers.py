@@ -173,7 +173,7 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
         tax_id = 'btax_depr_{}yr_tax_Switch'.format(yr)
         exp_id = 'btax_depr_{}yr_exp'.format(yr)
         radio_group_name = 'btax_depr_{}yr'.format(yr)
-        field3_cb = 'btax_depr__{}yr_exp'.format(yr)
+        field3_cb = 'btax_depr_{}yr_exp'.format(yr)
         field4_cb = 'btax_depr_{}yr_tax'.format(yr)
 
         if yr == 'all':
@@ -210,3 +210,72 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
             )
     return depr_argument_groups
 
+def btax_results_to_tables(results, first_budget_year):
+    """
+    Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
+    Return organized and labeled table results for display
+    """
+    row_keys = ['a']
+    row_labels = {'a': 'a label'}
+    col_labels = list(range(1))
+    table_data = {'a': {0: [[0]]}}
+    multi_year_cells = False
+    years = [0]
+    tables = {}
+    col_formats = {0: [1, '$', '2']}
+    for table_id in ('a'):
+        table = {
+            'col_labels': col_labels,
+            'cols': [],
+            'label': 'A',
+            'rows': [],
+            'multi_valued': multi_year_cells
+        }
+
+        for col_key, label in enumerate(col_labels):
+            table['cols'].append({
+                'label': label,
+                'divisor': col_formats[col_key][0],
+                'units': col_formats[col_key][1],
+                'decimals': col_formats[col_key][2],
+            })
+
+        col_count = len(col_labels)
+        for row_key in row_keys:
+            row = {
+                'label': row_labels[row_key],
+                'cells': []
+            }
+
+            for col_key in range(0, col_count):
+                cell = {
+                    'year_values': {},
+                    'format': {
+                        'divisor': table['cols'][col_key]['divisor'],
+                        'decimals': table['cols'][col_key]['decimals'],
+                    }
+                }
+
+                if multi_year_cells:
+                    for yi, year in enumerate(years):
+                        value = table_data["{0}_{1}".format(row_key, yi)][col_key]
+                        if value[-1] == "%":
+                            value = value[:-1]
+                        cell['year_values'][year] = value
+
+                    cell['first_value'] = cell['year_values'][first_budget_year]
+
+                else:
+                    value = table_data[row_key][col_key]
+                    if value[-1] == "%":
+                            value = value[:-1]
+                    cell['value'] = value
+
+                row['cells'].append(cell)
+
+            table['rows'].append(row)
+
+        tables[table_id] = table
+
+    tables['result_years'] = years
+    return tables

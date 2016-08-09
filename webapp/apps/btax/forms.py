@@ -7,7 +7,8 @@ from .helpers import (BTaxField, BTaxParam, get_btax_defaults)
 from ..taxbrain.helpers import (is_number, int_to_nth,
                                 is_string, string_to_float_array,
                                 check_wildcards, expand_list,
-                                propagate_user_list, convert_val)
+                                propagate_user_list, convert_val,
+                                make_bool)
 import taxcalc
 
 from ..taxbrain.forms import (has_field_errors,
@@ -31,7 +32,6 @@ class BTaxExemptionForm(ModelForm):
         for param in self._default_params.values():
             for field in param.col_fields:
                 all_defaults.append((field.id, field.default_value))
-
         for _id, default in all_defaults:
             if hasattr(self._meta.widgets[_id], 'attrs'):
                 self._meta.widgets[_id].attrs['placeholder'] = default
@@ -77,6 +77,8 @@ class BTaxExemptionForm(ModelForm):
         """
 
         for param_id, param in self._default_params.iteritems():
+            if any(token in param_id for token in ('gds', 'ads', 'tax')):
+                param.col_fields[0].values[0] = make_bool(param.col_fields[0].values[0])
             if param.max is None and param.min is None:
                 continue
 
