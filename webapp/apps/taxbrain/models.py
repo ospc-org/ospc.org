@@ -161,6 +161,7 @@ class TaxSaveInputs(models.Model):
 
     # Parameters used for Itemized Deductions.
     ID_Medical_frt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Medical_frt_add4aged = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Casualty_frt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Miscellaneous_frt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Charity_crt_all = CommaSeparatedField(default=None, blank=True, null=True)
