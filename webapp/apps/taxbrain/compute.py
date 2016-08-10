@@ -1,6 +1,6 @@
 import dropq
 import os
-from .helpers import package_up_vars
+from .helpers import package_up_vars as _package_up_vars
 from .models import WorkerNodesCounter
 import json
 import requests
@@ -29,10 +29,14 @@ class JobFailError(Exception):
 
 class DropqCompute(object):
 
-    package_up_vars = package_up_vars # Override if needed, e.g. btax
+
 
     def __init__(self):
         pass
+
+    # Override if needed, e.g. btax
+    def package_up_vars(self, *args, **kwargs):
+        return _package_up_vars(*args, **kwargs)
 
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)

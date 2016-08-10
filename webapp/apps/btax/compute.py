@@ -30,9 +30,12 @@ class JobFailError(Exception):
 
 class DropqComputeBtax(DropqCompute):
     def package_up_vars(self, user_mods, first_budget_year):
-
-        return {k: v for k, v in user_mods.items()
-                if k.startswith(('btax_', 'start_year'))}
+        # TODO - is first_budget_year important here?
+        user_mods = {k: v for k, v in user_mods.iteritems()
+                     if k.startswith(('btax_', 'start_year'))}
+        user_mods = {k: (v[0] if hasattr(v, '__getitem__') else v)
+                     for k, v in user_mods.iteritems()}
+        return user_mods
 
     def dropq_get_results(self, job_ids):
         ans = self._get_results_base(job_ids)

@@ -11,7 +11,7 @@
   <h2 class="col-xs-12">
     <label>
       {{ param.name }}
-      {% include 'btax/includes/params/tooltip.html' with text=param.info %}
+      {% include 'taxbrain/includes/params/tooltip.html' with text=param.info %}
     </label>
   </h2>
 </div>
@@ -19,7 +19,7 @@
 
   {% for field in param.col_fields %}
     <div class="{{ param|col_input_class }}">
-      {% include 'btax/includes/params/inputs/field.html' with field=field %}
+      {% include 'taxbrain/includes/params/inputs/field.html' with field=field %}
     </div>
   {% endfor %}
 

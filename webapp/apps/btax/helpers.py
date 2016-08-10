@@ -215,67 +215,57 @@ def btax_results_to_tables(results, first_budget_year):
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
+    r = results[0]
+    output_by_asset = r['output_by_asset']
+    output_by_industry = r['output_by_industry']
     row_keys = ['a']
     row_labels = {'a': 'a label'}
     col_labels = list(range(1))
     table_data = {'a': {0: [[0]]}}
-    multi_year_cells = False
     years = [0]
     tables = {}
     col_formats = {0: [1, '$', '2']}
-    for table_id in ('a'):
+    for table_id, table_data in zip(('output_by_asset', 'output_by_industry'),
+                                    (output_by_asset, output_by_industry)):
+        col_labels = table_data[0][1:]
+        row_labels = [_[0] for _ in table_data[1:]]
         table = {
             'col_labels': col_labels,
             'cols': [],
-            'label': 'A',
+            'label': table_id,
             'rows': [],
-            'multi_valued': multi_year_cells
         }
 
         for col_key, label in enumerate(col_labels):
             table['cols'].append({
                 'label': label,
-                'divisor': col_formats[col_key][0],
-                'units': col_formats[col_key][1],
-                'decimals': col_formats[col_key][2],
+                'divisor': 1.,
+                'units': '$',
+                'decimals': 2,
             })
 
         col_count = len(col_labels)
-        for row_key in row_keys:
+        for idx, row_label in enumerate(row_labels):
             row = {
-                'label': row_labels[row_key],
+                'label': row_label,
                 'cells': []
             }
 
             for col_key in range(0, col_count):
                 cell = {
-                    'year_values': {},
                     'format': {
-                        'divisor': table['cols'][col_key]['divisor'],
-                        'decimals': table['cols'][col_key]['decimals'],
+                        'divisor': 1.,
+                        'decimals': 2,
                     }
                 }
-
-                if multi_year_cells:
-                    for yi, year in enumerate(years):
-                        value = table_data["{0}_{1}".format(row_key, yi)][col_key]
-                        if value[-1] == "%":
-                            value = value[:-1]
-                        cell['year_values'][year] = value
-
-                    cell['first_value'] = cell['year_values'][first_budget_year]
-
-                else:
-                    value = table_data[row_key][col_key]
-                    if value[-1] == "%":
-                            value = value[:-1]
-                    cell['value'] = value
+                print table_data
+                value = table_data[idx][col_key]
+                cell['value'] = value
 
                 row['cells'].append(cell)
 
             table['rows'].append(row)
 
         tables[table_id] = table
-
-    tables['result_years'] = years
+    tables['result_years'] = [2015]
     return tables

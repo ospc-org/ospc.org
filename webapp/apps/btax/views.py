@@ -44,7 +44,7 @@ from ..taxbrain.helpers import (format_csv,
                                 convert_val,
                                 make_bool)
 from ..taxbrain.views import (benefit_surtax_fixup,
-                              denormalize, normalize)
+                              denormalize, normalize,taxcalc_version as TAXCALC_VERSION)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 from .helpers import btax_results_to_tables
 
@@ -54,7 +54,6 @@ from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                         REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
                         INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
-
 
 BTAX_VERSION_INFO = btax._version.get_versions()
 
@@ -198,6 +197,7 @@ def btax_results(request):
         'make_bool':  make_bool,
         'params': btax_default_params,
         'btax_version': BTAX_VERSION,
+        'taxcalc_version': TAXCALC_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
@@ -234,6 +234,7 @@ def edit_btax_results(request, pk):
         'form': form_btax_input,
         'params': btax_default_params,
         'btax_version': BTAX_VERSION,
+        'taxcalc_version': TAXCALC_VERSION,
         'start_years': START_YEARS,
         'start_year': str(start_year)
 
@@ -275,18 +276,19 @@ def output_detail(request, pk):
         }
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
-
-        context = {
+        context = tables.copy()
+        context.update({
             'locals':locals(),
             'unique_url':url,
             'btax_version':BTAX_VERSION,
+            'taxcalc_version': TAXCALC_VERSION,
             'tables': json.dumps(tables),
             'created_on': created_on,
             'first_year': first_year,
             'is_registered': is_registered,
             'is_micro': True
-        }
-
+        })
+        print 'context', context
         return render(request, 'btax/results.html', context)
 
     else:
