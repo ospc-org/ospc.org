@@ -132,12 +132,9 @@ def default_taxcalc_data(cls, start_year, metadata=False):
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-TAXCALC_COMING_SOON_FIELDS = [
-    '_Dividend_rt1', '_Dividend_thd1',
-    '_Dividend_rt2', '_Dividend_thd2',
-    '_Dividend_rt3', '_Dividend_thd3',
-    '_BE_CG_trn', '_FEI_ec_c'
-    ]
+TAXCALC_COMING_SOON_FIELDS = []
+
+TAXCALC_COMING_SOON_INDEXED_BY_MARS = []
 
 TAXCALC_HIDDEN_FIELDS = [
     '_ACTC_Income_thd',
@@ -147,17 +144,12 @@ TAXCALC_HIDDEN_FIELDS = [
     '_EITC_InvestIncome_c', '_EITC_ps_MarriedJ',
     '_ETC_pe_Single', '_ETC_pe_Married',
     '_KT_c_Age',
-    '_LLC_Expense_c'
-]
-
-TAXCALC_COMING_SOON_INDEXED_BY_MARS = [
-    '_Dividend_thd1','_Dividend_thd2', '_Dividend_thd3'
+    '_LLC_Expense_c', '_FEI_ec_c'
 ]
 
 #
 # Display TaxCalc result data
 #
-
 TAXCALC_RESULTS_START_YEAR = START_YEAR
 TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.TABLE_LABELS
 TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS
