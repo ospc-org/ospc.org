@@ -3,12 +3,14 @@ import csv
 import pdfkit
 import json
 import pytz
+import os
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
 MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
                 'mpl_toolkits.mplot3d', 'pandas']
+ENABLE_QUICK_CALC = bool(os.environ.get('ENABLE_QUICK_CALC', ''))
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 
@@ -112,12 +114,10 @@ def personal_results(request):
         # Assume we do the full calculation unless we find out otherwise
         do_full_calc = False if fields.get('quick_calc') else True
         fields['first_year'] = fields['start_year']
-        if do_full_calc:
-            if 'full_calc' in fields:
-                del fields['full_calc']
-        else:
-            if 'quick_calc' in fields:
-                del fields['quick_calc']
+        if do_full_calc and 'full_calc' in fields:
+            del fields['full_calc']
+        elif 'quick_calc' in fields:
+            del fields['quick_calc']
         personal_inputs = PersonalExemptionForm(start_year, fields)
 
         # If an attempt is made to post data we don't accept
@@ -227,7 +227,8 @@ def personal_results(request):
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
         'start_year': start_year,
-        'has_errors': has_errors
+        'has_errors': has_errors,
+        'enable_quick_calc': ENABLE_QUICK_CALC
     }
 
 
