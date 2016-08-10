@@ -18,5 +18,8 @@
     "gulp-sourcemaps": "^1.6.0",
     "less": "^2.6.1",
     "path": "^0.12.7"
+  },
+  "dependencies": {
+    "request": "^2.74.0"
   }
 }
