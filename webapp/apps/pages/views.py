@@ -8,6 +8,7 @@ from django.views.generic import TemplateView, DetailView
 from webapp.apps.register.forms import SubscribeForm
 from django.core.context_processors import csrf
 from django.conf import settings
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 import requests
 
@@ -126,6 +127,7 @@ def widgetpage(request, widget_id):
         }
     })
 
+@xframe_options_exempt
 def embedpage(request, widget_id):
     form = subscribeform(request)
 
