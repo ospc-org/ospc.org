@@ -70,6 +70,10 @@ def gallerypage(request):
     return render(request, 'pages/gallery.html', {
         'manifest_url': os.environ.get('TAXPLOT_MANIFEST_URL'),
         'INCLUDE_GALLERY_NAV': INCLUDE_GALLERY_NAV,
+        'section': {
+            'active_nav': 'gallery',
+            'title': 'Open Source Policy Center Gallery',
+        },
     })
 
 def newspage(request):
