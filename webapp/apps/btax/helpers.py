@@ -218,16 +218,11 @@ def btax_results_to_tables(results, first_budget_year):
     r = results[0]
     output_by_asset = r['output_by_asset']
     output_by_industry = r['output_by_industry']
-    row_keys = ['a']
-    row_labels = {'a': 'a label'}
-    col_labels = list(range(1))
-    table_data = {'a': {0: [[0]]}}
     years = [0]
     tables = {}
-    col_formats = {0: [1, '$', '2']}
     for table_id, table_data in zip(('output_by_asset', 'output_by_industry'),
                                     (output_by_asset, output_by_industry)):
-        col_labels = table_data[0][1:]
+        col_labels = table_data[0]
         row_labels = [_[0] for _ in table_data[1:]]
         table = {
             'col_labels': col_labels,
@@ -245,7 +240,7 @@ def btax_results_to_tables(results, first_budget_year):
             })
 
         col_count = len(col_labels)
-        for idx, row_label in enumerate(row_labels):
+        for idx, row_label in enumerate(row_labels, 1):
             row = {
                 'label': row_label,
                 'cells': []
@@ -258,7 +253,6 @@ def btax_results_to_tables(results, first_budget_year):
                         'decimals': 2,
                     }
                 }
-                print table_data
                 value = table_data[idx][col_key]
                 cell['value'] = value
 
