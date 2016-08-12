@@ -150,7 +150,13 @@ $('#id_factor_adjustment, #id_factor_target').focus(function() {
   }
 });
 
-$('#start-year-select').change(function() {
+var currentYear = $('#start-year-select').val();
+$('#start-year-select').change(function(e) {
   $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val());
-  $('#current-year-alert').removeClass('hidden');
+  $('#current-year-modal').modal('show');
+});
+
+$('#current-year-modal').on('hide.bs.modal', function (e) {
+  $('#start-year-select option').removeAttr("selected");
+  $('#start-year-select option[value="' + currentYear + '"]').attr("selected", "selected");
 });

@@ -13,9 +13,12 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 import os
 
 SECRET_KEY = os.environ.get('SECRET_KEY', '')
+SITE_ID = os.environ.get('SITE_ID', 1)
 
 # Allow all host headers
 ALLOWED_HOSTS = ['*']
+
+SITE_ID = 1
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import dj_database_url
@@ -177,4 +180,5 @@ EMAIL_BACKEND = "sgbackend.SendGridBackend"
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
 
 GOOGLE_ANALYTICS_PROPERTY_ID = os.environ.get("GOOGLE_ANALYTICS_PROPERTY_ID", "")
+GOOGLE_ANALYTICS_EMBEDDED_ID = os.environ.get("GOOGLE_ANALYTICS_EMBEDDED_ID", "")
 GOOGLE_ANALYTICS_DOMAIN = os.environ.get("GOOGLE_ANALYTICS_DOMAIN", "")

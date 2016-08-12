@@ -44,13 +44,13 @@ $(function() {
                     insertEta(data.eta);
                     setTimeout(function() {
                         window.location.reload(1);
-                    }, 5000)
+                    }, 1000)
                 }
             }
         });
     }
     ajaxEta();
-    setInterval(ajaxEta, 7000);
+    setInterval(ajaxEta, 1000);
 });
 </script>
 {% endblock %}
