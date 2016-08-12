@@ -216,12 +216,11 @@ def btax_results_to_tables(results, first_budget_year):
     Return organized and labeled table results for display
     """
     r = results[0]
-    output_by_asset = r['output_by_asset']
-    output_by_industry = r['output_by_industry']
+    tables_to_process = {k: v for k, v in r.items()
+                         if k.startswith(('asset_', 'industry_'))}
     years = [0]
     tables = {}
-    for table_id, table_data in zip(('output_by_asset', 'output_by_industry'),
-                                    (output_by_asset, output_by_industry)):
+    for table_id, table_data in tables_to_process.items():
         col_labels = table_data[0]
         row_labels = [_[0] for _ in table_data[1:]]
         table = {
@@ -262,4 +261,7 @@ def btax_results_to_tables(results, first_budget_year):
 
         tables[table_id] = table
     tables['result_years'] = [2015]
+    with open('btax_table_format_check.json', 'w') as f:
+        # TODO remove this file write section later
+        f.write(json.dumps(tables))
     return tables
