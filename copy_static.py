@@ -34,7 +34,7 @@ for root, dirs, files in os.walk("."):
     for f in files:
         if f.endswith("py"):
             continue
-        if f.endswith(".css") or f.endswith(".js"):
+        if f.endswith(".css") or f.endswith(".js") or f.endswith("png") or f.endswith("jpg"):
             full_path = os.path.join(root, f)[2:]
             bucket_path = full_path
             print(bucket_path)
@@ -43,6 +43,9 @@ for root, dirs, files in os.walk("."):
             print(os.path.join(root, f))
             k = Key(bucket)
             k.key = bucket_path
-            k.set_contents_from_filename(full_path, headers={'Content-Type': content_type[ext],
-                                                             'Content-Encoding': 'gzip'})
-
+            if f.endswith("png") or f.endswith("jpg"):
+                headers = {'Content-Type': content_type[ext]}
+            else:
+                headers = {'Content-Type': content_type[ext],
+                           'Content-Encoding': 'gzip'}
+            k.set_contents_from_filename(full_path, headers=headers)
