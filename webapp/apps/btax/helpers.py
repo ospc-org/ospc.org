@@ -215,6 +215,8 @@ def btax_results_to_tables(results, first_budget_year):
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
+    asset_col_meta = dict(btax.parameters.DEFAULT_ASSET_PARAMS)
+    industry_col_meta = dict(btax.parameters.DEFAULT_INDUSTRY_PARAMS)
     r = results[0]
     tables_to_process = {k: v for k, v in r.items()
                          if k.startswith(('asset_', 'industry_'))}
@@ -229,13 +231,15 @@ def btax_results_to_tables(results, first_budget_year):
             'label': table_id,
             'rows': [],
         }
-
+        meta = asset_col_meta if 'asset_' in table_id else industry_col_meta
         for col_key, label in enumerate(col_labels):
+            col_dict = [v for k, v in meta.items()
+                        if v['col_label'] == label][0]
             table['cols'].append({
                 'label': label,
-                'divisor': 1.,
-                'units': '$',
-                'decimals': 2,
+                'divisor': v.get('divisor', 1),
+                'units': '',
+                'decimals': v.get('decimals', 0),
             })
 
         col_count = len(col_labels)
@@ -248,8 +252,8 @@ def btax_results_to_tables(results, first_budget_year):
             for col_key in range(0, col_count):
                 cell = {
                     'format': {
-                        'divisor': 1.,
-                        'decimals': 2,
+                        'divisor': table['cols'][col_key]['divisor'],
+                        'decimals': table['cols'][col_key]['decimals'],
                     }
                 }
                 value = table_data[idx][col_key]
