@@ -1,0 +1,133 @@
+{% extends 'btax/input_base.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="wrapper">
+    <div id="affix-offset">
+
+      <nav class="logobar" role="navigation">
+        <a class="logobar-brand" href="/">
+          <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
+        </a>
+      </nav>
+
+
+
+      <section class="taxbrain-hero">
+        <div class="taxbrain-hero-block">
+          <div class="logo">
+            <h2 class="sr-only">TaxBrain</h2>
+            <img src="{% static 'images/btax/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+          </div>
+          {% flatblock "taxbrain_subheader" %}
+          <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
+          <div class="what-is">
+            <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="taxbrain-info collapse" id="taxbrainInfo">
+        <div class="container">
+          <div class="taxbrain-history">
+            <h2>About TaxBrain</h2>
+            {% flatblock "taxbrain_what_is_taxbrain_dropdown" %}
+          </div>
+          <div class="taxbrain-build">
+            <h2>Code Build</h2>
+            <p><a href="https://github.com/OpenSourcePolicyCenter/Tax-Calculator">Version {{ taxcalc_version }} - GitHub</a></p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <form class="inputs-form" method="post" action="/btax/?start_year={{start_year}}">
+      {% csrf_token %}
+      <input type="hidden" name="has_errors" value="{{ has_errors }}" />
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-3">
+            <div class="inputs-sidebar" data-spy="affix" data-offset-top="435" data-offset-bottom="245">
+              <label class="">Start Year:
+                <select id="start-year-select" class="form-control pull-right">
+                  {% for year in start_years %}
+                    <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <div id="current-year-alert" class="hidden">
+                This will clear your current inputs.
+                <a href="#" class="alert-link" id="current-year-link">OK, go for it.</a>
+              </div>
+              <ul class="nav sidebar-nav">
+                <li class="get-started"><a href="#get-started">Get Started</a></li>
+                <li><a href="#taxes">Business Income Tax Rates</a></li>
+                <li><a href="#depreciation">Depreciation</a></li>
+                <li><a href="#other">Other</a></li>
+                <li><a href="#macro-econ">Macroeconomic variables</a></li>
+              </ul>
+              <div class="sidebar-button">
+                <a href="#" ></a>
+                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Show me the results!">
+              </div>
+              <!--
+              <div class="sidebar-note">
+                <div class="sidebar-count">
+                  <span>11</span> / 24
+                </div>
+                <h3>Changes made to the Current Tax Policy</h3>
+                <p>Data is pre-populated with current tax policy parameters. The amount listed above tracks the number of parameters changed, that different from the current tax policy parameters.</p>
+              </div>
+              -->
+            </div> <!-- sidebar -->
+          </div>
+          <div class="col-xs-9">
+            <div class="inputs-main">
+
+              {% for error in form.non_field_errors %}
+                  <div class="alert alert-danger text-center lert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ error }}
+                  </div>
+              {% endfor %}
+
+              <div class="inputs-block inputs-block-intro">
+                <div class="inputs-block-header">
+                  {% flatblock "taxbrain_above_get_started_blurb" %}
+                  <h1 id="get-started">Get Started</h1>
+                  {% flatblock "taxbrain_get_started_blurb" %}
+                  <div>
+                    You are looking at default parameters for {{start_year}}.
+
+                    <!--
+                    <div class="dropdown dropdown-inline">
+                      <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+                        default parameters for 2015 <span class="caret"></span>
+                      </a>
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">default parameters for 2014</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">default parameters for 2013</a></li>
+                      </ul>
+                    </div>
+                    -->
+                  </div>
+                </div>
+              </div>
+
+
+              {% include 'btax/includes/params/inputs/taxes.html' %}
+              {% include 'btax/includes/params/inputs/depreciation.html' %}
+              {% include 'btax/includes/params/inputs/other.html' %}
+              {% include 'btax/includes/params/inputs/macro_econ.html' %}
+            </div> <!-- main -->
+          </div>
+        </div>
+      </div>
+    </form> <!-- form -->
+    <div class="push"></div>
+  </div> <!-- /wrapper -->
+{% endblock %}

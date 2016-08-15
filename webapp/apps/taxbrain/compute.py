@@ -1,6 +1,6 @@
 import dropq
 import os
-from .helpers import package_up_vars
+from .helpers import package_up_vars as _package_up_vars
 from .models import WorkerNodesCounter
 import json
 import requests
@@ -33,8 +33,14 @@ class JobFailError(Exception):
 
 class DropqCompute(object):
 
+    num_budget_years = NUM_BUDGET_YEARS
+
     def __init__(self):
         pass
+
+    # Override if needed, e.g. btax
+    def package_up_vars(self, *args, **kwargs):
+        return _package_up_vars(*args, **kwargs)
 
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)
@@ -63,17 +69,21 @@ class DropqCompute(object):
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=1)
 
+    def submit_btax_calculation(self, mods, first_budget_year=2015):
+        url_template = "http://{hn}/btax_start_job"
+        return self.submit_calculation(mods, first_budget_year, url_template,
+                                       start_budget_year=None)
+
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS):
         print "mods is ", mods
-        user_mods = package_up_vars(mods, first_budget_year)
+        user_mods = self.package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
             return False
         print "user_mods is ", user_mods
         print "submit work"
         user_mods={first_budget_year:user_mods}
-        years = list(range(start_budget_year,num_years))
-
+        years = self._get_years(start_budget_year, first_budget_year)
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         dropq_worker_offset = wnc.current_offset
         if dropq_worker_offset > len(DROPQ_WORKERS):
@@ -122,6 +132,13 @@ class DropqCompute(object):
 
         return job_ids, max_queue_length
 
+    def _get_years(self, start_budget_year, first_budget_year):
+        if start_budget_year is not None:
+            return list(range(start_budget_year, self.num_budget_years))
+        # The following is just a dummy year for btax
+        # Btax is not currently running in separate years, I don't think.
+        return [first_budget_year]
+
     def dropq_results_ready(self, job_ids):
         jobs_done = [False] * len(job_ids)
         for idx, id_hostname in enumerate(job_ids):
@@ -139,7 +156,7 @@ class DropqCompute(object):
 
         return jobs_done
 
-    def dropq_get_results(self, job_ids):
+    def _get_results_base(self, job_ids):
         ans = []
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
@@ -152,6 +169,10 @@ class DropqCompute(object):
                     # Got back a bad response. Get the text and re-raise
                     msg = 'PROBLEM WITH RESPONSE. TEXT RECEIVED: {}'
                     raise ValueError(msg)
+        return ans
+
+    def dropq_get_results(self, job_ids):
+        ans = self._get_results_base(job_ids)
 
         mY_dec = {}
         mX_dec = {}
@@ -237,6 +258,7 @@ class DropqCompute(object):
 
 class MockCompute(DropqCompute):
 
+    num_budget_years = NUM_BUDGET_YEARS
     __slots__ = ('count', 'num_times_to_wait', 'last_posted')
 
     def __init__(self, num_times_to_wait=0):
