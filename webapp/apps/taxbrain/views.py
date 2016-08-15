@@ -96,6 +96,78 @@ def normalize(x):
     ans = [i.split('#') for i in x]
     return ans
 
+def process_model(model, start_year, stored_errors=None, request=None, do_full_calc=True):
+    """
+    take data from the model and submit the microsimulation job
+    inputs:
+        model: a TaxSaveInputs model instance
+        stored_errors: a dict of errors from the form or None
+        request: a Django request object, or None
+        do_full_calc: bool, if True, do the full calculation
+    returns:
+        unique_url: OutputUrl model instance
+    """
+
+    if stored_errors and request:
+        # Force the entered value on to the model
+        for attr in stored_errors:
+            setattr(model, attr, request.POST[attr])
+
+    # prepare taxcalc params from TaxSaveInputs model
+    curr_dict = dict(model.__dict__)
+    growth_fixup(curr_dict)
+
+    for key, value in curr_dict.items():
+        if type(value) == type(unicode()):
+            curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
+        else:
+            print("missing this: ", key)
+
+    worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
+    benefit_surtax_fixup(request.REQUEST, worker_data, model)
+    # About to begin calculation, log event
+    ip = get_real_ip(request)
+    if ip is not None:
+        # we have a real, public ip address for user
+        print("BEGIN DROPQ WORK FROM: ", ip)
+    else:
+        # we don't have a real, public ip address for user
+        print("BEGIN DROPQ WORK FROM: unknown IP")
+
+    # start calc job
+    if do_full_calc:
+        import pdb;pdb.set_trace()
+        submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
+    else:
+        import pdb;pdb.set_trace()
+        submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(worker_data, int(start_year))
+
+    if not submitted_ids:
+        raise JobFailError("couldn't submit ids")
+    else:
+        job_ids = denormalize(submitted_ids)
+        model.job_ids = job_ids
+        model.first_year = int(start_year)
+        model.quick_calc = not do_full_calc
+        model.save()
+        unique_url = OutputUrl()
+        if request.user.is_authenticated():
+            current_user = User.objects.get(pk=request.user.id)
+            unique_url.user = current_user
+        if unique_url.taxcalc_vers != None:
+            pass
+        else:
+            unique_url.taxcalc_vers = taxcalc_version
+
+        unique_url.unique_inputs = model
+        unique_url.model_pk = model.pk
+        cur_dt = datetime.datetime.utcnow()
+        future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+        expected_completion = cur_dt + future_offset
+        unique_url.exp_comp_datetime = expected_completion
+        unique_url.save()
+        return unique_url
+
 
 def personal_results(request):
     """
@@ -142,64 +214,12 @@ def personal_results(request):
                 personal_inputs._errors = {}
 
             model = personal_inputs.save()
-            if stored_errors:
-                # Force the entered value on to the model
-                for attr in stored_errors:
-                    setattr(model, attr, request.POST[attr])
-
-            # prepare taxcalc params from TaxSaveInputs model
-            curr_dict = dict(model.__dict__)
-            growth_fixup(curr_dict)
-
-            for key, value in curr_dict.items():
-                if type(value) == type(unicode()):
-                    curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                else:
-                    print("missing this: ", key)
-
-            worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
-            benefit_surtax_fixup(request.REQUEST, worker_data, model)
-            # About to begin calculation, log event
-            ip = get_real_ip(request)
-            if ip is not None:
-                # we have a real, public ip address for user
-                print("BEGIN DROPQ WORK FROM: ", ip)
-            else:
-                # we don't have a real, public ip address for user
-                print("BEGIN DROPQ WORK FROM: unknown IP")
-
-            # start calc job
-            if do_full_calc:
-                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
-            else:
-                submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(worker_data, int(start_year))
-
-            if not submitted_ids:
+            try:
+                unique_url = process_model(model, start_year, stored_errors, request, do_full_calc)
+                return redirect(unique_url)
+            except JobFailError:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
-            else:
-                job_ids = denormalize(submitted_ids)
-                model.job_ids = job_ids
-                model.first_year = int(start_year)
-                model.save()
-                unique_url = OutputUrl()
-                if request.user.is_authenticated():
-                    current_user = User.objects.get(pk=request.user.id)
-                    unique_url.user = current_user
-                if unique_url.taxcalc_vers != None:
-                    pass
-                else:
-                    unique_url.taxcalc_vers = taxcalc_version
-
-                unique_url.unique_inputs = model
-                unique_url.model_pk = model.pk
-                cur_dt = datetime.datetime.utcnow()
-                future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
-                expected_completion = cur_dt + future_offset
-                unique_url.exp_comp_datetime = expected_completion
-                unique_url.save()
-                return redirect(unique_url)
-
         else:
             # received POST but invalid results, return to form with errors
             form_personal_exemp = personal_inputs
@@ -238,6 +258,22 @@ def personal_results(request):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
+def submit_micro(request, pk):
+    """
+    This view handles the re-submission of a previously submitted microsim.
+    Its primary purpose is to facilitate a mechanism to submit a full microsim
+    job after one has submitted parameters for a 'quick calculation'
+    """
+    try:
+        url = OutputUrl.objects.get(pk=pk)
+    except:
+        raise Http404
+
+    model = TaxSaveInputs.objects.get(pk=url.model_pk)
+    unique_url = process_model(model, str(model.first_year))
+    return redirect(unique_url)
+
+
 def edit_personal_results(request, pk):
     """
     This view handles the editing of previously entered inputs
@@ -272,6 +308,7 @@ def edit_personal_results(request, pk):
 def get_result_context(model, request, url):
     output = model.tax_result
     first_year = model.first_year
+    quick_calc = model.quick_calc
     created_on = model.creation_date
     tables = taxcalc_results_to_tables(output, first_year)
     tables["tooltips"] = {
@@ -295,6 +332,7 @@ def get_result_context(model, request, url):
         'tables': json.dumps(tables),
         'created_on': created_on,
         'first_year': first_year,
+        'quick_cal': quick_calc,
         'is_registered': is_registered,
         'is_micro': True
     }

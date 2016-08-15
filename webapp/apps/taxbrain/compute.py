@@ -66,6 +66,7 @@ class DropqCompute(object):
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS):
         print "mods is ", mods
+        import pdb;pdb.set_trace()
         user_mods = package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
             return False

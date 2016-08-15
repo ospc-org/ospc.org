@@ -28,6 +28,10 @@
       <h1>{% flatblock "taxbrain_results_header" %}</h1>
     </div>
     <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="#">version {{ unique_url.taxcalc_vers }}</a> TaxBrain. (ID: 10045)</p>
+    {% if is_quick_calc %}
+    <p class="meta">This calculation used only 2% of the available data and only calculated revenues for one year instead of ten. For the full results, <a href="/taxbrain/submit/{{ unique_url.pk }}/">click here</a></p>
+
+    {% endif %}
     {% if is_behavior %}
     <p class="meta">The microsimulation upon which this dynamic simulation was based can be found <a href="{{microsim_url}}">here</a> </p>
     {% endif %}
