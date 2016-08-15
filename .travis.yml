@@ -26,6 +26,9 @@ before_script:
   - python manage.py makemigrations taxbrain
   - python manage.py migrate taxbrain
   - python manage.py migrate --fake
+  - python manage.py makemigrations btax
+  - python manage.py migrate btax
+  - python manage.py migrate --fake
 
 script:
   - py.test webapp/apps/
