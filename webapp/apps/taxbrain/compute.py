@@ -33,7 +33,7 @@ class JobFailError(Exception):
 
 class DropqCompute(object):
 
-
+    num_budget_years = NUM_BUDGET_YEARS
 
     def __init__(self):
         pass
@@ -66,15 +66,13 @@ class DropqCompute(object):
 
     def submit_elastic_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}/elastic_gdp_start_job"
-        self.num_budget_years = NUM_BUDGET_YEARS
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=1)
 
     def submit_btax_calculation(self, mods, first_budget_year=2015):
         url_template = "http://{hn}/btax_start_job"
-        self.num_budget_years = 1
         return self.submit_calculation(mods, first_budget_year, url_template,
-                                       start_budget_year=0)
+                                       start_budget_year=None)
 
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS):
@@ -260,6 +258,7 @@ class DropqCompute(object):
 
 class MockCompute(DropqCompute):
 
+    num_budget_years = NUM_BUDGET_YEARS
     __slots__ = ('count', 'num_times_to_wait', 'last_posted')
 
     def __init__(self, num_times_to_wait=0):

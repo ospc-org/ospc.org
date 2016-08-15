@@ -29,6 +29,7 @@ class JobFailError(Exception):
     pass
 
 class DropqComputeBtax(DropqCompute):
+    num_budget_years = 1
     def package_up_vars(self, user_mods, first_budget_year):
         # TODO - is first_budget_year important here?
         user_mods = {k: v for k, v in user_mods.iteritems()
@@ -44,22 +45,16 @@ class DropqComputeBtax(DropqCompute):
 
 class MockComputeBtax(MockCompute):
 
-
-    def __init__(self, num_times_to_wait=0):
-        raise NotImplementedError(not_implement)
+    num_budget_years = 1
 
 class ElasticMockCompute(MockComputeBtax):
-
-    def remote_retrieve_results(self, theurl, params):
-        raise NotImplementedError(not_implement)
+    num_budget_years = 1
 
 
 class MockFailedCompute(MockComputeBtax):
 
-    def remote_results_ready(self, theurl, params):
-        raise NotImplementedError(not_implement)
+    num_budget_years = 1
 
 class NodeDownCompute(MockComputeBtax):
 
-    def __init__(self, **kwargs):
-        raise NotImplementedError(not_implement)
+    num_budget_years = 1
