@@ -57,7 +57,7 @@ from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
 
 BTAX_VERSION_INFO = btax._version.get_versions()
 
-BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full'][:6]])
+BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-revisionid'][:6]])
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 

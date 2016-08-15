@@ -43,12 +43,8 @@ BTAX_OTHER = ['btax_other_hair', 'btax_other_corpeq',
 BTAX_ECON = ['btax_econ_nomint', 'btax_econ_inflat',]
 
 
-# TODO remove these 2 lines when btax package
-# has versioneer
-from argparse import Namespace
-btax._version = Namespace(get_versions=lambda: {'version': '0.1', 'full': '0.1'})
 BTAX_VERSION_INFO = btax._version.get_versions()
-BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full'][:6]])
+BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-revisionid'][:6]])
 
 #
 # Prepare user params to send to DropQ/Taxcalc
