@@ -351,6 +351,10 @@ class TaxSaveInputs(models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
+
+    # Record whether or not this was a quick calculation on a sample of data
+    quick_calc = models.BooleanField(default=False)
+
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up
     # field changes and automatically create migrations
