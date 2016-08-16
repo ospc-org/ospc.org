@@ -305,7 +305,7 @@ def output_detail(request, pk):
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
         except JobFailError as jfe:
             print jfe
-            return render_to_response('btax/failed.html')
+            return render_to_response('taxbrain/failed.html')
 
         if all(jobs_ready):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
