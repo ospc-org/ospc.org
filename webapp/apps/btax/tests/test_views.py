@@ -77,6 +77,7 @@ class BTaxViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         link_idx = response.url[:-1].rfind('/')
+        print '302 response info', response.url, link_idx, str(response), response.url[:link_idx + 1]
         self.failUnless(response.url[:link_idx+1].endswith("btax/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
