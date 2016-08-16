@@ -211,8 +211,8 @@ def btax_results_to_tables(results, first_budget_year):
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
-    asset_col_meta = dict(btax.parameters.DEFAULT_ASSET_PARAMS)
-    industry_col_meta = dict(btax.parameters.DEFAULT_INDUSTRY_PARAMS)
+    asset_col_meta = dict(btax.parameters.DEFAULT_ASSET_COLS)
+    industry_col_meta = dict(btax.parameters.DEFAULT_INDUSTRY_COLS)
     r = results[0]
     tables_to_process = {k: v for k, v in r.items()
                          if k.startswith(('asset_', 'industry_'))}

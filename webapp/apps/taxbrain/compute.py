@@ -83,7 +83,7 @@ class DropqCompute(object):
         print "user_mods is ", user_mods
         print "submit work"
         user_mods={first_budget_year:user_mods}
-        years = self._get_years(start_budget_year, num_years)
+        years = self._get_years(start_budget_year, num_years, first_budget_year)
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         dropq_worker_offset = wnc.current_offset
         if dropq_worker_offset > len(DROPQ_WORKERS):
@@ -132,7 +132,7 @@ class DropqCompute(object):
 
         return job_ids, max_queue_length
 
-    def _get_years(self, start_budget_year, num_years):
+    def _get_years(self, start_budget_year, num_years, first_budget_year):
         if start_budget_year is not None:
             return list(range(start_budget_year, num_years))
         # The following is just a dummy year for btax

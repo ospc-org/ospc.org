@@ -118,7 +118,7 @@ class TaxBrainViewsTests(TestCase):
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
                 u'ID_BenefitSurtax_Switch_6': [u'True'],
                 u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+                u'start_year': unicode(START_YEAR),'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
