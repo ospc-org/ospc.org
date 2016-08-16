@@ -9,22 +9,13 @@ from .helpers import arrange_totals_by_row
 from ..taxbrain.compute import (DropqCompute,
                                 MockCompute,
                                 MockFailedCompute,
-                                JobFailError)
+                                JobFailError,
+                                ENFORCE_REMOTE_VERSION_CHECK,
+                                TIMEOUT_IN_SECONDS,
+                                dropq_version)
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
-dqversion_info = dropq._version.get_versions()
-dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
-NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
-START_YEAR = int(os.environ.get('START_YEAR', 2016))
-#Hard fail on lack of dropq workers
-dropq_workers = os.environ.get('DROPQ_WORKERS', '')
-DROPQ_WORKERS = dropq_workers.split(",")
-ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
-TIMEOUT_IN_SECONDS = 1.0
-MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
-ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 
 
 def package_up_vars(self, user_mods, first_budget_year):

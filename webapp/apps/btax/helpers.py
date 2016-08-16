@@ -54,12 +54,6 @@ class BTaxField(TaxCalcField):
     pass
 
 
-def package_up_vars(user_values):
-
-    return {k: v for k, v in user_values.items()
-            if k in BTAX_DEFAULTS}
-
-
 class BTaxParam(object):
 
     """

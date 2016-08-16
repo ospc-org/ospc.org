@@ -47,7 +47,9 @@ class DropqCompute(object):
         return response
 
     def remote_results_ready(self, theurl, params):
+        print 'remote_results_ready', theurl, params
         job_response = requests.get(theurl, params=params)
+        print 'job_response', str(job_response)
         return job_response
 
     def remote_retrieve_results(self, theurl, params):
@@ -314,6 +316,7 @@ class ElasticMockCompute(MockCompute):
 class MockFailedCompute(MockCompute):
 
     def remote_results_ready(self, theurl, params):
+        print 'MockFailedCompute remote_results_ready', theurl, params
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_query_result', text='FAIL')
             return DropqCompute.remote_results_ready(self, theurl, params)
