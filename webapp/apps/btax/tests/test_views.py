@@ -4,8 +4,8 @@ import mock
 
 from ..models import BTaxSaveInputs, BTaxOutputUrl
 from ..models import convert_to_floats
-from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
-                       NodeDownCompute)
+from ..compute import (DropqComputeBtax, MockComputeBtax,
+                       MockFailedComputeBtax, NodeDownComputeBtax)
 import taxcalc
 from taxcalc import Policy
 
@@ -37,7 +37,7 @@ class BTaxViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         import sys
         webapp_views = sys.modules['webapp.apps.btax.views']
-        webapp_views.dropq_compute = MockCompute()
+        webapp_views.dropq_compute = MockComputeBtax()
 
         data = OK_POST_DATA.copy()
 
@@ -52,7 +52,7 @@ class BTaxViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         import sys
         from webapp.apps.btax import views as webapp_views
-        webapp_views.dropq_compute = NodeDownCompute()
+        webapp_views.dropq_compute = NodeDownComputeBtax()
 
         data = OK_POST_DATA.copy()
 
@@ -71,7 +71,7 @@ class BTaxViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         import sys
         from webapp.apps.btax import views as webapp_views
-        webapp_views.dropq_compute = MockFailedCompute()
+        webapp_views.dropq_compute = MockFailedComputeBtax()
         data = OK_POST_DATA.copy()
         response = self.client.post('/btax/', data)
         # Check that redirect happens

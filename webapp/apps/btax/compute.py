@@ -52,17 +52,13 @@ class MockComputeBtax(MockCompute):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
 
-class ElasticMockCompute(MockComputeBtax):
+
+class MockFailedComputeBtax(MockComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
 
-class MockFailedCompute(MockComputeBtax):
-    num_budget_years = 1
-    package_up_vars = package_up_vars
-    dropq_get_results = dropq_get_results
-
-class NodeDownCompute(MockComputeBtax):
+class NodeDownComputeBtax(MockComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
