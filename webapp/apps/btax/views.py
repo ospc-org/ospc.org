@@ -50,11 +50,6 @@ from .helpers import btax_results_to_tables
 
 dropq_compute = DropqComputeBtax()
 
-from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
-                        PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
-                        REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
-                        INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
-
 BTAX_VERSION_INFO = btax._version.get_versions()
 
 BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-revisionid'][:6]])
