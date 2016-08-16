@@ -80,5 +80,7 @@ class BTaxViewsTests(TestCase):
         self.failUnless(response.url[:link_idx+1].endswith("btax/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
-        self.failUnless("Your calculation failed" in str(response))
+        response = str(response)
+        print 'test_btax_failed_job response', response
+        self.failUnless("Your calculation failed" in response)
 
