@@ -27,33 +27,44 @@ not_implement = 'This cls needs to be filled out like DropqCompute in ..taxbrain
 class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''
     pass
+def package_up_vars(self, user_mods, first_budget_year):
+    # TODO - is first_budget_year important here?
+    user_mods = {k: v for k, v in user_mods.iteritems()
+                 if k.startswith(('btax_', 'start_year'))}
+    user_mods = {k: (v[0] if hasattr(v, '__getitem__') else v)
+                 for k, v in user_mods.iteritems()}
+    return user_mods
 
-class DropqBtaxMixin(object):
+def dropq_get_results(self, job_ids):
+    ans = self._get_results_base(job_ids)
+    print 'dropq_get_results', ans
+    return ans
+
+
+
+class DropqComputeBtax(DropqCompute):
     num_budget_years = 1
-    def package_up_vars(self, user_mods, first_budget_year):
-        # TODO - is first_budget_year important here?
-        user_mods = {k: v for k, v in user_mods.iteritems()
-                     if k.startswith(('btax_', 'start_year'))}
-        user_mods = {k: (v[0] if hasattr(v, '__getitem__') else v)
-                     for k, v in user_mods.iteritems()}
-        return user_mods
+    package_up_vars = package_up_vars
+    dropq_get_results = dropq_get_results
 
-    def dropq_get_results(self, job_ids):
-        ans = self._get_results_base(job_ids)
-        print 'dropq_get_results', ans
-        return ans
+class MockComputeBtax(MockCompute):
+    num_budget_years = 1
+    package_up_vars = package_up_vars
+    dropq_get_results = dropq_get_results
 
-class DropqComputeBtax(DropqBtaxMixin, DropqCompute):
-    pass
+class ElasticMockCompute(MockComputeBtax):
+    num_budget_years = 1
+    package_up_vars = package_up_vars
+    dropq_get_results = dropq_get_results
 
-class MockComputeBtax(DropqBtaxMixin, MockCompute):
-    pass
+class MockFailedCompute(MockComputeBtax):
+    num_budget_years = 1
+    package_up_vars = package_up_vars
+    dropq_get_results = dropq_get_results
 
-class ElasticMockCompute(DropqBtaxMixin, MockComputeBtax):
-    pass
+class NodeDownCompute(MockComputeBtax):
+    num_budget_years = 1
+    package_up_vars = package_up_vars
+    dropq_get_results = dropq_get_results
 
-class MockFailedCompute(DropqBtaxMixin, MockComputeBtax):
-    pass
 
-class NodeDownCompute(DropqBtaxMixin, MockComputeBtax):
-    pass
