@@ -145,15 +145,17 @@ class DropqCompute(object):
             id_, hostname = id_hostname
             result_url = "http://{hn}/dropq_query_result".format(hn=hostname)
             job_response = self.remote_results_ready(result_url, params={'job_id':id_})
+            msg = '{0} failed on host: {1}'.format(id_, hostname)
             if job_response.status_code == 200: # Valid response
                 rep = job_response.text
                 if rep == 'YES':
                     jobs_done[idx] = True
                     print "got one!: ", id_
                 elif rep == 'FAIL':
-                    msg = '{0} failed on host: {1}'.format(id_, hostname)
                     raise JobFailError(msg)
-
+            else:
+                print 'did not expect response with status_code', job_response.status_code
+                raise JobFailError(msg)
         return jobs_done
 
     def _get_results_base(self, job_ids):
