@@ -28,7 +28,7 @@ class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''
     pass
 
-class DropqComputeBtax(DropqCompute):
+class DropqBtaxMixin(object):
     num_budget_years = 1
     def package_up_vars(self, user_mods, first_budget_year):
         # TODO - is first_budget_year important here?
@@ -42,19 +42,21 @@ class DropqComputeBtax(DropqCompute):
         ans = self._get_results_base(job_ids)
         return ans
 
+class DropqComputeBtax(DropqCompute, DropqBtaxMixin):
+    pass
 
-class MockComputeBtax(MockCompute):
-
-    num_budget_years = 1
-
-class ElasticMockCompute(MockComputeBtax):
-    num_budget_years = 1
-
-
-class MockFailedCompute(MockComputeBtax):
+class MockComputeBtax(MockCompute, DropqBtaxMixin):
 
     num_budget_years = 1
 
-class NodeDownCompute(MockComputeBtax):
+class ElasticMockCompute(MockComputeBtax, DropqBtaxMixin):
+    num_budget_years = 1
+
+
+class MockFailedCompute(MockComputeBtax, DropqBtaxMixin):
+
+    num_budget_years = 1
+
+class NodeDownCompute(MockComputeBtax, DropqBtaxMixin):
 
     num_budget_years = 1
