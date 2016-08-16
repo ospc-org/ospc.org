@@ -1,6 +1,5 @@
 import dropq
 import os
-from .helpers import package_up_vars
 from ..taxbrain.models import WorkerNodesCounter
 import json
 import requests

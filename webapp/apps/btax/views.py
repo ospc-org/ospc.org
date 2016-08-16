@@ -264,16 +264,7 @@ def output_detail(request, pk):
         created_on = url.unique_inputs.creation_date
         tables = btax_results_to_tables(output, first_year)
         tables["tooltips"] = {
-            'diagnostic': DIAGNOSTIC_TOOLTIP,
-            'difference': DIFFERENCE_TOOLTIP,
-            'payroll': PAYROLL_TOOLTIP,
-            'income': INCOME_TOOLTIP,
-            'base': BASE_TOOLTIP,
-            'reform': REFORM_TOOLTIP,
-            'expanded': EXPANDED_TOOLTIP,
-            'adjusted': ADJUSTED_TOOLTIP,
-            'bins': INCOME_BINS_TOOLTIP,
-            'deciles': INCOME_DECILES_TOOLTIP
+            "TODO": "if tooltips needed, put them here"
         }
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
