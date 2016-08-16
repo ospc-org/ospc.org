@@ -165,7 +165,7 @@ def btax_results(request):
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
-                print 'redirect', unique_url
+                print 'redirect', unique_url, vars(unique_url)
                 return redirect(unique_url)
 
         else:
