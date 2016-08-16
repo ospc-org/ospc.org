@@ -274,6 +274,7 @@ class MockCompute(DropqCompute):
             mock.register_uri('POST', DROPQ_URL, text=resp)
             mock.register_uri('POST', DROPQ_SMALL_URL, text=resp)
             mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
+            mock.register_uri('POST', '/btax_start_job', text=resp)
             self.last_posted = data
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
@@ -337,8 +338,10 @@ class NodeDownCompute(MockCompute):
             if (self.switch % 2 == 0):
                 mock.register_uri('POST', DROPQ_URL, status_code=502)
                 mock.register_uri('POST', '/elastic_gdp_start_job', status_code=502)
+                mock.register_uri('POST', '/btax_start_job', status_code=502)
             else:
                 mock.register_uri('POST', DROPQ_URL, text=resp)
                 mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
+                mock.register_uri('POST', '/btax_start_job', text=resp)
             self.switch += 1
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
