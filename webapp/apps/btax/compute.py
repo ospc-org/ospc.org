@@ -8,6 +8,7 @@ from .helpers import arrange_totals_by_row
 from ..taxbrain.compute import (DropqCompute,
                                 MockCompute,
                                 MockFailedCompute,
+                                NodeDownCompute,
                                 JobFailError,
                                 ENFORCE_REMOTE_VERSION_CHECK,
                                 TIMEOUT_IN_SECONDS,
@@ -43,13 +44,13 @@ class MockComputeBtax(MockCompute):
     dropq_get_results = dropq_get_results
 
 
-class MockFailedComputeBtax(MockComputeBtax):
+class MockFailedComputeBtax(MockFailedCompute):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
 
 
-class NodeDownComputeBtax(MockComputeBtax):
+class NodeDownComputeBtax(NodeDownCompute):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
