@@ -40,23 +40,20 @@ class DropqBtaxMixin(object):
 
     def dropq_get_results(self, job_ids):
         ans = self._get_results_base(job_ids)
+        print 'dropq_get_results', ans
         return ans
 
-class DropqComputeBtax(DropqCompute, DropqBtaxMixin):
+class DropqComputeBtax(DropqBtaxMixin, DropqCompute):
     pass
 
-class MockComputeBtax(MockCompute, DropqBtaxMixin):
+class MockComputeBtax(DropqBtaxMixin, MockCompute):
+    pass
 
-    num_budget_years = 1
+class ElasticMockCompute(DropqBtaxMixin, MockComputeBtax):
+    pass
 
-class ElasticMockCompute(MockComputeBtax, DropqBtaxMixin):
-    num_budget_years = 1
+class MockFailedCompute(DropqBtaxMixin, MockComputeBtax):
+    pass
 
-
-class MockFailedCompute(MockComputeBtax, DropqBtaxMixin):
-
-    num_budget_years = 1
-
-class NodeDownCompute(MockComputeBtax, DropqBtaxMixin):
-
-    num_budget_years = 1
+class NodeDownCompute(DropqBtaxMixin, MockComputeBtax):
+    pass

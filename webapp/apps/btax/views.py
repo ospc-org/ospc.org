@@ -139,6 +139,7 @@ def btax_results(request):
 
             # start calc job
             submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data)
+
             print 'submitted_ids', submitted_ids, max_q_length
             if not submitted_ids:
                 no_inputs = True
