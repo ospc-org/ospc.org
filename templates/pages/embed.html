@@ -14,15 +14,37 @@
     <![endif]-->
   </head>
 <style>
+  body {
+   background-color:white;
+   height: {{ best_height }};
+   width: {{ best_width }};
+}
   #widget-iframe { 
     height: {{ best_height }};
     width: {{ best_width }};
+    overflow:hidden;
   }
+
 
   #email-button {
     background-color: #21bfd5 !important;
     color: #ffffff !important;
   }
+
+  #credits-description-link {
+    display: inline-block;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1000;
+  }
+
+  #logoImg {
+    height: 12px;
+  }
+
+
+</style>
 
     {% if GOOGLE_ANALYTICS_EMBEDDED_ID %}
 	<script>
@@ -37,41 +59,15 @@
 	</script>
     {% endif %}
 
-</style>
 
-
-  <div class="wrapper">
-    <div class="container">
-
-      <div class="page-header">
-        <h1 class="text-center">{{ widget_title }}</h1>
+      <iframe id="widget-iframe" src="{{ widget_url }}" scrolling="no" frameborder="0"></iframe>
+      <div id="credits-description-link">
+        <a href="{{ gallery_link }}"><img id="logoImg" src="//taxbraingzipped.s3.amazonaws.com/images/logo-no-icon.png"></img>&nbsp;Credits & Description</a>
       </div>
 
-      <iframe id="widget-iframe"
-	      src="{{ widget_url }}"
-	      scrolling="auto"
-       	      frameborder="0" ></iframe>
 
-        <div class="row">
-            <div class="col-md-1">
-		      <img id="logoImg" src="//avatars0.githubusercontent.com/u/8301070?v=3&s=75"></img>
-	         </div>
-            <div class="col-md-11">
-              <p>{{ long_description | safe }} </p>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
-              <p>Concept by: {{ Concept_credit | safe }} </p>
-            </div>
-            <div class="col-md-4">
-              <p>Development by: {{ Development_credit | safe }} </p>
-            </div>
-            <div class="col-md-4">
-              <p>Open Source Software used: {{ OSS_credit | safe }} </p>
-            </div>
-        </div>
-    </div> <!-- container -->
+
+
 
     {% if include_email %}
 
