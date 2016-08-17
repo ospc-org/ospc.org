@@ -34,7 +34,7 @@
 
       <iframe id="widget-iframe"
 	      src="{{ widget_url }}"
-	      scrolling="auto"
+	      scrolling="no"
        	      frameborder="0" ></iframe>
 
         <div class="row">
@@ -59,9 +59,19 @@
         <div class="row">
             <div class="col-md-12">
 		    <h3>Embed this plot:</h3>
-		    <pre id="embed_pre"><code id="embed_code">&lt;iframe id="widget-iframe" src="{{ embed_url }}" style="height:{{ best_height }};width:{{ best_width}};" scrolling="auto" frameborder="0" &gt;&lt;/iframe&gt;</code></pre>
+		    <pre id="embed_pre"><code id="embed_code">&lt;iframe id="widget-iframe" src="{{ embed_url }}" style="height:{{ best_height }};width:{{ best_width }};" scrolling="no" frameborder="0" &gt;&lt;/iframe&gt;</code></pre>
 	    </div>
         </div>
+
+    {% if best_width_portrait %}
+        <div class="row">
+            <div class="col-md-12">
+		    <h3>Embed this plot (Portrait):</h3>
+		    <pre id="embed_pre"><code id="embed_code">&lt;iframe id="widget-iframe" src="{{ embed_url }}/portrait/" style="height:{{ best_height_portrait }};width:{{ best_width_portrait }};" scrolling="no" frameborder="0" &gt;&lt;/iframe&gt;</code></pre>
+	    </div>
+        </div>
+	{% endif %}
+
     </div> <!-- container -->
 
     {% if include_email %}
