@@ -209,8 +209,7 @@ def btax_results_to_tables(results, first_budget_year):
     industry_col_meta = dict(btax.parameters.DEFAULT_INDUSTRY_COLS)
     r = results[0]
     tables_to_process = {k: v for k, v in r.items()
-                         if k.startswith(('asset_', 'industry_'))}
-    years = [0]
+                         if k.startswith(('base_', 'reform_', 'delta_'))}
     tables = {}
     for table_id, table_data in tables_to_process.items():
         col_labels = table_data[0]
@@ -254,7 +253,9 @@ def btax_results_to_tables(results, first_budget_year):
             table['rows'].append(row)
 
         tables[table_id] = table
-    tables['result_years'] = [2015]
+    tables['result_years'] = [2015] # TODO this is only here to avoid
+                                    # a js error temporarily.  It
+                                    # is not relevant to B-Tax.
     with open('btax_table_format_check.json', 'w') as f:
         # TODO remove this file write section later
         f.write(json.dumps(tables))

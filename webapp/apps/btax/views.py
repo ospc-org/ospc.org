@@ -61,7 +61,6 @@ def make_bool_gds_ads(form_btax_input):
     for k, v in vars(form_btax_input).items():
         if any(token in k for token in ('gds', 'ads', 'tax')):
             setattr(getattr(form_btax_input, k), 'value', make_bool(v))
-            print vars(getattr(form_btax_input, k))
     return form_btax_input
 
 
@@ -92,7 +91,7 @@ def btax_results(request):
         # Accept the POST if the form is valid, or if the form has errors
         # we don't check again so it is OK if the form is invalid the second
         # time
-        print vars(btax_inputs), has_errors
+
         if btax_inputs.is_valid() or has_errors:
             print 'is valid'
             stored_errors = None
@@ -160,7 +159,6 @@ def btax_results(request):
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
-                print 'redirect', unique_url, vars(unique_url)
                 return redirect(unique_url)
 
         else:
@@ -186,7 +184,6 @@ def btax_results(request):
         form_btax_input.add_error(None, msg)
         has_errors = True
     asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
-    print vars(form_btax_input)
     form_btax_input = make_bool_gds_ads(form_btax_input)
     init_context = {
         'form': form_btax_input,
@@ -275,7 +272,6 @@ def output_detail(request, pk):
             'is_registered': is_registered,
             'is_micro': True
         })
-        print 'context', context
         return render(request, 'btax/results.html', context)
 
     else:
@@ -297,7 +293,7 @@ def output_detail(request, pk):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
 
             model.creation_date = datetime.datetime.now()
-            print 'ready', vars(model), model.tax_result, url
+            print 'ready'
             model.save()
             return redirect(url)
         else:
