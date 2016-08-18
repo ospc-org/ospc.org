@@ -13,3 +13,7 @@ class PagesViewsTestCase(TestCase):
     def test_news(self):
         resp = self.client.get('/news/')
         self.assertEqual(resp.status_code, 302)
+
+    def test_apps(self):
+        resp = self.client.get('/apps/')
+        self.assertEqual(resp.status_code, 200)

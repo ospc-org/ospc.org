@@ -7,41 +7,37 @@
 {% block content %}
 <div class="wrapper">
   <div id="affix-offset">
-    <nav class="logobar" role="navigation">
-      <a class="logobar-brand" href="/">
-        <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
-      </a>
-    </nav>
-
     <section class="taxbrain-hero">
       <div class="taxbrain-hero-block">
         <div class="logo">
-          <h2 class="sr-only">TaxBrain</h2>
-          <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+          <img src="{% static 'images/ospc-logo-simple.png' %}" alt="TaxBrain" class="img-responsive" style="height:60px;">
         </div>
-        {% flatblock "taxbrain_apps_subheader" %}
+        {% flatblock "taxbrain_dynamic_subheader" %}
         <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
         <div class="what-is">
-          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+          <a class="collapsed" data-toggle="collapse" href="#appInfo" aria-expanded="false" aria-controls="taxbrainInfo">About the Apps</a>
         </div>
       </div>
     </section>
 
-    <section class="taxbrain-info collapse" id="taxbrainInfo">
+    <section class="taxbrain-info collapse" id="appInfo">
       <div class="container">
         <div class="taxbrain-history">
           <h2>About TaxBrain</h2>
           {% flatblock "taxbrain_what_is_taxbrain_dropdown" %}
+          <h2>About B-Tax (Cost of Capital)</h2>
+          {% flatblock "btax_what_is_btax_dropdown" %}
         </div>
         <div class="taxbrain-build">
           <h2>Code Build</h2>
-          <p><a href="https://github.com/open-source-economics/Tax-Calculator">Version {{ taxcalc_version }} - GitHub</a></p>
+          <p><a href="https://github.com/open-source-economics/Tax-Calculator">Tax-Calculator Version {{ taxcalc_version }} - GitHub</a></p>
+          <p><a href="https://github.com/open-source-economics/B-Tax">B-Tax (Cost of Capital) Version {{ btax_version }} - GitHub</a></p>
+          <p><a href="/about">More Information</a></p>
         </div>
       </div>
-    </section>
   </div>
 
-    <form class="inputs-form" method="post" action="/dynamic/{{pk}}/?start_year={{start_year}}">
+    <div>
       {% csrf_token %}
 
       <div class="result-table">
@@ -62,14 +58,6 @@
 
                 <table style="width:100%">
                 <tr padding="15px">
-                    <td padding-bottom="1em">
-                    <a href="/btax" class="text-white btn btn-secondary">Cost of Capital</a>
-                    </td>
-                    <td>
-                      {% flatblock "cost_of_capital_entry_blurb" %}
-                    </td>
-                </tr>
-                <tr padding="15px">
                     <td>
                     <a href="/taxbrain" class="text-white btn btn-secondary">Taxbrain</a>
                     </td>
@@ -77,11 +65,20 @@
                       {% flatblock "taxbrain_entry_blurb" %}
                     </td>
                 </tr>
+                <tr padding="15px">
+                    <td padding-bottom="1em">
+                    <a href="/btax" class="text-white btn btn-secondary">Cost of Capital</a>
+                    </td>
+                    <td>
+                      {% flatblock "cost_of_capital_entry_blurb" %}
+                    </td>
+                </tr>
+
                 </table>
           </div>
 
       </div> <!-- main -->
-    </form> <!-- form -->
+    </div>
     <div class="push"></div>
   </div> <!-- /wrapper -->
 {% endblock %}
