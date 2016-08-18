@@ -125,6 +125,8 @@ def widgetpage(request, widget_id):
         'include_email': include_email,
         'best_width': widget.get('best_width'),
         'best_height': widget.get('best_height'),
+        'best_width_portrait': widget.get('best_width_portrait'),
+        'best_height_portrait': widget.get('best_height_portrait'),
         'widget_title': widget['plot_name'],
         'widget_url': widget['plot_url'],
         'long_description': widget['long_description'],
@@ -137,7 +139,7 @@ def widgetpage(request, widget_id):
     })
 
 @xframe_options_exempt
-def embedpage(request, widget_id):
+def embedpage(request, widget_id, layout='landscape'):
     form = subscribeform(request)
 
     widgets = _discover_widgets()
@@ -156,18 +158,38 @@ def embedpage(request, widget_id):
     else:
         include_email = False
 
-    return render(request, 'pages/embed.html', {
-        'best_width': widget.get('best_width'),
-        'best_height': widget.get('best_height'),
-        'widget_title': widget['plot_name'],
-        'widget_url': widget['plot_url'],
-        'email_form': form,
-        'include_email': include_email,
-        'long_description': widget['long_description'],
-        'Concept_credit': widget['Concept_credit'],
-        'Development_credit': widget['Development_credit'],
-        'OSS_credit': widget['OSS_credit'],
-    })
+    gallery_link = os.path.join('http://',request.get_host(), 'gallery', widget_id)
+    if layout == 'portrait':
+        response_obj = {
+	    'best_width': widget.get('best_width_portrait'),
+	    'best_height': widget.get('best_height_portrait'),
+	    'widget_title': widget['plot_name'],
+	    'widget_url': widget['plot_url'].replace('landscape','portrait'),
+	    'email_form': form,
+	    'include_email': include_email,
+	    'long_description': widget['long_description'],
+	    'Concept_credit': widget['Concept_credit'],
+	    'Development_credit': widget['Development_credit'],
+	    'OSS_credit': widget['OSS_credit'],
+	    'gallery_link': gallery_link,
+        }
+    else:
+        response_obj = {
+	    'best_width': widget.get('best_width'),
+	    'best_height': widget.get('best_height'),
+	    'widget_title': widget['plot_name'],
+	    'widget_url': widget['plot_url'],
+	    'email_form': form,
+	    'include_email': include_email,
+	    'long_description': widget['long_description'],
+	    'Concept_credit': widget['Concept_credit'],
+	    'Development_credit': widget['Development_credit'],
+	    'OSS_credit': widget['OSS_credit'],
+	    'gallery_link': gallery_link,
+        }
+
+    return render(request, 'pages/embed.html', response_obj)
+
 
 def apps_landing_page(request):
 

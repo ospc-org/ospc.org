@@ -1,0 +1,87 @@
+{% extends 'taxbrain/input_base.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="wrapper">
+  <div id="affix-offset">
+    <nav class="logobar" role="navigation">
+      <a class="logobar-brand" href="/">
+        <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
+      </a>
+    </nav>
+
+    <section class="taxbrain-hero">
+      <div class="taxbrain-hero-block">
+        <div class="logo">
+          <h2 class="sr-only">TaxBrain</h2>
+          <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+        </div>
+        {% flatblock "taxbrain_apps_subheader" %}
+        <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
+        <div class="what-is">
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="taxbrain-info collapse" id="taxbrainInfo">
+      <div class="container">
+        <div class="taxbrain-history">
+          <h2>About TaxBrain</h2>
+          {% flatblock "taxbrain_what_is_taxbrain_dropdown" %}
+        </div>
+        <div class="taxbrain-build">
+          <h2>Code Build</h2>
+          <p><a href="https://github.com/open-source-economics/Tax-Calculator">Version {{ taxcalc_version }} - GitHub</a></p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+    <form class="inputs-form" method="post" action="/dynamic/{{pk}}/?start_year={{start_year}}">
+      {% csrf_token %}
+
+      <div class="result-table">
+        <div id="get-started" class="inputs-block inputs-block-intro">
+          <div class="inputs-block-header">
+            <h1>Choose a Tax Simulation</h1>
+           {% flatblock "btax_vs_taxbrain_blurb" %}
+          </div>
+        </div>
+        <div class="inputs-block-header">
+
+                <style type="text/css">
+                    td
+                    {
+                        padding:20px 15px 20px 15px;
+                        }
+                </style>
+
+                <table style="width:100%">
+                <tr padding="15px">
+                    <td padding-bottom="1em">
+                    <a href="/btax" class="text-white btn btn-secondary">Cost of Capital</a>
+                    </td>
+                    <td>
+                      {% flatblock "cost_of_capital_entry_blurb" %}
+                    </td>
+                </tr>
+                <tr padding="15px">
+                    <td>
+                    <a href="/taxbrain" class="text-white btn btn-secondary">Taxbrain</a>
+                    </td>
+                    <td>
+                      {% flatblock "taxbrain_entry_blurb" %}
+                    </td>
+                </tr>
+                </table>
+          </div>
+
+      </div> <!-- main -->
+    </form> <!-- form -->
+    <div class="push"></div>
+  </div> <!-- /wrapper -->
+{% endblock %}

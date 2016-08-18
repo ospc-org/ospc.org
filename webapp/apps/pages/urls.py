@@ -13,5 +13,6 @@ urlpatterns = patterns('',
     url(r'^news/news-detail$', newsdetailpage, name='newsdetail'),
     url(r'^gallery/(?P<widget_id>\w+)/$', widgetpage),
     url(r'^gallery/embed/(?P<widget_id>\w+)/$', embedpage),
+    url(r'^gallery/embed/(?P<widget_id>\w+)/(?P<layout>\w+)/$', embedpage),
     url(r'^gallery/$', gallerypage, name='gallery'),
 )
