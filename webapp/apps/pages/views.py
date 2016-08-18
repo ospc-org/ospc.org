@@ -168,3 +168,7 @@ def embedpage(request, widget_id):
         'Development_credit': widget['Development_credit'],
         'OSS_credit': widget['OSS_credit'],
     })
+
+def apps_landing_page(request):
+
+    return render(request, 'pages/apps.html', {})
