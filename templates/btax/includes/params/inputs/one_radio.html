@@ -1,0 +1,11 @@
+{% load inputs %}
+{% load utility %}
+
+<div class="text-center">
+  {% for field in param.col_fields %}
+    {% with form|dict_get:field.id as form_field %}
+      <input id="{{ field.id }}" class="{{ td_style_class }}" type="radio" name="{{ radio_group_name }}" value="{{ form_field.name }}" {% if form_field.value == 'True' %}  checked {% endif %}>
+
+    {% endwith %}
+  {% endfor %}
+</div>

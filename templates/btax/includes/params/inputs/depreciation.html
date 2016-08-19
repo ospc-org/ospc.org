@@ -1,0 +1,46 @@
+
+{% extends 'btax/input_form_section.html' %}
+
+{% block input_section_shortname %}depreciation{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Depreciation</h1>
+  {% flatblock "taxbrain_depreciation_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+<table class="table-bordered table-striped table-check-all">
+<th>
+<td class="col-sm-3">
+    Property Class
+</td>
+<td class="col-sm-2">
+    GDS
+</td>
+<td class="col-sm-2">
+    ADS
+</td>
+<td class="col-sm-2">
+    Economic
+</td>
+<td class="col-sm-3">
+    Bonus
+</td>
+</th>
+{% for args in depr_argument_groups %}
+  {% include 'btax/includes/params/inputs/gds_ads.html' with param1=args.param1 field1=args.field1 param2=args.param2 field2=args.field2 param3=args.param3 field3=args.field3 param4=args.param4 field4=args.field4 radio_group_name=args.radio_group_name field3_cb=args.fields3_cb field4_cb=args.field4_cb pretty_asset_yr_str=args.pretty_asset_yr_str td_style_class=args.td_style_class label=args.label tr_style_class=args.tr_style_class %}
+{% endfor %}
+</table>
+{% endblock %}
+
+{% block next_section_shortname %}other{% endblock %}
+
+
+
+
+
+
+
