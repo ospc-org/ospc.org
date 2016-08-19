@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test import Client
 import mock
 
-from ..models import TaxSaveInputs, OutputUrl
+from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
 from ..models import convert_to_floats
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
@@ -70,6 +70,9 @@ class TaxBrainViewsTests(TestCase):
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123',
                 u'quick_calc': 'Quick Calculation!'}
 
+        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+        current_dropq_worker_offset = wnc.current_offset
+
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
@@ -81,6 +84,12 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         # Check that we only retrieve one year of results
         self.assertEqual(webapp_views.dropq_compute.count, 1)
+
+        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+        next_dropq_worker_offset = wnc.current_offset
+        # Check that quick calc does not advance the counter
+        self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
+
 
 
     def test_taxbrain_post_no_behavior_entries(self):
