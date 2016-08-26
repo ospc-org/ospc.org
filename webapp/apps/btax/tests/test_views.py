@@ -46,7 +46,7 @@ class BTaxViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("btax/"))
+        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
 
     def test_btax_nodes_down(self):
         #Monkey patch to mock out running of compute jobs
@@ -60,7 +60,7 @@ class BTaxViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("btax/"))
+        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
         # One more redirect
         response = self.client.get(response.url)
         # Check that we successfully load the page
@@ -78,7 +78,7 @@ class BTaxViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         link_idx = response.url[:-1].rfind('/')
         print '302 response info', response.url, link_idx, str(response), response.url[:link_idx + 1]
-        self.failUnless(response.url[:link_idx+1].endswith("btax/"))
+        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
         response = str(response)
