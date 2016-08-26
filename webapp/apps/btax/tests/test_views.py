@@ -28,7 +28,7 @@ class BTaxViewsTests(TestCase):
 
     def test_btax_get(self):
         # Issue a GET request.
-        response = self.client.get('/btax/')
+        response = self.client.get('/ccc/')
 
         # Check that the response is 200 OK.
         self.assertEqual(response.status_code, 200)
@@ -41,7 +41,7 @@ class BTaxViewsTests(TestCase):
 
         data = OK_POST_DATA.copy()
 
-        response = self.client.post('/btax/', data)
+        response = self.client.post('/ccc/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
@@ -56,7 +56,7 @@ class BTaxViewsTests(TestCase):
 
         data = OK_POST_DATA.copy()
 
-        response = self.client.post('/btax/', data)
+        response = self.client.post('/ccc/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         link_idx = response.url[:-1].rfind('/')
@@ -73,7 +73,7 @@ class BTaxViewsTests(TestCase):
         from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = MockFailedComputeBtax()
         data = OK_POST_DATA.copy()
-        response = self.client.post('/btax/', data)
+        response = self.client.post('/ccc/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         link_idx = response.url[:-1].rfind('/')
