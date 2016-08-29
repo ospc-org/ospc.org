@@ -12,7 +12,7 @@
         <div class="logo">
           <img src="{% static 'images/ospc-logo-simple.png' %}" alt="TaxBrain" class="img-responsive" style="height:60px;">
         </div>
-        {% flatblock "taxbrain_dynamic_subheader" %}
+        {% flatblock "taxbrain_ccc_dynamic_subheader" %}
         <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
         <div class="what-is">
           <a class="collapsed" data-toggle="collapse" href="#appInfo" aria-expanded="false" aria-controls="taxbrainInfo">About the Apps</a>
@@ -26,7 +26,7 @@
           <h2>About TaxBrain</h2>
           {% flatblock "taxbrain_what_is_taxbrain_dropdown" %}
           <h2>About B-Tax (Cost of Capital)</h2>
-          {% flatblock "btax_what_is_btax_dropdown" %}
+          {% flatblock "ccc_what_is_ccc_dropdown" %}
         </div>
         <div class="taxbrain-build">
           <h2>Code Build</h2>
@@ -44,7 +44,7 @@
         <div id="get-started" class="inputs-block inputs-block-intro">
           <div class="inputs-block-header">
             <h1>Choose a Tax Simulation</h1>
-           {% flatblock "btax_vs_taxbrain_blurb" %}
+           {% flatblock "ccc_vs_taxbrain_blurb" %}
           </div>
         </div>
         <div class="inputs-block-header">

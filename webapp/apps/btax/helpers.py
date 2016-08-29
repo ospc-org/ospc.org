@@ -24,10 +24,6 @@ from ..taxbrain.helpers import (make_bool, convert_val,
 
 import btax
 from btax.util import read_from_egg
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d', 'pandas']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 PYTHON_MAJOR_VERSION = sys.version_info.major
 
