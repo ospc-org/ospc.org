@@ -10,7 +10,7 @@
 
       <nav class="logobar" role="navigation">
         <a class="logobar-brand" href="/">
-          <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
+          <img alt="Cost of Capital Calculator" src="{% static 'images/logo-no-icon.png' %}">
         </a>
       </nav>
 
@@ -33,12 +33,12 @@
       <section class="taxbrain-info collapse" id="taxbrainInfo">
         <div class="container">
           <div class="taxbrain-history">
-            <h2>About TaxBrain</h2>
+            <h2>About Cost of Capital Calculator</h2>
             {% flatblock "ccc_what_is_taxbrain_dropdown" %}
           </div>
           <div class="taxbrain-build">
             <h2>Code Build</h2>
-            <p><a href="https://github.com/OpenSourcePolicyCenter/Tax-Calculator">Version {{ taxcalc_version }} - GitHub</a></p>
+            <p><a href="https://github.com/open-source-economics/B-Tax">Version {{ btax_version }} - GitHub</a></p>
           </div>
         </div>
       </section>
@@ -72,15 +72,6 @@
                 <a href="#" ></a>
                 <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Show me the results!">
               </div>
-              <!--
-              <div class="sidebar-note">
-                <div class="sidebar-count">
-                  <span>11</span> / 24
-                </div>
-                <h3>Changes made to the Current Tax Policy</h3>
-                <p>Data is pre-populated with current tax policy parameters. The amount listed above tracks the number of parameters changed, that different from the current tax policy parameters.</p>
-              </div>
-              -->
             </div> <!-- sidebar -->
           </div>
           <div class="col-xs-9">
@@ -102,18 +93,6 @@
                   {% flatblock "ccc_get_started_blurb" %}
                   <div>
                     You are looking at default parameters for {{start_year}}.
-
-                    <!--
-                    <div class="dropdown dropdown-inline">
-                      <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-                        default parameters for 2015 <span class="caret"></span>
-                      </a>
-                      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">default parameters for 2014</a></li>
-                        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">default parameters for 2013</a></li>
-                      </ul>
-                    </div>
-                    -->
                   </div>
                 </div>
               </div>
