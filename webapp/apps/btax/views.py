@@ -15,6 +15,7 @@ import taxcalc
 import dropq
 import datetime
 import logging
+from os import path
 from urlparse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
@@ -235,6 +236,22 @@ def edit_btax_results(request, pk):
 
     return render(request, 'btax/input_form.html', init_context)
 
+def generate_mock_results(request):
+    here = path.abspath(path.dirname(__file__))
+    mock_json_path = path.join(here, 'mock_btax_result.json')
+
+    with open(mock_json_path) as f:
+        mock_json = f.read()
+
+    context = dict()
+    context.update({
+        'btax_version':BTAX_VERSION,
+        'taxcalc_version': TAXCALC_VERSION,
+        'table_json': str(mock_json),
+    })
+
+    return render(request, 'btax/results.html', context)
+
 
 def output_detail(request, pk):
     """
@@ -247,6 +264,7 @@ def output_detail(request, pk):
     try:
         url = BTaxOutputUrl.objects.get(pk=pk)
     except:
+        return generate_mock_results(request)
         raise Http404
 
     model = url.unique_inputs
