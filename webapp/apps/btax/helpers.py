@@ -205,50 +205,53 @@ def btax_results_to_tables(results, first_budget_year):
     industry_col_meta = dict(btax.parameters.DEFAULT_INDUSTRY_COLS)
     r = results[0]
     tables_to_process = {k: v for k, v in r.items()
-                         if k.startswith(('base_', 'reform_', 'delta_'))}
+                         if k.startswith(('asset_', 'industry_'))}
     tables = {}
-    for table_id, table_data in tables_to_process.items():
-        col_labels = table_data[0]
-        row_labels = [_[0] for _ in table_data[1:]]
-        table = {
-            'col_labels': col_labels,
-            'cols': [],
-            'label': table_id,
-            'rows': [],
-        }
-        meta = asset_col_meta if 'asset_' in table_id else industry_col_meta
-        for col_key, label in enumerate(col_labels):
-            col_dict = [v for k, v in meta.items()
-                        if v['col_label'] == label][0]
-            table['cols'].append({
-                'label': label,
-                'divisor': v.get('divisor', 1),
-                'units': '',
-                'decimals': v.get('decimals', 0),
-            })
-
-        col_count = len(col_labels)
-        for idx, row_label in enumerate(row_labels, 1):
-            row = {
-                'label': row_label,
-                'cells': []
+    for upper_key, table_data0 in tables_to_process.items():
+        if not upper_key in tables:
+            tables[upper_key] = {}
+        for table_id, table_data in table_data0.items():
+            col_labels = table_data[0]
+            row_labels = [_[0] for _ in table_data[1:]]
+            table = {
+                'col_labels': col_labels,
+                'cols': [],
+                'label': table_id,
+                'rows': [],
             }
+            meta = asset_col_meta if 'asset_' in upper_key else industry_col_meta
+            for col_key, label in enumerate(col_labels):
+                col_dict = [v for k, v in meta.items()
+                            if v['col_label'] == label][0]
+                table['cols'].append({
+                    'label': label,
+                    'divisor': v.get('divisor', 1),
+                    'units': '',
+                    'decimals': v.get('decimals', 0),
+                })
 
-            for col_key in range(0, col_count):
-                cell = {
-                    'format': {
-                        'divisor': table['cols'][col_key]['divisor'],
-                        'decimals': table['cols'][col_key]['decimals'],
-                    }
+            col_count = len(col_labels)
+            for idx, row_label in enumerate(row_labels, 1):
+                row = {
+                    'label': row_label,
+                    'cells': []
                 }
-                value = table_data[idx][col_key]
-                cell['value'] = value
 
-                row['cells'].append(cell)
+                for col_key in range(0, col_count):
+                    cell = {
+                        'format': {
+                            'divisor': table['cols'][col_key]['divisor'],
+                            'decimals': table['cols'][col_key]['decimals'],
+                        }
+                    }
+                    value = table_data[idx][col_key]
+                    cell['value'] = value
 
-            table['rows'].append(row)
+                    row['cells'].append(cell)
 
-        tables[table_id] = table
+                table['rows'].append(row)
+
+            tables[upper_key][table_id] = table
     tables['result_years'] = [2015] # TODO this is only here to avoid
                                     # a js error temporarily.  It
                                     # is not relevant to B-Tax.
