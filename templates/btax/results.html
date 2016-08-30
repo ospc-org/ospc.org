@@ -120,13 +120,15 @@
 <script src="{% static 'js/vendor/underscore/underscore-min.js' %}"></script>
 <script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
-<script type="text/babel">
-    $(function () {
-
+<script>
 	   window.tableData = JSON.parse('{{ table_json | safe }}');
        window.viewBy = "industry";
        window.outputInterest = "metr";
        window.outputFormat = "reform";
+</script>
+<script type="text/babel">
+    $(function () {
+
 
        var print = function(msg) {
           console.log(msg);
@@ -170,6 +172,8 @@
        var buildTableObj = function(tableType) {
 
            var $table = $('<table/>');
+           $table.addClass('stripe');
+
            $table.append(`
 			<thead>
 				  <tr>
