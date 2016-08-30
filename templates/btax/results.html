@@ -115,11 +115,12 @@
 
 {% block bottom_scripts %}
 {{ block.super }}
+<script src="{% static 'js/vendor/babel-standalone/babel.min.js' %}"></script>
 <script src="{% static 'js/vendor/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'js/vendor/underscore/underscore-min.js' %}"></script>
 <script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
-<script>
+<script type="text/babel">
     $(function () {
 
 	   window.tableData = JSON.parse('{{ table_json | safe }}');
@@ -205,7 +206,7 @@
            var $table_body = $('<tbody/>');
 
            var asset, metr_c, metr_nc, metr_c_e, metr_nc_e, metr_c_d, metr_nc_d;
-           var itm;
+           var row;
            var items = window.tableData[window.viewBy + '_' + window.outputInterest][window.outputFormat];
 
            for(var i=0; i < items.rows.length - 1; i++) {
