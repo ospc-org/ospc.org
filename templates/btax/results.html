@@ -5,7 +5,7 @@
 {{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
 <link href="{% static 'js/vendor/DataTables/datatables.min.css' %}" rel="stylesheet"></link>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/css/dataTables.uikit.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
 
 <style>
   .btn {
@@ -23,6 +23,19 @@
 
   .single-line {
     white-space: nowrap;
+  }
+  .sorting_asc:after {
+      content:"" !important;
+  }
+  .sorting_desc:after {
+      content:"" !important;
+  }
+
+  .sorting:after {
+      content:"" !important;
+  }
+  .sorting:after {
+      content:"" !important;
   }
 
 </style>
@@ -152,34 +165,44 @@
 
 	   };
 
-       var buildAssetTable = function() {
+
+       var buildTableObj = function(tableType) {
 
            var $table = $('<table/>');
-           $table.append( '<col>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-           
            $table.append(`
 			<thead>
-              <tr>
-                <td rowspan="1"></td>
-                <th colspan="2" scope="colgroup">Typically Financed</th>
-                <th colspan="2" scope="colgroup">Equity Financed</th>
-                <th colspan="2" scope="colgroup">Debt Financed</th>
-              </tr>
-              <tr>
-                <th scope="col">Asset</th>
-                <th scope="col">Corporate</th>
-                <th scope="col">Non-corporate</th>
-                <th scope="col">Corporate</th>
-                <th scope="col">Non-corporate</th>
-                <th scope="col">Corporate</th>
-                <th scope="col">Non-corporate</th>
-              </tr>
+				  <tr>
+                    <th rowspan="2">${tableType}</th>
+					<th colspan="2">Typically Financed</th>
+					<th colspan="2">Equity Financed</th>
+					<th colspan="2">Debt Financed</th>
+				  </tr>
+				  <tr>
+					<th scope="col">Corporate</th>
+					<th scope="col">Non-corporate</th>
+					<th scope="col">Corporate</th>
+					<th scope="col">Non-corporate</th>
+					<th scope="col">Corporate</th>
+					<th scope="col">Non-corporate</th>
+				  </tr>
 			</thead>
               `);
+           
+           $table.append(`
+			<tfoot>
+				  <tr>
+					<th>Industry</th>
+					<th>Corporate</th>
+					<th>Non-corporate</th>
+					<th>Corporate</th>
+					<th>Non-corporate</th>
+					<th>Corporate</th>
+					<th>Non-corporate</th>
+				  </tr>
+			</tfoot>
+              `);
+
+           var $table_body = $('<tbody/>');
 
            var asset, metr_c, metr_nc, metr_c_e, metr_nc_e, metr_c_d, metr_nc_d;
            var itm;
@@ -187,9 +210,9 @@
 
            for(var i=0; i < items.rows.length - 1; i++) {
                row = items.rows[i];
-			   $table.append(`
+			   $table_body.append(`
 				  <tr>
-					<td scope="row">${formatValue(row.cells, 0)}</th>
+					<td>${formatValue(row.cells, 0)}</td>
 					<td>${formatValue(row.cells, 1)}</td>
 					<td>${formatValue(row.cells, 2)}</td>
 					<td>${formatValue(row.cells, 3)}</td>
@@ -200,72 +223,19 @@
 				  `);
            }
 
-           $('#results-table-area').html($table);
-	   };
-
-       var buildIndustryTable = function() {
-
-           var $table = $('<table/>');
-           $table.append( '<col>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-           $table.append( '<colgroup span="2"></colgroup>' );
-
-           $table.append(`
-			<thead>
-				  <tr>
-					<td rowspan="1"></td>
-					<td rowspan="1"></td>
-					<th colspan="2" scope="colgroup">Typically Financed</th>
-					<th colspan="2" scope="colgroup">Equity Financed</th>
-					<th colspan="2" scope="colgroup">Debt Financed</th>
-				  </tr>
-				  <tr>
-					<th scope="col">Industry</th>
-					<th scope="col">NAICS Code</th>
-					<th scope="col">Corporate</th>
-					<th scope="col">Non-corporate</th>
-					<th scope="col">Corporate</th>
-					<th scope="col">Non-corporate</th>
-					<th scope="col">Corporate</th>
-					<th scope="col">Non-corporate</th>
-				  </tr>
-			</thead>
-              `);
-           
-
-           var asset, metr_c, metr_nc, metr_c_e, metr_nc_e, metr_c_d, metr_nc_d;
-           var itm;
-           var items = window.tableData[window.viewBy + '_' + window.outputInterest][window.outputFormat];
-
-           for(var i=0; i < items.rows.length - 1; i++) {
-               row = items.rows[i];
-			   $table.append(`
-				  <tr>
-					<td scope="row">${formatValue(row.cells, 0)}</th>
-					<td scope="row">${formatValue(row.cells, 1)}</th>
-					<td>${formatValue(row.cells, 2)}</td>
-					<td>${formatValue(row.cells, 3)}</td>
-					<td>${formatValue(row.cells, 4)}</td>
-					<td>${formatValue(row.cells, 5)}</td>
-					<td>${formatValue(row.cells, 6)}</td>
-					<td>${formatValue(row.cells, 7)}</td>
-				  </tr>
-				  `);
-           }
-
+           $table.append($table_body);
            $('#results-table-area').html($table);
 	   };
        
        var buildTable = function() {
 
            if (window.viewBy === 'asset') {
-			   buildAssetTable();
+			   buildTableObj('Asset');
 		   } else if (window.viewBy == 'industry') {
-			   buildIndustryTable();
+			   buildTableObj('Industry');
            }
-          // $('#results-table-area>table').DataTable();
+
+           $('#results-table-area>table').DataTable({"paging":false, "info": false});
 
 	   };
 
