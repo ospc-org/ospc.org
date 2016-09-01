@@ -21,7 +21,10 @@ OK_POST_DATA = {u'btax_betr_pass': 0.33,
 
 class BTaxViewsTests(TestCase):
     ''' Test the views of this app. '''
-    expected_results_tokens = ['cost of capital', 'change from reform', 'baseline', 'reform', '<table>', 'industry', 'asset']
+    expected_results_tokens = ['cost of capital', 'change from reform',
+                               'baseline', 'reform',
+                               'industry', 'asset', 'accomodation',
+                               'typically financed', 'were generated on']
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
