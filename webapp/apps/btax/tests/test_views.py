@@ -23,7 +23,7 @@ class BTaxViewsTests(TestCase):
     ''' Test the views of this app. '''
     expected_results_tokens = ['cost of capital', 'change from reform',
                                'baseline', 'reform',
-                               'industry', 'asset', 'accomodation',
+                               'industry', 'asset', 'accommodation',
                                'typically financed', 'were generated on']
     def setUp(self):
         # Every test needs a client.
