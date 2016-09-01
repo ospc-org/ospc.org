@@ -152,7 +152,10 @@ def btax_results(request):
                     pass
                 else:
                     unique_url.btax_vers = BTAX_VERSION
-
+                if unique_url.taxcalc_vers is not None:
+                    pass
+                else:
+                    unique_url.taxcalc_vers = TAXCALC_VERSION
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
                 cur_dt = datetime.datetime.utcnow()
@@ -236,13 +239,20 @@ def edit_btax_results(request, pk):
 
     return render(request, 'btax/input_form.html', init_context)
 
-def generate_mock_results(request):
+
+def get_mock_json(as_str=True):
     here = path.abspath(path.dirname(__file__))
     mock_json_path = path.join(here, 'mock_btax_result.json')
 
     with open(mock_json_path) as f:
         mock_json = f.read()
+    if as_str:
+        return mock_json
+    return json.loads(mock_json)
 
+
+def generate_mock_results(request):
+    mock_json = get_mock_json()
     context = dict()
     context.update({
         'btax_version':BTAX_VERSION,
@@ -264,7 +274,6 @@ def output_detail(request, pk):
     try:
         url = BTaxOutputUrl.objects.get(pk=pk)
     except:
-        return generate_mock_results(request)
         raise Http404
 
     model = url.unique_inputs
@@ -280,15 +289,13 @@ def output_detail(request, pk):
         is_registered = True if request.user.is_authenticated() else False
         context = tables.copy()
         context.update({
-            'locals':locals(),
-            'unique_url':url,
-            'btax_version':BTAX_VERSION,
+            'locals': locals(),
+            'unique_url': url,
+            'btax_version': BTAX_VERSION,
             'taxcalc_version': TAXCALC_VERSION,
-            'tables': json.dumps(tables),
+            'table_json': json.dumps(tables),
             'created_on': created_on,
             'first_year': first_year,
-            'is_registered': is_registered,
-            'is_micro': True
         })
         return render(request, 'btax/results.html', context)
 

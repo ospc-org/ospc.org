@@ -252,10 +252,5 @@ def btax_results_to_tables(results, first_budget_year):
                 table['rows'].append(row)
 
             tables[upper_key][table_id] = table
-    tables['result_years'] = [2015] # TODO this is only here to avoid
-                                    # a js error temporarily.  It
-                                    # is not relevant to B-Tax.
-    with open('btax_table_format_check.json', 'w') as f:
-        # TODO remove this file write section later
-        f.write(json.dumps(tables))
+    tables['result_years'] = [2015]
     return tables

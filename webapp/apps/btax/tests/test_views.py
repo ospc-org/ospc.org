@@ -21,7 +21,7 @@ OK_POST_DATA = {u'btax_betr_pass': 0.33,
 
 class BTaxViewsTests(TestCase):
     ''' Test the views of this app. '''
-
+    expected_results_tokens = ['cost of capital', 'change from reform', 'baseline', 'reform', '<table>', 'industry', 'asset']
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
@@ -84,4 +84,20 @@ class BTaxViewsTests(TestCase):
         response = str(response)
         print 'test_btax_failed_job response', response
         self.failUnless("Your calculation failed" in response)
+
+    def test_mocked_results_table(self):
+        response = self.client.post('/ccc/mock-ccc-results')
+        self.assertEqual(response.status_code, 200)
+        response = str(response)
+        for expected in self.expected_results_tokens:
+            self.assertIn(expected, response)
+
+    def test_results_table(self):
+        data = OK_POST_DATA.copy()
+        response = self.client.post('/ccc/', data)
+        self.assertEqual(response.status_code, 302)
+        response = str(response)
+        for expected in self.expected_results_tokens:
+            self.assertIn(expected, response)
+
 
