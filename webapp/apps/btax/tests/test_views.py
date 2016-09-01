@@ -88,7 +88,7 @@ class BTaxViewsTests(TestCase):
     def test_mocked_results_table(self):
         response = self.client.post('/ccc/mock-ccc-results')
         self.assertEqual(response.status_code, 200)
-        response = str(response)
+        response = str(response).lower()
         for expected in self.expected_results_tokens:
             self.assertIn(expected, response)
 
@@ -96,7 +96,7 @@ class BTaxViewsTests(TestCase):
         data = OK_POST_DATA.copy()
         response = self.client.post('/ccc/', data)
         self.assertEqual(response.status_code, 302)
-        response = str(response)
+        response = str(response).lower()
         for expected in self.expected_results_tokens:
             self.assertIn(expected, response)
 
