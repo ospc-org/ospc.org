@@ -95,16 +95,5 @@ class BTaxViewsTests(TestCase):
         for expected in self.expected_results_tokens:
             self.assertIn(expected, response)
 
-    def test_results_table(self):
-        import sys
-        from webapp.apps.btax import views as webapp_views
-        webapp_views.dropq_compute = MockComputeBtax()
-
-        data = OK_POST_DATA.copy()
-        response = self.client.post('/ccc/', data)
-        self.assertEqual(response.status_code, 302)
-        response = str(response).lower()
-        for expected in self.expected_results_tokens:
-            self.assertIn(expected, response)
 
 
