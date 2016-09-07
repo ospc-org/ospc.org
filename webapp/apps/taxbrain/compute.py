@@ -70,13 +70,9 @@ class DropqCompute(object):
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=1)
 
-    def submit_btax_calculation(self, mods, first_budget_year=2015):
-        url_template = "http://{hn}/btax_start_job"
-        return self.submit_calculation(mods, first_budget_year, url_template,
-                                       start_budget_year=None)
-
     def submit_calculation(self, mods, first_budget_year, url_template,
-                           start_budget_year=0, num_years=NUM_BUDGET_YEARS):
+                           start_budget_year=0, num_years=NUM_BUDGET_YEARS,
+                           workers=DROPQ_WORKERS):
         print "mods is ", mods
         user_mods = self.package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
@@ -87,11 +83,11 @@ class DropqCompute(object):
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         dropq_worker_offset = wnc.current_offset
-        if dropq_worker_offset > len(DROPQ_WORKERS):
+        if dropq_worker_offset > len(workers):
             dropq_worker_offset = 0
-        wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
+        wnc.current_offset = (dropq_worker_offset + num_years) % len(workers)
         wnc.save()
-        hostnames = DROPQ_WORKERS[dropq_worker_offset: dropq_worker_offset + num_years]
+        hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
         data = {}
