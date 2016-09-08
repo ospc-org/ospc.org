@@ -63,7 +63,8 @@ class DropqCompute(object):
     def submit_dropq_small_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS_QUICK)
+                                       num_years=NUM_BUDGET_YEARS_QUICK,
+                                       increment_counter=False)
 
     def submit_elastic_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}/elastic_gdp_start_job"
@@ -72,7 +73,8 @@ class DropqCompute(object):
 
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS,
-                           workers=DROPQ_WORKERS):
+                           workers=DROPQ_WORKERS,
+                           increment_counter=True):
         print "mods is ", mods
         user_mods = self.package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
@@ -87,6 +89,9 @@ class DropqCompute(object):
             dropq_worker_offset = 0
         wnc.current_offset = (dropq_worker_offset + num_years) % len(workers)
         wnc.save()
+        if increment_counter:
+            wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
+            wnc.save()
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
