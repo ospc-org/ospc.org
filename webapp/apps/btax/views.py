@@ -199,7 +199,8 @@ def btax_results(request):
         'start_year': start_year,
         'has_errors': has_errors,
         'asset_yr_str': asset_yr_str,
-        'depr_argument_groups': group_args_to_btax_depr(btax_default_params, asset_yr_str)
+        'depr_argument_groups': group_args_to_btax_depr(btax_default_params, asset_yr_str),
+        'is_btax': True,
     }
 
 
@@ -233,7 +234,7 @@ def edit_btax_results(request, pk):
         'btax_version': BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
         'start_years': START_YEARS,
-        'start_year': str(start_year)
+        'start_year': str(start_year),
 
     }
 
@@ -258,6 +259,7 @@ def generate_mock_results(request):
         'btax_version':BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
         'table_json': str(mock_json),
+        'is_btax': True,
     })
 
     return render(request, 'btax/results.html', context)
@@ -296,6 +298,7 @@ def output_detail(request, pk):
             'table_json': json.dumps(tables),
             'created_on': created_on,
             'first_year': first_year,
+            'is_btax': True,
         })
         return render(request, 'btax/results.html', context)
 
@@ -312,7 +315,8 @@ def output_detail(request, pk):
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
         except JobFailError as jfe:
             print jfe
-            return render_to_response('taxbrain/failed.html')
+            return render_to_response('taxbrain/failed.html',
+                                     context={'is_btax': True})
 
         if all(jobs_ready):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
@@ -344,5 +348,7 @@ def output_detail(request, pk):
 
             else:
                 print "rendering not ready yet"
-                return render_to_response('btax/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
+                not_ready_data = {'eta': '100', 'is_btax': True}
+                return render_to_response('btax/not_ready.html', not_ready_data,
+                                          context_instance=RequestContext(request))
 
