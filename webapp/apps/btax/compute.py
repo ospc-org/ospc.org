@@ -42,7 +42,9 @@ class DropqComputeBtax(DropqCompute):
         url_template = "http://{hn}/btax_start_job"
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=None, num_years=1,
-                                       workers=BTAX_WORKERS)
+                                       workers=BTAX_WORKERS,
+                                       increment_counter=False,
+                                       use_wnc_offset=False)
 
 
 class MockComputeBtax(MockCompute, DropqComputeBtax):

@@ -74,7 +74,8 @@ class DropqCompute(object):
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS,
                            workers=DROPQ_WORKERS,
-                           increment_counter=True):
+                           increment_counter=True,
+                           use_wnc_offset=True):
         print "mods is ", mods
         user_mods = self.package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
@@ -83,15 +84,16 @@ class DropqCompute(object):
         print "submit work"
         user_mods={first_budget_year:user_mods}
         years = self._get_years(start_budget_year, num_years, first_budget_year)
-        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
-        dropq_worker_offset = wnc.current_offset
-        if dropq_worker_offset > len(workers):
+        if use_wnc_offset:
+            wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+            dropq_worker_offset = wnc.current_offset
+            if dropq_worker_offset > len(workers):
+                dropq_worker_offset = 0
+            if increment_counter:
+                wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
+                wnc.save()
+        else:
             dropq_worker_offset = 0
-        wnc.current_offset = (dropq_worker_offset + num_years) % len(workers)
-        wnc.save()
-        if increment_counter:
-            wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
-            wnc.save()
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
