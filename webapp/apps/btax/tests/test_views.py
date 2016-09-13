@@ -3,6 +3,7 @@ from django.test import Client
 import mock
 
 from ..models import BTaxSaveInputs, BTaxOutputUrl
+from ...taxbrain.models import WorkerNodesCounter
 from ..models import convert_to_floats
 from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
@@ -95,5 +96,33 @@ class BTaxViewsTests(TestCase):
         for expected in self.expected_results_tokens:
             self.assertIn(expected, response)
 
+    def test_btax_submit_to_single_host(self):
+        """
+        Ensure that Btax submission does not advance the
+        worker node counter, nor use the dropq_offset
+        """
 
+        # Set the worker node count to 1, which would error if we used
+        # that for BTax, since there is only a single node
+        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+        wnc.current_offset = 1
+        wnc.save()
 
+        # Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.btax.views']
+        webapp_views.dropq_compute = MockComputeBtax()
+        data = OK_POST_DATA.copy()
+        response = self.client.post('/ccc/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
+
+        # Submit another job, which would error if we incremented dropq_offset
+        # with the submit
+        data = OK_POST_DATA.copy()
+        response = self.client.post('/ccc/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
