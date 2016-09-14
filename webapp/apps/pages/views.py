@@ -12,6 +12,16 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 
 import requests
 
+import btax
+import taxcalc
+
+BTAX_VERSION_INFO = btax._version.get_versions()
+TAXCALC_VERSION_INFO = taxcalc._version.get_versions()
+BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'],
+                         BTAX_VERSION_INFO['full-revisionid'][:6]])
+TAXCALC_VERSION = ".".join([TAXCALC_VERSION_INFO['version'],
+                            TAXCALC_VERSION_INFO['full'][:6]])
+
 BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
 EMAIL_DEFAULT = '1'
 INCLUDE_GALLERY_NAV = bool(os.environ.get('INCLUDE_GALLERY_NAV', False)) #  TODO: remove this variable when gallery full integrated
@@ -188,4 +198,11 @@ def embedpage(request, widget_id, layout='landscape'):
 	    'gallery_link': gallery_link,
         }
 
-    return render(request, 'pages/embed.html', response_obj) 
+    return render(request, 'pages/embed.html', response_obj)
+
+
+def apps_landing_page(request):
+    context = {'btax_version': BTAX_VERSION,
+               'taxcalc_version': TAXCALC_VERSION,
+              }
+    return render(request, 'pages/apps.html', context)

@@ -1,0 +1,21 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}macro-econ{% endblock %}
+{% block input_section_title %}Macroeconomic Variables{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Macroeconomic Variables</h1>
+  {% flatblock "ccc_macro_econ_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_econ_nomint %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_econ_inflat %}
+
+{% endblock %}
+
+{% block next_section_shortname %}macro_econ{% endblock %}

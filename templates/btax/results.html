@@ -1,0 +1,256 @@
+{% extends 'btax/input_base.html' %}
+{% load staticfiles %}
+{% load flatblocks %}
+{% block style %}
+{{block.super}}
+<link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
+<link href="{% static 'js/vendor/DataTables/datatables.min.css' %}" rel="stylesheet"></link>
+<link href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
+
+<style>
+  .btn {
+    color: black;
+  }
+  .text-white { color: white;
+  }
+  colgroup {
+    padding: 15px;
+    width: 150px;
+  }
+
+  tr:nth-child(even) {background: #f9f9f9}
+  tr:nth-child(odd) {background: #FFF}
+
+  .single-line {
+    white-space: nowrap;
+  }
+  .sorting_asc:after {
+      content:"" !important;
+  }
+  .sorting_desc:after {
+      content:"" !important;
+  }
+
+  .sorting:after {
+      content:"" !important;
+  }
+  .sorting:after {
+      content:"" !important;
+  }
+
+</style>
+
+
+
+
+{% endblock %}
+{% block content %}
+<div class="wrapper">
+  {% include 'taxbrain/header.html' %}
+  <div class="result-header">
+    <div class="result-header-control">
+      <h1>{% flatblock "ccc_results_header" %}</h1>
+    </div>
+
+    <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }}<br>B-Tax <a href="/apps">version {{ unique_url.btax_vers }}</a> <br>Taxcalc <a href="/apps">version {{ unique_url.taxcalc_vers }}</a></p>
+
+  </div>
+  <br>
+  <div class="container">
+	  <div class="row">
+          <div id="view_by_inputs" class="col-sm-12">
+              <h2>View Output by:</h2>
+                <label class="radio-inline active">
+                  <input type="radio" name="view_by_radio" value="industry" checked="">Industry
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" value="asset" name="view_by_radio">Asset
+                </label>
+          </div>
+	  </div>
+	  <div class="row">
+          <div id="output_interest_inputs"  class="col-sm-12">
+              <h2>Output of Interest:</h2>
+                <label class="radio-inline active">
+                  <input type="radio" value="metr" name="output_interest_radio" checked="">METR
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" value="mettr" name="output_interest_radio">METTR
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" value="coc" name="output_interest_radio">Cost of Capital
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" value="d" name="output_interest_radio">Depreciation
+                </label>
+          </div>
+	  </div>
+	  <div class="row">
+          <div id="output_format_inputs" class="col-sm-12">
+              <h2>Output Format:</h2>
+                <label class="radio-inline active">
+                  <input type="radio" value="changed" name="output_format_radio" checked="">Change from reform
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" value="baseline" name="output_format_radio">Baseline
+                </label>
+                <label class="radio-inline">
+                  <input type="radio" value="reform" name="output_format_radio">Reform
+                </label>
+          </div>
+	  </div>
+	  <div class="row">
+          <div id="results-table-area" class="col-sm-12">
+
+          </div>
+	  </div>
+
+  </div>
+
+
+  <div id="table-drilldown-container"></div>
+  <div class="push"></div>
+</div>
+{% endblock %}
+
+{% block bottom_scripts %}
+{{ block.super }}
+<script src="{% static 'js/vendor/babel-standalone/babel.min.js' %}"></script>
+<script src="{% static 'js/vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'js/vendor/underscore/underscore-min.js' %}"></script>
+<script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
+<script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
+<script>
+	   window.tableData = JSON.parse('{{ table_json | safe }}');
+       window.viewBy = "industry";
+       window.outputInterest = "metr";
+       window.outputFormat = "changed";
+</script>
+<script type="text/babel">
+    $(function () {
+
+
+       var print = function(msg) {
+          console.log(msg);
+	   };
+
+       var onViewByChange = function(e) {
+           window.viewBy = e.target.value;
+           print(".onViewByChange()");
+		   buildTable();
+	   };
+
+       var onOutputInterestChange = function(e) {
+           window.outputInterest = e.target.value;
+           print(".onOutputInterestChange()");
+		   buildTable();
+	   };
+
+       var onOutputFormatChange = function(e) {
+           window.outputFormat = e.target.value;
+           print(".onOutputFormatChange()");
+		   buildTable();
+	   };
+
+       var formatValue = function(cells, ind) {
+
+           if (ind > cells.length - 1) {
+               return 'n/a';
+		   }
+
+           var cell = cells[ind];
+		   if (typeof cell.value == 'string') {
+              return cell.value;
+		   } else if (typeof cell.value == 'number') {
+               var val_str = (parseFloat(cell.value / cell.format.divisor)).toFixed(cell.format.decimals).toString();
+			   return val_str;
+		   }
+
+	   };
+
+
+       var buildTableObj = function(tableType) {
+
+           var $table = $('<table/>');
+           $table.addClass('stripe');
+
+           $table.append(`
+			<thead>
+				  <tr>
+                    <th rowspan="2">${tableType}</th>
+					<th colspan="2">Typically Financed</th>
+					<th colspan="2">Equity Financed</th>
+					<th colspan="2">Debt Financed</th>
+				  </tr>
+				  <tr>
+					<th scope="col">Corporate</th>
+					<th scope="col">Non-corporate</th>
+					<th scope="col">Corporate</th>
+					<th scope="col">Non-corporate</th>
+					<th scope="col">Corporate</th>
+					<th scope="col">Non-corporate</th>
+				  </tr>
+			</thead>
+              `);
+
+           $table.append(`
+			<tfoot>
+				  <tr>
+					<th>Industry</th>
+					<th>Corporate</th>
+					<th>Non-corporate</th>
+					<th>Corporate</th>
+					<th>Non-corporate</th>
+					<th>Corporate</th>
+					<th>Non-corporate</th>
+				  </tr>
+			</tfoot>
+              `);
+
+           var $table_body = $('<tbody/>');
+
+           var asset, metr_c, metr_nc, metr_c_e, metr_nc_e, metr_c_d, metr_nc_d;
+           var row;
+           var items = window.tableData[window.viewBy + '_' + window.outputInterest][window.outputFormat];
+
+           for(var i=0; i < items.rows.length - 1; i++) {
+               row = items.rows[i];
+			   $table_body.append(`
+				  <tr>
+					<td>${formatValue(row.cells, 0)}</td>
+					<td>${formatValue(row.cells, 1)}</td>
+					<td>${formatValue(row.cells, 2)}</td>
+					<td>${formatValue(row.cells, 3)}</td>
+					<td>${formatValue(row.cells, 4)}</td>
+					<td>${formatValue(row.cells, 5)}</td>
+					<td>${formatValue(row.cells, 6)}</td>
+				  </tr>
+				  `);
+           }
+
+           $table.append($table_body);
+           $('#results-table-area').html($table);
+	   };
+
+       var buildTable = function() {
+
+           if (window.viewBy === 'asset') {
+			   buildTableObj('Asset');
+		   } else if (window.viewBy == 'industry') {
+			   buildTableObj('Industry');
+           }
+
+           $('#results-table-area>table').DataTable({"paging":false, "info": false});
+
+	   };
+
+       document.getElementById('view_by_inputs').addEventListener('change', onViewByChange, false);
+       document.getElementById('output_interest_inputs').addEventListener('change', onOutputInterestChange, false);
+       document.getElementById('output_format_inputs').addEventListener('change', onOutputFormatChange, false);
+
+	   delete window.tableData['result_years'];
+       buildTable();
+    });
+
+</script>
+{% endblock %}

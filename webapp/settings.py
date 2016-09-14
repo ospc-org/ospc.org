@@ -61,6 +61,7 @@ INSTALLED_APPS = (
     'webapp.apps.dynamic',
     'webapp.apps.pages',
     'webapp.apps.register',
+    'webapp.apps.btax',
 
     # Third party apps
     'flatblocks',
@@ -88,7 +89,7 @@ ROOT_URLCONF = 'webapp.urls'
 WSGI_APPLICATION = 'webapp.wsgi.application'
 
 CELERY_RESULT_BACKEND = os.environ.get('REDISGREEN_URL')
- 
+
 BROKER_URL = os.environ.get('REDISGREEN_URL')
 
 

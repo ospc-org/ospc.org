@@ -8,13 +8,23 @@
   </nav>
   <section class="taxbrain-hero taxbrain-hero-small">
     <div class="taxbrain-hero-block">
-      <div class="logo">
-        <h2 class="sr-only">TaxBrain</h2>
-        <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
-      </div>
-      <div class="what-is">
-        <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
-      </div>
+      {% if is_btax %}
+        <div class="logo">
+          <h2 class="sr-only">TaxBrain</h2>
+          <img src="{% static 'images/btax/cost-of-capital-black-gray.png' %}" alt="TaxBrain" class="img-responsive">
+        </div>
+        <div class="what-is">
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+        </div>
+      {% else %}
+        <div class="logo">
+          <h2 class="sr-only">TaxBrain</h2>
+          <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+        </div>
+        <div class="what-is">
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+        </div>
+      {% endif %}
     </div>
   </section>
   <section class="taxbrain-info collapse" id="taxbrainInfo">
@@ -28,5 +38,5 @@
         <p><a href="https://github.com/OpenSourcePolicyCenter/Tax-Calculator">Version {{ unique_url.taxcalc_vers }} - GitHub</a></p>
       </div>
     </div>
-  </section>  
+  </section>
 </div>

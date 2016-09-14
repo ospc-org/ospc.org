@@ -1,6 +1,6 @@
 import dropq
 import os
-from .helpers import package_up_vars
+from .helpers import package_up_vars as _package_up_vars
 from .models import WorkerNodesCounter
 import json
 import requests
@@ -33,14 +33,21 @@ class JobFailError(Exception):
 
 class DropqCompute(object):
 
+    num_budget_years = NUM_BUDGET_YEARS
+
     def __init__(self):
         pass
+
+    # Override if needed, e.g. btax
+    def package_up_vars(self, *args, **kwargs):
+        return _package_up_vars(*args, **kwargs)
 
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
 
     def remote_results_ready(self, theurl, params):
+        print 'remote_results_ready', theurl, params
         job_response = requests.get(theurl, params=params)
         return job_response
 
@@ -66,24 +73,28 @@ class DropqCompute(object):
 
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS,
-                           increment_counter=True):
+                           workers=DROPQ_WORKERS,
+                           increment_counter=True,
+                           use_wnc_offset=True):
         print "mods is ", mods
-        user_mods = package_up_vars(mods, first_budget_year)
+        user_mods = self.package_up_vars(mods, first_budget_year)
         if not bool(user_mods):
             return False
         print "user_mods is ", user_mods
         print "submit work"
         user_mods={first_budget_year:user_mods}
-        years = list(range(start_budget_year,num_years))
-
-        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
-        dropq_worker_offset = wnc.current_offset
-        if dropq_worker_offset > len(DROPQ_WORKERS):
+        years = self._get_years(start_budget_year, num_years, first_budget_year)
+        if use_wnc_offset:
+            wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+            dropq_worker_offset = wnc.current_offset
+            if dropq_worker_offset > len(workers):
+                dropq_worker_offset = 0
+            if increment_counter:
+                wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
+                wnc.save()
+        else:
             dropq_worker_offset = 0
-        if increment_counter:
-            wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
-            wnc.save()
-        hostnames = DROPQ_WORKERS[dropq_worker_offset: dropq_worker_offset + num_years]
+        hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
         data = {}
@@ -125,24 +136,33 @@ class DropqCompute(object):
 
         return job_ids, max_queue_length
 
+    def _get_years(self, start_budget_year, num_years, first_budget_year):
+        if start_budget_year is not None:
+            return list(range(start_budget_year, num_years))
+        # The following is just a dummy year for btax
+        # Btax is not currently running in separate years, I don't think.
+        return [first_budget_year]
+
     def dropq_results_ready(self, job_ids):
         jobs_done = [False] * len(job_ids)
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
             result_url = "http://{hn}/dropq_query_result".format(hn=hostname)
             job_response = self.remote_results_ready(result_url, params={'job_id':id_})
+            msg = '{0} failed on host: {1}'.format(id_, hostname)
             if job_response.status_code == 200: # Valid response
                 rep = job_response.text
                 if rep == 'YES':
                     jobs_done[idx] = True
                     print "got one!: ", id_
                 elif rep == 'FAIL':
-                    msg = '{0} failed on host: {1}'.format(id_, hostname)
                     raise JobFailError(msg)
-
+            else:
+                print 'did not expect response with status_code', job_response.status_code
+                raise JobFailError(msg)
         return jobs_done
 
-    def dropq_get_results(self, job_ids):
+    def _get_results_base(self, job_ids):
         ans = []
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
@@ -155,6 +175,10 @@ class DropqCompute(object):
                     # Got back a bad response. Get the text and re-raise
                     msg = 'PROBLEM WITH RESPONSE. TEXT RECEIVED: {}'
                     raise ValueError(msg)
+        return ans
+
+    def dropq_get_results(self, job_ids):
+        ans = self._get_results_base(job_ids)
 
         mY_dec = {}
         mX_dec = {}
@@ -240,6 +264,7 @@ class DropqCompute(object):
 
 class MockCompute(DropqCompute):
 
+    num_budget_years = NUM_BUDGET_YEARS
     __slots__ = ('count', 'num_times_to_wait', 'last_posted')
 
     def __init__(self, num_times_to_wait=0):
@@ -255,6 +280,7 @@ class MockCompute(DropqCompute):
             mock.register_uri('POST', DROPQ_URL, text=resp)
             mock.register_uri('POST', DROPQ_SMALL_URL, text=resp)
             mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
+            mock.register_uri('POST', '/btax_start_job', text=resp)
             self.last_posted = data
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
@@ -292,6 +318,7 @@ class ElasticMockCompute(MockCompute):
 class MockFailedCompute(MockCompute):
 
     def remote_results_ready(self, theurl, params):
+        print 'MockFailedCompute remote_results_ready', theurl, params
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_query_result', text='FAIL')
             return DropqCompute.remote_results_ready(self, theurl, params)
@@ -318,8 +345,10 @@ class NodeDownCompute(MockCompute):
             if (self.switch % 2 == 0):
                 mock.register_uri('POST', DROPQ_URL, status_code=502)
                 mock.register_uri('POST', '/elastic_gdp_start_job', status_code=502)
+                mock.register_uri('POST', '/btax_start_job', status_code=502)
             else:
                 mock.register_uri('POST', DROPQ_URL, text=resp)
                 mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
+                mock.register_uri('POST', '/btax_start_job', text=resp)
             self.switch += 1
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
