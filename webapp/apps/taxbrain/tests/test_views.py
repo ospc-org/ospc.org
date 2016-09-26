@@ -347,3 +347,60 @@ class TaxBrainViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
+
+    def test_taxbrain_rt_capital_gain_goes_to_amt(self):
+        """
+        Transfer over the regular tax capital gains to AMT
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = {'CG_rt1': [0.25], 'CG_rt3': [u'0.25'], 'CG_rt2': [u'0.18'],
+                'CG_thd1_cpi': [u'True'], 'CG_thd2_cpi': [u'True'],
+                'CG_thd1_0': [u'38659'], 'CG_thd1_1': [u'76300'],
+                'CG_thd1_2': [u'38650'], 'CG_thd1_3': [u'51400'],
+                'CG_thd2_0': [u'425050'], 'CG_thd2_1': [u'476950'],
+                'CG_thd2_2': [u'243475'], 'CG_thd2_3': [u'451000'],
+                'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num = response.url[link_idx+1:-1]
+
+        out2 = OutputUrl.objects.get(pk=model_num)
+        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
+        assert tsi2.CG_rt1 == u'0.25'
+        assert tsi2.CG_rt2 == u'0.18'
+        assert tsi2.CG_rt3 == u'0.25'
+        assert tsi2.CG_thd1_cpi == True
+        assert tsi2.CG_thd1_0 == u'38659'
+        assert tsi2.CG_thd1_1 == u'76300'
+        assert tsi2.CG_thd1_2 == u'38650'
+        assert tsi2.CG_thd1_3 == u'51400'
+        assert tsi2.CG_thd2_cpi == True
+        assert tsi2.CG_thd2_0 == u'425050'
+        assert tsi2.CG_thd2_1 == u'476950'
+        assert tsi2.CG_thd2_2 == u'243475'
+        assert tsi2.CG_thd2_3 == u'451000'
+
+        assert tsi2.AMT_CG_rt1 == u'0.25'
+        assert tsi2.AMT_CG_rt2 == u'0.18'
+        assert tsi2.AMT_CG_rt3 == u'0.25'
+        assert tsi2.AMT_CG_thd1_cpi == True
+        assert tsi2.AMT_CG_thd1_0 == u'38659.0'
+        assert tsi2.AMT_CG_thd1_1 == u'76300.0'
+        assert tsi2.AMT_CG_thd1_2 == u'38650.0'
+        assert tsi2.AMT_CG_thd1_3 == u'51400.0'
+        assert tsi2.AMT_CG_thd2_cpi == True
+        assert tsi2.AMT_CG_thd2_0 == u'425050.0'
+        assert tsi2.AMT_CG_thd2_1 == u'476950.0'
+        assert tsi2.AMT_CG_thd2_2 == u'243475.0'
+        assert tsi2.AMT_CG_thd2_3 == u'451000.0'
