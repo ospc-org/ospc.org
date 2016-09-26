@@ -404,3 +404,114 @@ class TaxBrainViewsTests(TestCase):
         assert tsi2.AMT_CG_thd2_1 == u'476950.0'
         assert tsi2.AMT_CG_thd2_2 == u'243475.0'
         assert tsi2.AMT_CG_thd2_3 == u'451000.0'
+
+
+    def test_taxbrain_rt_to_passthrough(self):
+        """
+        Transfer over the ind. income tax params to passthrough
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+
+        values1 = {"II_brk1_0": [u'8750.'],
+                   "II_brk1_1": [u'9200.'],
+                   "II_brk1_2": [u'9350.'], "II_brk1_3": [u'9350.'],
+                   "II_rt1": [0.09]}
+
+        values2 = {"II_brk2_0": [u'36000.', u'38000.', u'40000.', u'41000.'],
+                   "II_brk2_1": [u'72250.', u'74000.'],
+                   "II_brk2_2": [u'36500.'], "II_brk2_3": [u'46500.'],
+                   "II_rt2": [0.16]}
+
+        values3 = {"II_brk3_0": [u'88000.'],
+                   "II_brk3_1": [u'147000.'],
+                   "II_brk3_2": [u'75000.'], "II_brk3_3": [u'126500.'],
+                   "II_rt3": [0.23]}
+
+        values4 = {"II_brk4_0": [u'184400.'],
+                   "II_brk4_1": [u'224000.'],
+                   "II_brk4_2": [u'112000.'], "II_brk4_3": [u'205000.'],
+                   "II_rt4": [0.29]}
+
+        values5 = {"II_brk5_0": [u'399000.'],
+                   "II_brk5_1": [u'399500.'],
+                   "II_brk5_2": [u'200000.'], "II_brk5_3": [u'405000.'],
+                   "II_rt5": [0.31]}
+
+        values6 = {"II_brk6_0": [u'403000.'],
+                   "II_brk6_1": [u'453000.'],
+                   "II_brk6_2": [u'252000.'], "II_brk6_3": [u'435000.'],
+                   "II_rt6": [0.37]}
+
+        values7 = {"II_brk7_0": [u'999999.'],
+                   "II_brk7_1": [u'999999.'],
+                   "II_brk7_2": [u'999999.'], "II_brk7_3": [u'999999.'],
+                   "II_rt7": [0.42]}
+
+        data = {'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        data.update(values1)
+        data.update(values2)
+        data.update(values3)
+        data.update(values4)
+        data.update(values5)
+        data.update(values6)
+        data.update(values7)
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num = response.url[link_idx+1:-1]
+
+        out2 = OutputUrl.objects.get(pk=model_num)
+        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
+        assert tsi2.II_rt1 == u'0.09'
+        assert tsi2.II_rt2 == u'0.16'
+        assert tsi2.II_rt3 == u'0.23'
+        assert tsi2.II_rt4 == u'0.29'
+        assert tsi2.II_rt5 == u'0.31'
+        assert tsi2.II_rt6 == u'0.37'
+        assert tsi2.II_rt7 == u'0.42'
+        assert tsi2.PT_rt1 == u'0.09'
+        assert tsi2.PT_rt2 == u'0.16'
+        assert tsi2.PT_rt3 == u'0.23'
+        assert tsi2.PT_rt4 == u'0.29'
+        assert tsi2.PT_rt5 == u'0.31'
+        assert tsi2.PT_rt6 == u'0.37'
+        assert tsi2.PT_rt7 == u'0.42'
+        assert float(tsi2.PT_brk1_0) == float(tsi2.II_brk1_0)
+        assert float(tsi2.PT_brk1_1) == float(tsi2.II_brk1_1)
+        assert float(tsi2.PT_brk1_2) == float(tsi2.II_brk1_2)
+        assert float(tsi2.PT_brk1_3) == float(tsi2.II_brk1_3)
+        assert float(tsi2.PT_brk2_0) == float(tsi2.II_brk2_0)
+        assert float(tsi2.PT_brk2_1) == float(tsi2.II_brk2_1)
+        assert float(tsi2.PT_brk2_2) == float(tsi2.II_brk2_2)
+        assert float(tsi2.PT_brk2_3) == float(tsi2.II_brk2_3)
+        assert float(tsi2.PT_brk3_0) == float(tsi2.II_brk3_0)
+        assert float(tsi2.PT_brk3_1) == float(tsi2.II_brk3_1)
+        assert float(tsi2.PT_brk3_2) == float(tsi2.II_brk3_2)
+        assert float(tsi2.PT_brk3_3) == float(tsi2.II_brk3_3)
+        assert float(tsi2.PT_brk4_0) == float(tsi2.II_brk4_0)
+        assert float(tsi2.PT_brk4_1) == float(tsi2.II_brk4_1)
+        assert float(tsi2.PT_brk4_2) == float(tsi2.II_brk4_2)
+        assert float(tsi2.PT_brk4_3) == float(tsi2.II_brk4_3)
+        assert float(tsi2.PT_brk5_0) == float(tsi2.II_brk5_0)
+        assert float(tsi2.PT_brk5_1) == float(tsi2.II_brk5_1)
+        assert float(tsi2.PT_brk5_2) == float(tsi2.II_brk5_2)
+        assert float(tsi2.PT_brk5_3) == float(tsi2.II_brk5_3)
+        assert float(tsi2.PT_brk6_0) == float(tsi2.II_brk6_0)
+        assert float(tsi2.PT_brk6_1) == float(tsi2.II_brk6_1)
+        assert float(tsi2.PT_brk6_2) == float(tsi2.II_brk6_2)
+        assert float(tsi2.PT_brk6_3) == float(tsi2.II_brk6_3)
+        assert float(tsi2.PT_brk7_0) == float(tsi2.II_brk7_0)
+        assert float(tsi2.PT_brk7_1) == float(tsi2.II_brk7_1)
+        assert float(tsi2.PT_brk7_2) == float(tsi2.II_brk7_2)
+        assert float(tsi2.PT_brk7_3) == float(tsi2.II_brk7_3)
