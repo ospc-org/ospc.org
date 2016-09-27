@@ -47,7 +47,6 @@ class DropqCompute(object):
         return response
 
     def remote_results_ready(self, theurl, params):
-        print 'remote_results_ready', theurl, params
         job_response = requests.get(theurl, params=params)
         return job_response
 
