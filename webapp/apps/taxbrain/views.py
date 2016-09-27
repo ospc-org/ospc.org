@@ -84,6 +84,45 @@ def benefit_surtax_fixup(request, reform, model):
         del reform[_id]
         setattr(model, _id, unicode(val))
 
+def amt_fixup(request, reform, model):
+    """
+    Take the regular tax captial gains parameters from the user reform
+    and set them as the equivalent Alternative Minimum Tax capital
+    gains parameters
+    """
+    cap_gains_params = ["CG_rt1", "CG_thd1_0", "CG_thd1_1",
+                        "CG_thd1_2", "CG_thd1_3", "CG_thd1_cpi",
+                        "CG_rt2", "CG_thd2_0", "CG_thd2_1",
+                        "CG_thd2_2", "CG_thd2_3", "CG_thd2_cpi",
+                        "CG_rt3"]
+
+    for cgparam in cap_gains_params:
+        if cgparam in reform:
+            reform['AMT_' + cgparam] = reform[cgparam]
+            if cgparam.endswith("_cpi"):
+                setattr(model, 'AMT_' + cgparam, reform[cgparam])
+            else:
+                setattr(model, 'AMT_' + cgparam, reform[cgparam][0])
+
+
+def passthrough_fixup(request, reform, model):
+    """
+    Take the individual income tax parameters from the user reform
+    and set them as the equivalent pass through tax parameters
+    """
+    pt_reforms = {}
+    for param in reform:
+        if param.startswith("II_rt") or param.startswith("II_brk"):
+            pt_param = "PT_" + param[3:]
+            pt_reforms[pt_param] = reform[param]
+            if param.endswith("_cpi"):
+                setattr(model, pt_param, reform[param])
+            else:
+                setattr(model, pt_param, reform[param][0])
+    reform.update(pt_reforms)
+
+
+
 def growth_fixup(mod):
     if mod['growth_choice']:
         if mod['growth_choice'] == 'factor_adjustment':
@@ -141,6 +180,9 @@ def process_model(model, start_year, stored_errors=None, request=None,
     worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
     if request:
         benefit_surtax_fixup(request.REQUEST, worker_data, model)
+        amt_fixup(request.REQUEST, worker_data, model)
+        passthrough_fixup(request.REQUEST, worker_data, model)
+
     # start calc job
     if do_full_calc:
         submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))

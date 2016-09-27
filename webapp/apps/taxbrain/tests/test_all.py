@@ -297,7 +297,7 @@ class TaxInputTests(TestCase):
         assert len(ans) == 2
 
     def test_convert_non_cpi_inflated(self):
-        values = {"FEI_ec_c": [100000.]}
+        values = {"EITC_InvestIncome_c": [3200]}
 
         ans = package_up_vars(values, first_budget_year=FBY)
 
@@ -306,7 +306,7 @@ class TaxInputTests(TestCase):
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
         # irates are rates for 2015, 2016, and 2017
-        irates = pp.indexing_rates_for_update(param_name='FEI_ec_c', calyear=FBY,
+        irates = pp.indexing_rates_for_update(param_name='EITC_InvestIncome_c', calyear=FBY,
                                             num_years_to_expand=2)
 
         # User choices propagate through to all future years
@@ -314,10 +314,10 @@ class TaxInputTests(TestCase):
         # the defaults JSON file has values up to 2016. We should
         # give back values up to 2016, with user choice propagating
 
-        f2_2016 = 100000
+        f2_2016 = 3200
 
-        exp =  [100000, f2_2016]
-        assert ans['_FEI_ec_c'] == exp
+        exp =  [3200, f2_2016]
+        assert ans['_EITC_InvestIncome_c'] == exp
 
     def test_package_up_eitc(self):
         values = {'EITC_rt_2': [0.44], 'EITC_rt_0': [0.08415], 'EITC_rt_1': [0.374, 0.39],
