@@ -244,7 +244,7 @@ def btax_results_to_tables(results, first_budget_year):
                             'decimals': table['cols'][col_key]['decimals'],
                         }
                     }
-                    value = table_data[idx][col_key]
+                    value = table_data[idx][col_key+1]
                     cell['value'] = value
 
                     row['cells'].append(cell)
