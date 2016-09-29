@@ -121,7 +121,7 @@
 <script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
 <script>
-	   window.tableData = JSON.parse('{{ table_json | safe }}');
+       window.tableData = JSON.parse('{{ table_json | safe }}');
        window.viewBy = "industry";
        window.outputInterest = "metr";
        window.outputFormat = "changed";
@@ -217,13 +217,13 @@
                row = items.rows[i];
 			   $table_body.append(`
 				  <tr>
+					<td>${row.label}</td>
 					<td>${formatValue(row.cells, 0)}</td>
 					<td>${formatValue(row.cells, 1)}</td>
 					<td>${formatValue(row.cells, 2)}</td>
 					<td>${formatValue(row.cells, 3)}</td>
 					<td>${formatValue(row.cells, 4)}</td>
 					<td>${formatValue(row.cells, 5)}</td>
-					<td>${formatValue(row.cells, 6)}</td>
 				  </tr>
 				  `);
            }
