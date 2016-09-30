@@ -18,8 +18,10 @@ START_YEAR = int(os.environ.get('START_YEAR', 2016))
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
 DROPQ_URL = "/dropq_start_job"
+DROPQ_JSON_URL = "/dropq_json_start_job"
 # URL to perform the dropq algorithm on a sample of the full dataset
 DROPQ_SMALL_URL = "/dropq_small_start_job"
+DROPQ_SMALL_JSON_URL = "/dropq_json_small_start_job"
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
@@ -54,10 +56,23 @@ class DropqCompute(object):
         job_response = requests.get(theurl, params=params)
         return job_response
 
+    def submit_json_dropq_calculation(self, mods, first_budget_year):
+        url_template = "http://{hn}" + DROPQ_URL
+        return self.submit_calculation(mods, first_budget_year, url_template,
+                                       num_years=NUM_BUDGET_YEARS,
+                                       pack_up_user_mods=False)
+
     def submit_dropq_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS)
+
+    def submit_json_dropq_small_calculation(self, mods, first_budget_year):
+        url_template = "http://{hn}" + DROPQ_SMALL_URL
+        return self.submit_calculation(mods, first_budget_year, url_template,
+                                       num_years=NUM_BUDGET_YEARS_QUICK,
+                                       increment_counter=False,
+                                       pack_up_user_mods=False)
 
     def submit_dropq_small_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
@@ -74,14 +89,20 @@ class DropqCompute(object):
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS,
                            workers=DROPQ_WORKERS,
                            increment_counter=True,
-                           use_wnc_offset=True):
+                           use_wnc_offset=True,
+                           pack_up_user_mods=True):
         print "mods is ", mods
-        user_mods = self.package_up_vars(mods, first_budget_year)
-        if not bool(user_mods):
-            return False
-        print "user_mods is ", user_mods
-        print "submit work"
-        user_mods={first_budget_year:user_mods}
+        if pack_up_user_mods:
+            user_mods = self.package_up_vars(mods, first_budget_year)
+            if not bool(user_mods):
+                return False
+            print "user_mods is ", user_mods
+            print "submit work"
+            user_mods={first_budget_year:user_mods}
+        else:
+            user_mods = mods
+            print "JSON user_mods is ", user_mods
+
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
             wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
@@ -143,7 +164,7 @@ class DropqCompute(object):
         return [first_budget_year]
 
     def dropq_results_ready(self, job_ids):
-        jobs_done = [False] * len(job_ids)
+        jobs_done = [None] * len(job_ids)
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
             result_url = "http://{hn}/dropq_query_result".format(hn=hostname)
@@ -151,17 +172,13 @@ class DropqCompute(object):
             msg = '{0} failed on host: {1}'.format(id_, hostname)
             if job_response.status_code == 200: # Valid response
                 rep = job_response.text
-                if rep == 'YES':
-                    jobs_done[idx] = True
-                    print "got one!: ", id_
-                elif rep == 'FAIL':
-                    raise JobFailError(msg)
+                jobs_done[idx] = rep
             else:
                 print 'did not expect response with status_code', job_response.status_code
                 raise JobFailError(msg)
         return jobs_done
 
-    def _get_results_base(self, job_ids):
+    def _get_results_base(self, job_ids, job_failure=False):
         ans = []
         for idx, id_hostname in enumerate(job_ids):
             id_, hostname = id_hostname
@@ -169,15 +186,21 @@ class DropqCompute(object):
             job_response = self.remote_retrieve_results(result_url, params={'job_id':id_})
             if job_response.status_code == 200: # Valid response
                 try:
-                    ans.append(job_response.json())
+                    if job_failure:
+                        ans.append(job_response.text)
+                    else:
+                        ans.append(job_response.json())
                 except ValueError:
                     # Got back a bad response. Get the text and re-raise
                     msg = 'PROBLEM WITH RESPONSE. TEXT RECEIVED: {}'
                     raise ValueError(msg)
         return ans
 
-    def dropq_get_results(self, job_ids):
-        ans = self._get_results_base(job_ids)
+    def dropq_get_results(self, job_ids, job_failure=False):
+        if job_failure:
+            return self._get_results_base(job_ids, job_failure=job_failure)
+
+        ans = self._get_results_base(job_ids, job_failure=job_failure)
 
         mY_dec = {}
         mX_dec = {}

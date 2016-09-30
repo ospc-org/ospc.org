@@ -515,3 +515,52 @@ class TaxBrainViewsTests(TestCase):
         assert float(tsi2.PT_brk7_1) == float(tsi2.II_brk7_1)
         assert float(tsi2.PT_brk7_2) == float(tsi2.II_brk7_2)
         assert float(tsi2.PT_brk7_3) == float(tsi2.II_brk7_3)
+
+
+    def test_taxbrain_json_post(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
+        tc_json = [u'            {"2016": {"_FICA_ss_trt": [0.14] } }\r\n        ']
+        gr_json = [u'            Put Growth JSON reform parameters here.\r\n        ']
+        be_json = [u'            Put Behavior JSON reform parameters here.\r\n        ']
+        data = {u'taxcalc': tc_json,
+                u'growth': gr_json,
+                u'behavior': be_json,
+                u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/json/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+
+    def test_taxbrain_json_quick_calc_post(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
+        tc_json = [u'            {"2016": {"_FICA_ss_trt": [0.14] } }\r\n        ']
+        gr_json = [u'            Put Growth JSON reform parameters here.\r\n        ']
+        be_json = [u'            Put Behavior JSON reform parameters here.\r\n        ']
+        data = {u'taxcalc': tc_json,
+                u'growth': gr_json,
+                u'behavior': be_json,
+                u'has_errors': [u'False'], u'II_em': [u'4333'],
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123',
+                u'quick_calc': 'Quick Calculation!'}
+
+        response = self.client.post('/taxbrain/json/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+

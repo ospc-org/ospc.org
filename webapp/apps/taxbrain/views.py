@@ -122,7 +122,6 @@ def passthrough_fixup(request, reform, model):
     reform.update(pt_reforms)
 
 
-
 def growth_fixup(mod):
     if mod['growth_choice']:
         if mod['growth_choice'] == 'factor_adjustment':
@@ -182,7 +181,6 @@ def process_model(model, start_year, stored_errors=None, request=None,
         benefit_surtax_fixup(request.REQUEST, worker_data, model)
         amt_fixup(request.REQUEST, worker_data, model)
         passthrough_fixup(request.REQUEST, worker_data, model)
-
     # start calc job
     if do_full_calc:
         submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
@@ -217,6 +215,119 @@ def process_model(model, start_year, stored_errors=None, request=None,
         unique_url.exp_comp_datetime = expected_completion
         unique_url.save()
         return unique_url
+
+def json_input(request):
+    """
+    This view handles the JSON input page 
+    """
+    no_inputs = False
+    start_year = '2016'
+    # Probably a GET request, load a default form
+    #form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+
+    taxcalc_default_params = default_policy(int(start_year))
+    has_errors = False
+    errors = None
+
+    text_taxcalc = "Put Calculator JSON reform parameters here."
+    text_growth = "Put Growth JSON reform parameters here."
+    text_behavior = "Put Behavior JSON reform parameters here."
+
+    if request.method=='POST':
+        # Client is attempting to send inputs, validate as form data
+        # Need need to the pull the start_year out of the query string
+        # to properly set up the Form
+        has_errors = make_bool(request.POST['has_errors'])
+        start_year = request.REQUEST['start_year']
+        text_taxcalc = request.POST['taxcalc'].strip()
+        text_growth = request.POST['growth'].strip()
+        text_behavior = request.POST['behavior'].strip()
+        # Assume we do the full calculation unless we find out otherwise
+        fields = dict(request.REQUEST)
+        do_full_calc = False if fields.get('quick_calc') else True
+        error_messages = {}
+        reform_dict = {}
+        for kind, text in zip(('Behavior:', 'Growth:', 'Tax-Calculator:'),
+                              (text_behavior, text_growth, text_taxcalc)):
+            try:
+                if text:
+                    starting_text = "Put {} JSON reform parameters here"
+                    if starting_text.format(kind[:-1]) in text:
+                        continue
+                    reform_dict[kind] = json.loads(text)
+            except ValueError as ve:
+                error_messages[kind] = str(ve)
+
+        if error_messages:
+            has_errors = True
+            errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
+        else:
+            reform_data = {}
+            for kind, year_with_reform in reform_dict.items():
+                for year, reform in year_with_reform.items():
+                    if year in reform_data:
+                        reform_data[year].update(reform)
+                    else:
+                        reform_data[year] = reform
+
+
+            try:
+                log_ip(request)
+                #Submit calculation
+                if do_full_calc:
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(reform_data, int(start_year))
+                else:
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(reform_data, int(start_year))
+
+                if not submitted_ids:
+                    raise JobFailError("couldn't submit ids")
+                else:
+                    job_ids = denormalize(submitted_ids)
+                    model = TaxSaveInputs()
+                    model.job_ids = job_ids
+                    model.first_year = int(start_year)
+                    model.quick_calc = not do_full_calc
+                    model.save()
+                    unique_url = OutputUrl()
+                    if request and request.user.is_authenticated():
+                        current_user = User.objects.get(pk=request.user.id)
+                        unique_url.user = current_user
+
+                    if unique_url.taxcalc_vers != None:
+                        pass
+                    else:
+                        unique_url.taxcalc_vers = taxcalc_version
+
+                    unique_url.unique_inputs = model
+                    unique_url.model_pk = model.pk
+                    cur_dt = datetime.datetime.utcnow()
+                    future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                    expected_completion = cur_dt + future_offset
+                    unique_url.exp_comp_datetime = expected_completion
+                    unique_url.save()
+
+                return redirect(unique_url)
+
+            except JobFailError:
+                no_inputs = True
+                form_personal_exemp = personal_inputs
+
+    text = {'taxcalc':text_taxcalc, 'growth':text_growth,
+            'behavior':text_behavior}
+
+    init_context = {
+        'params': taxcalc_default_params,
+        'input_text': text,
+        'errors': errors,
+        'taxcalc_version': taxcalc_version,
+        'start_years': START_YEARS,
+        'start_year': start_year,
+        'has_errors': has_errors,
+        'enable_quick_calc': ENABLE_QUICK_CALC
+    }
+
+
+    return render(request, 'taxbrain/input_json.html', init_context)
 
 
 def personal_results(request):
@@ -434,7 +545,18 @@ def output_detail(request, pk):
             print(jfe)
             return render_to_response('taxbrain/failed.html')
 
-        if all(jobs_ready):
+        if any([j == 'FAIL' for j in jobs_ready]):
+            failed_jobs = [sub_id for (sub_id, job_ready) in
+                           zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
+
+            #Just need the error message from one failed job
+            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
+            error_msg = error_msgs[0]
+            val_err_idx = error_msg.rfind("Error")
+            return render(request, 'taxbrain/failed.html', {"error_msg": error_msg[val_err_idx:]})
+
+
+        if all([j == 'YES' for j in jobs_ready]):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
             model.creation_date = datetime.datetime.now()
             model.save()
@@ -443,7 +565,7 @@ def output_detail(request, pk):
 
         else:
             jobs_not_ready = [sub_id for (sub_id, job_ready) in
-                                zip(jobs_to_check, jobs_ready) if not job_ready]
+                                zip(jobs_to_check, jobs_ready) if job_ready == 'NO']
             jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
             model.save()
