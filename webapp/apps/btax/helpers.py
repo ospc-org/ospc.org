@@ -130,6 +130,9 @@ class BTaxParam(object):
 def get_btax_defaults():
     from btax import DEFAULTS
     defaults = dict(DEFAULTS)
+    # Set Bogus default for now
+    defaults['btax_betr_pass']['value'] = [0.0]
+    defaults['btax_betr_entity_Switch']['value'] = [True]
     for k,v in defaults.items():
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
@@ -153,7 +156,7 @@ BTAX_DEFAULTS = get_btax_defaults()
 def group_args_to_btax_depr(btax_default_params, asset_yr_str):
     depr_field_order = ('gds', 'ads', 'exp', 'tax')
     depr_argument_groups = []
-    for yr in ['all'] + asset_yr_str:
+    for yr in asset_yr_str:
         gds_id = 'btax_depr_{}yr_gds_Switch'.format(yr)
         ads_id = 'btax_depr_{}yr_ads_Switch'.format(yr)
         tax_id = 'btax_depr_{}yr_tax_Switch'.format(yr)
@@ -244,7 +247,7 @@ def btax_results_to_tables(results, first_budget_year):
                             'decimals': table['cols'][col_key]['decimals'],
                         }
                     }
-                    value = table_data[idx][col_key]
+                    value = table_data[idx][col_key+1]
                     cell['value'] = value
 
                     row['cells'].append(cell)
