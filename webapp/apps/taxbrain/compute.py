@@ -18,10 +18,8 @@ START_YEAR = int(os.environ.get('START_YEAR', 2016))
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
 DROPQ_URL = "/dropq_start_job"
-DROPQ_JSON_URL = "/dropq_json_start_job"
 # URL to perform the dropq algorithm on a sample of the full dataset
 DROPQ_SMALL_URL = "/dropq_small_start_job"
-DROPQ_SMALL_JSON_URL = "/dropq_json_small_start_job"
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
@@ -92,6 +90,7 @@ class DropqCompute(object):
                            use_wnc_offset=True,
                            pack_up_user_mods=True):
         print "mods is ", mods
+        data = {}
         if pack_up_user_mods:
             user_mods = self.package_up_vars(mods, first_budget_year)
             if not bool(user_mods):
@@ -101,6 +100,7 @@ class DropqCompute(object):
             user_mods={first_budget_year:user_mods}
         else:
             user_mods = mods
+            data['is_strict'] = True
             print "JSON user_mods is ", user_mods
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)
@@ -117,7 +117,6 @@ class DropqCompute(object):
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
-        data = {}
         data['user_mods'] = json.dumps(user_mods)
         job_ids = []
         hostname_idx = 0
