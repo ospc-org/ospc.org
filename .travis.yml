@@ -13,6 +13,7 @@ install:
   - conda create -n webappdev python=$TRAVIS_PYTHON_VERSION pytest setuptools 
   - source activate webappdev
   - conda install -c ospc --file conda-requirements.txt
+  - conda update -c ospc --force taxcalc
   - pip install -r requirements.txt
   - pip install -r requirements_dev.txt
   - pip install pytest-django
