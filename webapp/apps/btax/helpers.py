@@ -132,7 +132,6 @@ def get_btax_defaults():
     defaults = dict(DEFAULTS)
     # Set Bogus default for now
     defaults['btax_betr_pass']['value'] = [0.0]
-    defaults['btax_betr_entity_Switch']['value'] = [True]
     for k,v in defaults.items():
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
