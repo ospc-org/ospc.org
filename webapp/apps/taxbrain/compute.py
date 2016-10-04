@@ -100,7 +100,8 @@ class DropqCompute(object):
             user_mods={first_budget_year:user_mods}
         else:
             user_mods = mods
-            data['is_strict'] = True
+            data['taxio_format'] = True
+            data['first_budget_year'] = first_budget_year
             print "JSON user_mods is ", user_mods
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)

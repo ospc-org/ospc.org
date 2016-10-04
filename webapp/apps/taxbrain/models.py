@@ -71,6 +71,25 @@ class SeparatedValuesField(models.TextField):
         return self.get_db_prep_value(value)
 
 
+class JSONReformTaxCalculator(models.Model):
+    '''
+    This class holds all of the text for a JSON-based reform input
+    for TaxBrain. A TaxSavesInput Model will have a foreign key to 
+    an instance of this model if the user created the TaxBrain job
+    through the JSON iput page.
+    '''
+    text = models.CharField(blank=True, null=False, max_length=4000)
+
+class ErrorMessageTaxCalculator(models.Model):
+    '''
+    This class holds all of the text for an error message on
+    TaxBrain. A TaxSavesInput Model will have a foreign key to 
+    an instance of this model if the user created the TaxBrain job
+    that ends up failing and reporting this failure.
+    '''
+    text = models.CharField(blank=True, null=False, max_length=4000)
+
+
 class TaxSaveInputs(models.Model):
     """
     This model contains all the parameters for the tax model and the tax
@@ -422,6 +441,13 @@ class TaxSaveInputs(models.Model):
 
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
+
+    # JSON input text
+    json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
+
+    # Error text
+    error_text = models.ForeignKey(ErrorMessageTaxCalculator, null=True, default=None, blank=True)
+
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
@@ -430,6 +456,7 @@ class TaxSaveInputs(models.Model):
         permissions = (
             ("view_inputs", "Allowed to view Taxbrain."),
         )
+
 
 class WorkerNodesCounter(models.Model):
     '''

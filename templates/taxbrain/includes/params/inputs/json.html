@@ -16,12 +16,6 @@
 <h2>Tax Calculator Parameters</h2>
 {% include 'taxbrain/includes/params/inputs/box.html' with box_name="taxcalc" text_label="Calculator Reform Parameters (JSON)" text_for_box=input_text.taxcalc %}
 
-<h2>Growth Parameters</h2>
-{% include 'taxbrain/includes/params/inputs/box.html' with box_name="growth" text_label="Growth Reform Parameters (JSON)" text_for_box=input_text.growth %}
-
-<h2>Behavior Parameters</h2>
-{% include 'taxbrain/includes/params/inputs/box.html' with box_name="behavior" text_label="Behavior Reform Parameters (JSON)" text_for_box=input_text.behavior %}
-
 {% endblock %}
 
 {% block provide_if_no_continue %}{% endblock %}

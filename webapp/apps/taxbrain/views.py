@@ -37,7 +37,7 @@ from django import forms
 from djqscsv import render_to_csv_response
 
 from .forms import PersonalExemptionForm, has_field_errors
-from .models import TaxSaveInputs, OutputUrl
+from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       is_wildcard, convert_val, make_bool)
 from .compute import DropqCompute, MockCompute, JobFailError
@@ -229,9 +229,8 @@ def json_input(request):
     has_errors = False
     errors = None
 
-    text_taxcalc = "Put Calculator JSON reform parameters here."
-    text_growth = "Put Growth JSON reform parameters here."
-    text_behavior = "Put Behavior JSON reform parameters here."
+    STARTING_TEXT = "Put Calculator JSON reform parameters here."
+    text_taxcalc = STARTING_TEXT
 
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
@@ -240,51 +239,39 @@ def json_input(request):
         has_errors = make_bool(request.POST['has_errors'])
         start_year = request.REQUEST['start_year']
         text_taxcalc = request.POST['taxcalc'].strip()
-        text_growth = request.POST['growth'].strip()
-        text_behavior = request.POST['behavior'].strip()
         # Assume we do the full calculation unless we find out otherwise
         fields = dict(request.REQUEST)
         do_full_calc = False if fields.get('quick_calc') else True
         error_messages = {}
         reform_dict = {}
-        for kind, text in zip(('Behavior:', 'Growth:', 'Tax-Calculator:'),
-                              (text_behavior, text_growth, text_taxcalc)):
-            try:
-                if text:
-                    starting_text = "Put {} JSON reform parameters here"
-                    if starting_text.format(kind[:-1]) in text:
-                        continue
-                    reform_dict[kind] = json.loads(text)
-            except ValueError as ve:
-                error_messages[kind] = str(ve)
+        if text_taxcalc and not STARTING_TEXT in text_taxcalc:
+            reform_dict['taxcalc'] = text_taxcalc
+        else:
+            error_messages['Tax-Calculator:'] = "No text found in input box."
 
         if error_messages:
             has_errors = True
             errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
         else:
-            reform_data = {}
-            for kind, year_with_reform in reform_dict.items():
-                for year, reform in year_with_reform.items():
-                    if year in reform_data:
-                        reform_data[year].update(reform)
-                    else:
-                        reform_data[year] = reform
-
-
             try:
                 log_ip(request)
                 #Submit calculation
                 if do_full_calc:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(reform_data, int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(reform_dict['taxcalc'], int(start_year))
                 else:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(reform_data, int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(reform_dict['taxcalc'], int(start_year))
 
                 if not submitted_ids:
                     raise JobFailError("couldn't submit ids")
                 else:
                     job_ids = denormalize(submitted_ids)
+                    json_reform = JSONReformTaxCalculator()
+                    json_reform.text = reform_dict['taxcalc']
+                    json_reform.save()
+
                     model = TaxSaveInputs()
                     model.job_ids = job_ids
+                    model.json_text = json_reform
                     model.first_year = int(start_year)
                     model.quick_calc = not do_full_calc
                     model.save()
@@ -312,8 +299,7 @@ def json_input(request):
                 no_inputs = True
                 form_personal_exemp = personal_inputs
 
-    text = {'taxcalc':text_taxcalc, 'growth':text_growth,
-            'behavior':text_behavior}
+    text = {'taxcalc':text_taxcalc}
 
     init_context = {
         'params': taxcalc_default_params,
@@ -529,7 +515,8 @@ def output_detail(request, pk):
     if model.tax_result:
         context = get_result_context(model, request, url)
         return render(request, 'taxbrain/results.html', context)
-
+    elif model.error_text:
+        return render(request, 'taxbrain/failed.html', {"error_msg": model.error_text.text})
     else:
 
         job_ids = model.job_ids
@@ -553,6 +540,11 @@ def output_detail(request, pk):
             error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
             error_msg = error_msgs[0]
             val_err_idx = error_msg.rfind("Error")
+            error = ErrorMessageTaxCalculator()
+            error.text = error_msg[val_err_idx:]
+            error.save()
+            model.error_text = error
+            model.save()
             return render(request, 'taxbrain/failed.html', {"error_msg": error_msg[val_err_idx:]})
 
 
