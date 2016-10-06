@@ -216,6 +216,105 @@ def process_model(model, start_year, stored_errors=None, request=None,
         unique_url.save()
         return unique_url
 
+def file_input(request):
+    """
+    This view handles the JSON input page 
+    """
+    no_inputs = False
+    start_year = '2016'
+    # Probably a GET request, load a default form
+
+    taxcalc_default_params = default_policy(int(start_year))
+    has_errors = False
+    errors = None
+
+
+    if request.method=='POST':
+        # Client is attempting to send inputs, validate as form data
+        # Need need to the pull the start_year out of the query string
+        # to properly set up the Form
+        has_errors = make_bool(request.POST['has_errors'])
+        start_year = request.REQUEST['start_year']
+        # Assume we do the full calculation unless we find out otherwise
+        fields = dict(request.REQUEST)
+        do_full_calc = False if fields.get('quick_calc') else True
+        error_messages = {}
+        reform_dict = {}
+        if 'docfile' in request.FILES:
+            inmemfile = request.FILES['docfile']
+            if inmemfile.content_type != 'application/json':
+                error_messages['Tax-Calculator:'] = "Bad file type"
+            else:
+                text_taxcalc = inmemfile.read().strip()
+                reform_dict['taxcalc'] = text_taxcalc
+        else:
+            error_messages['Tax-Calculator:'] = "No file uploaded."
+
+        if error_messages:
+            has_errors = True
+            errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
+        else:
+            try:
+                log_ip(request)
+                #Submit calculation
+                if do_full_calc:
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(reform_dict['taxcalc'], int(start_year))
+                else:
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(reform_dict['taxcalc'], int(start_year))
+
+                if not submitted_ids:
+                    raise JobFailError("couldn't submit ids")
+                else:
+                    job_ids = denormalize(submitted_ids)
+                    json_reform = JSONReformTaxCalculator()
+                    json_reform.text = reform_dict['taxcalc']
+                    json_reform.save()
+
+                    model = TaxSaveInputs()
+                    model.job_ids = job_ids
+                    model.json_text = json_reform
+                    model.first_year = int(start_year)
+                    model.quick_calc = not do_full_calc
+                    model.save()
+                    unique_url = OutputUrl()
+                    if request and request.user.is_authenticated():
+                        current_user = User.objects.get(pk=request.user.id)
+                        unique_url.user = current_user
+
+                    if unique_url.taxcalc_vers != None:
+                        pass
+                    else:
+                        unique_url.taxcalc_vers = taxcalc_version
+
+                    unique_url.unique_inputs = model
+                    unique_url.model_pk = model.pk
+                    cur_dt = datetime.datetime.utcnow()
+                    future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                    expected_completion = cur_dt + future_offset
+                    unique_url.exp_comp_datetime = expected_completion
+                    unique_url.save()
+
+                return redirect(unique_url)
+
+            except JobFailError:
+                # Bail here and reload the page until we have a better answer
+                pass
+
+    init_context = {
+        'params': taxcalc_default_params,
+        'errors': errors,
+        'taxcalc_version': taxcalc_version,
+        'start_years': START_YEARS,
+        'start_year': start_year,
+        'has_errors': has_errors,
+        'enable_quick_calc': ENABLE_QUICK_CALC
+    }
+
+
+    return render(request, 'taxbrain/input_file.html', init_context)
+
+
+
 def json_input(request):
     """
     This view handles the JSON input page 
@@ -483,6 +582,11 @@ def get_result_context(model, request, url):
         'deciles': INCOME_DECILES_TOOLTIP
     }
 
+    if model.json_text:
+        file_contents = model.json_text.text
+    else:
+        file_contents = False
+
     is_registered = True if request.user.is_authenticated() else False
     context = {
         'locals':locals(),
@@ -493,7 +597,8 @@ def get_result_context(model, request, url):
         'first_year': first_year,
         'quick_calc': quick_calc,
         'is_registered': is_registered,
-        'is_micro': True
+        'is_micro': True,
+        'file_contents': file_contents
     }
     return context
 
