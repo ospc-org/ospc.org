@@ -8,6 +8,7 @@ static3==0.5.1
 wsgiref==0.1.2
 -e git+https://github.com/funkybob/django-flatblocks.git#egg=django-flatblocks
 git+git://github.com/open-source-economics/drop-q
+git+git://github.com/open-source-economics/B-Tax
 sendgrid-django
 psycopg2==2.5.4
 django-user-accounts
