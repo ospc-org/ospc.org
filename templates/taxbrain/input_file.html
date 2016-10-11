@@ -46,6 +46,7 @@
     <form class="inputs-form" method="post" action="/taxbrain/file/?start_year={{start_year}}" enctype="multipart/form-data">
       {% csrf_token %}
       <input type="hidden" name="has_errors" value="{{ has_errors }}" />
+      <input type="hidden" name="start_year" value="{{ start_year }}" />
       <div class="container">
         <div class="row">
           <div class="col-xs-3">

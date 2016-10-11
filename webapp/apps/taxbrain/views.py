@@ -242,11 +242,8 @@ def file_input(request):
         reform_dict = {}
         if 'docfile' in request.FILES:
             inmemfile = request.FILES['docfile']
-            if inmemfile.content_type != 'application/json':
-                error_messages['Tax-Calculator:'] = "Bad file type"
-            else:
-                text_taxcalc = inmemfile.read().strip()
-                reform_dict['taxcalc'] = text_taxcalc
+            text_taxcalc = inmemfile.read().strip()
+            reform_dict['taxcalc'] = text_taxcalc
         else:
             error_messages['Tax-Calculator:'] = "No file uploaded."
 
@@ -299,6 +296,10 @@ def file_input(request):
             except JobFailError:
                 # Bail here and reload the page until we have a better answer
                 pass
+    else:
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in START_YEARS:
+            start_year = params['start_year'][0]
 
     init_context = {
         'params': taxcalc_default_params,
@@ -307,7 +308,8 @@ def file_input(request):
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
-        'enable_quick_calc': ENABLE_QUICK_CALC
+        'enable_quick_calc': ENABLE_QUICK_CALC,
+        'input_type': "file"
     }
 
 
