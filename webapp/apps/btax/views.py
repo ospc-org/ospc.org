@@ -125,7 +125,6 @@ def btax_results(request):
             worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
 
             #Non corp entity fix up:
-            worker_data['btax_betr_entity_Switch'] = [True]
             if 'btax_betr_pass' not in worker_data:
                 worker_data['btax_betr_pass'] = [0.0]
 
