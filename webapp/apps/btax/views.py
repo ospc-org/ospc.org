@@ -327,7 +327,6 @@ def output_detail(request, pk):
             failed_jobs = [sub_id for (sub_id, job_ready) in
                            zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
 
-            #import pdb;pdb.set_trace()
             #Just need the error message from one failed job
             error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
             error_msg = error_msgs[0]
