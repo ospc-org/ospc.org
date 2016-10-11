@@ -13,6 +13,36 @@ from taxcalc import Policy
 from .utils import *
 
 START_YEAR = 2016
+JSON_SIMPLETAXIO_DATA = """
+{
+    "_AMT_tthd": // AMT taxinc threshold separating the two AMT tax brackets
+    {"2015": [200000],
+     "2017": [300000]
+    },
+    "_EITC_c": // maximum EITC amount by number of qualifying kids (0,1,2,3+)
+    {"2016": [[ 900, 5000,  8000,  9000]],
+     "2019": [[1200, 7000, 10000, 12000]]
+    },
+    "_II_em": // personal exemption amount (see indexing changes below)
+    {"2016": [6000],
+     "2018": [7500],
+     "2020": [9000]
+    },
+    "_II_em_cpi": // personal exemption amount indexing status
+    {"2016": false, // values in future years are same as this year value
+     "2018": true   // values in future years indexed with this year as base
+    },
+    "_SS_Earnings_c": // social security (OASDI) maximum taxable earnings
+    {"2016": [300000],
+     "2018": [500000],
+     "2020": [700000]
+    },
+    "_AMT_em_cpi": // AMT exemption amount indexing status
+    {"2017": false, // values in future years are same as this year value
+     "2020": true   // values in future years indexed with this year as base
+    }
+}
+"""
 
 class TaxBrainViewsTests(TestCase):
     ''' Test the views of this app. '''
@@ -515,3 +545,44 @@ class TaxBrainViewsTests(TestCase):
         assert float(tsi2.PT_brk7_1) == float(tsi2.II_brk7_1)
         assert float(tsi2.PT_brk7_2) == float(tsi2.II_brk7_2)
         assert float(tsi2.PT_brk7_3) == float(tsi2.II_brk7_3)
+
+
+    def test_taxbrain_json_post(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
+        tc_json = [unicode(JSON_SIMPLETAXIO_DATA)]
+        data = {u'taxcalc': tc_json,
+                u'has_errors': [u'False'], 
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/json/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+
+    def test_taxbrain_json_quick_calc_post(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+
+        tc_json = [unicode(JSON_SIMPLETAXIO_DATA)]
+        data = {u'taxcalc': tc_json,
+                u'has_errors': [u'False'], 
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123',
+                u'quick_calc': 'Quick Calculation!'}
+
+        response = self.client.post('/taxbrain/json/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+

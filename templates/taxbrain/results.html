@@ -18,6 +18,13 @@
   .single-line {
     white-space: nowrap;
   }
+  .param-text {
+      margin-left: 80px;
+      margin-right: 80px;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      text-align: left;
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -37,16 +44,22 @@
     {% endif %}
     <div class="result-table">
       <div class="result-table-controls">
-        {% if is_micro %}
+        {% if is_micro and not file_contents %}
         <a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
-        {% if is_behavior %}
+        {% if is_behavior and not file_contents %}
         <a href="/dynamic/behavioral/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
         {% if is_micro %}
         <a href="/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Link to Dynamic Simulations</a>
         {% endif %}
       </div>
+      {% if file_contents %}
+      <h2> The following parameters were uploaded for this simulation: </h2>
+      <div class="param-text">
+        {{file_contents | linebreaks }}
+       </div>
+      {% endif %}
     </div>
   </div>
   <br>

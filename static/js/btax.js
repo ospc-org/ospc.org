@@ -28,7 +28,7 @@ $.each(asset_yr_str, function(index, value){
 });
 
 $('#start-year-select').change(function() {
-  $('#current-year-link').attr('href', '/btax/?start_year=' + $(this).val());
+  $('#current-year-link').attr('href', '/ccc/?start_year=' + $(this).val());
   $('#current-year-alert').removeClass('hidden');
 });
 

@@ -1,0 +1,24 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}payroll-taxes{% endblock %}
+{% block input_section_title %}Payroll Taxes{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>JSON Input Parameters</h1>
+  {% flatblock "taxbrain_json_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Tax Calculator Parameters</h2>
+
+<p><label for="id_docfile">Select a file:</label> </p>
+
+<p><input id="id_docfile" name="docfile" type="file" /></p>
+
+{% endblock %}
+
+{% block provide_if_no_continue %}{% endblock %}

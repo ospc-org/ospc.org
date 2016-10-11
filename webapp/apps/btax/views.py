@@ -323,7 +323,21 @@ def output_detail(request, pk):
             return render_to_response('taxbrain/failed.html',
                                      context={'is_btax': True})
 
-        if all(jobs_ready):
+        if any([j == 'FAIL' for j in jobs_ready]):
+            failed_jobs = [sub_id for (sub_id, job_ready) in
+                           zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
+
+            #Just need the error message from one failed job
+            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
+            error_msg = error_msgs[0]
+            val_err_idx = error_msg.rfind("Error")
+            context = {"error_msg": error_msg[val_err_idx:],
+                       "is_btax": True}
+            return render(request, 'taxbrain/failed.html', context)
+
+
+
+        if all([job == 'YES' for job in jobs_ready]):
             model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
 
             model.creation_date = datetime.datetime.now()
@@ -332,7 +346,7 @@ def output_detail(request, pk):
             return redirect(url)
         else:
             jobs_not_ready = [sub_id for (sub_id, job_ready) in
-                                zip(jobs_to_check, jobs_ready) if not job_ready]
+                                zip(jobs_to_check, jobs_ready) if not job_ready == 'YES']
             jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
             print 'not ready', jobs_not_ready

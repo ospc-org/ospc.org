@@ -170,7 +170,7 @@ STATIC_URL = '/static/'
 
 # Tell the staticfiles app to use S3Boto storage when writing the collected static files (when
 # you run `collectstatic`).
-if DEBUG:
+if True:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 else:
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
