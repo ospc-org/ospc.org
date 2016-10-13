@@ -201,26 +201,42 @@ def dynamic_behavioral(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-            taxbrain_dict = dict(taxbrain_model.__dict__)
-            growth_fixup(taxbrain_dict)
-            for key, value in taxbrain_dict.items():
-                if type(value) == type(unicode()):
-                    taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
+            if not taxbrain_model.json_text:
 
-            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+                taxbrain_dict = dict(taxbrain_model.__dict__)
+                growth_fixup(taxbrain_dict)
+                for key, value in taxbrain_dict.items():
+                    if type(value) == type(unicode()):
+                        taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
+                    else:
+                        print "missing this: ", key
 
-            #Don't need to pass around the microsim results
-            if 'tax_result' in microsim_data:
-                del microsim_data['tax_result']
+                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
 
-            benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                #Don't need to pass around the microsim results
+                if 'tax_result' in microsim_data:
+                    del microsim_data['tax_result']
 
-            microsim_data.update(worker_data)
+                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                microsim_data.update(worker_data)
+                # start calc job
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
 
-            # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
+            else:
+                import pdb;pdb.set_trace()
+                microsim_data = taxbrain_model.json_text.text
+                el_keys = ('first_year', 'elastic_gdp')
+                behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
+                behavior_params = { k:v for k, v in worker_data.items()
+                                    if k.startswith("BE_") or k == "first_year"}
+                behavior_params = {('_' + k) if k.startswith('BE') else k:v for k,v in behavior_params.items()}
+
+                additional_data = {'behavior_params': json.dumps(behavior_params)}
+                # start calc job
+                submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(microsim_data,
+                                                                         int(start_year), additional_data)
+
+
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -320,26 +336,38 @@ def dynamic_elasticities(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-            taxbrain_dict = dict(taxbrain_model.__dict__)
-            growth_fixup(taxbrain_dict)
-            for key, value in taxbrain_dict.items():
-                if type(value) == type(unicode()):
-                        taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
+            if not taxbrain_model.json_text:
+                taxbrain_dict = dict(taxbrain_model.__dict__)
+                growth_fixup(taxbrain_dict)
+                for key, value in taxbrain_dict.items():
+                    if type(value) == type(unicode()):
+                            taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
+                    else:
+                        print "missing this: ", key
 
-            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
 
-            #Don't need to pass around the microsim results
-            if 'tax_result' in microsim_data:
-                del microsim_data['tax_result']
+                #Don't need to pass around the microsim results
+                if 'tax_result' in microsim_data:
+                    del microsim_data['tax_result']
 
-            benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
-            microsim_data.update(worker_data)
+                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                microsim_data.update(worker_data)
+                # start calc job
+                import pdb;pdb.set_trace()
+                submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
+                                                                        int(start_year))
 
-            # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
-                                                                     int(start_year))
+            else:
+                microsim_data = taxbrain_model.json_text.text
+                el_keys = ('first_year', 'elastic_gdp')
+                elasticity_params = { k:v for k, v in worker_data.items() if k in el_keys}
+                additional_data = {'elasticity_params': json.dumps(elasticity_params)}
+                # start calc job
+                submitted_ids, max_q_length = dropq_compute.submit_json_elastic_calculation(microsim_data,
+                                                                         int(start_year),
+                                                                         additional_data)
+
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
