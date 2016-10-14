@@ -589,6 +589,7 @@ def get_result_context(model, request, url):
     else:
         file_contents = False
 
+    file_contents = file_contents.replace(" ","&nbsp;")
     is_registered = True if request.user.is_authenticated() else False
     context = {
         'locals':locals(),
