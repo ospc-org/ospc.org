@@ -1,6 +1,7 @@
 from __future__ import print_function
 from django.test import TestCase
 from django.test import Client
+from django.core.files.uploadedfile import SimpleUploadedFile
 import mock
 import os
 os.environ["NUM_BUDGET_YEARS"] = '2'
@@ -35,6 +36,26 @@ def do_micro_sim(client, reform):
     return response
 
 
+def do_micro_sim_from_file(client, fname):
+    #Monkey patch to mock out running of compute jobs
+    import sys
+    from webapp.apps.taxbrain import views
+    webapp_views = sys.modules['webapp.apps.taxbrain.views']
+    webapp_views.dropq_compute = MockCompute()
+
+    tc_file = SimpleUploadedFile(fname, "file_content")
+    data = {u'docfile': tc_file,
+            u'has_errors': [u'False'],
+            u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+    response = client.post('/taxbrain/file/', data)
+    # Check that redirect happens
+    assert response.status_code==302
+    idx = response.url[:-1].rfind('/')
+    assert response.url[:idx].endswith("taxbrain")
+    return response
+
+
 def do_behavioral_sim(client, microsim_response, pe_reform, start_year=START_YEAR):
     # Link to dynamic simulation
     model_num = microsim_response.url[-2:]
@@ -54,7 +75,16 @@ def do_behavioral_sim(client, microsim_response, pe_reform, start_year=START_YEA
 
     # The results page will now succeed
     next_response = client.get(response.url)
-    assert next_response.status_code == 200
+    reload_count = 0
+    while reload_count < 2:
+        if next_response.status_code == 200:
+            break
+        elif next_response.status_code == 302:
+            next_response = client.get(next_response.url)
+            reload_count = 0
+        else:
+            raise RuntimeError("unable to load results page")
+
     assert response.url[:-2].endswith("behavior_results/")
     return response
 
@@ -111,4 +141,3 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
     response = client.post(dynamic_ogusa, ogusa_reform)
     assert response.status_code == exp_status_code
     return response
-

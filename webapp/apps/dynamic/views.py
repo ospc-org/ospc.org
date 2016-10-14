@@ -223,7 +223,6 @@ def dynamic_behavioral(request, pk):
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
 
             else:
-                import pdb;pdb.set_trace()
                 microsim_data = taxbrain_model.json_text.text
                 el_keys = ('first_year', 'elastic_gdp')
                 behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
@@ -354,7 +353,6 @@ def dynamic_elasticities(request, pk):
                 benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
-                import pdb;pdb.set_trace()
                 submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
                                                                         int(start_year))
 

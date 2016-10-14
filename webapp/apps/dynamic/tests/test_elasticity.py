@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.test import Client
 import mock
 import os
+import json
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -54,7 +55,7 @@ class DynamicElasticityViewsTests(TestCase):
         dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
         # Do the elasticity of GDP simulation based on the third microsim
-        egdp_reform = {u'elasticity_gdp': [u'0.4']}
+        egdp_reform = {u'elastic_gdp': [u'0.4']}
         egdp_response = do_elasticity_sim(self.client, micro3, egdp_reform)
         orig_micro_model_num = micro3.url[-2:-1]
 
@@ -75,3 +76,27 @@ class DynamicElasticityViewsTests(TestCase):
         idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/') 
         microsim_model_num = page[idx_ms_num_start:idx_ms_num_end]
         assert microsim_model_num == orig_micro_model_num
+
+    def test_elasticity_reform_from_file(self):
+        import sys
+        from webapp.apps.taxbrain import views
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+        # Do the microsim from file
+        fname = "../../taxbrain/tests/test_reform.json"
+        micro1 = do_micro_sim_from_file(self.client, fname)
+
+        from webapp.apps.dynamic import views
+        dynamic_views = sys.modules['webapp.apps.dynamic.views']
+        dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
+
+        # Do the partial equilibrium simulation based on the microsim
+        el_reform = {u'elastic_gdp': [u'0.4']}
+        el_response = do_elasticity_sim(self.client, micro1, el_reform)
+        orig_micro_model_num = micro1.url[-2:-1]
+        from webapp.apps.dynamic import views
+        post = views.dropq_compute.last_posted
+        # Verify that partial equilibrium job submitted with proper
+        # SS_Earnings_c with wildcards filled in properly
+        beh_params = json.loads(post['elasticity_params'])
+        assert beh_params["elastic_gdp"][0]  == 0.4
