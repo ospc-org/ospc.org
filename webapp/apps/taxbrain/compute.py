@@ -54,11 +54,12 @@ class DropqCompute(object):
         job_response = requests.get(theurl, params=params)
         return job_response
 
-    def submit_json_dropq_calculation(self, mods, first_budget_year):
+    def submit_json_dropq_calculation(self, mods, first_budget_year, additional_data=None):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
-                                       pack_up_user_mods=False)
+                                       pack_up_user_mods=False,
+                                       additional_data=additional_data)
 
     def submit_dropq_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_URL
@@ -83,12 +84,21 @@ class DropqCompute(object):
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=1)
 
+    def submit_json_elastic_calculation(self, mods, first_budget_year, additional_data):
+        url_template = "http://{hn}/elastic_gdp_start_job"
+        return self.submit_calculation(mods, first_budget_year, url_template,
+                                       start_budget_year=1,
+                                       pack_up_user_mods=False,
+                                       additional_data=additional_data)
+
+
     def submit_calculation(self, mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS,
                            workers=DROPQ_WORKERS,
                            increment_counter=True,
                            use_wnc_offset=True,
-                           pack_up_user_mods=True):
+                           pack_up_user_mods=True,
+                           additional_data=None):
         print "mods is ", mods
         data = {}
         if pack_up_user_mods:
@@ -102,6 +112,8 @@ class DropqCompute(object):
             user_mods = mods
             data['taxio_format'] = True
             data['first_budget_year'] = first_budget_year
+            if additional_data:
+                data.update(additional_data)
             print "JSON user_mods is ", user_mods
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)

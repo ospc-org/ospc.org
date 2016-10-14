@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.test import Client
+from django.core.files.uploadedfile import SimpleUploadedFile
 import mock
 
 from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
@@ -579,6 +580,24 @@ class TaxBrainViewsTests(TestCase):
                 u'quick_calc': 'Quick Calculation!'}
 
         response = self.client.post('/taxbrain/json/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+
+    def test_taxbrain_file_post(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+        tc_file = SimpleUploadedFile("test_reform.json", "file_content")
+        data = {u'docfile': tc_file,
+                u'has_errors': [u'False'],
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/file/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
