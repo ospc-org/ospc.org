@@ -485,9 +485,16 @@ def dynamic_landing(request, pk):
     This view gives a landing page to choose a type of dynamic simulation that
     is linked to the microsim
     """
+    outputsurl = OutputUrl.objects.get(pk=pk)
+    taxbrain_model = outputsurl.unique_inputs
+    if taxbrain_model.json_text:
+        include_ogusa = False
+    else:
+        include_ogusa = True
     init_context = {
             'pk': pk,
             'is_authenticated': request.user.is_authenticated(),
+            'include_ogusa': include_ogusa,
             'start_year': request.GET['start_year']
              }
 

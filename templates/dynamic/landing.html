@@ -69,6 +69,7 @@
                       {% flatblock "dynamic_behavioral_blurb" %}
                     </td>
                 </tr>
+                {% if include_ogusa %}
                 <tr padding="15px">
                     <td>
                     <a href="/dynamic/ogusa/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Overlapping Generations Simulation</a>
@@ -82,6 +83,7 @@
                       {% flatblock "dynamic_olg_blurb" %}
                     </td>
                 </tr>
+                {% endif %}
                 <tr padding="15px">
                     <td padding-bottom="1em">
                      <a href="/dynamic/macro/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Macro Elasticities Simulation</a>
