@@ -20,7 +20,7 @@
         <div class="taxbrain-hero-block">
           <div class="logo">
             <h2 class="sr-only">TaxBrain</h2>
-            <img src="{% static 'images/btax/cost-of-capital-black-gray.png' %}" alt="TaxBrain" class="img-responsive" style="height:60px;">
+            <img src="{% static 'images/btax/cost-of-capital-white-blue.png' %}" alt="TaxBrain" class="img-responsive" style="height:60px;">
           </div>
           {% flatblock "ccc_subheader" %}
           <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
@@ -50,17 +50,6 @@
         <div class="row">
           <div class="col-xs-3">
             <div class="inputs-sidebar" data-spy="affix" data-offset-top="435" data-offset-bottom="245">
-              <label class="">Start Year:
-                <select id="start-year-select" class="form-control pull-right">
-                  {% for year in start_years %}
-                    <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
-                  {% endfor %}
-                </select>
-              </label>
-              <div id="current-year-alert" class="hidden">
-                This will clear your current inputs.
-                <a href="#" class="alert-link" id="current-year-link">OK, go for it.</a>
-              </div>
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                 <li><a href="#taxes">Business Income Tax Rates</a></li>
