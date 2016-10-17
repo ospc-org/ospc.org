@@ -586,6 +586,7 @@ def get_result_context(model, request, url):
 
     if model.json_text:
         file_contents = model.json_text.text
+        file_contents = file_contents.replace(" ","&nbsp;")
     else:
         file_contents = False
 

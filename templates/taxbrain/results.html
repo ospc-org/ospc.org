@@ -25,6 +25,15 @@
       margin-bottom: 40px;
       text-align: left;
   }
+  .file-contents{
+      font-family: "Courier New", Courier, monospace;
+      font-weight: bold;
+      margin-left: 80px;
+      margin-right: 80px;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      text-align: left;
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -55,9 +64,11 @@
         {% endif %}
       </div>
       {% if file_contents %}
-      <h2> The following parameters were uploaded for this simulation: </h2>
-      <div class="param-text">
-        {{file_contents | linebreaks }}
+      <h2> The following reform file was uploaded for this simulation: </h2>
+      <div class="file-contents">
+          {%autoescape off %}
+          {{file_contents | linebreaks | safe }}
+          {%endautoescape %}
        </div>
       {% endif %}
     </div>
