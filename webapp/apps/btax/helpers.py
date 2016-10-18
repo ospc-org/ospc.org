@@ -135,6 +135,7 @@ def get_btax_defaults():
     for k,v in defaults.items():
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
+
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
         param = BTaxParam(k,defaults[k])
         BTAX_DEFAULTS[param.nice_id] = param
@@ -150,6 +151,18 @@ def get_btax_defaults():
     return BTAX_DEFAULTS
 
 BTAX_DEFAULTS = get_btax_defaults()
+
+
+def hover_args_to_btax_depr():
+    # Hover over text
+    from btax import DEFAULTS
+    hover_notes = {}
+    defaults = dict(DEFAULTS)
+    hover_notes['gds_note'] = defaults['btax_depr_hover_gds_Switch']['notes']
+    hover_notes['ads_note'] = defaults['btax_depr_hover_exp']['notes']
+    hover_notes['economic_note'] = defaults['btax_depr_hover_ads_Switch']['notes']
+    hover_notes['bonus_note'] = defaults['btax_depr_hover_tax_Switch']['notes']
+    return hover_notes
 
 
 def group_args_to_btax_depr(btax_default_params, asset_yr_str):
