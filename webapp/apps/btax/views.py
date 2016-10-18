@@ -39,7 +39,7 @@ from .models import BTaxSaveInputs, BTaxOutputUrl
 from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC,
                       BTAX_OTHER, BTAX_ECON,
-                      group_args_to_btax_depr)
+                      group_args_to_btax_depr, hover_args_to_btax_depr)
 from ..taxbrain.helpers import (format_csv,
                                 is_wildcard,
                                 convert_val,
@@ -194,6 +194,7 @@ def btax_results(request):
         has_errors = True
     asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
     form_btax_input = make_bool_gds_ads(form_btax_input)
+    hover_notes = hover_args_to_btax_depr()
     init_context = {
         'form': form_btax_input,
         'make_bool':  make_bool,
@@ -205,6 +206,7 @@ def btax_results(request):
         'has_errors': has_errors,
         'asset_yr_str': asset_yr_str,
         'depr_argument_groups': group_args_to_btax_depr(btax_default_params, asset_yr_str),
+        'hover_notes': hover_notes,
         'is_btax': True,
     }
 
