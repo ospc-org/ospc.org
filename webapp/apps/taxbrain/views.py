@@ -649,11 +649,12 @@ def output_detail(request, pk):
             error_msg = error_msgs[0]
             val_err_idx = error_msg.rfind("Error")
             error = ErrorMessageTaxCalculator()
-            error.text = error_msg[val_err_idx:]
+            error_contents = error_msg[val_err_idx:].replace(" ","&nbsp;")
+            error.text = error_contents
             error.save()
             model.error_text = error
             model.save()
-            return render(request, 'taxbrain/failed.html', {"error_msg": error_msg[val_err_idx:]})
+            return render(request, 'taxbrain/failed.html', {"error_msg": error_contents})
 
 
         if all([j == 'YES' for j in jobs_ready]):
