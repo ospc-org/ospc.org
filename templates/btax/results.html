@@ -22,7 +22,6 @@
   tr:nth-child(even) {background: #f9f9f9}
   tr:nth-child(odd) {background: #FFF}
   tr.group {
-	  background: #f7f7f7 !important;
   }
 
   .single-line {
@@ -54,6 +53,10 @@
   .controls-row {
     margin-left:100px;
     margin-right:100px;
+  }
+
+  .data-label {
+    padding-left:20px !important;
   }
 
 </style>
@@ -212,7 +215,7 @@
        var buildTableObj = function(tableType) {
 
            var $table = $('<table/>');
-           // $table.addClass('stripe');
+           $table.addClass('stripe');
 
            $table.append(`
 			<thead>
@@ -257,7 +260,7 @@
                row = items.rows[i];
 			   $table_body.append(`
 				  <tr>
-					<td>${row.label}</td>
+					<td class="data-label">${row.label}</td>
 					<td>${formatValue(row.cells, 0)}</td>
 					<td>${formatValue(row.cells, 1)}</td>
 					<td>${formatValue(row.cells, 2)}</td>
@@ -280,9 +283,14 @@
  
 	    api.column(7, {page:'current'} ).data().each(function(group, i) {
 		if (last !== group) {
-		    $(rows).eq(i).before(
-			'<tr class="group"><td colspan="6">' + group + '</td><td colspan="1">' + 'full:439' + '</td></tr>'
-		    );
+		    $(rows).eq(i).before(`
+			  <tr class="group">
+				<td colspan="3"><strong>${group}</strong></td>
+				<td colspan="2"><strong>Corporate: -99999</strong></td>
+				<td colspan="2"><strong>Non-Corporate: -99999</strong></td>
+			  </tr>
+		    `);
+
 		    last = group;
 		}
 	    });
