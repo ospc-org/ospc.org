@@ -5,6 +5,7 @@
 {{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
 <link href="{% static 'js/vendor/DataTables/datatables.min.css' %}" rel="stylesheet"></link>
+<link href="{% static 'css/vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet"></link>
 <link href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
 
 <style>
@@ -36,6 +37,11 @@
   }
   .sorting:after {
       content:"" !important;
+  }
+
+  .tooltip-inner {
+    min-width: 200px;
+    max-width: 100%; 
   }
 
 </style>
@@ -72,16 +78,37 @@
           <div id="output_interest_inputs"  class="col-sm-12">
               <h2>Output of Interest:</h2>
                 <label class="radio-inline active">
-                  <input type="radio" value="mettr" name="output_interest_radio" checked="">METTR
+                  <input type="radio" value="metr" name="output_interest_radio" checked="">METR
+                  <span class="input-tooltip" data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.metr}}"></span>
                 </label>
+
                 <label class="radio-inline">
-                  <input type="radio" value="metr" name="output_interest_radio">METR
+                  <input type="radio" value="mettr" name="output_interest_radio">METTR
+                  <span class="input-tooltip"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.mettr }}"></span>
                 </label>
+
                 <label class="radio-inline">
                   <input type="radio" value="coc" name="output_interest_radio">Cost of Capital
+                  <span class="input-tooltip"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.coc }}"></span>
                 </label>
                 <label class="radio-inline">
                   <input type="radio" value="d" name="output_interest_radio">Depreciation
+                  <span class="input-tooltip"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.dprc }}"></span>
                 </label>
           </div>
 	  </div>
@@ -117,6 +144,7 @@
 {{ block.super }}
 <script src="{% static 'js/vendor/babel-standalone/babel.min.js' %}"></script>
 <script src="{% static 'js/vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'js/vendor/bootstrap/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/vendor/underscore/underscore-min.js' %}"></script>
 <script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
