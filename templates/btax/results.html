@@ -21,6 +21,9 @@
 
   tr:nth-child(even) {background: #f9f9f9}
   tr:nth-child(odd) {background: #FFF}
+  tr.group {
+	  background: #f7f7f7 !important;
+  }
 
   .single-line {
     white-space: nowrap;
@@ -209,7 +212,7 @@
        var buildTableObj = function(tableType) {
 
            var $table = $('<table/>');
-           $table.addClass('stripe');
+           // $table.addClass('stripe');
 
            $table.append(`
 			<thead>
@@ -261,6 +264,7 @@
 					<td>${formatValue(row.cells, 3)}</td>
 					<td>${formatValue(row.cells, 4)}</td>
 					<td>${formatValue(row.cells, 5)}</td>
+					<td>${row.major_grouping}</td>
 				  </tr>
 				  `);
            }
@@ -268,6 +272,21 @@
            $table.append($table_body);
            $('#results-table-area').html($table);
 	   };
+	
+	var onTableDraw =  function(settings) {
+	    var api = this.api();
+	    var rows = api.rows( {page:'current'} ).nodes();
+	    var last=null;
+ 
+	    api.column(7, {page:'current'} ).data().each(function(group, i) {
+		if (last !== group) {
+		    $(rows).eq(i).before(
+			'<tr class="group"><td colspan="6">' + group + '</td><td colspan="1">' + 'full:439' + '</td></tr>'
+		    );
+		    last = group;
+		}
+	    });
+	};
 
        var buildTable = function() {
 
@@ -277,16 +296,39 @@
 			   buildTableObj('Industry');
            }
 
-           $('#results-table-area>table').DataTable({"paging":false, "info": false});
-
-	   };
+           $('#results-table-area>table').DataTable({
+		"columnDefs": [{"visible": false, "targets": 7}],
+		"order": [[7, 'asc']],
+		"paging":false,
+		"info":false,
+		"drawCallback":onTableDraw
+	    });
+       };
 
        document.getElementById('view_by_inputs').addEventListener('change', onViewByChange, false);
        document.getElementById('output_interest_inputs').addEventListener('change', onOutputInterestChange, false);
        document.getElementById('output_format_inputs').addEventListener('change', onOutputFormatChange, false);
 
 	   delete window.tableData['result_years'];
-       buildTable();
+
+
+    buildTable();
+
+
+ 
+    // Order by the grouping
+    $('table tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 2 && currentOrder[1] === 'asc' ) {
+            table.order( [ 2, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 2, 'asc' ] ).draw();
+        }
+    } );
+
+
+
     });
 
 </script>
