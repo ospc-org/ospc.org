@@ -44,6 +44,15 @@
     max-width: 100%; 
   }
 
+  #results-container {
+    margin:0;
+  }
+
+  .controls-row {
+    margin-left:100px;
+    margin-right:100px;
+  }
+
 </style>
 
 
@@ -62,8 +71,8 @@
 
   </div>
   <br>
-  <div class="container">
-	  <div class="row">
+  <div id="results-container" class="container">
+	  <div class="row controls-row">
           <div id="view_by_inputs" class="col-sm-12">
               <h2>View Output by:</h2>
                 <label class="radio-inline active">
@@ -74,7 +83,7 @@
                 </label>
           </div>
 	  </div>
-	  <div class="row">
+	  <div class="row controls-row">
           <div id="output_interest_inputs"  class="col-sm-12">
               <h2>Output of Interest:</h2>
                 <label class="radio-inline active">
@@ -112,7 +121,7 @@
                 </label>
           </div>
 	  </div>
-	  <div class="row">
+	  <div class="row controls-row">
           <div id="output_format_inputs" class="col-sm-12">
               <h2>Output Format:</h2>
                 <label class="radio-inline active">
@@ -126,7 +135,7 @@
                 </label>
           </div>
 	  </div>
-	  <div class="row">
+	  <div class="row-fluid">
           <div id="results-table-area" class="col-sm-12">
 
           </div>
