@@ -47,7 +47,6 @@
   }
 
   #results-container {
-    margin:0;
   }
 
   .controls-row {
@@ -57,6 +56,13 @@
 
   .data-label {
     padding-left:20px !important;
+  }
+
+  table.dataTable thead .sorting, 
+  table.dataTable thead .sorting_asc, 
+  table.dataTable thead .sorting_desc {
+     background : none;
+     cursor: default;
   }
 
 </style>
@@ -141,9 +147,8 @@
                 </label>
           </div>
 	  </div>
-	  <div class="row-fluid">
-          <div id="results-table-area" class="col-sm-12">
-
+	  <div class="row">
+		  <div id="results-table-area" class="col-sm-12">
           </div>
 	  </div>
 
@@ -268,6 +273,8 @@
 					<td>${formatValue(row.cells, 4)}</td>
 					<td>${formatValue(row.cells, 5)}</td>
 					<td>${row.major_grouping}</td>
+					<td>${row.summary_nc}</td>
+					<td>${row.summary_c}</td>
 				  </tr>
 				  `);
            }
@@ -277,17 +284,29 @@
 	   };
 	
 	var onTableDraw =  function(settings) {
+	    var cur_page = { page:'current' };
 	    var api = this.api();
-	    var rows = api.rows( {page:'current'} ).nodes();
-	    var last=null;
+	    var rows = api.rows(cur_page).nodes();
  
-	    api.column(7, {page:'current'} ).data().each(function(group, i) {
+	    var major_groupings = api.column(7, cur_page).data();
+	    var summary_ncs = api.column(8, cur_page).data();
+	    var summary_cs = api.column(9, cur_page).data();
+
+	    var summary_nc = null;
+	    var summary_c = null;
+
+	    var last = null;
+	    major_groupings.each(function(group, i) {
+	        summary_nc = summary_ncs[i];
+	        summary_c = summary_cs[i];
 		if (last !== group) {
 		    $(rows).eq(i).before(`
 			  <tr class="group">
-				<td colspan="3"><strong>${group}</strong></td>
-				<td colspan="2"><strong>Corporate: -99999</strong></td>
-				<td colspan="2"><strong>Non-Corporate: -99999</strong></td>
+				<td colspan="7">
+				    <strong>${group}</strong> &emsp;
+				    Non-Corporate: ${summary_nc} &emsp;
+				    Corporate: ${summary_c}
+				</td>
 			  </tr>
 		    `);
 
@@ -305,7 +324,7 @@
            }
 
            $('#results-table-area>table').DataTable({
-		"columnDefs": [{"visible": false, "targets": 7}],
+		"columnDefs": [{"visible": false, "targets": 7},{"visible": false, "targets": 8},{"visible": false, "targets": 9}],
 		"order": [[7, 'asc']],
 		"paging":false,
 		"info":false,
