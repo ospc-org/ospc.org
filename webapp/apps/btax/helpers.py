@@ -24,6 +24,7 @@ from ..taxbrain.helpers import (make_bool, convert_val,
 
 import btax
 from btax.util import read_from_egg
+from btax.parameters import DEFAULT_ROW_GROUPINGS
 
 PYTHON_MAJOR_VERSION = sys.version_info.major
 
@@ -234,7 +235,8 @@ def btax_results_to_tables(results, first_budget_year):
                 'label': table_id,
                 'rows': [],
             }
-            meta = asset_col_meta if 'asset_' in upper_key else industry_col_meta
+            is_asset = 'asset_' in upper_key
+            meta = asset_col_meta if is_asset else industry_col_meta
             for col_key, label in enumerate(col_labels):
                 col_dict = [v for k, v in meta.items()
                             if v['col_label'] == label][0]
@@ -246,22 +248,27 @@ def btax_results_to_tables(results, first_budget_year):
                 })
 
             col_count = len(col_labels)
+            row_groups = DEFAULT_ROW_GROUPINGS['asset' if is_asset else 'industry']
             for idx, row_label in enumerate(row_labels, 1):
                 row = {
                     'label': row_label,
-                    'cells': []
+                    'cells': [],
+                    'major_grouping': row_groups[row_label],
+                    'summary_c': -999,
+                    'summary_nc': -999,
                 }
 
                 for col_key in range(0, col_count):
+                    value = table_data[idx][col_key+1]
                     cell = {
                         'format': {
                             'divisor': table['cols'][col_key]['divisor'],
                             'decimals': table['cols'][col_key]['decimals'],
-                        }
+                        },
+                        'value': value,
                     }
-                    value = table_data[idx][col_key+1]
-                    cell['value'] = value
 
+                    cell['value'] = value
                     row['cells'].append(cell)
 
                 table['rows'].append(row)
