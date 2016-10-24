@@ -250,12 +250,13 @@ def btax_results_to_tables(results, first_budget_year):
             col_count = len(col_labels)
             row_groups = DEFAULT_ROW_GROUPINGS['asset' if is_asset else 'industry']
             for idx, row_label in enumerate(row_labels, 1):
+                group_data = row_groups[row_label]
                 row = {
                     'label': row_label,
                     'cells': [],
-                    'major_grouping': row_groups[row_label],
-                    'summary_c': -999,
-                    'summary_nc': -999,
+                    'major_grouping': group_data['group'],
+                    'summary_c': group_data['summary_c'],
+                    'summary_nc': group_data['summary_nc'],
                 }
 
                 for col_key in range(0, col_count):
