@@ -10,7 +10,7 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda config --set always_yes yes --set changeps1 no
   - conda update conda
-  - conda create -n webappdev python=$TRAVIS_PYTHON_VERSION pytest setuptools 
+  - conda create -n webappdev python=$TRAVIS_PYTHON_VERSION pytest setuptools
   - source activate webappdev
   - conda install -c ospc --file conda-requirements.txt
   - conda update -c ospc --force taxcalc
@@ -20,7 +20,8 @@ install:
   - pip install pytest-xdist
   - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
   - git clone https://github.com/open-source-economics/B-Tax
-  - cd B-Tax && python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax && cd ..
+  - cd B-Tax && python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax
+  - python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax && cd ..
 
 before_script:
   - python manage.py syncdb --noinput

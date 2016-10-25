@@ -47,6 +47,9 @@ from ..taxbrain.helpers import (format_csv,
 from ..taxbrain.views import (benefit_surtax_fixup,
                               denormalize, normalize,taxcalc_version as TAXCALC_VERSION)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
+
+from .constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP)
+
 from .helpers import btax_results_to_tables
 
 dropq_compute = DropqComputeBtax()
@@ -262,6 +265,12 @@ def get_mock_json(as_str=True):
 def generate_mock_results(request):
     mock_json = get_mock_json()
     context = dict()
+    context["tooltips"] = {
+        "metr": METR_TOOLTIP,
+        "mettr": METTR_TOOLTIP,
+        "coc": COC_TOOLTIP,
+        "dprc": DPRC_TOOLTIP,
+    }
     context.update({
         'btax_version':BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
@@ -292,7 +301,10 @@ def output_detail(request, pk):
         created_on = url.unique_inputs.creation_date
         tables = btax_results_to_tables(output, first_year)
         tables["tooltips"] = {
-            "TODO": "if tooltips needed, put them here"
+            "metr": METR_TOOLTIP,
+            "mettr": METTR_TOOLTIP,
+            "coc": COC_TOOLTIP,
+            "dprc": DPRC_TOOLTIP,
         }
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
