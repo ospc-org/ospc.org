@@ -21,9 +21,12 @@ install:
   - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
   - git clone https://github.com/PeterDSteinberg/B-Tax
   - cd B-Tax && git fetch --all && git checkout psteinberg/fix-groupings
+  - git pull origin psteinberg/fix-groupings
   - python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax && cd ..
 
 before_script:
+  - echo check we are on right branch
+  - python -c "from btax.parameters import DEFAULT_ROW_GROUPINGS"
   - python manage.py syncdb --noinput
   - python manage.py makemigrations taxbrain
   - python manage.py migrate taxbrain
