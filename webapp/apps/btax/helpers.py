@@ -24,7 +24,6 @@ from ..taxbrain.helpers import (make_bool, convert_val,
 
 import btax
 from btax.util import read_from_egg
-from btax.parameters import DEFAULT_ROW_GROUPINGS
 
 PYTHON_MAJOR_VERSION = sys.version_info.major
 
@@ -222,6 +221,7 @@ def btax_results_to_tables(results, first_budget_year):
     r = results[0]
     tables_to_process = {k: v for k, v in r.items()
                          if k.startswith(('asset_', 'industry_'))}
+    row_grouping = r['row_grouping']
     tables = {}
     for upper_key, table_data0 in tables_to_process.items():
         if not upper_key in tables:
@@ -248,18 +248,16 @@ def btax_results_to_tables(results, first_budget_year):
                 })
 
             col_count = len(col_labels)
-            row_groups = DEFAULT_ROW_GROUPINGS['asset' if is_asset else 'industry']
-            row_label_order = [x[0] for x in row_groups]
-            group_data = dict(row_groups)
+            group_data = row_grouping['asset' if is_asset else 'industry']
 
             for idx, row_label in enumerate(row_labels, 1):
                 group = group_data[row_label]
                 row = {
                     'label': row_label,
                     'cells': [],
-                    'major_grouping': group['group'],
-                    'summary_c': group['summary_c'],
-                    'summary_nc': group['summary_nc'],
+                    'major_grouping': group['major_grouping'],
+                    'summary_c': '{:.03f}'.format(group['summary_c']),
+                    'summary_nc': '{:.03f}'.format(group['summary_nc']),
                 }
 
                 for col_key in range(0, col_count):
