@@ -249,14 +249,17 @@ def btax_results_to_tables(results, first_budget_year):
 
             col_count = len(col_labels)
             row_groups = DEFAULT_ROW_GROUPINGS['asset' if is_asset else 'industry']
+            row_label_order = [x[0] for x in row_groups]
+            group_data = dict(row_groups)
+
             for idx, row_label in enumerate(row_labels, 1):
-                group_data = row_groups[row_label]
+                group = group_data[row_label]
                 row = {
                     'label': row_label,
                     'cells': [],
-                    'major_grouping': group_data['group'],
-                    'summary_c': group_data['summary_c'],
-                    'summary_nc': group_data['summary_nc'],
+                    'major_grouping': group['group'],
+                    'summary_c': group['summary_c'],
+                    'summary_nc': group['summary_nc'],
                 }
 
                 for col_key in range(0, col_count):
