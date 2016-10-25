@@ -221,7 +221,7 @@ def btax_results_to_tables(results, first_budget_year):
     r = results[0]
     tables_to_process = {k: v for k, v in r.items()
                          if k.startswith(('asset_', 'industry_'))}
-    row_grouping = r['row_grouping']
+    row_grouping = r.get('row_grouping', {})
     tables = {}
     for upper_key, table_data0 in tables_to_process.items():
         if not upper_key in tables:
