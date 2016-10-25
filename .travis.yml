@@ -20,7 +20,7 @@ install:
   - pip install pytest-xdist
   - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
   - git clone https://github.com/open-source-economics/B-Tax
-  - cd B-Tax && python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax && cd ..
+  - cd B-Tax && python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax
   - python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax && cd ..
 
 before_script:
