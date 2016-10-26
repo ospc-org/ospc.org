@@ -5,6 +5,7 @@
 {{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
 <link href="{% static 'js/vendor/DataTables/datatables.min.css' %}" rel="stylesheet"></link>
+<link href="{% static 'css/vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet"></link>
 <link href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
 
 <style>
@@ -20,6 +21,8 @@
 
   tr:nth-child(even) {background: #f9f9f9}
   tr:nth-child(odd) {background: #FFF}
+  tr.group {
+  }
 
   .single-line {
     white-space: nowrap;
@@ -36,6 +39,30 @@
   }
   .sorting:after {
       content:"" !important;
+  }
+
+  .tooltip-inner {
+    min-width: 200px;
+    max-width: 100%; 
+  }
+
+  #results-container {
+  }
+
+  .controls-row {
+    margin-left:100px;
+    margin-right:100px;
+  }
+
+  .data-label {
+    padding-left:20px !important;
+  }
+
+  table.dataTable thead .sorting, 
+  table.dataTable thead .sorting_asc, 
+  table.dataTable thead .sorting_desc {
+     background : none;
+     cursor: default;
   }
 
 </style>
@@ -56,8 +83,8 @@
 
   </div>
   <br>
-  <div class="container">
-	  <div class="row">
+  <div id="results-container" class="container">
+	  <div class="row controls-row">
           <div id="view_by_inputs" class="col-sm-12">
               <h2>View Output by:</h2>
                 <label class="radio-inline active">
@@ -68,24 +95,45 @@
                 </label>
           </div>
 	  </div>
-	  <div class="row">
+	  <div class="row controls-row">
           <div id="output_interest_inputs"  class="col-sm-12">
               <h2>Output of Interest:</h2>
                 <label class="radio-inline active">
-                  <input type="radio" value="mettr" name="output_interest_radio" checked="">METTR
+                  <input type="radio" value="metr" name="output_interest_radio" checked="">METR
+                  <span class="input-tooltip" data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.metr}}"></span>
                 </label>
+
                 <label class="radio-inline">
-                  <input type="radio" value="metr" name="output_interest_radio">METR
+                  <input type="radio" value="mettr" name="output_interest_radio">METTR
+                  <span class="input-tooltip"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.mettr }}"></span>
                 </label>
+
                 <label class="radio-inline">
                   <input type="radio" value="coc" name="output_interest_radio">Cost of Capital
+                  <span class="input-tooltip"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.coc }}"></span>
                 </label>
                 <label class="radio-inline">
                   <input type="radio" value="d" name="output_interest_radio">Depreciation
+                  <span class="input-tooltip"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.dprc }}"></span>
                 </label>
           </div>
 	  </div>
-	  <div class="row">
+	  <div class="row controls-row">
           <div id="output_format_inputs" class="col-sm-12">
               <h2>Output Format:</h2>
                 <label class="radio-inline active">
@@ -100,8 +148,7 @@
           </div>
 	  </div>
 	  <div class="row">
-          <div id="results-table-area" class="col-sm-12">
-
+		  <div id="results-table-area" class="col-sm-12">
           </div>
 	  </div>
 
@@ -117,6 +164,7 @@
 {{ block.super }}
 <script src="{% static 'js/vendor/babel-standalone/babel.min.js' %}"></script>
 <script src="{% static 'js/vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'js/vendor/bootstrap/bootstrap.min.js' %}"></script>
 <script src="{% static 'js/vendor/underscore/underscore-min.js' %}"></script>
 <script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
@@ -217,13 +265,16 @@
                row = items.rows[i];
 			   $table_body.append(`
 				  <tr>
-					<td>${row.label}</td>
+					<td class="data-label">${row.label}</td>
 					<td>${formatValue(row.cells, 0)}</td>
 					<td>${formatValue(row.cells, 1)}</td>
 					<td>${formatValue(row.cells, 2)}</td>
 					<td>${formatValue(row.cells, 3)}</td>
 					<td>${formatValue(row.cells, 4)}</td>
 					<td>${formatValue(row.cells, 5)}</td>
+					<td>${row.major_grouping}</td>
+					<td>${row.summary_nc}</td>
+					<td>${row.summary_c}</td>
 				  </tr>
 				  `);
            }
@@ -231,6 +282,38 @@
            $table.append($table_body);
            $('#results-table-area').html($table);
 	   };
+	
+	var onTableDraw =  function(settings) {
+	    var cur_page = { page:'current' };
+	    var api = this.api();
+	    var rows = api.rows(cur_page).nodes();
+ 
+	    var major_groupings = api.column(7, cur_page).data();
+	    var summary_ncs = api.column(8, cur_page).data();
+	    var summary_cs = api.column(9, cur_page).data();
+
+	    var summary_nc = null;
+	    var summary_c = null;
+
+	    var last = null;
+	    major_groupings.each(function(group, i) {
+	        summary_nc = summary_ncs[i];
+	        summary_c = summary_cs[i];
+		if (last !== group) {
+		    $(rows).eq(i).before(`
+			  <tr class="group">
+				<td colspan="7">
+				    <strong>${group}</strong> &emsp;
+				    Non-Corporate: ${summary_nc} &emsp;
+				    Corporate: ${summary_c}
+				</td>
+			  </tr>
+		    `);
+
+		    last = group;
+		}
+	    });
+	};
 
        var buildTable = function() {
 
@@ -240,16 +323,39 @@
 			   buildTableObj('Industry');
            }
 
-           $('#results-table-area>table').DataTable({"paging":false, "info": false});
-
-	   };
+           $('#results-table-area>table').DataTable({
+		"columnDefs": [{"visible": false, "targets": 7},{"visible": false, "targets": 8},{"visible": false, "targets": 9}],
+		"order": [[7, 'asc']],
+		"paging":false,
+		"info":false,
+		"drawCallback":onTableDraw
+	    });
+       };
 
        document.getElementById('view_by_inputs').addEventListener('change', onViewByChange, false);
        document.getElementById('output_interest_inputs').addEventListener('change', onOutputInterestChange, false);
        document.getElementById('output_format_inputs').addEventListener('change', onOutputFormatChange, false);
 
 	   delete window.tableData['result_years'];
-       buildTable();
+
+
+    buildTable();
+
+
+ 
+    // Order by the grouping
+    $('table tbody').on( 'click', 'tr.group', function () {
+        var currentOrder = table.order()[0];
+        if ( currentOrder[0] === 2 && currentOrder[1] === 'asc' ) {
+            table.order( [ 2, 'desc' ] ).draw();
+        }
+        else {
+            table.order( [ 2, 'asc' ] ).draw();
+        }
+    } );
+
+
+
     });
 
 </script>
