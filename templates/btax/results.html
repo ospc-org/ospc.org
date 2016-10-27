@@ -98,21 +98,20 @@
 	  <div class="row controls-row">
           <div id="output_interest_inputs"  class="col-sm-12">
               <h2>Output of Interest:</h2>
-                <label class="radio-inline active">
-                  <input type="radio" value="metr" name="output_interest_radio" checked="">METR
-                  <span class="input-tooltip" data-toggle="tooltip"
-                        data-placement="top"
-                        title=""
-			data-original-title="{{ tooltips.metr}}"></span>
-                </label>
-
-                <label class="radio-inline">
-                  <input type="radio" value="mettr" name="output_interest_radio">METTR
+              	<label class="radio-inline">
+                  <input type="radio" value="mettr" name="output_interest_radio" checked="">METTR
                   <span class="input-tooltip"
                         data-toggle="tooltip"
                         data-placement="top"
                         title=""
 			data-original-title="{{ tooltips.mettr }}"></span>
+                </label>
+                <label class="radio-inline active">
+                  <input type="radio" value="metr" name="output_interest_radio">METR
+                  <span class="input-tooltip" data-toggle="tooltip"
+                        data-placement="top"
+                        title=""
+			data-original-title="{{ tooltips.metr}}"></span>
                 </label>
 
                 <label class="radio-inline">
@@ -171,8 +170,8 @@
 <script>
        window.tableData = JSON.parse('{{ table_json | safe }}');
        window.viewBy = "industry";
-       window.outputInterest = "metr";
-       window.outputFormat = "changed";
+       window.outputInterest = "mettr";
+       window.outputFormat = "reform";
 </script>
 <script type="text/babel">
     $(function () {
