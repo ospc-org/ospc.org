@@ -14,7 +14,7 @@
           <img src="{% static 'images/btax/cost-of-capital-white-blue.png' %}" alt="TaxBrain" class="img-responsive">
         </div>
         <div class="what-is">
-          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is Cost of Capital Calculator?</a>
         </div>
       {% else %}
         <div class="logo">
@@ -27,6 +27,22 @@
       {% endif %}
     </div>
   </section>
+  {% if is_btax %}
+
+      <section class="taxbrain-info collapse" id="taxbrainInfo">
+        <div class="container">
+          <div class="taxbrain-history">
+            <h2>About Cost of Capital Calculator</h2>
+            {% flatblock "ccc_what_is_ccc_dropdown" %}
+          </div>
+          <div class="taxbrain-build">
+            <h2>Code Build</h2>
+            <p><a href="https://github.com/open-source-economics/B-Tax">Version {{ btax_version }} - GitHub</a></p>
+          </div>
+        </div>
+      </section>
+
+  {% else %}
   <section class="taxbrain-info collapse" id="taxbrainInfo">
     <div class="container">
       <div class="taxbrain-history">
@@ -39,4 +55,5 @@
       </div>
     </div>
   </section>
+  {% endif %}
 </div>
