@@ -43,7 +43,7 @@
 
   .tooltip-inner {
     min-width: 200px;
-    max-width: 100%; 
+    max-width: 100%;
   }
 
   #results-container {
@@ -58,8 +58,8 @@
     padding-left:20px !important;
   }
 
-  table.dataTable thead .sorting, 
-  table.dataTable thead .sorting_asc, 
+  table.dataTable thead .sorting,
+  table.dataTable thead .sorting_asc,
   table.dataTable thead .sorting_desc {
      background : none;
      cursor: default;
@@ -241,19 +241,6 @@
 			</thead>
               `);
 
-           $table.append(`
-			<tfoot>
-				  <tr>
-					<th>Industry</th>
-					<th>Corporate</th>
-					<th>Non-corporate</th>
-					<th>Corporate</th>
-					<th>Non-corporate</th>
-					<th>Corporate</th>
-					<th>Non-corporate</th>
-				  </tr>
-			</tfoot>
-              `);
 
            var $table_body = $('<tbody/>');
 
@@ -263,57 +250,44 @@
 
            for(var i=0; i < items.rows.length - 1; i++) {
                row = items.rows[i];
-			   $table_body.append(`
-				  <tr>
-					<td class="data-label">${row.label}</td>
-					<td>${formatValue(row.cells, 0)}</td>
-					<td>${formatValue(row.cells, 1)}</td>
-					<td>${formatValue(row.cells, 2)}</td>
-					<td>${formatValue(row.cells, 3)}</td>
-					<td>${formatValue(row.cells, 4)}</td>
-					<td>${formatValue(row.cells, 5)}</td>
-					<td>${row.major_grouping}</td>
-					<td>${row.summary_nc}</td>
-					<td>${row.summary_c}</td>
-				  </tr>
-				  `);
-           }
+               if(row.label == row.major_grouping){
+                  var sb = "<strong>";
+                  var se = "</strong>";
+               }else{
+                  var sb = "";
+                  var se = "";
+               }
+               if(row.major_grouping === row.label){
+                  if(row.summary_c === 'breakline'){
+                     $table_body.append(`
+                        <tr>
+                            <td class="data-label" colspan="7">
+                                <strong>${row.label}</strong>
+                            </td>
+                        </tr>
+                     `);
+                     continue;
+                  }
+                  var label_cls = "group";
+               }else{
+                  var label_cls = "data-label";
+               }
+               $table_body.append(`
+                    <tr>
+                     <td class="${label_cls}">${sb}${row.label}${se}</td>
+                        <td>${sb}${formatValue(row.cells, 0)}${se}</td>
+                        <td>${sb}${formatValue(row.cells, 1)}${se}</td>
+                        <td>${sb}${formatValue(row.cells, 2)}${se}</td>
+                        <td>${sb}${formatValue(row.cells, 3)}${se}</td>
+                        <td>${sb}${formatValue(row.cells, 4)}${se}</td>
+                        <td>${sb}${formatValue(row.cells, 5)}${se}</td>
+                    </tr>`);
+            }
 
            $table.append($table_body);
            $('#results-table-area').html($table);
 	   };
-	
-	var onTableDraw =  function(settings) {
-	    var cur_page = { page:'current' };
-	    var api = this.api();
-	    var rows = api.rows(cur_page).nodes();
- 
-	    var major_groupings = api.column(7, cur_page).data();
-	    var summary_ncs = api.column(8, cur_page).data();
-	    var summary_cs = api.column(9, cur_page).data();
 
-	    var summary_nc = null;
-	    var summary_c = null;
-
-	    var last = null;
-	    major_groupings.each(function(group, i) {
-	        summary_nc = summary_ncs[i];
-	        summary_c = summary_cs[i];
-		if (last !== group) {
-		    $(rows).eq(i).before(`
-			  <tr class="group">
-				<td colspan="7">
-				    <strong>${group}</strong> &emsp;
-				    Non-Corporate: ${summary_nc} &emsp;
-				    Corporate: ${summary_c}
-				</td>
-			  </tr>
-		    `);
-
-		    last = group;
-		}
-	    });
-	};
 
        var buildTable = function() {
 
@@ -328,7 +302,6 @@
 		"order": [[7, 'asc']],
 		"paging":false,
 		"info":false,
-		"drawCallback":onTableDraw
 	    });
        };
 
@@ -342,7 +315,7 @@
     buildTable();
 
 
- 
+
     // Order by the grouping
     $('table tbody').on( 'click', 'tr.group', function () {
         var currentOrder = table.order()[0];
