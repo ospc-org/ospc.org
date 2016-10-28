@@ -126,3 +126,31 @@ class BTaxViewsTests(TestCase):
         response = self.client.post('/ccc/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
+
+    def test_btax_edit_ccc_switches_show_correctly(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockComputeBtax()
+
+        data = { u'has_errors': [u'False'],
+                u'start_year': unicode(START_YEAR),
+                u'btax_depr_5yr': u'btax_depr_5yr_ads_Switch',
+                'csrfmiddlewaretoken':'abc123', u'start_year': u'2016'}
+
+        response = self.client.post('/ccc/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
+        model_num = response.url[link_idx+1:-1]
+        edit_ccc = '/ccc/edit/{0}/?start_year={1}'.format(model_num, START_YEAR)
+        edit_page = self.client.get(edit_ccc)
+        self.assertEqual(edit_page.status_code, 200)
+
+        # Get results model
+        out = BTaxOutputUrl.objects.get(pk=model_num)
+        bsi = BTaxSaveInputs.objects.get(pk=out.model_pk)
+        assert bsi.btax_depr_5yr == u'btax_depr_5yr_ads_Switch'
+        assert bsi.btax_depr_5yr_ads_Switch == 'True'
