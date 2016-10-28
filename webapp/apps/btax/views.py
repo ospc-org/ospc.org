@@ -68,6 +68,22 @@ def make_bool_gds_ads(form_btax_input):
     return form_btax_input
 
 
+def depreciation_fixup(model, request):
+    """
+    For each row of the tax depreciation schedule,
+    get the value of the property, e.g. 'btax_depr_3yr' (which
+    indicates which button was selected) and then store that
+    value as 'True' on the model itself.
+    """
+    years = ['3', '5', '7', '10', '15', '20', '25', '27_5', '39']
+    for year in years:
+        depr_field = "btax_depr_{}yr".format(year)
+        if depr_field in request.POST:
+            button_value = request.POST[depr_field]
+            setattr(model, button_value, "True")
+    model.save()
+
+
 def btax_results(request):
     """
     This view handles the input page and calls the function that
@@ -111,6 +127,8 @@ def btax_results(request):
                 btax_inputs._errors = {}
 
             model = btax_inputs.save()
+            depreciation_fixup(model, request)
+
             if stored_errors:
                 # Force the entered value on to the model
                 for attr in stored_errors:
@@ -236,15 +254,25 @@ def edit_btax_results(request, pk):
     inputs = user_inputs[0]['fields']
 
     form_btax_input = BTaxExemptionForm(first_year=start_year, instance=model)
-    btax_default_params = get_btax_defaults(int(start_year))
+    btax_default_params = get_btax_defaults()
+    has_errors = False
+    asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
+    form_btax_input = make_bool_gds_ads(form_btax_input)
+    hover_notes = hover_args_to_btax_depr()
 
     init_context = {
         'form': form_btax_input,
+        'make_bool': make_bool,
         'params': btax_default_params,
         'btax_version': BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
         'start_years': START_YEARS,
         'start_year': str(start_year),
+        'has_errors': has_errors,
+        'asset_yr_str': asset_yr_str,
+        'depr_argument_groups': group_args_to_btax_depr(btax_default_params, asset_yr_str),
+        'hover_notes': hover_notes,
+        'is_btax': True,
 
     }
 
