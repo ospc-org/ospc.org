@@ -266,21 +266,14 @@
                         </tr>
                      `);
                      continue;
-                  }else{
-                    $table_body.append(`
-                      <tr class="group">
-                        <td colspan="7">
-                            <strong>${row.major_grouping}</strong> &emsp;
-                            Non-Corporate: ${row.summary_nc} &emsp;
-                            Corporate: ${row.summary_c}
-                        </td>
-                      </tr>
-                    `);
-                    }
+                  }
+                  var label_cls = "group";
+               }else{
+                  var label_cls = "data-label";
                }
                $table_body.append(`
                     <tr>
-                     <td class="data-label">${sb}${row.label}${se}</td>
+                     <td class="${label_cls}">${sb}${row.label}${se}</td>
                         <td>${sb}${formatValue(row.cells, 0)}${se}</td>
                         <td>${sb}${formatValue(row.cells, 1)}${se}</td>
                         <td>${sb}${formatValue(row.cells, 2)}${se}</td>
