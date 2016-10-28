@@ -130,7 +130,7 @@ class BTaxViewsTests(TestCase):
     def test_btax_edit_ccc_switches_show_correctly(self):
         #Monkey patch to mock out running of compute jobs
         import sys
-        from webapp.apps.taxbrain import views as webapp_views
+        from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = MockComputeBtax()
 
         data = { u'has_errors': [u'False'],
