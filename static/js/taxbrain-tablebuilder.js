@@ -7,7 +7,8 @@ $(function() {
                 'Individual Income Tax Liability Change',
                 'Payroll Tax Liability Change',
                 'Combined Payroll and Individual Income Tax Liability Change'
-            ]
+            ],
+            col_indices: [0,1,2,3,4,5,6,7,11,16,17,18]
         },
 
         initialize: function() {
@@ -57,10 +58,15 @@ $(function() {
         },
 
         columnVisibility: function() {
-            _.map(this.get('cols').slice(0, 10), function(col) {
+          var _self = this;
+          _.map(this.get('col_indices'), function(col_idx) {
+              var col = _self.get('cols')[col_idx];
+              if (col) {
                 col.show = true;
-                return col;
-            });
+              }
+              return col;
+          });
+
         }
     });
 
