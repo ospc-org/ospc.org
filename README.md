@@ -129,6 +129,23 @@ foreman start
 ```
 Once the server has started foreman will use port 5000.
 
+## Building Static Files
+To setup your environment for building static assets:
+```bash 
+npm install
+bower install
+```
+
+To compile LESS assets:
+```bash 
+gulp less
+```
+
+Collect static files and make sure changes get committed back:
+```bash 
+python manage.py collectstatic
+```
+
 ## Using Django
 Once all the dependecies are installed a couple of commands are necessary to get the Django project up and running and onto ```./manage.py runserver```.  Make sure the virtual environment is activated.
 
