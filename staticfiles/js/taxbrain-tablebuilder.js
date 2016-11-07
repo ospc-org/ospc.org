@@ -7,7 +7,8 @@ $(function() {
                 'Individual Income Tax Liability Change',
                 'Payroll Tax Liability Change',
                 'Combined Payroll and Individual Income Tax Liability Change'
-            ]
+            ],
+            col_indices: [0,1,2,3,4,5,6,7,11,16,17,18]
         },
 
         initialize: function() {
@@ -57,19 +58,24 @@ $(function() {
         },
 
         columnVisibility: function() {
-            _.map(this.get('cols').slice(0, 10), function(col) {
+          var _self = this;
+          _.map(this.get('col_indices'), function(col_idx) {
+              var col = _self.get('cols')[col_idx];
+              if (col) {
                 col.show = true;
-                return col;
-            });
+              }
+              return col;
+          });
+
         }
     });
 
     var SelectedTableModel = Backbone.Model.extend({
         defaults: {
-            difference: false,
+            difference: true,
             plan:'X',
             payroll_tax: true,
-            income_tax: false,
+            income_tax: true,
             income: 'expanded',
             grouping: 'bin'
         },
@@ -213,19 +219,19 @@ $(function() {
                 <br>\
                 <br>\
                 <ul class="nav nav-pills nav-justified">\
-                  <li data-difference="false" class="active"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.diagnostic %>" href="#">Diagnostic Table</a></li>\
-                  <li data-difference="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.difference %>" href="#">Difference Table</a></li>\
+                  <li data-difference="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.diagnostic %>" href="#">Diagnostic Table</a></li>\
+                  <li data-difference="true" class="active"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.difference %>" href="#">Difference Table</a></li>\
                 </ul>\
                 <br>\
                 <br>\
-                <ul id="plan" class="nav nav-pills nav-justified">\
+                <ul id="plan" class="nav nav-pills nav-justified" style="display:none">\
                   <li class="active" data-plan="X"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.base %>" href="#">Current Law</a></li>\
                   <li data-plan="Y"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.reform %>" href="#">Reform</a></li>\
                 </ul>\
-                <ul id="tax" class="nav nav-pills nav-justified" style="display:none">\
+                <ul id="tax" class="nav nav-pills nav-justified">\
                   <li class="active" data-payrolltax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll</a></li>\
                   <li><h1 class="text-center" style="margin:0">+</h1></li>\
-                  <li data-incometax="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income</a></li>\
+                  <li class="active" data-incometax="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income</a></li>\
                 </ul>\
                 <br>\
                 <br>\
