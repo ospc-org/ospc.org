@@ -56,7 +56,12 @@
                     <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
                   {% endfor %}
                 </select>
-              </label>
+            </label>
+              <div class="reset-button">
+                <a href="#" ></a>
+                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="reset" name="full_calc" value="Reset Parameters">
+            </div>
+
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                 <li><a href="#payroll-taxes">Payroll Taxes</a></li>
