@@ -1,5 +1,9 @@
 // btax.js
 
+// sidebar - scrollspy
+$('body').scrollspy({
+  target: '.inputs-sidebar'
+});
 
 
 asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
