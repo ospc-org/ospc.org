@@ -43,6 +43,18 @@
         <h2>From The Lab</h2>
         <div class="app app-taxbrain">
           <div class="app-logo">
+            <h2 class="sr-only">Cost of Capital Calculator</h2>
+            <img src="{% static 'images/btax/cost-of-capital-dark-light-blue.png' %}" alt="CCC" class="img-responsive" style="height:140px;">
+          </div>
+          <div class="app-info">
+            {% flatblock "home_ccc_subtitle" %}
+            {% flatblock "home_ccc_blurb" %}
+            <br>
+            <a href="/ccc/" class="btn btn-primary">Explore the numbers</a>
+          </div>
+      </div>
+        <div class="app app-taxbrain">
+          <div class="app-logo">
             <h2 class="sr-only">TaxBrain</h2>
             <img src="{% static 'images/logo-taxbrainbeta.png' %}" alt="TaxBrain" class="img-responsive">
           </div>
