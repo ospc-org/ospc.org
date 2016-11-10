@@ -219,6 +219,7 @@ class TaxSaveInputs(models.Model):
     CG_thd2_3 = CommaSeparatedField(default=None, blank=True, null=True)
     CG_thd2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     CG_rt3    = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_nodiff    = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_trt = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_0 = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_1 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -323,6 +324,7 @@ class TaxSaveInputs(models.Model):
     EITC_MinEligAge_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     EITC_MaxEligAge = CommaSeparatedField(default=None, blank=True, null=True)
     EITC_MaxEligAge_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    EITC_indiv = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_c = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     CTC_prt = CommaSeparatedField(default=None, blank=True, null=True)
@@ -334,6 +336,7 @@ class TaxSaveInputs(models.Model):
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_refund_limit_rt = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Pass through tax parameters
     PT_rt1    = CommaSeparatedField(default=None, blank=True, null=True)

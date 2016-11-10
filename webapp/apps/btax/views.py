@@ -12,7 +12,6 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import btax
 import taxcalc
-import dropq
 import datetime
 import logging
 from os import path

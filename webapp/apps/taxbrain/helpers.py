@@ -2,7 +2,6 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
-import dropq
 import sys
 import time
 import six
@@ -10,8 +9,7 @@ import six
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
+MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
                 'mpl_toolkits.mplot3d', 'pandas']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
@@ -186,7 +184,7 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [         1,   '%', 1],  # "%age Tax Decrease",
     [         1,   '%', 1],  # "Share of Overall Change"
 ]
-TAXCALC_RESULTS_BIN_ROW_KEYS = dropq.dropq.bin_row_names
+TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.bin_row_names
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'less_than_10':'Less than 10',
     'ten_twenty':'10-20',
@@ -201,7 +199,7 @@ TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'thousand_up':'1000+',
     'all':'All'
 }
-TAXCALC_RESULTS_DEC_ROW_KEYS = dropq.dropq.decile_row_names
+TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.decile_row_names
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'perc0-10':'0-10%',
     'perc10-20':'10-20%',
@@ -228,7 +226,7 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'cdf_bin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
     'fiscal_tots': 'Total Liabilities Change by Calendar Year',
 }
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.total_row_names
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
@@ -574,7 +572,7 @@ class TaxCalcParam(object):
 
     def __load_from_json(self, param_id, attributes, first_budget_year):
         values_by_year = attributes['value']
-        col_labels = attributes['col_label']
+        col_labels = attributes.get('col_label', '')
 
         self.tc_id = param_id
         self.nice_id = param_id[1:] if param_id[0] == '_' else param_id
