@@ -15,7 +15,6 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 
 import taxcalc
-import dropq
 import datetime
 import logging
 from urlparse import urlparse, parse_qs

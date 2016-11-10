@@ -1,15 +1,15 @@
-import dropq
 import os
 from ..taxbrain.helpers import package_up_vars, arrange_totals_by_row 
 import json
 import requests
 from requests.exceptions import Timeout, RequestException
 import requests_mock
+import taxcalc
 from ..taxbrain.compute import DropqCompute, MockCompute
 from .models import OGUSAWorkerNodesCounter
 from .helpers import filter_ogusa_only
 
-dqversion_info = dropq._version.get_versions()
+dqversion_info = taxcalc._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 START_YEAR = int(os.environ.get('START_YEAR', 2016))
@@ -19,7 +19,7 @@ DROPQ_WORKERS = dropq_workers.split(",")
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")

@@ -1,4 +1,3 @@
-import dropq
 import os
 from ..taxbrain.models import WorkerNodesCounter
 import json

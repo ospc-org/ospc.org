@@ -1,8 +1,8 @@
 import os
 import requests
-import dropq
 import json
 import sys
+import taxcalc
 from django.core import serializers
 
 #Mock some module for imports because we can't fit them on Heroku slugs
@@ -26,7 +26,7 @@ OGUSA_WORKER_IDX = 0
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
-OGUSA_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.ogusa_row_names
+OGUSA_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.ogusa_row_names
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
 ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
