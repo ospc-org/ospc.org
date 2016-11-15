@@ -16,7 +16,7 @@ from .utils import *
 START_YEAR = 2016
 JSON_SIMPLETAXIO_DATA = """
 {
-    "_AMT_tthd": // AMT taxinc threshold separating the two AMT tax brackets
+    "_AMT_brk1": // AMT taxinc threshold separating the two AMT tax brackets
     {"2015": [200000],
      "2017": [300000]
     },
