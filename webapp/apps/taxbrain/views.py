@@ -46,6 +46,7 @@ dropq_compute = DropqCompute()
 from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                         REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
+                        FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
                         INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
 
 
@@ -580,7 +581,10 @@ def get_result_context(model, request, url):
         'expanded': EXPANDED_TOOLTIP,
         'adjusted': ADJUSTED_TOOLTIP,
         'bins': INCOME_BINS_TOOLTIP,
-        'deciles': INCOME_DECILES_TOOLTIP
+        'deciles': INCOME_DECILES_TOOLTIP,
+        'fiscal_current_law': FISCAL_CURRENT_LAW,
+        'fiscal_reform': FISCAL_REFORM,
+        'fiscal_change': FISCAL_CHANGE,
     }
 
     if model.json_text:
