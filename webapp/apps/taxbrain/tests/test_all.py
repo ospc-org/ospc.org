@@ -144,42 +144,42 @@ class TaxInputTests(TestCase):
 
 
     def test_package_up_multivalue_param_with_wildcard2(self):
-        values = {"AMED_thd_0": [u'*', 250000]}
+        values = {"AMEDT_ec_0": [u'*', 250000]}
         ans = package_up_vars(values, first_budget_year=FBY)
         exp = [[200000, 250000.0, 125000.0, 200000.0, 200000.0, 125000.0],
                [250000, None, None, None, None, None]]
-        assert ans['_AMED_thd'] == exp
+        assert ans['_AMEDT_ec'] == exp
 
     def test_package_up_multivalue_param_with_wildcard3(self):
-        values = {"AMED_thd_0": [u'*', u'*', 250000]}
+        values = {"AMEDT_ec_0": [u'*', u'*', 250000]}
         ans = package_up_vars(values, first_budget_year=FBY)
         exp = [[200000, 250000.0, 125000.0, 200000.0, 200000.0, 125000.0],
                [200000, None, None, None, None, None],
                [250000, None, None, None, None, None]]
-        assert ans['_AMED_thd'] == exp
+        assert ans['_AMEDT_ec'] == exp
 
 
     def test_package_up_vars_unicode_wildcards(self):
         exp = [0.0089999999999999993, 0.0089999999999999993, 0.018]
-        values = {'_AMED_trt': [u'*','*',0.018]}
+        values = {'_AMEDT_rt': [u'*','*',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
-        values = {'_AMED_trt': [u' *','*',0.018]}
+        assert ans['_AMEDT_rt'] == exp
+        values = {'_AMEDT_rt': [u' *','*',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
-        values = {'_AMED_trt': [u' *',' * ',0.018]}
+        assert ans['_AMEDT_rt'] == exp
+        values = {'_AMEDT_rt': [u' *',' * ',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
-        values = {'_AMED_trt': [u' *', u' * ',0.018]}
+        assert ans['_AMEDT_rt'] == exp
+        values = {'_AMEDT_rt': [u' *', u' * ',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
+        assert ans['_AMEDT_rt'] == exp
 
 
     def test_package_up_vars_wildcards(self):
-        values = {"AMT_tthd": ['*','*',204000.]}
+        values = {"AMT_brk1": ['*','*',204000.]}
         ans = package_up_vars(values, first_budget_year=FBY)
         exp =  [185400., 186300., 204000.]
-        assert ans['_AMT_tthd'] == exp
+        assert ans['_AMT_brk1'] == exp
 
 
     def test_package_up_vars_wildcards_2016(self):

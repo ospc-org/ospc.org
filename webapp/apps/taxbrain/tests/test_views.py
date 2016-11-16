@@ -16,7 +16,7 @@ from .utils import *
 START_YEAR = 2016
 JSON_SIMPLETAXIO_DATA = """
 {
-    "_AMT_tthd": // AMT taxinc threshold separating the two AMT tax brackets
+    "_AMT_brk1": // AMT taxinc threshold separating the two AMT tax brackets
     {"2015": [200000],
      "2017": [300000]
     },
@@ -217,8 +217,8 @@ class TaxBrainViewsTests(TestCase):
 
         data = { u'has_errors': [u'False'], u'II_em': [u'4333'],
                 u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'AMT_CG_thd2_cpi':u'False',
-                u'AMT_CG_thd1_cpi':u'False'}
+                'csrfmiddlewaretoken':'abc123', u'AMT_CG_brk2_cpi':u'False',
+                u'AMT_CG_brk1_cpi':u'False'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -230,7 +230,7 @@ class TaxBrainViewsTests(TestCase):
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(model_num, START_YEAR)
         edit_page = self.client.get(edit_micro)
         self.assertEqual(edit_page.status_code, 200)
-        cpi_flag = edit_page.context['form']['AMT_CG_thd2_cpi'].field.widget.attrs['placeholder']
+        cpi_flag = edit_page.context['form']['AMT_CG_brk2_cpi'].field.widget.attrs['placeholder']
         self.assertEqual(cpi_flag, False)
 
     def test_taxbrain_edit_benefitsurtax_switch_show_correctly(self):
@@ -389,11 +389,11 @@ class TaxBrainViewsTests(TestCase):
         webapp_views.dropq_compute = MockCompute()
 
         data = {'CG_rt1': [0.25], 'CG_rt3': [u'0.25'], 'CG_rt2': [u'0.18'],
-                'CG_thd1_cpi': [u'True'], 'CG_thd2_cpi': [u'True'],
-                'CG_thd1_0': [u'38659'], 'CG_thd1_1': [u'76300'],
-                'CG_thd1_2': [u'38650'], 'CG_thd1_3': [u'51400'],
-                'CG_thd2_0': [u'425050'], 'CG_thd2_1': [u'476950'],
-                'CG_thd2_2': [u'243475'], 'CG_thd2_3': [u'451000'],
+                'CG_brk1_cpi': [u'True'], 'CG_brk2_cpi': [u'True'],
+                'CG_brk1_0': [u'38659'], 'CG_brk1_1': [u'76300'],
+                'CG_brk1_2': [u'38650'], 'CG_brk1_3': [u'51400'],
+                'CG_brk2_0': [u'425050'], 'CG_brk2_1': [u'476950'],
+                'CG_brk2_2': [u'243475'], 'CG_brk2_3': [u'451000'],
                 'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
                 'csrfmiddlewaretoken':'abc123'}
 
@@ -411,30 +411,30 @@ class TaxBrainViewsTests(TestCase):
         assert tsi2.CG_rt1 == u'0.25'
         assert tsi2.CG_rt2 == u'0.18'
         assert tsi2.CG_rt3 == u'0.25'
-        assert tsi2.CG_thd1_cpi == True
-        assert tsi2.CG_thd1_0 == u'38659'
-        assert tsi2.CG_thd1_1 == u'76300'
-        assert tsi2.CG_thd1_2 == u'38650'
-        assert tsi2.CG_thd1_3 == u'51400'
-        assert tsi2.CG_thd2_cpi == True
-        assert tsi2.CG_thd2_0 == u'425050'
-        assert tsi2.CG_thd2_1 == u'476950'
-        assert tsi2.CG_thd2_2 == u'243475'
-        assert tsi2.CG_thd2_3 == u'451000'
+        assert tsi2.CG_brk1_cpi == True
+        assert tsi2.CG_brk1_0 == u'38659'
+        assert tsi2.CG_brk1_1 == u'76300'
+        assert tsi2.CG_brk1_2 == u'38650'
+        assert tsi2.CG_brk1_3 == u'51400'
+        assert tsi2.CG_brk2_cpi == True
+        assert tsi2.CG_brk2_0 == u'425050'
+        assert tsi2.CG_brk2_1 == u'476950'
+        assert tsi2.CG_brk2_2 == u'243475'
+        assert tsi2.CG_brk2_3 == u'451000'
 
         assert tsi2.AMT_CG_rt1 == u'0.25'
         assert tsi2.AMT_CG_rt2 == u'0.18'
         assert tsi2.AMT_CG_rt3 == u'0.25'
-        assert tsi2.AMT_CG_thd1_cpi == True
-        assert tsi2.AMT_CG_thd1_0 == u'38659.0'
-        assert tsi2.AMT_CG_thd1_1 == u'76300.0'
-        assert tsi2.AMT_CG_thd1_2 == u'38650.0'
-        assert tsi2.AMT_CG_thd1_3 == u'51400.0'
-        assert tsi2.AMT_CG_thd2_cpi == True
-        assert tsi2.AMT_CG_thd2_0 == u'425050.0'
-        assert tsi2.AMT_CG_thd2_1 == u'476950.0'
-        assert tsi2.AMT_CG_thd2_2 == u'243475.0'
-        assert tsi2.AMT_CG_thd2_3 == u'451000.0'
+        assert tsi2.AMT_CG_brk1_cpi == True
+        assert tsi2.AMT_CG_brk1_0 == u'38659.0'
+        assert tsi2.AMT_CG_brk1_1 == u'76300.0'
+        assert tsi2.AMT_CG_brk1_2 == u'38650.0'
+        assert tsi2.AMT_CG_brk1_3 == u'51400.0'
+        assert tsi2.AMT_CG_brk2_cpi == True
+        assert tsi2.AMT_CG_brk2_0 == u'425050.0'
+        assert tsi2.AMT_CG_brk2_1 == u'476950.0'
+        assert tsi2.AMT_CG_brk2_2 == u'243475.0'
+        assert tsi2.AMT_CG_brk2_3 == u'451000.0'
 
 
     def test_taxbrain_rt_to_passthrough(self):
