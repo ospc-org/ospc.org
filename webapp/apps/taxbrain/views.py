@@ -89,10 +89,10 @@ def amt_fixup(request, reform, model):
     and set them as the equivalent Alternative Minimum Tax capital
     gains parameters
     """
-    cap_gains_params = ["CG_rt1", "CG_thd1_0", "CG_thd1_1",
-                        "CG_thd1_2", "CG_thd1_3", "CG_thd1_cpi",
-                        "CG_rt2", "CG_thd2_0", "CG_thd2_1",
-                        "CG_thd2_2", "CG_thd2_3", "CG_thd2_cpi",
+    cap_gains_params = ["CG_rt1", "CG_brk1_0", "CG_brk1_1",
+                        "CG_brk1_2", "CG_brk1_3", "CG_brk1_cpi",
+                        "CG_rt2", "CG_brk2_0", "CG_brk2_1",
+                        "CG_brk2_2", "CG_brk2_3", "CG_brk2_cpi",
                         "CG_rt3"]
 
     for cgparam in cap_gains_params:
