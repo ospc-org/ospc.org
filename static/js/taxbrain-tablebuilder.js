@@ -139,7 +139,7 @@ $(function() {
                     <table class="table table-striped" style="width:100%">\
                         <thead>\
                             <tr>\
-                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %><% if (model.get("reference") !== "fiscal_tots") { %> (<%= model.get("year") %>)<% } %></h1></th>\
+                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %><% if (model.get("reference") !== "fiscal_reform") { %> (<%= model.get("year") %>)<% } %></h1></th>\
                             </tr>\
                             <tr>\
                                 <th></th>\
@@ -207,7 +207,7 @@ $(function() {
                     <table class="table table-striped" style="width:100%">\
                         <thead>\
                             <tr>\
-                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %><% if (model.get("reference") !== "fiscal_tots") { %> (<%= model.get("year") %>)<% } %></h1></th>\
+                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %><% if (model.get("reference") !== "fiscal_reform") { %> (<%= model.get("year") %>)<% } %></h1></th>\
                             </tr>\
                             <tr>\
                                 <th></th>\
@@ -587,17 +587,16 @@ $(function() {
 
     var tablesObj = $('[data-tables]').detach().data('tables');
 
-
     // mock data --------------------
-    tablesObj['fiscal_change'] = JSON.parse(JSON.stringify(tablesObj['fiscal_tots']));
+    tablesObj['fiscal_change'] = JSON.parse(JSON.stringify(tablesObj['fiscal_change']));
     tablesObj['fiscal_change']['title'] =  'CHANGE DATA MOCK!!!!!!!!!';
     tablesObj['fiscal_change']['label'] =  'CHANGE DATA MOCK!!!!!!!!!';
 
-    tablesObj['fiscal_currentlaw'] =  JSON.parse(JSON.stringify(tablesObj['fiscal_tots']));
+    tablesObj['fiscal_currentlaw'] =  JSON.parse(JSON.stringify(tablesObj['fiscal_currentlaw']));
     tablesObj['fiscal_currentlaw']['title'] =  'CURRENT LAW REAL DATA MOCK!!!!!!!!!';
     tablesObj['fiscal_currentlaw']['label'] =  'CURRENT LAW REAL DATA MOCK!!!!!!!!!';
 
-    tablesObj['fiscal_reform'] = JSON.parse(JSON.stringify(tablesObj['fiscal_tots']));
+    tablesObj['fiscal_reform'] = JSON.parse(JSON.stringify(tablesObj['fiscal_reform']));
     tablesObj['fiscal_reform']['title'] =  'REFORM DATA MOCK!!!!!!!!!';
     tablesObj['fiscal_reform']['label'] =  'REFORM DATA MOCK!!!!!!!!!';
 
