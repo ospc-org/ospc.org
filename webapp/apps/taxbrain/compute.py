@@ -224,7 +224,9 @@ class DropqCompute(object):
         df_bin = {}
         pdf_bin = {}
         cdf_bin = {}
-        fiscal_tots = {}
+        fiscal_tot_diffs = {}
+        fiscal_tot_base = {}
+        fiscal_tot_ref = {}
         for result in ans:
             mY_dec.update(result['mY_dec'])
             mX_dec.update(result['mX_dec'])
@@ -236,7 +238,9 @@ class DropqCompute(object):
             df_bin.update(result['df_bin'])
             pdf_bin.update(result['pdf_bin'])
             cdf_bin.update(result['cdf_bin'])
-            fiscal_tots.update(result['fiscal_tots'])
+            fiscal_tot_diffs.update(result['fiscal_tot_diffs'])
+            fiscal_tot_base.update(result['fiscal_tot_base'])
+            fiscal_tot_ref.update(result['fiscal_tot_ref'])
 
 
         if ENFORCE_REMOTE_VERSION_CHECK:
@@ -251,13 +255,21 @@ class DropqCompute(object):
                 print msg
                 raise IOError(msg)
 
-        fiscal_tots = arrange_totals_by_row(fiscal_tots,
+        fiscal_tot_diffs = arrange_totals_by_row(fiscal_tot_diffs,
+                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
+
+        fiscal_tot_base = arrange_totals_by_row(fiscal_tot_base,
+                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
+
+        fiscal_tot_ref = arrange_totals_by_row(fiscal_tot_ref,
                                             TAXCALC_RESULTS_TOTAL_ROW_KEYS)
 
         results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
                 'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
                 'mX_bin': mX_bin, 'df_bin': df_bin, 'pdf_bin': pdf_bin,
-                'cdf_bin': cdf_bin, 'fiscal_tots': fiscal_tots}
+                'cdf_bin': cdf_bin, 'fiscal_tot_diffs': fiscal_tot_diffs,
+                'fiscal_tot_base': fiscal_tot_base,
+                'fiscal_tot_ref': fiscal_tot_ref}
 
         return results
 

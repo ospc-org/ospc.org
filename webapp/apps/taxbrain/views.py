@@ -594,11 +594,16 @@ def get_result_context(model, request, url):
         file_contents = False
 
     is_registered = True if request.user.is_authenticated() else False
+    tables['fiscal_change'] = tables['fiscal_tot_diffs']
+    tables['fiscal_currentlaw'] = tables['fiscal_tot_base']
+    tables['fiscal_reform'] = tables['fiscal_tot_ref']
+    json_table = json.dumps(tables)
+
     context = {
         'locals':locals(),
         'unique_url':url,
         'taxcalc_version':taxcalc_version,
-        'tables': json.dumps(tables),
+        'tables': json_table,
         'created_on': created_on,
         'first_year': first_year,
         'quick_calc': quick_calc,
