@@ -589,16 +589,16 @@ $(function() {
 
     // mock data --------------------
     tablesObj['fiscal_change'] = JSON.parse(JSON.stringify(tablesObj['fiscal_change']));
-    tablesObj['fiscal_change']['title'] =  'CHANGE DATA MOCK!!!!!!!!!';
-    tablesObj['fiscal_change']['label'] =  'CHANGE DATA MOCK!!!!!!!!!';
+    tablesObj['fiscal_change']['title'] =  'TOTAL LIABILITIES CHANGE BY CALENDAR YEAR';
+    tablesObj['fiscal_change']['label'] =  'TOTAL LIABILITIES CHANGE BY CALENDAR YEAR';
 
     tablesObj['fiscal_currentlaw'] =  JSON.parse(JSON.stringify(tablesObj['fiscal_currentlaw']));
-    tablesObj['fiscal_currentlaw']['title'] =  'CURRENT LAW REAL DATA MOCK!!!!!!!!!';
-    tablesObj['fiscal_currentlaw']['label'] =  'CURRENT LAW REAL DATA MOCK!!!!!!!!!';
+    tablesObj['fiscal_currentlaw']['title'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CURRENT LAW)';
+    tablesObj['fiscal_currentlaw']['label'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CURRENT LAW)';
 
     tablesObj['fiscal_reform'] = JSON.parse(JSON.stringify(tablesObj['fiscal_reform']));
-    tablesObj['fiscal_reform']['title'] =  'REFORM DATA MOCK!!!!!!!!!';
-    tablesObj['fiscal_reform']['label'] =  'REFORM DATA MOCK!!!!!!!!!';
+    tablesObj['fiscal_reform']['title'] = 'TOTAL LIABILITIES BY CALENDAR YEAR (REFORM)';
+    tablesObj['fiscal_reform']['label'] = 'TOTAL LIABILITIES BY CALENDAR YEAR (REFORM)';
 
     // end mock data --------------------
 
