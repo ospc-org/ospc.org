@@ -47,6 +47,7 @@ from .helpers import (default_parameters, job_submitted,
                       elast_results_to_tables, default_elasticity_parameters)
 
 from .compute import DynamicCompute
+
 dynamic_compute = DynamicCompute()
 
 from ..taxbrain.constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
@@ -100,28 +101,38 @@ def dynamic_input(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-            taxbrain_dict = dict(taxbrain_model.__dict__)
-            growth_fixup(taxbrain_dict)
-            for key, value in taxbrain_dict.items():
-                if type(value) == type(unicode()):
-                    try:
-                        taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
-                    except ValueError:
-                        taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
+
+            if not taxbrain_model.json_text:
+                taxbrain_dict = dict(taxbrain_model.__dict__)
+                growth_fixup(taxbrain_dict)
+                for key, value in taxbrain_dict.items():
+                    if type(value) == type(unicode()):
+                        try:
+                            taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
+                        except ValueError:
+                            taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                    else:
+                        print "missing this: ", key
 
 
-            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
 
-            #Don't need to pass around the microsim results
-            if 'tax_result' in microsim_data:
-                del microsim_data['tax_result']
+                #Don't need to pass around the microsim results
+                if 'tax_result' in microsim_data:
+                    del microsim_data['tax_result']
 
-            benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
-            # start calc job
-            submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
+                # start calc job
+                submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
+            else:
+                microsim_data = taxbrain_model.json_text.text
+                # start calc job
+                submitted_ids, guids = dynamic_compute.submit_json_ogusa_calculation(worker_data,
+                                                                         int(start_year),
+                                                                         microsim_data,
+                                                                         pack_up_user_mods=False)
+
             if submitted_ids:
                 model.job_ids = denormalize(submitted_ids)
                 model.guids = denormalize(guids)
@@ -487,10 +498,7 @@ def dynamic_landing(request, pk):
     """
     outputsurl = OutputUrl.objects.get(pk=pk)
     taxbrain_model = outputsurl.unique_inputs
-    if taxbrain_model.json_text:
-        include_ogusa = False
-    else:
-        include_ogusa = True
+    include_ogusa = True
     init_context = {
             'pk': pk,
             'is_authenticated': request.user.is_authenticated(),

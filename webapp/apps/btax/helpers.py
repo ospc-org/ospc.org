@@ -2,7 +2,6 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
-import dropq
 import json
 import string
 import sys
@@ -218,7 +217,7 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
 
 def btax_results_to_tables(results, first_budget_year):
     """
-    Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
+    Take various results from i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
     asset_col_meta = dict(btax.parameters.DEFAULT_ASSET_COLS)

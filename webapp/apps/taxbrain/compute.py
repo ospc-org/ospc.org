@@ -1,15 +1,15 @@
-import dropq
 import os
 from .helpers import package_up_vars as _package_up_vars
 from .models import WorkerNodesCounter
 import json
 import requests
+import taxcalc
 from requests.exceptions import Timeout, RequestException
 from .helpers import arrange_totals_by_row
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
-dqversion_info = dropq._version.get_versions()
+dqversion_info = taxcalc._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 NUM_BUDGET_YEARS_QUICK = int(os.environ.get('NUM_BUDGET_YEARS_QUICK', 1))
@@ -23,7 +23,7 @@ DROPQ_SMALL_URL = "/dropq_small_start_job"
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 
 

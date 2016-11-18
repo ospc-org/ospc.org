@@ -1,15 +1,15 @@
-import dropq
 import os
 from ..taxbrain.helpers import package_up_vars, arrange_totals_by_row 
 import json
 import requests
 from requests.exceptions import Timeout, RequestException
 import requests_mock
+import taxcalc
 from ..taxbrain.compute import DropqCompute, MockCompute
 from .models import OGUSAWorkerNodesCounter
 from .helpers import filter_ogusa_only
 
-dqversion_info = dropq._version.get_versions()
+dqversion_info = taxcalc._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 START_YEAR = int(os.environ.get('START_YEAR', 2016))
@@ -19,7 +19,7 @@ DROPQ_WORKERS = dropq_workers.split(",")
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.total_row_names
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
@@ -33,12 +33,28 @@ class DynamicCompute(DropqCompute):
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
 
-    def submit_ogusa_calculation(self, mods, first_budget_year, microsim_data):
-        print "mods is ", mods
-        ogusa_mods = filter_ogusa_only(mods)
-        microsim_params = package_up_vars(microsim_data, first_budget_year)
+    def submit_json_ogusa_calculation(self, ogusa_mods, first_budget_year,
+                                      microsim_data, pack_up_user_mods):
+        return self.submit_ogusa_calculation(ogusa_mods, first_budget_year,
+                                             microsim_data, pack_up_user_mods=False)
+
+    def submit_ogusa_calculation(self, ogusa_mods, first_budget_year, microsim_data,
+                                 pack_up_user_mods=True):
+
+        print "mods is ", ogusa_mods
+        ogusa_params = filter_ogusa_only(ogusa_mods)
+        data = {}
+        if pack_up_user_mods:
+            microsim_params = package_up_vars(microsim_data, first_budget_year)
+            microsim_params = {first_budget_year:microsim_params}
+            print "microsim data is", microsim_params
+        else:
+            data['taxio_format'] = True
+            data['first_budget_year'] = first_budget_year
+            microsim_params = microsim_data
+
+
         print "submit dynamic work"
-        print "ogusa_mods is ", ogusa_mods
 
         hostnames = OGUSA_WORKERS
 
@@ -46,10 +62,8 @@ class DynamicCompute(DropqCompute):
             'callback': "http://{}/dynamic/dynamic_finished".format(CALLBACK_HOSTNAME),
         }
 
-        data = {}
-        data['ogusa_params'] = json.dumps(ogusa_mods)
-        microsim_mods = {first_budget_year:microsim_params}
-        data['user_mods'] = json.dumps(microsim_mods)
+        data['ogusa_params'] = json.dumps(ogusa_params)
+        data['user_mods'] = json.dumps(microsim_params)
         data['first_year'] = first_budget_year
         job_ids = []
         guids = []
