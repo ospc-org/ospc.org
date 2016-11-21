@@ -875,8 +875,6 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = False
 
-
-
         table = {
             'col_labels': col_labels,
             'cols': [],

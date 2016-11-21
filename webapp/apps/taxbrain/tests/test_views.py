@@ -1,7 +1,9 @@
 from django.test import TestCase
 from django.test import Client
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test.client import RequestFactory
 import mock
+import json
 
 from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
 from ..models import convert_to_floats
@@ -9,6 +11,7 @@ from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
                        NodeDownCompute)
+from ..views import get_result_context
 import taxcalc
 from taxcalc import Policy
 from .utils import *
@@ -604,4 +607,25 @@ class TaxBrainViewsTests(TestCase):
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
+    def test_taxbrain_view_old_data_model(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
 
+        tsi = TaxSaveInputs()
+        old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  "example_old_result.json")
+
+        with open(old_result) as f:
+            tsi.tax_result = json.loads(f.read())
+        tsi.first_year = 2016
+        tsi.save()
+
+        factory = RequestFactory()
+        req = factory.get('/taxbrain/')
+        url = '/taxbrain/42'
+
+        # Assert we can make result tables from old data
+        ans = get_result_context(tsi, req, url)
+        assert ans

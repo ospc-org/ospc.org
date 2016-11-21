@@ -570,6 +570,13 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
+    if 'fiscal_tots' in output:
+        # Use new key/value pairs for old data
+        output['fiscal_tot_diffs'] = output['fiscal_tots']
+        output['fiscal_tot_base'] = output['fiscal_tots']
+        output['fiscal_tot_ref'] = output['fiscal_tots']
+        del output['fiscal_tots']
+
     tables = taxcalc_results_to_tables(output, first_year)
     tables["tooltips"] = {
         'diagnostic': DIAGNOSTIC_TOOLTIP,
@@ -593,7 +600,10 @@ def get_result_context(model, request, url):
     else:
         file_contents = False
 
-    is_registered = True if request.user.is_authenticated() else False
+    if hasattr(request, 'user'):
+        is_registered = True if request.user.is_authenticated() else False
+    else:
+        is_registered = False
     tables['fiscal_change'] = tables['fiscal_tot_diffs']
     tables['fiscal_currentlaw'] = tables['fiscal_tot_base']
     tables['fiscal_reform'] = tables['fiscal_tot_ref']
