@@ -1,7 +1,9 @@
 'use strict';
 
 $(function() {
+
     var TableModel = Backbone.Model.extend({
+
         defaults: {
             row_labels: [
                 'Individual Income Tax Liability Change',
@@ -70,6 +72,12 @@ $(function() {
         }
     });
 
+
+    var TablesCollection = Backbone.Collection.extend({
+        model: TableModel
+    });
+
+
     var SelectedTableModel = Backbone.Model.extend({
         defaults: {
             difference: true,
@@ -122,10 +130,6 @@ $(function() {
                 ];
             }
         }
-    });
-
-    var TablesCollection = Backbone.Collection.extend({
-        model: TableModel
     });
 
     var TableView = Backbone.View.extend({
@@ -181,6 +185,97 @@ $(function() {
 
         render: function() {
             this.$el.html(this.template({ model: this.model }));
+            this.$el.find('#source').attr('href', window.location.href).text(window.location.href);
+        }
+    })
+
+
+    var FiscalTableView = Backbone.View.extend({
+        initialize: function(options) {
+            this.tooltips = options.tooltips;
+            this.tables = options.tables;
+            this.selectedTableName = 'fiscal_change';
+        },
+        template: _.template('\
+            <div class="panel panel-default">\
+                <div class="panel-body" style="overflow: scroll">\
+                <ul class="nav nav-pills nav-justified">\
+                  <li data-tablename="fiscal_currentlaw" <% if (selectedTableName == "fiscal_currentlaw") { %>class="active" <% } %>><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.fiscal_current_law %>" href="#">Current Law</a></li>\
+                  <li data-tablename="fiscal_reform" <% if (selectedTableName == "fiscal_reform") { %>class="active" <% } %>><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.fiscal_reform %>" href="#">Reform</a></li>\
+                  <li data-tablename="fiscal_change" <% if (selectedTableName == "fiscal_change") { %>class="active" <% } %>><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.fiscal_change %>" href="#">Change</a></li>\
+                </ul>\
+                    <table class="table table-striped" style="width:100%">\
+                        <thead>\
+                            <tr>\
+                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %><% if (model.get("reference") !== "fiscal_tots") { %> (<%= model.get("year") %>)<% } %></h1></th>\
+                            </tr>\
+                            <tr>\
+                                <th></th>\
+                                <% _.each(model.get("cols"), function(col) { %>\
+                                <%   if (col.show) { %>\
+                                <th class="text-center"><strong><%= col.label %></strong></th>\
+                                <%   } %>\
+                                <% }) %>\
+                            </tr>\
+                        </thead>\
+                        <tbody>\
+                            <tr>\
+                                <td></td>\
+                                <% _.each(model.get("cols"), function(col) { %>\
+                                <%   if (col.show) { %>\
+                                <td class="text-center"><small class="text-muted"><%= col.divisor_label %></small></td>\
+                                <%   } %>\
+                                <% }) %>\
+                            </tr>\
+                            <% _.each(model.get("rows"), function(row, idx) { %>\
+                            <tr>\
+                                <td class="text-center single-line"><strong><%= model.get("row_labels")[idx] %></strong></td>\
+                                <% _.each(row.cells, function(cell, idx) { %>\
+                                <%   if (model.get("cols")[idx].show) { %>\
+                                <td class="text-center"><% if (cell["tot_value"]) { %><%= cell["tot_value"] %><% } else { %><%= cell["year_values"][model.get("year")] %><% } %></td>\
+                                <%   } %>\
+                                <% }) %>\
+                            </tr>\
+                            <% }) %>\
+                            <tr>\
+                                <td>Source: <a id="source" href=""></a</td>\
+                                <% _.each(model.get("rows")[0].cells, function(cell, idx) { %>\
+                                <%   if (model.get("cols")[idx].show) { %>\
+                                <td></td>\
+                                <%   } %>\
+                                <% }) %>\
+                            </tr>\
+                        </tbody>\
+                    </table>\
+                </div>\
+            </div>\
+        '),
+
+        events: {
+            'click [data-tablename]': function(e) {
+                e.preventDefault();
+                var $el = $(e.currentTarget);
+                var el_tablename = $el.data('tablename');
+
+                if (this.selectedTableName === el_tablename) {
+                  return;
+                }
+
+                this.selectedTableName = el_tablename;
+                this.render();
+        }},
+
+
+        render: function() {
+            var that = this;
+
+            var filterFunc = function(t) {
+              return t.get('reference') === that.selectedTableName;
+            };
+
+            var model = _.select(this.tables, filterFunc)[0];
+
+            this.$el.html(this.template({ model: model, tooltips: this.tooltips, selectedTableName: this.selectedTableName }));
             this.$el.find('#source').attr('href', window.location.href).text(window.location.href);
         }
     })
@@ -389,11 +484,12 @@ $(function() {
         ',
 
         initialize: function(options) {
+            this.tooltips = options.tooltips;
+            this.resultYears = options.resultYears;
+
             this.insertTableView();
             this.listenTo(this.model, 'change update', this.insertTableView);
             this.listenTo(this.collection, 'update', this.insertTableView);
-            this.resultYears = options.resultYears;
-            this.tooltips = options.tooltips;
         },
 
         tableView: null,
@@ -452,10 +548,16 @@ $(function() {
         },
 
         render: function() {
-            var fiscalTableModel = this.collection.findWhere({ reference: 'fiscal_tots'});
-            var fiscalTableView = new TableView({
-                model: fiscalTableModel
+
+            var fiscalTableView = new FiscalTableView({
+                tables:[this.collection.findWhere({ reference: 'fiscal_currentlaw'}),
+                        this.collection.findWhere({ reference: 'fiscal_reform'}),
+                        this.collection.findWhere({ reference: 'fiscal_change'})],
+                tooltips: this.tooltips
             });
+
+
+            // Fiscal Table Rendering
             fiscalTableView.render();
             this.$el.find('#fiscal-totals-container').html(fiscalTableView.el);
             this.dataTableOptions.buttons = [
@@ -482,12 +584,32 @@ $(function() {
         }
     });
 
+
     var tablesObj = $('[data-tables]').detach().data('tables');
-    var resultYears = tablesObj['result_years'];
+
+
+    // mock data --------------------
+    tablesObj['fiscal_change'] = JSON.parse(JSON.stringify(tablesObj['fiscal_tots']));
+    tablesObj['fiscal_change']['title'] =  'CHANGE DATA MOCK!!!!!!!!!';
+    tablesObj['fiscal_change']['label'] =  'CHANGE DATA MOCK!!!!!!!!!';
+
+    tablesObj['fiscal_currentlaw'] =  JSON.parse(JSON.stringify(tablesObj['fiscal_tots']));
+    tablesObj['fiscal_currentlaw']['title'] =  'CURRENT LAW REAL DATA MOCK!!!!!!!!!';
+    tablesObj['fiscal_currentlaw']['label'] =  'CURRENT LAW REAL DATA MOCK!!!!!!!!!';
+
+    tablesObj['fiscal_reform'] = JSON.parse(JSON.stringify(tablesObj['fiscal_tots']));
+    tablesObj['fiscal_reform']['title'] =  'REFORM DATA MOCK!!!!!!!!!';
+    tablesObj['fiscal_reform']['label'] =  'REFORM DATA MOCK!!!!!!!!!';
+
+    // end mock data --------------------
+
+
     var tooltips = tablesObj['tooltips'];
+    delete tablesObj['tooltips'];
+
+    var resultYears = tablesObj['result_years'];
     var firstYear = resultYears[0];
     delete tablesObj['result_years'];
-    delete tablesObj['tooltips'];
 
     var tables = [];
     _.each(_.keys(tablesObj), function(key) {
@@ -496,6 +618,7 @@ $(function() {
         tables.push(tablesObj[key]);
     });
 
+    // This is where the new table opject will come in
     var tables = new TablesCollection(tables);
 
     var tableDrilldownView = new TableDrilldownView({

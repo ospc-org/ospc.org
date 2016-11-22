@@ -376,7 +376,8 @@ class TaxInputTests(TestCase):
     def test_format_csv(self):
         c = cycler(40)
         tab_types = [u'mY_bin', u'mX_bin', u'mY_dec', u'mX_dec', u'df_dec',
-                    u'df_bin', u'fiscal_tots']
+                    u'df_bin', u'fiscal_change', u'fiscal_currentlaw',
+                    u'fiscal_reform', ]
 
         bin_keys = [u'thirty_forty_2', u'thirty_forty_0', u'thirty_forty_1',
                     u'seventyfive_hundred_2',
@@ -408,7 +409,7 @@ class TaxInputTests(TestCase):
         tot_keys = [u'combined_tax', u'ind_tax', u'payroll_tax']
 
         tax_results = {}
-        tax_results[u'fiscal_tots'] = {k:[1,2,3] for k in tot_keys}
+        tax_results[u'fiscal_change'] = {k:[1,2,3] for k in tot_keys}
         tax_results[u'mY_bin'] = { k:[next(c)] for k in bin_keys}
         tax_results[u'mX_bin'] = { k:[next(c)] for k in bin_keys}
         tax_results[u'df_bin'] = { k:[next(c)] for k in bin_keys}
