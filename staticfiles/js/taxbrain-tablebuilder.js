@@ -212,9 +212,7 @@ $(function() {
                             <tr>\
                                 <th></th>\
                                 <% _.each(model.get("cols"), function(col) { %>\
-                                <%   if (col.show) { %>\
                                 <th class="text-center"><strong><%= col.label %></strong></th>\
-                                <%   } %>\
                                 <% }) %>\
                             </tr>\
                         </thead>\
@@ -222,27 +220,21 @@ $(function() {
                             <tr>\
                                 <td></td>\
                                 <% _.each(model.get("cols"), function(col) { %>\
-                                <%   if (col.show) { %>\
                                 <td class="text-center"><small class="text-muted"><%= col.divisor_label %></small></td>\
-                                <%   } %>\
                                 <% }) %>\
                             </tr>\
                             <% _.each(model.get("rows"), function(row, idx) { %>\
                             <tr>\
                                 <td class="text-center single-line"><strong><%= model.get("row_labels")[idx] %></strong></td>\
                                 <% _.each(row.cells, function(cell, idx) { %>\
-                                <%   if (model.get("cols")[idx].show) { %>\
                                 <td class="text-center"><% if (cell["tot_value"]) { %><%= cell["tot_value"] %><% } else { %><%= cell["year_values"][model.get("year")] %><% } %></td>\
-                                <%   } %>\
                                 <% }) %>\
                             </tr>\
                             <% }) %>\
                             <tr>\
                                 <td>Source: <a id="source" href=""></a</td>\
                                 <% _.each(model.get("rows")[0].cells, function(cell, idx) { %>\
-                                <%   if (model.get("cols")[idx].show) { %>\
                                 <td></td>\
-                                <%   } %>\
                                 <% }) %>\
                             </tr>\
                         </tbody>\
