@@ -33,7 +33,7 @@ from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
 from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
-from ..taxbrain.models import TaxSaveInputs, OutputUrl
+from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
 from ..taxbrain.views import (growth_fixup, benefit_surtax_fixup, make_bool, dropq_compute,
                               JOB_PROC_TIME_IN_SECONDS)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
@@ -631,6 +631,23 @@ def elastic_results(request, pk):
         except JobFailError as jfe:
             print jfe
             return render_to_response('taxbrain/failed.html')
+
+        if any([j == 'FAIL' for j in jobs_ready]):
+            failed_jobs = [sub_id for (sub_id, job_ready) in
+                           zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
+
+            #Just need the error message from one failed job
+            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
+            error_msg = error_msgs[0]
+            val_err_idx = error_msg.rfind("Error")
+            error = ErrorMessageTaxCalculator()
+            error_contents = error_msg[val_err_idx:].replace(" ","&nbsp;")
+            error.text = error_contents
+            error.save()
+            model.error_text = error
+            model.save()
+            return render(request, 'taxbrain/failed.html', {"error_msg": error_contents})
+
 
         if all([job == 'YES' for job in jobs_ready]):
             model.tax_result = dropq_compute.elastic_get_results(normalize(job_ids))
