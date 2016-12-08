@@ -721,6 +721,13 @@ def behavior_results(request, pk):
         output = model.tax_result
         first_year = model.first_year
         created_on = model.creation_date
+        if 'fiscal_tots' in output:
+            # Use new key/value pairs for old data
+            output['fiscal_tot_diffs'] = output['fiscal_tots']
+            output['fiscal_tot_base'] = output['fiscal_tots']
+            output['fiscal_tot_ref'] = output['fiscal_tots']
+            del output['fiscal_tots']
+
         tables = taxcalc_results_to_tables(output, first_year)
         tables["tooltips"] = {
             'diagnostic': DIAGNOSTIC_TOOLTIP,
@@ -737,12 +744,16 @@ def behavior_results(request, pk):
         is_registered = True if request.user.is_authenticated() else False
         hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
         microsim_url = hostname + "/taxbrain/" + str(model.micro_sim.pk)
+        tables['fiscal_change'] = tables['fiscal_tot_diffs']
+        tables['fiscal_currentlaw'] = tables['fiscal_tot_base']
+        tables['fiscal_reform'] = tables['fiscal_tot_ref']
+        json_table = json.dumps(tables)
 
         context = {
             'locals':locals(),
             'unique_url':url,
             'taxcalc_version':taxcalc_version,
-            'tables': json.dumps(tables),
+            'tables': json_table,
             'created_on': created_on,
             'first_year': first_year,
             'is_registered': is_registered,
