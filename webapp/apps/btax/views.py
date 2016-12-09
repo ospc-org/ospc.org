@@ -49,7 +49,6 @@ from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
 from .constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP)
 
-from .helpers import btax_results_to_tables
 
 dropq_compute = DropqComputeBtax()
 
@@ -323,10 +322,9 @@ def output_detail(request, pk):
 
     model = url.unique_inputs
     if model.tax_result:
-        output = url.unique_inputs.tax_result
+        tables = url.unique_inputs.tax_result[0]
         first_year = url.unique_inputs.first_year
         created_on = url.unique_inputs.creation_date
-        tables = btax_results_to_tables(output, first_year)
         tables["tooltips"] = {
             "metr": METR_TOOLTIP,
             "mettr": METTR_TOOLTIP,
