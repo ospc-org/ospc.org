@@ -164,7 +164,7 @@ def hover_args_to_btax_depr():
     hover_notes['bonus_note'] = defaults['btax_depr_hover_exp']['notes']
     return hover_notes
 
-used = None
+
 def group_args_to_btax_depr(btax_default_params, asset_yr_str):
     depr_field_order = ('gds', 'ads', 'exp', 'tax')
     depr_argument_groups = []
