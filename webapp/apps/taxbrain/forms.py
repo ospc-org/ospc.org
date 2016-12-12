@@ -6,7 +6,7 @@ from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       int_to_nth, is_string, string_to_float_array, check_wildcards,
                       default_taxcalc_data, expand_list, propagate_user_list,
-                      convert_val)
+                      convert_val, INPUT)
 import taxcalc
                       
 
@@ -273,6 +273,8 @@ class PersonalExemptionForm(ModelForm):
             for col, col_field in enumerate(param.col_fields):
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
                 try:
+                    if len(submitted_col_values_raw) > 0:
+                        INPUT.parseString(submitted_col_values_raw)
                     submitted_col_values = string_to_float_array(submitted_col_values_raw)
                 except ValueError as ve:
                     # Assuming wildcard notation here
