@@ -152,6 +152,7 @@ class TaxSaveInputs(models.Model):
     II_em_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameters used for Standard Deductions.
+    STD_Dep = CommaSeparatedField(default=None, blank=True, null=True)
     STD_0 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_1 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_2 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -445,6 +446,9 @@ class TaxSaveInputs(models.Model):
 
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
+
+    # Reform style
+    reform_style = CommaSeparatedField(default=None, blank=True, null=True)
 
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)

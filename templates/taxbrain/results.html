@@ -60,7 +60,7 @@
         <a href="/dynamic/behavioral/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
         {% if is_micro %}
-        <a href="/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Link to Dynamic Simulations</a>
+        <button onclick="buttonAction()" class="text-white btn btn-secondary">Link to Dynamic Simulations</button>
         {% endif %}
       </div>
       {% if file_contents %}
@@ -78,6 +78,22 @@
   <div id="table-drilldown-container"></div>
   <div class="push"></div>
 </div>
+  <div class="modal fade" id="block-link-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Dynamic Simulation Link Unavailable</h4>
+        </div>
+        <div class="modal-body">
+          Oops. Your simulation already had behavioral parameters. You can't link this simulation to a dynamic simulation.
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal">Got it.</a>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block bottom_scripts %}
@@ -86,4 +102,15 @@
 <script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
 <script src="{% static 'js/taxbrain-tablebuilder.js' %}"></script>
+<script>
+    function buttonAction() {
+        if ({{allow_dyn_links|yesno:"true,false,true"}} ) {
+            window.location.href = "/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}";
+            } else {
+            $('#block-link-modal').modal('show');
+        }
+    }
+</script>
+
+
 {% endblock %}
