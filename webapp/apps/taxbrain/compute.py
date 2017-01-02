@@ -242,6 +242,8 @@ class DropqCompute(object):
             fiscal_tot_base.update(result['fiscal_tot_base'])
             fiscal_tot_ref.update(result['fiscal_tot_ref'])
 
+        reform_style = ans[0].get('reform_style', None)
+
 
         if ENFORCE_REMOTE_VERSION_CHECK:
             versions = [r.get('taxcalc_version', None) for r in ans]
@@ -271,7 +273,7 @@ class DropqCompute(object):
                 'fiscal_tot_base': fiscal_tot_base,
                 'fiscal_tot_ref': fiscal_tot_ref}
 
-        return results
+        return results, reform_style
 
     def elastic_get_results(self, job_ids):
         ans = []
