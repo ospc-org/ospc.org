@@ -8,7 +8,6 @@ from .views import (personal_results, output_detail, csv_input, csv_output,
 
 urlpatterns = patterns('',
     url(r'^$', personal_results, name='tax_form'),
-    url(r'^json/$', json_input, name='json_form'),
     url(r'^file/$', file_input, name='json_file'),
     url(r'^(?P<pk>\d+)/output.csv/$', csv_output, name='csv_output'),
     url(r'^(?P<pk>\d+)/input.csv/$', csv_input, name='csv_input'),
