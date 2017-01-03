@@ -323,7 +323,7 @@ def json_input(request):
     This view handles the JSON input page 
     """
     no_inputs = False
-    start_year = START_YEAR
+    start_year = '2016'
     # Probably a GET request, load a default form
     #form_personal_exemp = PersonalExemptionForm(first_year=start_year)
 
