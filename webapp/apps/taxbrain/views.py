@@ -221,7 +221,7 @@ def file_input(request):
     This view handles the JSON input page 
     """
     no_inputs = False
-    start_year = '2016'
+    start_year = '2017'
     # Probably a GET request, load a default form
 
     taxcalc_default_params = default_policy(int(start_year))
@@ -322,7 +322,7 @@ def json_input(request):
     This view handles the JSON input page 
     """
     no_inputs = False
-    start_year = '2016'
+    start_year = '2017'
     # Probably a GET request, load a default form
     #form_personal_exemp = PersonalExemptionForm(first_year=start_year)
 
@@ -423,7 +423,7 @@ def personal_results(request):
     handles the calculation on the inputs.
     """
     no_inputs = False
-    start_year = '2016'
+    start_year = '2017'
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string

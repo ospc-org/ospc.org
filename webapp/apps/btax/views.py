@@ -409,4 +409,3 @@ def output_detail(request, pk):
                 not_ready_data = {'eta': '100', 'is_btax': True}
                 return render_to_response('btax/not_ready.html', not_ready_data,
                                           context_instance=RequestContext(request))
-
