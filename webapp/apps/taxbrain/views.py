@@ -54,6 +54,7 @@ tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
+START_YEAR = '2017'
 JOB_PROC_TIME_IN_SECONDS = 30
 
 def log_ip(request):
@@ -221,7 +222,7 @@ def file_input(request):
     This view handles the JSON input page 
     """
     no_inputs = False
-    start_year = '2017'
+    start_year = START_YEAR
     # Probably a GET request, load a default form
 
     taxcalc_default_params = default_policy(int(start_year))
@@ -322,7 +323,7 @@ def json_input(request):
     This view handles the JSON input page 
     """
     no_inputs = False
-    start_year = '2017'
+    start_year = START_YEAR
     # Probably a GET request, load a default form
     #form_personal_exemp = PersonalExemptionForm(first_year=start_year)
 
@@ -423,7 +424,7 @@ def personal_results(request):
     handles the calculation on the inputs.
     """
     no_inputs = False
-    start_year = '2017'
+    start_year = START_YEAR
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
