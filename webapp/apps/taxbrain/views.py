@@ -43,18 +43,17 @@ from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
 
-from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
-                        PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
-                        REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
-                        FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
-                        INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
+from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
+                         REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
+                         FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
+                         INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
+                         START_YEAR)
 
 
 tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
-START_YEARS = ('2013', '2014', '2015', '2016', '2017')
-START_YEAR = '2017'
 JOB_PROC_TIME_IN_SECONDS = 30
 
 def log_ip(request):

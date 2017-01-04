@@ -6,6 +6,7 @@ import requests
 import taxcalc
 from requests.exceptions import Timeout, RequestException
 from .helpers import arrange_totals_by_row
+from ..constants import START_YEAR
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
@@ -13,7 +14,6 @@ dqversion_info = taxcalc._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 NUM_BUDGET_YEARS_QUICK = int(os.environ.get('NUM_BUDGET_YEARS_QUICK', 1))
-START_YEAR = int(os.environ.get('START_YEAR', 2016))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")

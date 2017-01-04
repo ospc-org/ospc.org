@@ -1,5 +1,5 @@
 import os
-from ..taxbrain.helpers import package_up_vars, arrange_totals_by_row 
+from ..taxbrain.helpers import package_up_vars, arrange_totals_by_row
 import json
 import requests
 from requests.exceptions import Timeout, RequestException
@@ -8,11 +8,11 @@ import taxcalc
 from ..taxbrain.compute import DropqCompute, MockCompute
 from .models import OGUSAWorkerNodesCounter
 from .helpers import filter_ogusa_only
+from ..constants import START_YEAR
 
 dqversion_info = taxcalc._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
-START_YEAR = int(os.environ.get('START_YEAR', 2016))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")

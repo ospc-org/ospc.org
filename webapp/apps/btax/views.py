@@ -47,7 +47,8 @@ from ..taxbrain.views import (benefit_surtax_fixup,
                               denormalize, normalize,taxcalc_version as TAXCALC_VERSION)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
-from .constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP)
+from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
+                        START_YEAR, START_YEARS)
 
 
 dropq_compute = DropqComputeBtax()
@@ -55,7 +56,6 @@ dropq_compute = DropqComputeBtax()
 BTAX_VERSION_INFO = btax._version.get_versions()
 
 BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-revisionid'][:6]])
-START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 
 
@@ -88,7 +88,7 @@ def btax_results(request):
     handles the calculation on the inputs.
     """
     no_inputs = False
-    start_year = '2016'
+    start_year = START_YEAR
     REQUEST = request.REQUEST
     if request.method=='POST':
         print 'POST'
