@@ -48,7 +48,7 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                          REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
                          FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
                          INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
-                         START_YEAR)
+                         START_YEARS)
 
 
 tcversion_info = taxcalc._version.get_versions()
