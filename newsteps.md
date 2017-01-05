@@ -99,7 +99,6 @@ package is kept in a conda channel:
 conda install --file conda-requirements.txt -c ospc
 ```
 
-
 Then use pip to install the remaining packages
 
 ```

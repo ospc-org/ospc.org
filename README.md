@@ -92,16 +92,11 @@ conda create -n webapp pip python=2.7
 source activate webapp
 ```
 
-Install the required packages listed in the conda-requirements.txt file:
+Install the required packages listed in the conda-requirements.txt file. taxcalc
+package is kept in a conda channel:
 
 ```
-conda install --file conda-requirements.txt
-```
-
-Some of the packages are listed in a requirements.txt, which uses pip. Install pip:
-
-```
-conda install pip
+conda install --file conda-requirements.txt -c ospc
 ```
 
 Then use pip to install the remaining packages
@@ -133,6 +128,7 @@ Once the server has started foreman will use port 5000.
 To setup your environment for building static assets:
 ```bash 
 npm install
+npm install -g bower
 bower install
 ```
 
@@ -186,4 +182,3 @@ Django will then run the migrations and all the tables will be created in the db
 ```
 
 Now you have a live project being run locally!
-
