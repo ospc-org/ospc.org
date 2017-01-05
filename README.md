@@ -166,7 +166,7 @@ DATABASES = {
 3) Change HOST to 127.0.0.1
 
 ### Using SQLite as an alternative to Postgres
-Your environment settings file should include a variable named `DATABASE_URL`. If you would rather use SQLite than postgres for your development, simply comment out oe delete this line. The applocation will default to using sqlite as your database.
+Your environment settings file should include a variable named `DATABASE_URL`. If you would rather use SQLite than Postgres for your development, simply comment out or delete this line. The application will default to using SQLite as your database.
 
 # PLEASE DO NOT COMMIT YOUR LOCAL CHANGES TO THE DATABASE CONFIG IN THE SETTINGS FILE.  GIT STASH THEM! 
 ## ALTERNATIVELY, STOP TRACKING LOCAL CHANGES TO THIS FILE WITH:
