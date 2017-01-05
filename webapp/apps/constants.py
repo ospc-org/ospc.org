@@ -1,3 +1,5 @@
+import os
+
 DIAGNOSTIC_TOOLTIP = "Diagnostic table tooltip"
 DIFFERENCE_TOOLTIP = "Difference table tooltip"
 PAYROLL_TOOLTIP = "Payroll info tooltip"
@@ -17,4 +19,4 @@ COC_TOOLTIP = "The cost of capital is calculated as the net-of-depreciation, bef
 DPRC_TOOLTIP = "Net present value of depreciation deductions."
 
 START_YEARS = ('2013', '2014', '2015', '2016', '2017')
-START_YEAR = '2017'
+START_YEAR = os.environ.get('START_YEAR', '2017')
