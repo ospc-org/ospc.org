@@ -49,6 +49,7 @@ The above command will turn DEBUG on.  Setting to any other string will turn DEB
 
 
 # Installing Locally
+To develop the application locally, you need a script containing the environment variables necessary for communicating with the computation nodes. You should ask your project manager or administrator for this script.
 
 ## Installing PostgreSQL
 Postgres is used for this project.  If PostgreSQL is not installed on your machine follow the instructions in the following links.
