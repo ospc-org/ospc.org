@@ -12,18 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='taxsaveinputs',
-            name='AMT_brk1',
-        ),
-        migrations.RemoveField(
-            model_name='taxsaveinputs',
-            name='FEI_ec_c',
-        ),
-        migrations.RemoveField(
-            model_name='taxsaveinputs',
-            name='FEI_ec_c_cpi',
-        ),
         migrations.AddField(
             model_name='taxsaveinputs',
             name='ACTC_Income_thd',
