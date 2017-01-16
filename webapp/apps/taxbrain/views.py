@@ -399,7 +399,6 @@ def personal_results(request):
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
 
-
     if no_inputs:
         form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
 

@@ -8,21 +8,33 @@ with open("current_law_policy.json", "r") as f:
 
 
 def parse_sub_category(field_section):
-    output_list = []
+    output = []
+    free_fields = []
     for x in field_section:
-        print(x)
+        for y, z in x.iteritems():
+            section_name = dict(z).get("section_2")
+            if section_name:
+                section_name = section_name.lower()
+                section = next((item for item in output if section_name in item), None)
+                if not section:
+                    output.append({section_name: [{y: dict(z)}]})
+                else:
+                    section[section_name].append({y: dict(z)})
+            else:
+                free_fields.append(field_section.pop(field_section.index(x)))
+    return output + free_fields
 
 def parse_category(json_output):
     output = []
-    for x in json_output:
-        section_name = dict(json_output[x]).get("section_1")
+    for x, y in json_output.iteritems():
+        section_name = dict(y).get("section_1")
         if section_name:
             section_name = section_name.lower()
-            section = next((item for item in output if section_name in item.keys()), None)
+            section = next((item for item in output if section_name in item), None)
             if not section:
-                output.append({section_name: [{x: dict(json_output[x])}]})
+                output.append({section_name: [{x: dict(y)}]})
             else:
-                section[section_name].append({x: dict(json_output[x])})
+                section[section_name].append({x: dict(y)})
     return output
 
 b = parse_category(a)[0]
