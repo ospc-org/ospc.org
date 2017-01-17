@@ -124,6 +124,45 @@ def default_taxcalc_data(cls, start_year, metadata=False):
     return dd
 
 
+def parse_sub_category(field_section):
+    output = []
+    free_fields = []
+    for x in field_section:
+        for y, z in x.iteritems():
+            section_name = dict(z).get("section_2")
+            if section_name:
+                section_name = section_name.lower()
+                section = next((item for item in output if section_name in item), None)
+                if not section:
+                    output.append({section_name: [{y: dict(z)}]})
+                else:
+                    section[section_name].append({y: dict(z)})
+            else:
+                free_fields.append(field_section.pop(field_section.index(x)))
+    return output + free_fields
+
+
+def parse_top_level(ordered_dict):
+    output = []
+    for x, y in ordered_dict.iteritems():
+        section_name = dict(y).get("section_1")
+        if section_name:
+            section_name = section_name.lower()
+            section = next((item for item in output if section_name in item), None)
+            if not section:
+                output.append({section_name: [{x: dict(y)}]})
+            else:
+                section[section_name].append({x: dict(y)})
+    return output
+
+
+def parse_category(json_input):
+    b = parse_top_level(a)
+    for x in b:
+        for y, z in x.iteritems():
+            x[y] = parse_sub_category(z)
+    return b
+
 #
 # Prepare user params to send to DropQ/Taxcalc
 #
@@ -722,7 +761,6 @@ def default_policy(first_budget_year):
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
-
     #Growth assumptions not in default data yet. Add in the appropriate info so that
     #the params dictionary has the right info
     # value, col_label, long_name, description, irs_ref, notes
@@ -766,7 +804,9 @@ def default_policy(first_budget_year):
 
     growth_params.append(('_factor_target', factor_target))
 
+    print(len(default_taxcalc_params.keys()))
     for k,v in growth_params:
+        import pdb; pdb.set_trace()
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
