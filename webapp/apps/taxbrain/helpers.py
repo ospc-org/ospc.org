@@ -14,9 +14,10 @@ MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
                 'mpl_toolkits.mplot3d', 'pandas']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+from ..constants import START_YEAR
+
 import taxcalc
 from taxcalc import Policy
-START_YEAR = int(os.environ.get('START_YEAR', 2016))
 PYTHON_MAJOR_VERSION = sys.version_info.major
 INT_TO_NTH_MAP = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',
                   'seventh', 'eighth', 'nineth', 'tenth']

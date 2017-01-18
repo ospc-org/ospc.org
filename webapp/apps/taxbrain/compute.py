@@ -6,6 +6,7 @@ import requests
 import taxcalc
 from requests.exceptions import Timeout, RequestException
 from .helpers import arrange_totals_by_row
+from ..constants import START_YEAR
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
@@ -13,7 +14,6 @@ dqversion_info = taxcalc._version.get_versions()
 dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 NUM_BUDGET_YEARS_QUICK = int(os.environ.get('NUM_BUDGET_YEARS_QUICK', 1))
-START_YEAR = int(os.environ.get('START_YEAR', 2016))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
@@ -242,6 +242,8 @@ class DropqCompute(object):
             fiscal_tot_base.update(result['fiscal_tot_base'])
             fiscal_tot_ref.update(result['fiscal_tot_ref'])
 
+        reform_style = ans[0].get('reform_style', None)
+
 
         if ENFORCE_REMOTE_VERSION_CHECK:
             versions = [r.get('taxcalc_version', None) for r in ans]
@@ -271,7 +273,7 @@ class DropqCompute(object):
                 'fiscal_tot_base': fiscal_tot_base,
                 'fiscal_tot_ref': fiscal_tot_ref}
 
-        return results
+        return results, reform_style
 
     def elastic_get_results(self, job_ids):
         ans = []

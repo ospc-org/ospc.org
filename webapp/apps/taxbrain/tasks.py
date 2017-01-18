@@ -13,11 +13,11 @@ from boto.s3.connection import S3Connection
 import os
 
 from .helpers import *
+from ..constants import START_YEAR
 
 AWS_KEY_ID = os.environ['AWS_KEY_ID']
 AWS_SECRET_ID = os.environ['AWS_SECRET_ID']
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
-START_YEAR = int(os.environ.get('START_YEAR', 2015))
 DUMP_DEBUG = os.environ.get('DUMP_DEBUG', None) == 'True'
 
 if not os.path.exists("puf.csv.gz"):

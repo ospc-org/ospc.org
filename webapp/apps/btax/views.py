@@ -47,16 +47,15 @@ from ..taxbrain.views import (benefit_surtax_fixup,
                               denormalize, normalize,taxcalc_version as TAXCALC_VERSION)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
-from .constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP)
+from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
+                        START_YEAR, START_YEARS)
 
-from .helpers import btax_results_to_tables
 
 dropq_compute = DropqComputeBtax()
 
 BTAX_VERSION_INFO = btax._version.get_versions()
 
 BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-revisionid'][:6]])
-START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 
 
@@ -89,7 +88,7 @@ def btax_results(request):
     handles the calculation on the inputs.
     """
     no_inputs = False
-    start_year = '2016'
+    start_year = START_YEAR
     REQUEST = request.REQUEST
     if request.method=='POST':
         print 'POST'
@@ -323,10 +322,9 @@ def output_detail(request, pk):
 
     model = url.unique_inputs
     if model.tax_result:
-        output = url.unique_inputs.tax_result
+        tables = url.unique_inputs.tax_result[0]
         first_year = url.unique_inputs.first_year
         created_on = url.unique_inputs.creation_date
-        tables = btax_results_to_tables(output, first_year)
         tables["tooltips"] = {
             "metr": METR_TOOLTIP,
             "mettr": METTR_TOOLTIP,
@@ -411,4 +409,3 @@ def output_detail(request, pk):
                 not_ready_data = {'eta': '100', 'is_btax': True}
                 return render_to_response('btax/not_ready.html', not_ready_data,
                                           context_instance=RequestContext(request))
-

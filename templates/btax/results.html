@@ -248,7 +248,7 @@
            var row;
            var items = window.tableData[window.viewBy + '_' + window.outputInterest][window.outputFormat];
 
-           for(var i=0; i < items.rows.length - 1; i++) {
+           for(var i=0; i < items.rows.length; i++) {
                row = items.rows[i];
                if(row.label == row.major_grouping){
                   var sb = "<strong>";
@@ -261,9 +261,15 @@
                   if(row.summary_c === 'breakline'){
                      $table_body.append(`
                         <tr>
-                            <td class="data-label" colspan="7">
+                            <td class="data-label">
                                 <strong>${row.label}</strong>
                             </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                      `);
                      continue;
@@ -281,6 +287,9 @@
                         <td>${sb}${formatValue(row.cells, 3)}${se}</td>
                         <td>${sb}${formatValue(row.cells, 4)}${se}</td>
                         <td>${sb}${formatValue(row.cells, 5)}${se}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
                     </tr>`);
             }
 

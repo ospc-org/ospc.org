@@ -50,12 +50,11 @@ from .compute import DynamicCompute
 
 dynamic_compute = DynamicCompute()
 
-from ..taxbrain.constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
-                                  PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
-                                  REFORM_TOOLTIP, EXPANDED_TOOLTIP,
-                                  ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
-                                  INCOME_DECILES_TOOLTIP)
-
+from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
+                          REFORM_TOOLTIP, EXPANDED_TOOLTIP,
+                          ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
+                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -795,7 +794,8 @@ def behavior_results(request, pk):
             return render_to_response('taxbrain/failed.html')
 
         if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
+            results, reform_style = dropq_compute.dropq_get_results(normalize(job_ids))
+            model.tax_result = results
             model.creation_date = datetime.datetime.now()
             model.save()
             return redirect('behavior_results', url.pk)

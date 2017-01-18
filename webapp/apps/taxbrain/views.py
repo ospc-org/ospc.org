@@ -43,17 +43,17 @@ from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
 
-from .constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
-                        PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
-                        REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
-                        FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
-                        INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP)
+from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
+                         REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
+                         FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
+                         INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
+                         START_YEARS)
 
 
 tcversion_info = taxcalc._version.get_versions()
 
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
-START_YEARS = ('2013', '2014', '2015', '2016', '2017')
 JOB_PROC_TIME_IN_SECONDS = 30
 
 def log_ip(request):
@@ -221,7 +221,7 @@ def file_input(request):
     This view handles the JSON input page 
     """
     no_inputs = False
-    start_year = '2016'
+    start_year = START_YEAR
     # Probably a GET request, load a default form
 
     taxcalc_default_params = default_policy(int(start_year))
@@ -316,114 +316,13 @@ def file_input(request):
     return render(request, 'taxbrain/input_file.html', init_context)
 
 
-
-def json_input(request):
-    """
-    This view handles the JSON input page 
-    """
-    no_inputs = False
-    start_year = '2016'
-    # Probably a GET request, load a default form
-    #form_personal_exemp = PersonalExemptionForm(first_year=start_year)
-
-    taxcalc_default_params = default_policy(int(start_year))
-    has_errors = False
-    errors = None
-
-    STARTING_TEXT = "Put Calculator JSON reform parameters here."
-    text_taxcalc = STARTING_TEXT
-
-    if request.method=='POST':
-        # Client is attempting to send inputs, validate as form data
-        # Need need to the pull the start_year out of the query string
-        # to properly set up the Form
-        has_errors = make_bool(request.POST['has_errors'])
-        start_year = request.REQUEST['start_year']
-        text_taxcalc = request.POST['taxcalc'].strip()
-        # Assume we do the full calculation unless we find out otherwise
-        fields = dict(request.REQUEST)
-        do_full_calc = False if fields.get('quick_calc') else True
-        error_messages = {}
-        reform_dict = {}
-        if text_taxcalc and not STARTING_TEXT in text_taxcalc:
-            reform_dict['taxcalc'] = text_taxcalc
-        else:
-            error_messages['Tax-Calculator:'] = "No text found in input box."
-
-        if error_messages:
-            has_errors = True
-            errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
-        else:
-            try:
-                log_ip(request)
-                #Submit calculation
-                if do_full_calc:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(reform_dict['taxcalc'], int(start_year))
-                else:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(reform_dict['taxcalc'], int(start_year))
-
-                if not submitted_ids:
-                    raise JobFailError("couldn't submit ids")
-                else:
-                    job_ids = denormalize(submitted_ids)
-                    json_reform = JSONReformTaxCalculator()
-                    json_reform.text = reform_dict['taxcalc']
-                    json_reform.save()
-
-                    model = TaxSaveInputs()
-                    model.job_ids = job_ids
-                    model.json_text = json_reform
-                    model.first_year = int(start_year)
-                    model.quick_calc = not do_full_calc
-                    model.save()
-                    unique_url = OutputUrl()
-                    if request and request.user.is_authenticated():
-                        current_user = User.objects.get(pk=request.user.id)
-                        unique_url.user = current_user
-
-                    if unique_url.taxcalc_vers != None:
-                        pass
-                    else:
-                        unique_url.taxcalc_vers = taxcalc_version
-
-                    unique_url.unique_inputs = model
-                    unique_url.model_pk = model.pk
-                    cur_dt = datetime.datetime.utcnow()
-                    future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
-                    expected_completion = cur_dt + future_offset
-                    unique_url.exp_comp_datetime = expected_completion
-                    unique_url.save()
-
-                return redirect(unique_url)
-
-            except JobFailError:
-                no_inputs = True
-                form_personal_exemp = personal_inputs
-
-    text = {'taxcalc':text_taxcalc}
-
-    init_context = {
-        'params': taxcalc_default_params,
-        'input_text': text,
-        'errors': errors,
-        'taxcalc_version': taxcalc_version,
-        'start_years': START_YEARS,
-        'start_year': start_year,
-        'has_errors': has_errors,
-        'enable_quick_calc': ENABLE_QUICK_CALC
-    }
-
-
-    return render(request, 'taxbrain/input_json.html', init_context)
-
-
 def personal_results(request):
     """
     This view handles the input page and calls the function that
     handles the calculation on the inputs.
     """
     no_inputs = False
-    start_year = '2016'
+    start_year = START_YEAR
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
@@ -570,6 +469,11 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
+    if model.reform_style:
+        rs = [True if x=='True' else False for x in model.reform_style.split(',')]
+        allow_dyn_links = True if (len(rs) < 2 or rs[1] is False) else False
+    else:
+        allow_dyn_links = True
     if 'fiscal_tots' in output:
         # Use new key/value pairs for old data
         output['fiscal_tot_diffs'] = output['fiscal_tots']
@@ -619,7 +523,8 @@ def get_result_context(model, request, url):
         'quick_calc': quick_calc,
         'is_registered': is_registered,
         'is_micro': True,
-        'file_contents': file_contents
+        'file_contents': file_contents,
+        'allow_dyn_links': allow_dyn_links
     }
     return context
 
@@ -676,7 +581,13 @@ def output_detail(request, pk):
 
 
         if all([j == 'YES' for j in jobs_ready]):
-            model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
+            results, reform_style = dropq_compute.dropq_get_results(normalize(job_ids))
+            model.tax_result = results
+            if reform_style:
+                rs = ','.join([str(flag) for flag in reform_style])
+            else:
+                rs = ''
+            model.reform_style = rs
             model.creation_date = datetime.datetime.now()
             model.save()
             context = get_result_context(model, request, url)
