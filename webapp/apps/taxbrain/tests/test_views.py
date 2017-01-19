@@ -561,3 +561,25 @@ class TaxBrainViewsTests(TestCase):
         # Assert we can make result tables from old data
         ans = get_result_context(tsi, req, url)
         assert ans
+
+
+    def test_taxbrain_bad_expression(self):
+        """
+        POST a bad expression for a TaxBrain parameter and verify that
+        it gives an error
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'XTOT*4500'],
+                u'II_brk2_0': [u'*, *, 39500'],
+                u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/', data)
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+
+

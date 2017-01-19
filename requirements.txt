@@ -27,3 +27,4 @@ requests_mock
 boto
 django-storages
 django-htmlmin
+pyparsing
