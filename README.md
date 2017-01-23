@@ -49,6 +49,7 @@ The above command will turn DEBUG on.  Setting to any other string will turn DEB
 
 
 # Installing Locally
+To develop the application locally, you need a script containing the environment variables necessary for communicating with the computation nodes. You should ask your project manager or administrator for this script.
 
 ## Installing PostgreSQL
 Postgres is used for this project.  If PostgreSQL is not installed on your machine follow the instructions in the following links.
@@ -92,16 +93,11 @@ conda create -n webapp pip python=2.7
 source activate webapp
 ```
 
-Install the required packages listed in the conda-requirements.txt file:
+Install the required packages listed in the conda-requirements.txt file. taxcalc
+package is kept in a conda channel:
 
 ```
-conda install --file conda-requirements.txt
-```
-
-Some of the packages are listed in a requirements.txt, which uses pip. Install pip:
-
-```
-conda install pip
+conda install --file conda-requirements.txt -c ospc
 ```
 
 Then use pip to install the remaining packages
@@ -133,6 +129,7 @@ Once the server has started foreman will use port 5000.
 To setup your environment for building static assets:
 ```bash 
 npm install
+npm install -g bower
 bower install
 ```
 
@@ -168,6 +165,9 @@ DATABASES = {
 2) Change the PASSWORD to the password you used to setup Postgres.
 3) Change HOST to 127.0.0.1
 
+### Using SQLite as an alternative to Postgres
+Your environment settings file should include a variable named `DATABASE_URL`. If you would rather use SQLite than Postgres for your development, simply comment out or delete this line. The application will default to using SQLite as your database.
+
 # PLEASE DO NOT COMMIT YOUR LOCAL CHANGES TO THE DATABASE CONFIG IN THE SETTINGS FILE.  GIT STASH THEM! 
 ## ALTERNATIVELY, STOP TRACKING LOCAL CHANGES TO THIS FILE WITH:
 ## `git update-index --assume-unchanged webapp/settings.py`
@@ -186,4 +186,3 @@ Django will then run the migrations and all the tables will be created in the db
 ```
 
 Now you have a live project being run locally!
-

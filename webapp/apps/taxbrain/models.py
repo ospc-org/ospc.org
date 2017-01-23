@@ -74,7 +74,7 @@ class SeparatedValuesField(models.TextField):
 class JSONReformTaxCalculator(models.Model):
     '''
     This class holds all of the text for a JSON-based reform input
-    for TaxBrain. A TaxSavesInput Model will have a foreign key to 
+    for TaxBrain. A TaxSavesInput Model will have a foreign key to
     an instance of this model if the user created the TaxBrain job
     through the JSON iput page.
     '''
@@ -83,7 +83,7 @@ class JSONReformTaxCalculator(models.Model):
 class ErrorMessageTaxCalculator(models.Model):
     '''
     This class holds all of the text for an error message on
-    TaxBrain. A TaxSavesInput Model will have a foreign key to 
+    TaxBrain. A TaxSavesInput Model will have a foreign key to
     an instance of this model if the user created the TaxBrain job
     that ends up failing and reporting this failure.
     '''
@@ -215,6 +215,7 @@ class TaxSaveInputs(models.Model):
     ID_Charity_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_crt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_em = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_Switch_0 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_1 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_2 = models.CharField(default="True", blank=True, null=True, max_length=50)
