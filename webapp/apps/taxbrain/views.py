@@ -38,7 +38,7 @@ from djqscsv import render_to_csv_response
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool)
+                      is_wildcard, convert_val, make_bool, nested_form_parameters)
 from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
@@ -72,7 +72,7 @@ def log_ip(request):
 def benefit_surtax_fixup(request, reform, model):
     """
     Take the incoming POST, the user reform, and the TaxSaveInputs
-    model and fixup the switches _0, ..., _6 to one array of 
+    model and fixup the switches _0, ..., _6 to one array of
     bools. Also set the model values correctly based on incoming
     POST
     """
@@ -218,7 +218,7 @@ def process_model(model, start_year, stored_errors=None, request=None,
 
 def file_input(request):
     """
-    This view handles the JSON input page 
+    This view handles the JSON input page
     """
     no_inputs = False
     start_year = START_YEAR
@@ -391,7 +391,7 @@ def personal_results(request):
 
     init_context = {
         'form': form_personal_exemp,
-        'params': taxcalc_default_params,
+        'params': nested_form_parameters(int(start_year)),
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
         'start_year': start_year,

@@ -134,20 +134,9 @@
                   </div>
                 </div>
               </div>
-
-              {% include 'taxbrain/includes/params/inputs/payroll.html' %}
-              {% include 'taxbrain/includes/params/inputs/soc.html' %}
-              {% include 'taxbrain/includes/params/inputs/adjust.html' %}
-              {% include 'taxbrain/includes/params/inputs/personal_exemp.html' %}
-              {% include 'taxbrain/includes/params/inputs/standard_ded.html' %}
-              {% include 'taxbrain/includes/params/inputs/personal_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/itemize_ded.html' %}
-              {% include 'taxbrain/includes/params/inputs/regular_taxes.html' %}
-              {% include 'taxbrain/includes/params/inputs/amt.html' %}
-              {% include 'taxbrain/includes/params/inputs/nonrefundable_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/other_taxes.html' %}
-              {% include 'taxbrain/includes/params/inputs/refundable_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/growth.html' %}
+              {% for param in params %}
+                {% include 'taxbrain/default_input.html' with param=param %}
+              {% endfor %}
             </div> <!-- main -->
           </div>
         </div>

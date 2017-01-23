@@ -172,7 +172,7 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'Individual Income Liabilities',
     [1000000000, 'Dollars', 1],  # 'Payroll Tax Liablities',
     [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities'
-                                      
+
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [      1000,      None, 0],    # "Inds. w/ Tax Cut",
@@ -297,7 +297,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
     -----------
     x : list from user to propagate forward in time. The first value is for
         year 'first_budget_year'. The value at index i is the value for
-        budget year first_budget_year + i. 
+        budget year first_budget_year + i.
 
     defaults: list of default values; our result must be at least this long
 
@@ -305,7 +305,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
 
     cpi: Bool
 
-    first_budget_year: int 
+    first_budget_year: int
 
     multi_param_idx: int, optional. If this parameter is multi-valued, this
         is the index for which the values for 'x' apply. So, for exampe, if
@@ -728,12 +728,17 @@ def parse_top_level(ordered_dict):
     return output
 
 
-def parse_category(json_input, budget_year=2017):
-    b = parse_top_level(json_input)
-    for x in b:
+def nested_form_parameters(budget_year=2017):
+    defaults = default_taxcalc_data(
+        taxcalc.policy.Policy,
+        metadata=True,
+        start_year=budget_year
+    )
+    groups = parse_top_level(defaults)
+    for x in groups:
         for y, z in x.iteritems():
             x[y] = parse_sub_category(z, budget_year)
-    return b
+    return groups
 
 # Create a list of default Behavior parameters
 def default_behavior(first_budget_year):
