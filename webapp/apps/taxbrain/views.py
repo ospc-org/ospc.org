@@ -240,21 +240,19 @@ def file_input(request):
         do_full_calc = False if fields.get('quick_calc') else True
         error_messages = {}
         reform_dict = {}
-        if 'docfile' in request.FILES and 'assumpfile' in request.FILES:
+        if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
             reform_text = inmemfile_reform.read().strip()
             reform_dict['taxcalc_reform'] = reform_text
-            inmemfile_assumption = request.FILES['assumpfile']
-            assumption_text = inmemfile_assumption.read().strip()
-            reform_dict['taxcalc_assumption'] = assumption_text
-        else:
-            if 'docfile' in request.FILES:
-                msg = "No assumption file uploaded."
-            elif 'assumpfile' in request.FILES:
-                msg = "No reform file uploaded."
+            if 'assumpfile' in request.FILES:
+                inmemfile_assumption = request.FILES['assumpfile']
+                assumption_text = inmemfile_assumption.read().strip()
+                reform_dict['taxcalc_assumption'] = assumption_text
             else:
-                msg = "No reform file or assumption file uploaded."
+                reform_dict['taxcalc_assumption'] = ""
 
+        else:
+            msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
 
         if error_messages:
