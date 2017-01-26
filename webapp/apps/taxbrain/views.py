@@ -240,12 +240,22 @@ def file_input(request):
         do_full_calc = False if fields.get('quick_calc') else True
         error_messages = {}
         reform_dict = {}
-        if 'docfile' in request.FILES:
-            inmemfile = request.FILES['docfile']
-            text_taxcalc = inmemfile.read().strip()
-            reform_dict['taxcalc'] = text_taxcalc
+        if 'docfile' in request.FILES and 'assumpfile' in request.FILES:
+            inmemfile_reform = request.FILES['docfile']
+            reform_text = inmemfile_reform.read().strip()
+            reform_dict['taxcalc_reform'] = reform_text
+            inmemfile_assumption = request.FILES['assumpfile']
+            assumption_text = inmemfile_assumption.read().strip()
+            reform_dict['taxcalc_assumption'] = assumption_text
         else:
-            error_messages['Tax-Calculator:'] = "No file uploaded."
+            if 'docfile' in request.FILES:
+                msg = "No assumption file uploaded."
+            elif 'assumpfile' in request.FILES:
+                msg = "No reform file uploaded."
+            else:
+                msg = "No reform file or assumption file uploaded."
+
+            error_messages['Tax-Calculator:'] = msg
 
         if error_messages:
             has_errors = True
@@ -253,18 +263,22 @@ def file_input(request):
         else:
             try:
                 log_ip(request)
+                mods = { 'reform': reform_dict['taxcalc_reform'], 'assumptions': reform_dict['taxcalc_assumption']}
                 #Submit calculation
                 if do_full_calc:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(reform_dict['taxcalc'], int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(mods,
+                                                                                              int(start_year))
                 else:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(reform_dict['taxcalc'], int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(mods,
+                                                                                                    int(start_year))
 
                 if not submitted_ids:
                     raise JobFailError("couldn't submit ids")
                 else:
                     job_ids = denormalize(submitted_ids)
                     json_reform = JSONReformTaxCalculator()
-                    json_reform.text = reform_dict['taxcalc']
+                    json_reform.reform_text = reform_dict['taxcalc_reform']
+                    json_reform.assumption_text = reform_dict['taxcalc_assumption']
                     json_reform.save()
 
                     model = TaxSaveInputs()
@@ -499,10 +513,13 @@ def get_result_context(model, request, url):
     }
 
     if model.json_text:
-        file_contents = model.json_text.text
-        file_contents = file_contents.replace(" ","&nbsp;")
+        reform_file_contents = model.json_text.reform_text
+        reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
+        assump_file_contents = model.json_text.assumption_text
+        assump_file_contents = assump_file_contents.replace(" ","&nbsp;")
     else:
-        file_contents = False
+        reform_file_contents = False
+        assump_file_contents = False
 
     if hasattr(request, 'user'):
         is_registered = True if request.user.is_authenticated() else False
@@ -523,7 +540,8 @@ def get_result_context(model, request, url):
         'quick_calc': quick_calc,
         'is_registered': is_registered,
         'is_micro': True,
-        'file_contents': file_contents,
+        'reform_file_contents': reform_file_contents,
+        'assump_file_contents': assump_file_contents,
         'allow_dyn_links': allow_dyn_links
     }
     return context

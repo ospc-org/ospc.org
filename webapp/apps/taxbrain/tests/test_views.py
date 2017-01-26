@@ -528,7 +528,9 @@ class TaxBrainViewsTests(TestCase):
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
         tc_file = SimpleUploadedFile("test_reform.json", "file_content")
+        tc_file2 = SimpleUploadedFile("test_assumptions.json", "file_content")
         data = {u'docfile': tc_file,
+                u'assumpfile': tc_file2,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
