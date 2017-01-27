@@ -1,13 +1,15 @@
 {% extends 'taxbrain/input_form_section.html' %}
-{% block input_section_shortname %}payroll-taxes{% endblock %}
-{% block input_section_title %}Payroll Taxes{% endblock %}
 
+{% load strings %}
 {% load flatblocks %}
+
+{% block input_section_shortname %}{{ title|make_id }}{% endblock %}
+{% block input_section_title %}{{ title|make_title }}{% endblock %}
 
 {% block content %}
 <div class="inputs-block-header">
 {% for title, params in param.items %}
-  <h1>{{ title }}</h1>
+  <h1>{{ title|make_title }}</h1>
   {% for field in params %}
     {% for name, param_object in field.items %}
       {% if param_object.name %}
