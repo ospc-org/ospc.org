@@ -86,4 +86,74 @@ class Migration(migrations.Migration):
             name='ID_BenefitSurtax_em_3',
             field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
         ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitCap_Switch_0',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitCap_Switch_1',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitCap_Switch_2',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitCap_Switch_3',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitCap_Switch_4',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitCap_Switch_5',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitCap_Switch_6',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitSurtax_Switch_0',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitSurtax_Switch_1',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitSurtax_Switch_2',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitSurtax_Switch_3',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitSurtax_Switch_4',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitSurtax_Switch_5',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
+        migrations.AlterField(
+            model_name='taxsaveinputs',
+            name='ID_BenefitSurtax_Switch_6',
+            field=models.CharField(default=None, max_length=50, null=True, blank=True),
+        ),
     ]
