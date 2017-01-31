@@ -53,21 +53,24 @@
     {% endif %}
     <div class="result-table">
       <div class="result-table-controls">
-        {% if is_micro and not file_contents %}
+        {% if is_micro and not reform_file_contents %}
         <a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
-        {% if is_behavior and not file_contents %}
+        {% if is_behavior and not reform_file_contents %}
         <a href="/dynamic/behavioral/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
         {% if is_micro %}
         <button onclick="buttonAction()" class="text-white btn btn-secondary">Link to Dynamic Simulations</button>
         {% endif %}
       </div>
-      {% if file_contents %}
-      <h2> The following reform file was uploaded for this simulation: </h2>
+      {% if reform_file_contents %}
+      <h2> The following reform files were uploaded for this simulation: </h2>
       <div class="file-contents">
           {%autoescape off %}
-          {{file_contents | linebreaks | safe }}
+          {{reform_file_contents | linebreaks | safe }}
+          {%endautoescape %}
+          {%autoescape off %}
+          {{assump_file_contents | linebreaks | safe }}
           {%endautoescape %}
        </div>
       {% endif %}

@@ -125,7 +125,7 @@ def dynamic_input(request, pk):
                 # start calc job
                 submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
             else:
-                microsim_data = taxbrain_model.json_text.text
+                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
                 # start calc job
                 submitted_ids, guids = dynamic_compute.submit_json_ogusa_calculation(worker_data,
                                                                          int(start_year),
@@ -233,7 +233,7 @@ def dynamic_behavioral(request, pk):
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
 
             else:
-                microsim_data = taxbrain_model.json_text.text
+                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
                 el_keys = ('first_year', 'elastic_gdp')
                 behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
                 behavior_params = { k:v for k, v in worker_data.items()
@@ -367,7 +367,7 @@ def dynamic_elasticities(request, pk):
                                                                         int(start_year))
 
             else:
-                microsim_data = taxbrain_model.json_text.text
+                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
                 el_keys = ('first_year', 'elastic_gdp')
                 elasticity_params = { k:v for k, v in worker_data.items() if k in el_keys}
                 additional_data = {'elasticity_params': json.dumps(elasticity_params)}
