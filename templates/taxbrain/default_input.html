@@ -3,20 +3,20 @@
 {% load strings %}
 {% load flatblocks %}
 
-{% block input_section_shortname %}{{ title|make_id }}{% endblock %}
-{% block input_section_title %}{{ title|make_title }}{% endblock %}
+{% block input_section_shortname %}{{ param|block_param_id }}{% endblock %}
+{% block input_section_title %}{{ param|block_param_title }}{% endblock %}
 
 {% block content %}
 <div class="inputs-block-header">
 {% for title, params in param.items %}
-  <h1>{{ title|make_title }}</h1>
+  <h1>{{ title|title }}</h1>
   {% for field in params %}
     {% for name, param_object in field.items %}
       {% if param_object.name %}
-        <h2>{{ param_object.name }}</h2>
+        <h2>{{ param_object.name|title }}</h2>
         {% include 'taxbrain/includes/params/inputs/param.html' with param=param_object %}
       {% else %}
-        <h2>{{ name }}</h2>
+        <h2>{{ name|title }}</h2>
         {% for x in param_object %}
           {% for y, z in x.items %}
             {% include 'taxbrain/includes/params/inputs/param.html' with param=z %}

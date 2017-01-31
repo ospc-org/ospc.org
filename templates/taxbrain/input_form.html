@@ -3,6 +3,7 @@
 {% load staticfiles %}
 
 {% load flatblocks %}
+{% load strings %}
 
 {% block content %}
 <div class="wrapper">
@@ -64,19 +65,9 @@
 
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
-                <li><a href="#payroll-taxes">Payroll Taxes</a></li>
-                <li><a href="#social-medicare">Social Security Taxability</a></li>
-                <li><a href="#adjustments">Adjustments</a></li>
-                <li><a href="#exemptions">Exemptions</a></li>
-                <li><a href="#standard-deduction">Standard Deduction</a></li>
-                <li><a href="#personal-credit">Personal Refundable Credit</a></li>
-                <li><a href="#itemized-deductions">Itemized Deductions</a></li>
-                <li><a href="#regular-taxes">Regular Taxes</a></li>
-                <li><a href="#amt">Alternative Minimum Tax</a></li>
-                <li><a href="#nonrefundable-credits">Nonrefundable Credits</a></li>
-                <li><a href="#other-taxes">Other Taxes</a></li>
-                <li><a href="#refundable-credits">Refundable Credits</a></li>
-                <li><a href="#growth">Baseline Growth Assumptions</a></li>
+                  {% for param in params %}
+                    <li><a href="#{{ param|block_param_id }}">{{ param|block_param_title }}</a></li>
+                  {% endfor %}
               </ul>
               <div class="sidebar-button">
                 <a href="#" ></a>
