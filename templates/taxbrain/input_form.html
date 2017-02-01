@@ -66,7 +66,9 @@
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                   {% for param in params %}
-                    <li><a href="#{{ param|block_param_id }}">{{ param|block_param_title }}</a></li>
+                    {% for key, value in param.items %}
+                      <li><a href="#{{ key|make_id }}">{{ key|title }}</a></li>
+                    {% endfor %}
                   {% endfor %}
               </ul>
               <div class="sidebar-button">
@@ -126,7 +128,9 @@
                 </div>
               </div>
               {% for param in params %}
-                {% include 'taxbrain/default_input.html' with param=param %}
+                {% for key, value in param.items %}
+                    {% include 'taxbrain/default_input.html' with title=key param=value %}
+                {% endfor %}
               {% endfor %}
             </div> <!-- main -->
           </div>

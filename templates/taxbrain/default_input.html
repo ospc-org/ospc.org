@@ -3,14 +3,13 @@
 {% load strings %}
 {% load flatblocks %}
 
-{% block input_section_shortname %}{{ param|block_param_id }}{% endblock %}
-{% block input_section_title %}{{ param|block_param_title }}{% endblock %}
+{% block input_section_shortname %}{{ title|make_id }}{% endblock %}
+{% block input_section_title %}{{ title|title }}{% endblock %}
 
 {% block content %}
 <div class="inputs-block-header">
-{% for title, params in param.items %}
   <h1>{{ title|title }}</h1>
-  {% for field in params %}
+  {% for field in param %}
     {% for name, param_object in field.items %}
       {% if param_object.name %}
         <h2>{{ param_object.name|title }}</h2>
@@ -25,7 +24,6 @@
       {% endif %}
     {% endfor %}
   {% endfor %}
-{% endfor %}
 {% flatblock "taxbrain_payroll_blurb" %}
 {% block section_warnings %}
 {% endblock %}
