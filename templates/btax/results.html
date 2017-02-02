@@ -298,21 +298,20 @@
 	   };
 
 
-       var buildTable = function() {
-
-           if (window.viewBy === 'asset') {
-			   buildTableObj('Asset');
-		   } else if (window.viewBy == 'industry') {
-			   buildTableObj('Industry');
-           }
-
-           $('#results-table-area>table').DataTable({
-		"columnDefs": [{"visible": false, "targets": 7},{"visible": false, "targets": 8},{"visible": false, "targets": 9}],
-		"order": [[7, 'asc']],
-		"paging":false,
-		"info":false,
-	    });
-       };
+      var buildTable = function() {
+        if (window.viewBy === 'asset') {
+  			   buildTableObj('Asset');
+		    } else if (window.viewBy == 'industry') {
+  			   buildTableObj('Industry');
+        }
+        $('#results-table-area>table').DataTable({
+      		"columnDefs": [{"visible": false, "targets": 7},{"visible": false, "targets": 8},{"visible": false, "targets": 9}],
+      		"order": [[7, 'asc']],
+      		"paging":false,
+      		"ordering":false,
+      		"info":false,
+    	  });
+      };
 
        document.getElementById('view_by_inputs').addEventListener('change', onViewByChange, false);
        document.getElementById('output_interest_inputs').addEventListener('change', onOutputInterestChange, false);
