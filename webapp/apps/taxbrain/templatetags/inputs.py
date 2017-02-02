@@ -9,3 +9,6 @@ def col_input_class(taxcalc_param):
     display_size = min([int(display_cols / cols), 6])
     return "col-xs-{0}".format(display_size)
 
+@register.filter
+def is_first(arr, item):
+    return arr.index(item) == 0

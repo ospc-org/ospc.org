@@ -4,6 +4,7 @@
 
 {% load flatblocks %}
 {% load strings %}
+{% load inputs %}
 
 {% block content %}
 <div class="wrapper">
@@ -129,7 +130,11 @@
               </div>
               {% for param in params %}
                 {% for key, value in param.items %}
-                    {% include 'taxbrain/default_input.html' with title=key param=value %}
+                  {% if params|is_first:param %}
+                    {% include 'taxbrain/default_input.html' with title=key param=value is_first=True %}
+                  {% else %}
+                    {% include 'taxbrain/default_input.html' with title=key param=value is_first=False %}
+                  {% endif %}
                 {% endfor %}
               {% endfor %}
             </div> <!-- main -->
