@@ -151,6 +151,7 @@ class TaxSaveInputs(models.Model):
     ALD_Dependents_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     ALD_Investment_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Investment_ec_base_code_active = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_InvInc_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
     FEI_ec_c = CommaSeparatedField(default=None, blank=True, null=True)
     FEI_ec_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
