@@ -392,8 +392,6 @@ def personal_results(request):
         # Probably a GET request, load a default form
         form_personal_exemp = PersonalExemptionForm(first_year=start_year)
 
-    taxcalc_default_params = default_policy(int(start_year))
-
     has_errors = False
     if has_field_errors(form_personal_exemp):
         msg = ("Some fields have errors. Values outside of suggested ranges "
