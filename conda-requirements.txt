@@ -1,4 +1,5 @@
 nomkl
 taxcalc
+pandas
 gevent
 pillow

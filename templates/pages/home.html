@@ -48,9 +48,11 @@
             <li class="{% if section.active_nav == 'apps' %}current{% endif %}">
               <a href="/taxbrain">Apps</a>
             </li>
+	    {% if INCLUDE_GALLERY_NAV %}
             <li class="{% if section.active_nav == 'gallery' %}current{% endif %}">
               <a href="/gallery">gallery</a>
             </li>
+	    {% endif %}
             <li class="{% if section.active_nav == 'about' %}current{% endif %}">
               <a href="/about">About</a>
             </li>
@@ -92,7 +94,7 @@
           <div class="footer-main-links">
             <ul>
               <li><a href="/">Home</a></li>
-              <li><a href="/taxbrain">Apps</a></li>
+              <li><a href="/apps">Apps</a></li>
               <li><a href="/about">About</a></li>
               <li><a href="/news">News</a></li>
             </ul>

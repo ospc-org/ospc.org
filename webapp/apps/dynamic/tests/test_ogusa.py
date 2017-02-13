@@ -197,3 +197,24 @@ class DynamicOGUSAViewsTests(TestCase):
         #Assert the the worker node index has incremented again
         onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         assert onc.current_idx == 2
+
+    def test_ogusa_reform_from_file(self):
+        self.client.login(username='temporary', password='temporary')
+        # Do the microsim from file
+        fname = "../../taxbrain/tests/test_reform.json"
+        micro1 = do_micro_sim_from_file(self.client, fname)
+        start_year = 2016
+
+        # Do the partial equilibrium simulation based on the microsim
+        ogusa_reform = {u'frisch': [u'0.43']}
+        ogusa_response = do_ogusa_sim(self.client, micro1, ogusa_reform,
+                                      start_year)
+
+        last_slash_idx = ogusa_response.url[:-1].rfind('/')
+        model_num = int(ogusa_response.url[last_slash_idx+1:-1])
+        dsi = DynamicSaveInputs.objects.get(pk=model_num)
+        ans = dynamic_params_from_model(dsi)
+        assert ans[u'frisch'] == u'0.43'
+        assert ans[u'g_y_annual'] == u'0.03'
+
+

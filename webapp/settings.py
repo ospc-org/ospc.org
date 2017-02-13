@@ -13,9 +13,12 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 import os
 
 SECRET_KEY = os.environ.get('SECRET_KEY', '')
+SITE_ID = os.environ.get('SITE_ID', 1)
 
 # Allow all host headers
 ALLOWED_HOSTS = ['*']
+
+SITE_ID = 1
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import dj_database_url
@@ -58,6 +61,7 @@ INSTALLED_APPS = (
     'webapp.apps.dynamic',
     'webapp.apps.pages',
     'webapp.apps.register',
+    'webapp.apps.btax',
 
     # Third party apps
     'flatblocks',
@@ -85,7 +89,7 @@ ROOT_URLCONF = 'webapp.urls'
 WSGI_APPLICATION = 'webapp.wsgi.application'
 
 CELERY_RESULT_BACKEND = os.environ.get('REDISGREEN_URL')
- 
+
 BROKER_URL = os.environ.get('REDISGREEN_URL')
 
 
@@ -166,7 +170,7 @@ STATIC_URL = '/static/'
 
 # Tell the staticfiles app to use S3Boto storage when writing the collected static files (when
 # you run `collectstatic`).
-if DEBUG:
+if True:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 else:
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
@@ -176,4 +180,5 @@ EMAIL_BACKEND = "sgbackend.SendGridBackend"
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
 
 GOOGLE_ANALYTICS_PROPERTY_ID = os.environ.get("GOOGLE_ANALYTICS_PROPERTY_ID", "")
+GOOGLE_ANALYTICS_EMBEDDED_ID = os.environ.get("GOOGLE_ANALYTICS_EMBEDDED_ID", "")
 GOOGLE_ANALYTICS_DOMAIN = os.environ.get("GOOGLE_ANALYTICS_DOMAIN", "")

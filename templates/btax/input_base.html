@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="">
+    <meta name="description" content="">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
+
+    {% if GOOGLE_ANALYTICS_PROPERTY_ID %}
+      {% include "ga.html" %}
+    {% endif %}
+
+    <title>Welcome to Cost of Capital Calculator</title>
+
+    {% load staticfiles %}
+
+    {% load flatblocks %}
+
+    <!-- Styles -->
+    <link href="{% static 'css/vendor/share-button/share-button.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/taxbrain.css' %}" rel="stylesheet">
+    {% block style %}
+    {% endblock %}
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="{% static 'js/vendor/html5shiv/html5shiv.min.js' %}"></script>
+      <script src="{% static 'js/vendor/respond/respond.min.js' %}"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+  <div id="container">
+  {% block content %}
+
+  {% endblock %}
+  <div class="push"></div>
+  </div>
+  <footer>
+    <div class="footer-main">
+      <div class="container">
+        <div class="clearfix">
+          <div class="footer-main-logo">
+            <img alt="Cost of Capital" src="{% static 'images/btax/cost-of-capital-dark-light-blue.png' %}">
+          </div>
+          <div class="footer-main-links">
+            <ul>
+              <li><a href="/about">Learn more about the Open Source Policy Center</a></li>
+            </ul>
+          </div>
+          <div class="footer-main-text">
+            {% flatblock "ccc_footer" %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-sub">
+      <div class="container">
+        <div class="footer-sub-logo">
+          <img alt="OSPC: Open Source Policy Center" src="{% static 'images/logo-no-icon.png' %}">
+        </div>
+        <div class="footer-sub-address">
+          <div class="vcard">
+            Powered by the <a class="url fn org" href="http://www.ospc.org/">Open Source Policy Center</a>
+          </div>
+        </div>
+        <div class="footer-sub-u">
+          <!--
+          <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a> ·
+          -->
+          <span class="copyright">©2016 OSPC All Rights Reserved</span>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="{% static 'js/vendor/jquery/jquery.min.js' %}"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="{% static 'js/vendor/bootstrap/bootstrap.min.js' %}"></script>
+  <script src="{% static 'js/vendor/share-button/share-button.min.js' %}"></script>
+  <!-- Scripts -->
+  <script src="{% static 'js/site.js' %}"></script>
+  <script src="{% static 'js/btax.js' %}"></script>
+  <script type="text/javascript">
+    $('.what-is a').click(function() {
+      setTimeout(function() {
+        $('.inputs-sidebar').data('bs.affix').options.offset = $('#affix-offset').height();
+      }, 1000);
+    });
+  </script>
+  {% block bottom_scripts %}
+  {% endblock %}
+  </body>
+</html>

@@ -71,6 +71,26 @@ class SeparatedValuesField(models.TextField):
         return self.get_db_prep_value(value)
 
 
+class JSONReformTaxCalculator(models.Model):
+    '''
+    This class holds all of the text for a JSON-based reform input
+    for TaxBrain. A TaxSavesInput Model will have a foreign key to
+    an instance of this model if the user created the TaxBrain job
+    through the JSON iput page.
+    '''
+    reform_text = models.CharField(blank=True, null=False, max_length=4000)
+    assumption_text = models.CharField(blank=True, null=False, max_length=4000)
+
+class ErrorMessageTaxCalculator(models.Model):
+    '''
+    This class holds all of the text for an error message on
+    TaxBrain. A TaxSavesInput Model will have a foreign key to
+    an instance of this model if the user created the TaxBrain job
+    that ends up failing and reporting this failure.
+    '''
+    text = models.CharField(blank=True, null=False, max_length=4000)
+
+
 class TaxSaveInputs(models.Model):
     """
     This model contains all the parameters for the tax model and the tax
@@ -105,20 +125,32 @@ class TaxSaveInputs(models.Model):
     SS_Earnings_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameter for Additional Medicare tax
-    AMED_trt   = CommaSeparatedField(default=None, blank=True, null=True)
-    AMED_thd_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMED_thd_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMED_thd_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMED_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMED_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMEDT_rt   = CommaSeparatedField(default=None, blank=True, null=True)
+    AMEDT_ec_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMEDT_ec_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMEDT_ec_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMEDT_ec_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMEDT_ec_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameters used for Adjustments.
-    ALD_StudentLoan_HC = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_SelfEmploymentTax_HC = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_SelfEmp_HealthIns_HC = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_KEOGH_SEP_HC = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_EarlyWithdraw_HC = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_Alimony_HC = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_StudentLoan_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_SelfEmploymentTax_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_SelfEmp_HealthIns_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_KEOGH_SEP_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_EarlyWithdraw_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Alimony_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_Child_c = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_Child_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    ALD_Dependents_Elder_c = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_Elder_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    ALD_Dependents_thd_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_thd_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_thd_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Dependents_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    ALD_Investment_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Investment_ec_base_code_active = CommaSeparatedField(default=None, blank=True, null=True)
     FEI_ec_c = CommaSeparatedField(default=None, blank=True, null=True)
     FEI_ec_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
@@ -133,6 +165,7 @@ class TaxSaveInputs(models.Model):
     II_em_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameters used for Standard Deductions.
+    STD_Dep = CommaSeparatedField(default=None, blank=True, null=True)
     STD_0 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_1 = CommaSeparatedField(default=None, blank=True, null=True)
     STD_2 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -161,10 +194,15 @@ class TaxSaveInputs(models.Model):
 
     # Parameters used for Itemized Deductions.
     ID_Medical_frt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Medical_frt_add4aged = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Medical_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_InterestPaid_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Casualty_frt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Casualty_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Miscellaneous_frt = CommaSeparatedField(default=None, blank=True, null=True)
-    ID_Charity_crt_Cash = CommaSeparatedField(default=None, blank=True, null=True)
-    ID_Charity_crt_Asset = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Miscellaneous_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Charity_crt_all = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Charity_crt_noncash = CommaSeparatedField(default=None, blank=True, null=True)
     ID_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
     ID_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
     ID_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -172,11 +210,13 @@ class TaxSaveInputs(models.Model):
     ID_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     ID_prt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_crt = CommaSeparatedField(default=None, blank=True, null=True)
-    ID_StateLocalTax_HC = CommaSeparatedField(default=None, blank=True, null=True)
-    ID_RealEstate_HC = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_StateLocalTax_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_RealEstate_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ID_Charity_frt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_Charity_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_crt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitSurtax_em = CommaSeparatedField(default=None, blank=True, null=True)
     ID_BenefitSurtax_Switch_0 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_1 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_2 = models.CharField(default="True", blank=True, null=True, max_length=50)
@@ -184,45 +224,69 @@ class TaxSaveInputs(models.Model):
     ID_BenefitSurtax_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_BenefitSurtax_Switch_6 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitCap_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_BenefitCap_Switch_0 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitCap_Switch_1 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitCap_Switch_2 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitCap_Switch_3 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitCap_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitCap_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_BenefitCap_Switch_6 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_c_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_c_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_c_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_c_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd1_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd1_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd1_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd1_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    CG_brk1_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk1_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk1_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk1_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     CG_rt2    = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd2_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd2_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd2_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd2_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_thd2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    CG_brk2_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk2_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk2_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk2_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     CG_rt3    = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd1_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd1_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd1_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd1_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    Dividend_rt2  = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd2_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd2_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd2_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd2_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    Dividend_rt3  = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd3_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd3_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd3_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd3_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    Dividend_thd3_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    NIIT_trt = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk3_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk3_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk3_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_brk3_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_rt4    = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_nodiff = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_rt1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_CG_rt2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_CG_rt3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_CG_rt4 = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_nodiff = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_ec = CommaSeparatedField(default=None, blank=True, null=True)
+    CG_reinvest_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    NIIT_rt = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_0 = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_1 = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_2 = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    NIIT_PT_taxed = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Parameters used for Personal Income Tax Rate
     II_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
@@ -262,6 +326,12 @@ class TaxSaveInputs(models.Model):
     II_brk6_3 = CommaSeparatedField(default=None, blank=True, null=True)
     II_brk6_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     II_rt7    = CommaSeparatedField(default=None, blank=True, null=True)
+    II_brk7_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_brk7_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_brk7_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_brk7_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_brk7_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    II_rt8    = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Parameters used for the AMT.
     AMT_em_0 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -275,23 +345,45 @@ class TaxSaveInputs(models.Model):
     AMT_em_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
     AMT_em_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
     AMT_em_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    AMT_trt1 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_trt2 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_tthd = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_tthd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_Child_em_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_Child_em_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_Child_em_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_Child_em_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_Child_em_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_KT_c_Age = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_rt1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_rt2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_brk1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_brk1_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_brk1_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_brk1_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_brk1_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_brk1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_thd_MarriedS_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_thd_MarriedS_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_thd_MarriedS_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_em_pe_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_em_pe_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_em_pe_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     AMT_CG_rt1 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd1_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd1_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd1_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd1_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_CG_brk1_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     AMT_CG_rt2 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd2_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd2_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd2_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd2_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    AMT_CG_thd2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_CG_brk2_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     AMT_CG_rt3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AMT_CG_brk3_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    AMT_CG_rt4 = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Parameters used for Credits.
     EITC_rt_0 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -316,6 +408,18 @@ class TaxSaveInputs(models.Model):
     EITC_MinEligAge_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     EITC_MaxEligAge = CommaSeparatedField(default=None, blank=True, null=True)
     EITC_MaxEligAge_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    EITC_indiv = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_ps_MarriedJ_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_ps_MarriedJ_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_ps_MarriedJ_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_ps_MarriedJ_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_ps_MarriedJ_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    EITC_InvestIncome_c_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_InvestIncome_c_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_InvestIncome_c_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_InvestIncome_c_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    EITC_InvestIncome_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    EITC_indiv = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_c = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     CTC_prt = CommaSeparatedField(default=None, blank=True, null=True)
@@ -324,9 +428,104 @@ class TaxSaveInputs(models.Model):
     CTC_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_refund_limited = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_refund_limit_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_refund_limit_payroll_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_c_under5_bonus = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    CTC_new_prt = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_c = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_c_under5_bonus = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
-    CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
+    ACTC_rt_bonus_under5family = CommaSeparatedField(default=None, blank=True, null=True)
+    ACTC_Income_thd = CommaSeparatedField(default=None, blank=True, null=True)
+    DependentCredit_c = CommaSeparatedField(default=None, blank=True, null=True)
+    LLC_Expense_c = CommaSeparatedField(default=None, blank=True, null=True)
+    ETC_pe_Single_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    ETC_pe_Single_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    ETC_pe_Single_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    ETC_pe_Single_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    ETC_pe_Married_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    ETC_pe_Married_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    ETC_pe_Married_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    ETC_pe_Married_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+
+    # Child and dependent care phaseout
+    CDCC_c = CommaSeparatedField(default=None, blank=True, null=True)
+    CDCC_ps = CommaSeparatedField(default=None, blank=True, null=True)
+    CDCC_crt = CommaSeparatedField(default=None, blank=True, null=True)
+
+    # Pass through tax parameters
+    PT_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk1_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk1_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk1_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk1_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk1_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_rt2    = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk2_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk2_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk2_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk2_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk2_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_rt3    = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk3_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk3_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk3_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk3_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk3_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_rt4    = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk4_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk4_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk4_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk4_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk4_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_rt5    = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk5_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk5_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk5_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk5_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk5_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_rt6    = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk6_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk6_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk6_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk6_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk6_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_rt7    = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk7_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk7_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk7_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk7_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_brk7_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_rt8 = CommaSeparatedField(default=None, blank=True, null=True)
+
+    # Fair Share Tax Parameters
+    FST_AGI_trt = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_lo_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_lo_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_lo_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_lo_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_hi_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_hi_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_hi_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    FST_AGI_thd_hi_3 = CommaSeparatedField(default=None, blank=True, null=True)
+
+    AGI_surtax_thd_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    AGI_surtax_thd_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    AGI_surtax_thd_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    AGI_surtax_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    AGI_surtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
+
+    LST = CommaSeparatedField(default=None, blank=True, null=True)
+
 
     # Inflation adjustments
     inflation = models.FloatField(default=None, blank=True, null=True,
@@ -350,6 +549,10 @@ class TaxSaveInputs(models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
+
+    # Record whether or not this was a quick calculation on a sample of data
+    quick_calc = models.BooleanField(default=False)
+
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up
     # field changes and automatically create migrations
@@ -368,6 +571,16 @@ class TaxSaveInputs(models.Model):
 
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
+
+    # Reform style
+    reform_style = CommaSeparatedField(default=None, blank=True, null=True)
+
+    # JSON input text
+    json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
+
+    # Error text
+    error_text = models.ForeignKey(ErrorMessageTaxCalculator, null=True, default=None, blank=True)
+
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
@@ -376,6 +589,7 @@ class TaxSaveInputs(models.Model):
         permissions = (
             ("view_inputs", "Allowed to view Taxbrain."),
         )
+
 
 class WorkerNodesCounter(models.Model):
     '''

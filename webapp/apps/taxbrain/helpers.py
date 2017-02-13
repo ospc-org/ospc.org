@@ -2,7 +2,6 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
-import dropq
 import sys
 import time
 import six
@@ -10,14 +9,14 @@ import six
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
+MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
                 'mpl_toolkits.mplot3d', 'pandas']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+from ..constants import START_YEAR
+
 import taxcalc
 from taxcalc import Policy
-START_YEAR = int(os.environ.get('START_YEAR', 2016))
 PYTHON_MAJOR_VERSION = sys.version_info.major
 INT_TO_NTH_MAP = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',
                   'seventh', 'eighth', 'nineth', 'tenth']
@@ -132,12 +131,9 @@ def default_taxcalc_data(cls, start_year, metadata=False):
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 
-TAXCALC_COMING_SOON_FIELDS = [
-    '_Dividend_rt1', '_Dividend_thd1',
-    '_Dividend_rt2', '_Dividend_thd2',
-    '_Dividend_rt3', '_Dividend_thd3',
-    '_BE_CG_trn', '_FEI_ec_c'
-    ]
+TAXCALC_COMING_SOON_FIELDS = []
+
+TAXCALC_COMING_SOON_INDEXED_BY_MARS = []
 
 TAXCALC_HIDDEN_FIELDS = [
     '_ACTC_Income_thd',
@@ -147,17 +143,12 @@ TAXCALC_HIDDEN_FIELDS = [
     '_EITC_InvestIncome_c', '_EITC_ps_MarriedJ',
     '_ETC_pe_Single', '_ETC_pe_Married',
     '_KT_c_Age',
-    '_LLC_Expense_c'
-]
-
-TAXCALC_COMING_SOON_INDEXED_BY_MARS = [
-    '_Dividend_thd1','_Dividend_thd2', '_Dividend_thd3'
+    '_LLC_Expense_c', '_FEI_ec_c'
 ]
 
 #
 # Display TaxCalc result data
 #
-
 TAXCALC_RESULTS_START_YEAR = START_YEAR
 TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.TABLE_LABELS
 TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS
@@ -194,7 +185,7 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [         1,   '%', 1],  # "%age Tax Decrease",
     [         1,   '%', 1],  # "Share of Overall Change"
 ]
-TAXCALC_RESULTS_BIN_ROW_KEYS = dropq.dropq.bin_row_names
+TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.bin_row_names
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'less_than_10':'Less than 10',
     'ten_twenty':'10-20',
@@ -209,7 +200,7 @@ TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'thousand_up':'1000+',
     'all':'All'
 }
-TAXCALC_RESULTS_DEC_ROW_KEYS = dropq.dropq.decile_row_names
+TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.decile_row_names
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'perc0-10':'0-10%',
     'perc10-20':'10-20%',
@@ -234,9 +225,11 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
     'pdf_bin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
     'cdf_bin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
-    'fiscal_tots': 'Total Liabilities Change by Calendar Year',
+    'fiscal_tot_diffs': 'Total Liabilities Change by Calendar Year',
+    'fiscal_tot_base': 'Total Liabilities Baseline by Calendar Year',
+    'fiscal_tot_ref': 'Total Liabilities Reform by Calendar Year',
 }
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = dropq.dropq.total_row_names
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.total_row_names
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
@@ -582,7 +575,7 @@ class TaxCalcParam(object):
 
     def __load_from_json(self, param_id, attributes, first_budget_year):
         values_by_year = attributes['value']
-        col_labels = attributes['col_label']
+        col_labels = attributes.get('col_label', '')
 
         self.tc_id = param_id
         self.nice_id = param_id[1:] if param_id[0] == '_' else param_id
@@ -807,7 +800,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
     Return organized and labeled table results for display
     """
     total_row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
-    num_years = len(results['fiscal_tots'][total_row_keys[0]])
+    num_years = len(results['fiscal_tot_diffs'][total_row_keys[0]])
     years = list(range(first_budget_year,
                        first_budget_year + num_years))
 
@@ -817,7 +810,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
         """
         print('\n ----- inputs ------- ')
         print('looking at {0}'.format(table_id))
-        if table_id == 'fiscal_tots':
+        if table_id == 'fiscal_tot_diffs':
             print('{0}'.format(results[table_id]))
         else:
             print('{0}'.format(results[table_id].keys()))
@@ -856,10 +849,28 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id == 'fiscal_tots':
+        elif table_id == 'fiscal_tot_diffs':
             # todo - move these into the above TC result param constants
-            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS 
-            row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS 
+            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
+            col_labels = years
+            col_formats = [ [1000000000, 'Dollars', 1] for y in years]
+            table_data = results[table_id]
+            multi_year_cells = False
+
+        elif table_id == 'fiscal_tot_base':
+            # todo - move these into the above TC result param constants
+            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
+            col_labels = years
+            col_formats = [ [1000000000, 'Dollars', 1] for y in years]
+            table_data = results[table_id]
+            multi_year_cells = False
+
+        elif table_id == 'fiscal_tot_ref':
+            # todo - move these into the above TC result param constants
+            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
@@ -932,7 +943,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     """
     Takes a dictionary with the tax_results, having these keys:
     [u'mY_bin', u'mX_bin', u'mY_dec', u'mX_dec', u'df_dec', u'df_bin',
-    u'fiscal_tots']
+    u'fiscal_tot_diffs']
     And then returns a list of list of strings for CSV output. The format
     of the lines is as follows:
     #URL: http://www.ospc.org/taxbrain/ID/csv/
@@ -995,7 +1006,7 @@ def format_csv(tax_results, url_id, first_budget_year):
 
     #FISCAL TOTS
     res.append(["#fiscal totals data"])
-    ft = tax_results.get('fiscal_tots', {})
+    ft = tax_results.get('fiscal_change', {})
     yrs = [first_budget_year + i for i in range(0, len(ft['ind_tax']))]
     if yrs:
         res.append(yrs)

@@ -1,0 +1,125 @@
+{% extends 'taxbrain/input_base.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="wrapper">
+    <div id="affix-offset">
+
+      <nav class="logobar" role="navigation">
+        <a class="logobar-brand" href="/">
+          <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
+        </a>
+      </nav>
+
+
+
+      <section class="taxbrain-hero">
+        <div class="taxbrain-hero-block">
+          <div class="logo">
+            <h2 class="sr-only">TaxBrain</h2>
+            <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+          </div>
+          {% flatblock "taxbrain_subheader" %}
+          <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
+          <div class="what-is">
+            <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="taxbrain-info collapse" id="taxbrainInfo">
+        <div class="container">
+          <div class="taxbrain-history">
+            <h2>About TaxBrain</h2>
+            {% flatblock "taxbrain_what_is_taxbrain_dropdown" %}
+          </div>
+          <div class="taxbrain-build">
+            <h2>Code Build</h2>
+            <p><a href="https://github.com/OpenSourcePolicyCenter/Tax-Calculator">Version {{ taxcalc_version }} - GitHub</a></p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <form class="inputs-form" method="post" action="/taxbrain/file/?start_year={{start_year}}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="hidden" name="has_errors" value="{{ has_errors }}" />
+      <input type="hidden" name="start_year" value="{{ start_year }}" />
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-3">
+            <div class="inputs-sidebar" data-spy="affix" data-offset-top="435" data-offset-bottom="245">
+              <label class="">Start Year:
+                <select id="start-year-select" class="form-control pull-right">
+                  {% for year in start_years %}
+                    <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <ul class="nav sidebar-nav">
+                <li class="get-started"><a href="#get-started">Get Started</a></li>
+                <li><a href="#json-form">Input Form</a></li>
+            </ul>
+              <div class="sidebar-button">
+                <a href="#" ></a>
+                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" name="full_calc" value="Show me the results!">
+            </div>
+              {% if enable_quick_calc %}
+              <div class="sidebar-button">
+                <a href="#" ></a>
+                <button id="tax-submit-quick" class="btn btn-tertiary btn-block" type="submit" value="quick_calc" name="quick_calc">
+                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; 2% sample)</span>
+                </button>
+              </div>
+              {% endif %}
+
+            </div> <!-- sidebar -->
+          </div>
+          <div class="col-xs-9">
+            <div class="inputs-main">
+
+              {% for error in errors %}
+                  <div class="alert alert-danger text-center lert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    {{ error }}
+                  </div>
+              {% endfor %}
+
+              <div class="inputs-block inputs-block-intro">
+                <div class="inputs-block-header">
+                  {% flatblock "taxbrain_above_get_started_blurb" %}
+                  <h1 id="get-started">Get Started</h1>
+                  {% flatblock "taxbrain_get_started_json_blurb" %}
+                </div>
+              </div>
+
+              {% include 'taxbrain/includes/params/inputs/file.html' %}
+            </div> <!-- main -->
+          </div>
+        </div>
+      </div>
+    </form> <!-- form -->
+    <div class="push"></div>
+  </div> <!-- /wrapper -->
+  <div class="modal fade" id="current-year-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Change Start Year</h4>
+        </div>
+        <div class="modal-body">
+          Warning: This will clear your current inputs.
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
+          <a type="button" class="btn btn-primary" id="current-year-link">OK, go for it.</a>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

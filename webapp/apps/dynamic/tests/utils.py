@@ -1,6 +1,7 @@
 from __future__ import print_function
 from django.test import TestCase
 from django.test import Client
+from django.core.files.uploadedfile import SimpleUploadedFile
 import mock
 import os
 os.environ["NUM_BUDGET_YEARS"] = '2'
@@ -35,6 +36,27 @@ def do_micro_sim(client, reform):
     return response
 
 
+def do_micro_sim_from_file(client, fname):
+    #Monkey patch to mock out running of compute jobs
+    import sys
+    from webapp.apps.taxbrain import views
+    webapp_views = sys.modules['webapp.apps.taxbrain.views']
+    webapp_views.dropq_compute = MockCompute()
+
+    tc_file = SimpleUploadedFile(fname, "file_content")
+    data = {u'docfile': tc_file,
+            u'assumpfile': tc_file,
+            u'has_errors': [u'False'],
+            u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+    response = client.post('/taxbrain/file/', data)
+    # Check that redirect happens
+    assert response.status_code==302
+    idx = response.url[:-1].rfind('/')
+    assert response.url[:idx].endswith("taxbrain")
+    return response
+
+
 def do_behavioral_sim(client, microsim_response, pe_reform, start_year=START_YEAR):
     # Link to dynamic simulation
     model_num = microsim_response.url[-2:]
@@ -50,17 +72,20 @@ def do_behavioral_sim(client, microsim_response, pe_reform, start_year=START_YEA
     # Do the partial equilibrium job submission
     response = client.post(dynamic_behavior, pe_reform)
     assert response.status_code == 302
-
     print(response)
-    assert response.url[:-2].endswith("processing/")
 
-    #Check that we are not done processing
-    not_ready_page = client.get(response.url)
-    not_ready_page.status_code == 200
+    # The results page will now succeed
+    next_response = client.get(response.url)
+    reload_count = 0
+    while reload_count < 2:
+        if next_response.status_code == 200:
+            break
+        elif next_response.status_code == 302:
+            next_response = client.get(next_response.url)
+            reload_count = 0
+        else:
+            raise RuntimeError("unable to load results page")
 
-    #Check should get a redirect this time
-    response = client.get(response.url)
-    assert response.status_code == 302
     assert response.url[:-2].endswith("behavior_results/")
     return response
 
@@ -80,20 +105,13 @@ def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_Y
     # Do the macro job submission
     response = client.post(dynamic_egdp, egdp_reform)
     assert response.status_code == 302
-
     print(response)
-    assert response.url[:-2].endswith("macro_processing/")
 
-    #Check that we are not done processing
-    not_ready_page = client.get(response.url)
-    not_ready_page.status_code == 200
-
-    #Check should get a redirect this time
+    # The results page will now succeed
     next_response = client.get(response.url)
-    assert next_response.status_code == 302
-    assert next_response.url[:-2].endswith("macro_results/")
-    return next_response
-
+    assert next_response.status_code == 200
+    assert response.url[:-2].endswith("macro_results/")
+    return response
 
 
 def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
@@ -124,4 +142,3 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
     response = client.post(dynamic_ogusa, ogusa_reform)
     assert response.status_code == exp_status_code
     return response
-

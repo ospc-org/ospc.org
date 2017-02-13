@@ -56,11 +56,12 @@
                     <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
                   {% endfor %}
                 </select>
-              </label>
-              <div id="current-year-alert" class="hidden">
-                This will clear your current inputs.
-                <a href="#" class="alert-link" id="current-year-link">OK, go for it.</a>
-              </div>
+            </label>
+              <div class="reset-button">
+                <a href="#" ></a>
+                <input id="tax-submit" class="btn btn-tertiary btn-block" style="background-color:#96000b" type="reset" name="full_calc" value="Reset Parameters">
+            </div>
+
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                 <li><a href="#payroll-taxes">Payroll Taxes</a></li>
@@ -75,12 +76,20 @@
                 <li><a href="#nonrefundable-credits">Nonrefundable Credits</a></li>
                 <li><a href="#other-taxes">Other Taxes</a></li>
                 <li><a href="#refundable-credits">Refundable Credits</a></li>
-                <li><a href="#growth">Growth Assumptions</a></li>
+                <li><a href="#growth">Baseline Growth Assumptions</a></li>
               </ul>
               <div class="sidebar-button">
                 <a href="#" ></a>
-                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" value="Show me the results!">
+                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" name="full_calc" value="Show me the results!">
+            </div>
+              {% if enable_quick_calc %}
+              <div class="sidebar-button">
+                <a href="#" ></a>
+                <button id="tax-submit-quick" class="btn btn-tertiary btn-block" type="submit" value="quick_calc" name="quick_calc">
+                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; 2% sample)</span>
+                </button>
               </div>
+              {% endif %}
               <!--
               <div class="sidebar-note">
                 <div class="sidebar-count">
@@ -146,4 +155,21 @@
     </form> <!-- form -->
     <div class="push"></div>
   </div> <!-- /wrapper -->
+  <div class="modal fade" id="current-year-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Change Start Year</h4>
+        </div>
+        <div class="modal-body">
+          Warning: This will clear your current inputs.
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
+          <a type="button" class="btn btn-primary" id="current-year-link">OK, go for it.</a>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

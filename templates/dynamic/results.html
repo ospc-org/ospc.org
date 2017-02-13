@@ -41,23 +41,7 @@
 
     <div class="result-header">
       <div class="result-header-control">
-        <h1>{% flatblock "taxbrain_results_header" %}</h1>
-        for
-        <div class="dropdown dropdown-select dropdown-inline data-switch">
-          <a class="dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-            {{ tables.result_years.0}}
-            <span class="caret"></span>
-          </a>
-          <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-            {% for year in tables.result_years %}
-              <li role="presentation">
-                <a role="menuitem" tabindex="-1" href="#">
-                  {{ year }}
-                </a>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
+          <h1>{% flatblock "dynamic_results_header" %} {{ tables.result_years.0 }} - {{ tables.result_years | last }} </h1>
       </div>
       <p class="meta">These results were generated on {{ created_on|date:"D, M jS Y \a\t g:iA" }} using <a href="https://anaconda.org/ospc/ogusa">version {{ ogusa_version }}</a> of the OGUSA package. (ID: 10045)</p>
       <p class="meta">The microsimulation upon which this dynamic simulation was based can be found <a href="{{microsim_url}}">here</a> </p>

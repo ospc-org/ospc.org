@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="text-center">
-  <h1>Visualization Widget Gallery</h1>
+  <h1>Vizualization Gallery</h1>
   {% flatblock "gallery_page_description" %}
 </div>
 <br /><br />
@@ -46,19 +46,17 @@
 {% endcomment %}
 
     <div class="container">
-      <section class="sponsor-info">
-        <h2>Our Sponsor</h2>
-        <div>
-          <img src="{% static 'images/logo-aei.png' %}" alt="AEI" class="img-responsive">
-        </div>
-      </section>
       <section class="contact-info">
         {% flatblock "reach_out_community_link" %}
+
+	<!--
         <ul class="contact-social">
           <li class="contact-twitter"><a href="#">Post link on Twitter</a></li>
           <li class="contact-facebook"><a href="#">Share on Facebook</a></li>
           <li class="contact-linkedin"><a href="#">Discuss on LinkedIn</a></li>
         </ul>
+	-->
+
         <div class="contact-info-break"></div>
         <div class="row">
           <div class="col-sm-5 col-sm-offset-5">
@@ -81,7 +79,6 @@
     </div>
 
 
-    <div class="push"></div>
   </div> <!-- /wrapper -->
 {% endblock %}
 
@@ -91,11 +88,11 @@
     success: function(json) {
       for (var i = 0; i < json.length; i++) {
         $('<div class="thumbnail" style="border: none">\
-          <a href="/widgets/' + json[i].plot_id + '" target="_blank">\
+          <a href="/gallery/' + json[i].plot_id + '" target="_blank">\
             <img src="' + json[i].thumbnail_url + '" alt="' + json[i].plot_id + '">\
           </a>\
           <div class="caption">\
-            <a href="/widgets/' + json[i].plot_id + '" target="_blank">\
+            <a href="/gallery/' + json[i].plot_id + '" target="_blank">\
               <h2>' + json[i].plot_name + '</h2>\
             </a>\
             <p>' + json[i].short_description + '</p>\

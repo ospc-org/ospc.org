@@ -1,12 +1,12 @@
 import json
+import pytz
 import datetime
 from urlparse import urlparse, parse_qs
 import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize',
-                'pandas']
+MOCK_MODULES = ['pandas']
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
@@ -17,7 +17,8 @@ from django.core import serializers
 from django.core.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponseServerError
+from django.http import (HttpResponseRedirect, HttpResponse, Http404, HttpResponseServerError,
+                         JsonResponse)
 from django.shortcuts import render, render_to_response, get_object_or_404, redirect
 from django.template import loader, Context
 from django.template.context import RequestContext
@@ -32,11 +33,11 @@ from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
 from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
-from ..taxbrain.models import TaxSaveInputs, OutputUrl
-from ..taxbrain.views import growth_fixup, benefit_surtax_fixup, make_bool
+from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
+from ..taxbrain.views import (growth_fixup, benefit_surtax_fixup, make_bool, dropq_compute,
+                              JOB_PROC_TIME_IN_SECONDS)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
                                 convert_val)
-from ..taxbrain.views import dropq_compute
 
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
@@ -46,14 +47,14 @@ from .helpers import (default_parameters, job_submitted,
                       elast_results_to_tables, default_elasticity_parameters)
 
 from .compute import DynamicCompute
+
 dynamic_compute = DynamicCompute()
 
-from ..taxbrain.constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
-                                  PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
-                                  REFORM_TOOLTIP, EXPANDED_TOOLTIP,
-                                  ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
-                                  INCOME_DECILES_TOOLTIP)
-
+from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
+                          REFORM_TOOLTIP, EXPANDED_TOOLTIP,
+                          ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
+                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
 
 tcversion_info = taxcalc._version.get_versions()
@@ -99,28 +100,38 @@ def dynamic_input(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-            taxbrain_dict = dict(taxbrain_model.__dict__)
-            growth_fixup(taxbrain_dict)
-            for key, value in taxbrain_dict.items():
-                if type(value) == type(unicode()):
-                    try:
-                        taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
-                    except ValueError:
-                        taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
+
+            if not taxbrain_model.json_text:
+                taxbrain_dict = dict(taxbrain_model.__dict__)
+                growth_fixup(taxbrain_dict)
+                for key, value in taxbrain_dict.items():
+                    if type(value) == type(unicode()):
+                        try:
+                            taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
+                        except ValueError:
+                            taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
+                    else:
+                        print "missing this: ", key
 
 
-            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
 
-            #Don't need to pass around the microsim results
-            if 'tax_result' in microsim_data:
-                del microsim_data['tax_result']
+                #Don't need to pass around the microsim results
+                if 'tax_result' in microsim_data:
+                    del microsim_data['tax_result']
 
-            benefit_surtax_fixup(microsim_data)
+                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
-            # start calc job
-            submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
+                # start calc job
+                submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
+            else:
+                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
+                # start calc job
+                submitted_ids, guids = dynamic_compute.submit_json_ogusa_calculation(worker_data,
+                                                                         int(start_year),
+                                                                         microsim_data,
+                                                                         pack_up_user_mods=False)
+
             if submitted_ids:
                 model.job_ids = denormalize(submitted_ids)
                 model.guids = denormalize(guids)
@@ -200,26 +211,41 @@ def dynamic_behavioral(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-            taxbrain_dict = dict(taxbrain_model.__dict__)
-            growth_fixup(taxbrain_dict)
-            for key, value in taxbrain_dict.items():
-                if type(value) == type(unicode()):
-                    taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
+            if not taxbrain_model.json_text:
 
-            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+                taxbrain_dict = dict(taxbrain_model.__dict__)
+                growth_fixup(taxbrain_dict)
+                for key, value in taxbrain_dict.items():
+                    if type(value) == type(unicode()):
+                        taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
+                    else:
+                        print "missing this: ", key
 
-            #Don't need to pass around the microsim results
-            if 'tax_result' in microsim_data:
-                del microsim_data['tax_result']
+                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
 
-            benefit_surtax_fixup(microsim_data)
+                #Don't need to pass around the microsim results
+                if 'tax_result' in microsim_data:
+                    del microsim_data['tax_result']
 
-            microsim_data.update(worker_data)
+                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                microsim_data.update(worker_data)
+                # start calc job
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
 
-            # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year))
+            else:
+                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
+                el_keys = ('first_year', 'elastic_gdp')
+                behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
+                behavior_params = { k:v for k, v in worker_data.items()
+                                    if k.startswith("BE_") or k == "first_year"}
+                behavior_params = {('_' + k) if k.startswith('BE') else k:v for k,v in behavior_params.items()}
+
+                additional_data = {'behavior_params': json.dumps(behavior_params)}
+                # start calc job
+                submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(microsim_data,
+                                                                         int(start_year), additional_data)
+
+
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -227,7 +253,25 @@ def dynamic_behavioral(request, pk):
                 model.job_ids = denormalize(submitted_ids)
                 model.first_year = int(start_year)
                 model.save()
-                return redirect('behavior_results', model.pk)
+
+                unique_url = DynamicBehaviorOutputUrl()
+                if request.user.is_authenticated():
+                    current_user = User.objects.get(pk=request.user.id)
+                    unique_url.user = current_user
+                if unique_url.taxcalc_vers != None:
+                    pass
+                else:
+                    unique_url.taxcalc_vers = taxcalc_version
+
+                unique_url.unique_inputs = model
+                unique_url.model_pk = model.pk
+                cur_dt = datetime.datetime.utcnow()
+                future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                expected_completion = cur_dt + future_offset
+                unique_url.exp_comp_datetime = expected_completion
+                unique_url.save()
+
+                return redirect('behavior_results', unique_url.pk)
 
         else:
             # received POST but invalid results, return to form with errors
@@ -301,26 +345,37 @@ def dynamic_elasticities(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-            taxbrain_dict = dict(taxbrain_model.__dict__)
-            growth_fixup(taxbrain_dict)
-            for key, value in taxbrain_dict.items():
-                if type(value) == type(unicode()):
-                        taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
+            if not taxbrain_model.json_text:
+                taxbrain_dict = dict(taxbrain_model.__dict__)
+                growth_fixup(taxbrain_dict)
+                for key, value in taxbrain_dict.items():
+                    if type(value) == type(unicode()):
+                            taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
+                    else:
+                        print "missing this: ", key
 
-            microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
 
-            #Don't need to pass around the microsim results
-            if 'tax_result' in microsim_data:
-                del microsim_data['tax_result']
+                #Don't need to pass around the microsim results
+                if 'tax_result' in microsim_data:
+                    del microsim_data['tax_result']
 
-            benefit_surtax_fixup(microsim_data)
-            microsim_data.update(worker_data)
+                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                microsim_data.update(worker_data)
+                # start calc job
+                submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
+                                                                        int(start_year))
 
-            # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
-                                                                     int(start_year))
+            else:
+                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
+                el_keys = ('first_year', 'elastic_gdp')
+                elasticity_params = { k:v for k, v in worker_data.items() if k in el_keys}
+                additional_data = {'elasticity_params': json.dumps(elasticity_params)}
+                # start calc job
+                submitted_ids, max_q_length = dropq_compute.submit_json_elastic_calculation(microsim_data,
+                                                                         int(start_year),
+                                                                         additional_data)
+
             if not submitted_ids:
                 no_inputs = True
                 form_personal_exemp = personal_inputs
@@ -328,7 +383,27 @@ def dynamic_elasticities(request, pk):
                 model.job_ids = denormalize(submitted_ids)
                 model.first_year = int(start_year)
                 model.save()
-                return redirect('elastic_results', model.pk)
+
+                unique_url = DynamicElasticityOutputUrl()
+                if request.user.is_authenticated():
+                    current_user = User.objects.get(pk=request.user.id)
+                    unique_url.user = current_user
+
+                if unique_url.taxcalc_vers != None:
+                    pass
+                else:
+                    unique_url.taxcalc_vers = taxcalc_version
+
+                unique_url.unique_inputs = model
+                unique_url.model_pk = model.pk
+
+                cur_dt = datetime.datetime.utcnow()
+                future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                expected_completion = cur_dt + future_offset
+                unique_url.exp_comp_datetime = expected_completion
+                unique_url.save()
+
+                return redirect('elastic_results', unique_url.pk)
 
         else:
             # received POST but invalid results, return to form with errors
@@ -420,9 +495,13 @@ def dynamic_landing(request, pk):
     This view gives a landing page to choose a type of dynamic simulation that
     is linked to the microsim
     """
+    outputsurl = OutputUrl.objects.get(pk=pk)
+    taxbrain_model = outputsurl.unique_inputs
+    include_ogusa = True
     init_context = {
             'pk': pk,
             'is_authenticated': request.user.is_authenticated(),
+            'include_ogusa': include_ogusa,
             'start_year': request.GET['start_year']
              }
 
@@ -501,7 +580,7 @@ def show_job_submitted(request, pk):
     return render_to_response('dynamic/submitted.html', {'job_id': submitted_id})
 
 
-def elastic_output(request, pk):
+def elastic_results(request, pk):
     """
     This view handles the results page.
     """
@@ -516,27 +595,88 @@ def elastic_output(request, pk):
         url.taxcalc_vers = taxcalc_version
         url.save()
 
-    output = url.unique_inputs.tax_result
-    first_year = url.unique_inputs.first_year
-    created_on = url.unique_inputs.creation_date
-    tables = elast_results_to_tables(output, first_year)
-    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-    microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
+    model = url.unique_inputs
+    if model.tax_result:
+        output = model.tax_result
+        first_year = model.first_year
+        created_on = model.creation_date
+        tables = elast_results_to_tables(output, first_year)
+        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+        microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
 
-    context = {
-        'locals':locals(),
-        'unique_url':url,
-        'taxcalc_version':taxcalc_version,
-        'tables':tables,
-        'created_on':created_on,
-        'first_year':first_year,
-        'microsim_url':microsim_url
-    }
+        context = {
+            'locals':locals(),
+            'unique_url':url,
+            'taxcalc_version':taxcalc_version,
+            'tables':tables,
+            'created_on':created_on,
+            'first_year':first_year,
+            'microsim_url':microsim_url
+        }
+
+        return render(request, 'dynamic/elasticity_results.html', context)
+
+    else:
+
+        job_ids = model.job_ids
+        jobs_to_check = model.jobs_not_ready
+        if not jobs_to_check:
+            jobs_to_check = normalize(job_ids)
+        else:
+            jobs_to_check = normalize(jobs_to_check)
+
+        try:
+            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+        except JobFailError as jfe:
+            print jfe
+            return render_to_response('taxbrain/failed.html')
+
+        if any([j == 'FAIL' for j in jobs_ready]):
+            failed_jobs = [sub_id for (sub_id, job_ready) in
+                           zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
+
+            #Just need the error message from one failed job
+            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
+            error_msg = error_msgs[0]
+            val_err_idx = error_msg.rfind("Error")
+            error = ErrorMessageTaxCalculator()
+            error_contents = error_msg[val_err_idx:].replace(" ","&nbsp;")
+            error.text = error_contents
+            error.save()
+            model.error_text = error
+            model.save()
+            return render(request, 'taxbrain/failed.html', {"error_msg": error_contents})
 
 
-    return render(request, 'dynamic/elasticity_results.html', context)
+        if all([job == 'YES' for job in jobs_ready]):
+            model.tax_result = dropq_compute.elastic_get_results(normalize(job_ids))
+            model.creation_date = datetime.datetime.now()
+            model.save()
+            return redirect(url)
 
+        else:
+            jobs_not_ready = [sub_id for (sub_id, job_ready) in
+                                zip(jobs_to_check, jobs_ready) if not job_ready == 'YES']
+            jobs_not_ready = denormalize(jobs_not_ready)
+            model.jobs_not_ready = jobs_not_ready
+            model.save()
+            if request.method == 'POST':
+                # if not ready yet, insert number of minutes remaining
+                exp_comp_dt = url.exp_comp_datetime
+                utc_now = datetime.datetime.utcnow()
+                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                dt = exp_comp_dt - utc_now
+                exp_num_minutes = dt.total_seconds() / 60.
+                exp_num_minutes = round(exp_num_minutes, 2)
+                exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
+                if exp_num_minutes > 0:
+                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                else:
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
 
+            else:
+                print "rendering not ready yet"
+                return render_to_response('dynamic/not_ready.html', {'eta':'100'}, context_instance=RequestContext(request))
 
 
 def ogusa_results(request, pk):
@@ -574,60 +714,8 @@ def ogusa_results(request, pk):
     return render(request, 'dynamic/results.html', context)
 
 
-def elastic_results(request, pk):
-    """
-    This view allows the app to wait for the taxcalc results to be
-    returned.
-    """
-
-    model = DynamicElasticitySaveInputs.objects.get(pk=pk)
-    job_ids = model.job_ids
-    submitted_ids = normalize(job_ids)
-    if all(dropq_compute.dropq_results_ready(submitted_ids)):
-        model.tax_result = dropq_compute.elastic_get_results(submitted_ids)
-        model.creation_date = datetime.datetime.now()
-        model.save()
-
-        unique_url = DynamicElasticityOutputUrl()
-        if request.user.is_authenticated():
-            current_user = User.objects.get(pk=request.user.id)
-            unique_url.user = current_user
-        unique_url.unique_inputs = model
-        unique_url.model_pk = model.pk
-        unique_url.save()
-
-        return redirect('elastic_output', unique_url.pk)
-
-    return render_to_response('dynamic/not_ready.html', {'raw_results':'raw_results'})
-
 
 def behavior_results(request, pk):
-    """
-    This view allows the app to wait for the taxcalc results to be
-    returned.
-    """
-    model = DynamicBehaviorSaveInputs.objects.get(pk=pk)
-    job_ids = model.job_ids
-    submitted_ids = normalize(job_ids)
-    if all(dropq_compute.dropq_results_ready(submitted_ids)):
-        model.tax_result = dropq_compute.dropq_get_results(submitted_ids)
-        model.creation_date = datetime.datetime.now()
-        model.save()
-
-        unique_url = DynamicBehaviorOutputUrl()
-        if request.user.is_authenticated():
-            current_user = User.objects.get(pk=request.user.id)
-            unique_url.user = current_user
-        unique_url.unique_inputs = model
-        unique_url.model_pk = model.pk
-        unique_url.save()
-
-        return redirect('behavior_output', unique_url.pk)
-
-    return render_to_response('dynamic/not_ready.html', {'raw_results':'raw_results'})
-
-
-def behavior_output(request, pk):
     """
     This view handles the partial equilibrium results page.
     """
@@ -642,39 +730,95 @@ def behavior_output(request, pk):
         url.taxcalc_vers = taxcalc_version
         url.save()
 
-    output = url.unique_inputs.tax_result
-    first_year = url.unique_inputs.first_year
-    created_on = url.unique_inputs.creation_date
-    tables = taxcalc_results_to_tables(output, first_year)
-    tables["tooltips"] = {
-        'diagnostic': DIAGNOSTIC_TOOLTIP,
-        'difference': DIFFERENCE_TOOLTIP,
-        'payroll': PAYROLL_TOOLTIP,
-        'income': INCOME_TOOLTIP,
-        'base': BASE_TOOLTIP,
-        'reform': REFORM_TOOLTIP,
-        'expanded': EXPANDED_TOOLTIP,
-        'adjusted': ADJUSTED_TOOLTIP,
-        'bins': INCOME_BINS_TOOLTIP,
-        'deciles': INCOME_DECILES_TOOLTIP
-    }
-    dbsi = url.unique_inputs
-    is_registered = True if request.user.is_authenticated() else False
-    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-    microsim_url = hostname + "/taxbrain/" + str(dbsi.micro_sim.pk)
+    model = url.unique_inputs
 
-    context = {
-        'locals':locals(),
-        'unique_url':url,
-        'taxcalc_version':taxcalc_version,
-        'tables': json.dumps(tables),
-        'created_on': created_on,
-        'first_year': first_year,
-        'is_registered': is_registered,
-        'is_behavior': True,
-        'microsim_url': microsim_url
-    }
+    if model.tax_result:
 
-    return render(request, 'taxbrain/results.html', context)
+        output = model.tax_result
+        first_year = model.first_year
+        created_on = model.creation_date
+        if 'fiscal_tots' in output:
+            # Use new key/value pairs for old data
+            output['fiscal_tot_diffs'] = output['fiscal_tots']
+            output['fiscal_tot_base'] = output['fiscal_tots']
+            output['fiscal_tot_ref'] = output['fiscal_tots']
+            del output['fiscal_tots']
 
+        tables = taxcalc_results_to_tables(output, first_year)
+        tables["tooltips"] = {
+            'diagnostic': DIAGNOSTIC_TOOLTIP,
+            'difference': DIFFERENCE_TOOLTIP,
+            'payroll': PAYROLL_TOOLTIP,
+            'income': INCOME_TOOLTIP,
+            'base': BASE_TOOLTIP,
+            'reform': REFORM_TOOLTIP,
+            'expanded': EXPANDED_TOOLTIP,
+            'adjusted': ADJUSTED_TOOLTIP,
+            'bins': INCOME_BINS_TOOLTIP,
+            'deciles': INCOME_DECILES_TOOLTIP
+        }
+        is_registered = True if request.user.is_authenticated() else False
+        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+        microsim_url = hostname + "/taxbrain/" + str(model.micro_sim.pk)
+        tables['fiscal_change'] = tables['fiscal_tot_diffs']
+        tables['fiscal_currentlaw'] = tables['fiscal_tot_base']
+        tables['fiscal_reform'] = tables['fiscal_tot_ref']
+        json_table = json.dumps(tables)
 
+        context = {
+            'locals':locals(),
+            'unique_url':url,
+            'taxcalc_version':taxcalc_version,
+            'tables': json_table,
+            'created_on': created_on,
+            'first_year': first_year,
+            'is_registered': is_registered,
+            'is_behavior': True,
+            'microsim_url': microsim_url
+        }
+        return render(request, 'taxbrain/results.html', context)
+
+    else:
+
+        job_ids = model.job_ids
+        jobs_to_check = model.jobs_not_ready
+        if not jobs_to_check:
+            jobs_to_check = normalize(job_ids)
+        else:
+            jobs_to_check = normalize(jobs_to_check)
+
+        try:
+            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+        except JobFailError as jfe:
+            print jfe
+            return render_to_response('taxbrain/failed.html')
+
+        if all([job == 'YES' for job in jobs_ready]):
+            results, reform_style = dropq_compute.dropq_get_results(normalize(job_ids))
+            model.tax_result = results
+            model.creation_date = datetime.datetime.now()
+            model.save()
+            return redirect('behavior_results', url.pk)
+        else:
+            jobs_not_ready = [sub_id for (sub_id, job_ready) in
+                                zip(jobs_to_check, jobs_ready) if not job_ready == 'YES']
+            jobs_not_ready = denormalize(jobs_not_ready)
+            model.jobs_not_ready = jobs_not_ready
+            model.save()
+            if request.method == 'POST':
+                # if not ready yet, insert number of minutes remaining
+                exp_comp_dt = url.exp_comp_datetime
+                utc_now = datetime.datetime.utcnow()
+                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                dt = exp_comp_dt - utc_now
+                exp_num_minutes = dt.total_seconds() / 60.
+                exp_num_minutes = round(exp_num_minutes, 2)
+                exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
+                if exp_num_minutes > 0:
+                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                else:
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
+
+            else:
+                print "rendering not ready yet"
+                return render_to_response('dynamic/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))

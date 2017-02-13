@@ -8,15 +8,41 @@
   </nav>
   <section class="taxbrain-hero taxbrain-hero-small">
     <div class="taxbrain-hero-block">
-      <div class="logo">
-        <h2 class="sr-only">TaxBrain</h2>
-        <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
-      </div>
-      <div class="what-is">
-        <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
-      </div>
+      {% if is_btax %}
+        <div class="logo">
+          <h2 class="sr-only">TaxBrain</h2>
+          <img src="{% static 'images/btax/cost-of-capital-white-blue.png' %}" alt="TaxBrain" class="img-responsive">
+        </div>
+        <div class="what-is">
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is Cost of Capital Calculator?</a>
+        </div>
+      {% else %}
+        <div class="logo">
+          <h2 class="sr-only">TaxBrain</h2>
+          <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
+        </div>
+        <div class="what-is">
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
+        </div>
+      {% endif %}
     </div>
   </section>
+  {% if is_btax %}
+
+      <section class="taxbrain-info collapse" id="taxbrainInfo">
+        <div class="container">
+          <div class="taxbrain-history">
+            <h2>About Cost of Capital Calculator</h2>
+            {% flatblock "ccc_what_is_ccc_dropdown" %}
+          </div>
+          <div class="taxbrain-build">
+            <h2>Code Build</h2>
+            <p><a href="https://github.com/open-source-economics/B-Tax">Version {{ btax_version }} - GitHub</a></p>
+          </div>
+        </div>
+      </section>
+
+  {% else %}
   <section class="taxbrain-info collapse" id="taxbrainInfo">
     <div class="container">
       <div class="taxbrain-history">
@@ -28,5 +54,6 @@
         <p><a href="https://github.com/OpenSourcePolicyCenter/Tax-Calculator">Version {{ unique_url.taxcalc_vers }} - GitHub</a></p>
       </div>
     </div>
-  </section>  
+  </section>
+  {% endif %}
 </div>

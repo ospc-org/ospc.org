@@ -1,0 +1,22 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}taxes{% endblock %}
+{% block input_section_title %}Business Income Tax Rates{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Business Income Tax Rates</h1>
+  {% flatblock "ccc_payroll_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_betr_corp %}
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_betr_pass%}
+
+{% endblock %}
+
+{% block next_section_shortname %}depreciation{% endblock %}

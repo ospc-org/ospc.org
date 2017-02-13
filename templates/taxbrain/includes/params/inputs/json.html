@@ -1,0 +1,21 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}payroll-taxes{% endblock %}
+{% block input_section_title %}Payroll Taxes{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>JSON Input Parameters</h1>
+  {% flatblock "taxbrain_json_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<h2>Tax Calculator Parameters</h2>
+{% include 'taxbrain/includes/params/inputs/box.html' with box_name="taxcalc" text_label="Calculator Reform Parameters (JSON)" text_for_box=input_text.taxcalc %}
+
+{% endblock %}
+
+{% block provide_if_no_continue %}{% endblock %}

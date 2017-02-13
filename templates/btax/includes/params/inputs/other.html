@@ -1,0 +1,27 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}other{% endblock %}
+{% block input_section_title %}Other{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+  <h1>Other</h1>
+  {% flatblock "ccc_other_blurb" %}
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_hair %}
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_corpeq %}
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_proptx%}
+
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_invest%}
+
+
+{% endblock %}
+
+{% block next_section_shortname %}macro-econ{% endblock %}

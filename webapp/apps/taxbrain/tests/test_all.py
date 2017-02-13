@@ -144,55 +144,55 @@ class TaxInputTests(TestCase):
 
 
     def test_package_up_multivalue_param_with_wildcard2(self):
-        values = {"AMED_thd_0": [u'*', 250000]}
+        values = {"AMEDT_ec_0": [u'*', 250000]}
         ans = package_up_vars(values, first_budget_year=FBY)
         exp = [[200000, 250000.0, 125000.0, 200000.0, 200000.0, 125000.0],
                [250000, None, None, None, None, None]]
-        assert ans['_AMED_thd'] == exp
+        assert ans['_AMEDT_ec'] == exp
 
     def test_package_up_multivalue_param_with_wildcard3(self):
-        values = {"AMED_thd_0": [u'*', u'*', 250000]}
+        values = {"AMEDT_ec_0": [u'*', u'*', 250000]}
         ans = package_up_vars(values, first_budget_year=FBY)
         exp = [[200000, 250000.0, 125000.0, 200000.0, 200000.0, 125000.0],
                [200000, None, None, None, None, None],
                [250000, None, None, None, None, None]]
-        assert ans['_AMED_thd'] == exp
+        assert ans['_AMEDT_ec'] == exp
 
 
     def test_package_up_vars_unicode_wildcards(self):
         exp = [0.0089999999999999993, 0.0089999999999999993, 0.018]
-        values = {'_AMED_trt': [u'*','*',0.018]}
+        values = {'_AMEDT_rt': [u'*','*',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
-        values = {'_AMED_trt': [u' *','*',0.018]}
+        assert ans['_AMEDT_rt'] == exp
+        values = {'_AMEDT_rt': [u' *','*',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
-        values = {'_AMED_trt': [u' *',' * ',0.018]}
+        assert ans['_AMEDT_rt'] == exp
+        values = {'_AMEDT_rt': [u' *',' * ',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
-        values = {'_AMED_trt': [u' *', u' * ',0.018]}
+        assert ans['_AMEDT_rt'] == exp
+        values = {'_AMEDT_rt': [u' *', u' * ',0.018]}
         ans = package_up_vars(values, first_budget_year=FBY)
-        assert ans['_AMED_trt'] == exp
+        assert ans['_AMEDT_rt'] == exp
 
 
     def test_package_up_vars_wildcards(self):
-        values = {"AMT_tthd": ['*','*',204000.]}
+        values = {"AMT_brk1": ['*','*',204000.]}
         ans = package_up_vars(values, first_budget_year=FBY)
         exp =  [185400., 186300., 204000.]
-        assert ans['_AMT_tthd'] == exp
+        assert ans['_AMT_brk1'] == exp
 
 
     def test_package_up_vars_wildcards_2016(self):
         values = {"SS_Earnings_c": ['*','*',230000.]}
         ans = package_up_vars(values, first_budget_year=2016)
-        exp =  [118500., 124176, 230000.]
+        exp =  [118500., 124093, 230000.]
         assert ans['_SS_Earnings_c'] == exp
 
 
     def test_package_up_vars_wildcards_2019(self):
         values = {"SS_Earnings_c": ['*','*','*', 400000.]}
         ans = package_up_vars(values, first_budget_year=2016)
-        exp =  [118500., 124176, 129652, 400000. ]
+        exp =  [118500., 124093, 129503, 400000. ]
         assert ans['_SS_Earnings_c'] == exp
 
 
@@ -297,7 +297,7 @@ class TaxInputTests(TestCase):
         assert len(ans) == 2
 
     def test_convert_non_cpi_inflated(self):
-        values = {"FEI_ec_c": [100000.]}
+        values = {"EITC_InvestIncome_c": [3200]}
 
         ans = package_up_vars(values, first_budget_year=FBY)
 
@@ -306,7 +306,7 @@ class TaxInputTests(TestCase):
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
         # irates are rates for 2015, 2016, and 2017
-        irates = pp.indexing_rates_for_update(param_name='FEI_ec_c', calyear=FBY,
+        irates = pp.indexing_rates_for_update(param_name='EITC_InvestIncome_c', calyear=FBY,
                                             num_years_to_expand=2)
 
         # User choices propagate through to all future years
@@ -314,10 +314,10 @@ class TaxInputTests(TestCase):
         # the defaults JSON file has values up to 2016. We should
         # give back values up to 2016, with user choice propagating
 
-        f2_2016 = 100000
+        f2_2016 = 3200
 
-        exp =  [100000, f2_2016]
-        assert ans['_FEI_ec_c'] == exp
+        exp =  [3200, f2_2016]
+        assert ans['_EITC_InvestIncome_c'] == exp
 
     def test_package_up_eitc(self):
         values = {'EITC_rt_2': [0.44], 'EITC_rt_0': [0.08415], 'EITC_rt_1': [0.374, 0.39],
@@ -376,7 +376,8 @@ class TaxInputTests(TestCase):
     def test_format_csv(self):
         c = cycler(40)
         tab_types = [u'mY_bin', u'mX_bin', u'mY_dec', u'mX_dec', u'df_dec',
-                    u'df_bin', u'fiscal_tots']
+                    u'df_bin', u'fiscal_change', u'fiscal_currentlaw',
+                    u'fiscal_reform', ]
 
         bin_keys = [u'thirty_forty_2', u'thirty_forty_0', u'thirty_forty_1',
                     u'seventyfive_hundred_2',
@@ -408,7 +409,7 @@ class TaxInputTests(TestCase):
         tot_keys = [u'combined_tax', u'ind_tax', u'payroll_tax']
 
         tax_results = {}
-        tax_results[u'fiscal_tots'] = {k:[1,2,3] for k in tot_keys}
+        tax_results[u'fiscal_change'] = {k:[1,2,3] for k in tot_keys}
         tax_results[u'mY_bin'] = { k:[next(c)] for k in bin_keys}
         tax_results[u'mX_bin'] = { k:[next(c)] for k in bin_keys}
         tax_results[u'df_bin'] = { k:[next(c)] for k in bin_keys}

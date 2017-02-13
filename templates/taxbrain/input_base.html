@@ -48,7 +48,7 @@
           </div>
           <div class="footer-main-links">
             <ul>
-              <li><a href="#">Learn more about TaxBrain</a></li>
+              <li><a href="/about">Learn more about the Open Source Policy Center</a></li>
             </ul>
           </div>
           <div class="footer-main-text">
@@ -86,7 +86,11 @@
   <script src="{% static 'js/vendor/share-button/share-button.min.js' %}"></script>
   <!-- Scripts -->
   <script src="{% static 'js/site.js' %}"></script>
+  {% if input_type == "file" %}
+  <script src="{% static 'js/filetb.js' %}"></script>
+  {% else %}
   <script src="{% static 'js/taxbrain.js' %}"></script>
+  {% endif %}
   <script type="text/javascript">
     $('.what-is a').click(function() {
       setTimeout(function() {

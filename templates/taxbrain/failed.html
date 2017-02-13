@@ -1,6 +1,20 @@
 {% extends 'taxbrain/input_base.html' %}
 
 {% load staticfiles %}
+{% block style %}
+{{block.super}}
+<style>
+  .file-contents{
+      font-family: "Courier New", Courier, monospace;
+      font-weight: bold;
+      margin-left: 80px;
+      margin-right: 80px;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      text-align: left;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 {% include 'taxbrain/header.html' %}
@@ -8,8 +22,14 @@
 <div class="container">
     <div class="row">
         <div class="columns medium-6 medium-offset-3 end text-center">
-            <h1>Sorry! Your calculation failed. Please re-enter parameters at try again :(.</h1>
+            <h1>Sorry! Your calculation failed. Please re-enter parameters and try again :(.</h1>
         </div>
+    </div>
+
+    <div class="file-contents">
+          {%autoescape off %}
+          {{error_msg | linebreaks | safe }}
+          {%endautoescape %}
     </div>
 </div>
 
