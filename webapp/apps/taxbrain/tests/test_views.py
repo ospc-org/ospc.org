@@ -320,7 +320,7 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, 38000'],
+        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
                 u'II_brk2_0': [u'*, *, 39500'],
                 u'start_year': unicode(START_YEAR),
                 'csrfmiddlewaretoken':'abc123'}
