@@ -38,7 +38,7 @@ from djqscsv import render_to_csv_response
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool)
+                      is_wildcard, convert_val, make_bool, nested_form_parameters)
 from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
@@ -72,7 +72,7 @@ def log_ip(request):
 def benefit_surtax_fixup(request, reform, model):
     """
     Take the incoming POST, the user reform, and the TaxSaveInputs
-    model and fixup the switches _0, ..., _6 to one array of 
+    model and fixup the switches _0, ..., _6 to one array of
     bools. Also set the model values correctly based on incoming
     POST
     """
@@ -218,7 +218,7 @@ def process_model(model, start_year, stored_errors=None, request=None,
 
 def file_input(request):
     """
-    This view handles the JSON input page 
+    This view handles the JSON input page
     """
     no_inputs = False
     start_year = START_YEAR
@@ -241,11 +241,19 @@ def file_input(request):
         error_messages = {}
         reform_dict = {}
         if 'docfile' in request.FILES:
-            inmemfile = request.FILES['docfile']
-            text_taxcalc = inmemfile.read().strip()
-            reform_dict['taxcalc'] = text_taxcalc
+            inmemfile_reform = request.FILES['docfile']
+            reform_text = inmemfile_reform.read().strip()
+            reform_dict['taxcalc_reform'] = reform_text
+            if 'assumpfile' in request.FILES:
+                inmemfile_assumption = request.FILES['assumpfile']
+                assumption_text = inmemfile_assumption.read().strip()
+                reform_dict['taxcalc_assumption'] = assumption_text
+            else:
+                reform_dict['taxcalc_assumption'] = ""
+
         else:
-            error_messages['Tax-Calculator:'] = "No file uploaded."
+            msg = "No reform file uploaded."
+            error_messages['Tax-Calculator:'] = msg
 
         if error_messages:
             has_errors = True
@@ -253,18 +261,22 @@ def file_input(request):
         else:
             try:
                 log_ip(request)
+                mods = { 'reform': reform_dict['taxcalc_reform'], 'assumptions': reform_dict['taxcalc_assumption']}
                 #Submit calculation
                 if do_full_calc:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(reform_dict['taxcalc'], int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(mods,
+                                                                                              int(start_year))
                 else:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(reform_dict['taxcalc'], int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(mods,
+                                                                                                    int(start_year))
 
                 if not submitted_ids:
                     raise JobFailError("couldn't submit ids")
                 else:
                     job_ids = denormalize(submitted_ids)
                     json_reform = JSONReformTaxCalculator()
-                    json_reform.text = reform_dict['taxcalc']
+                    json_reform.reform_text = reform_dict['taxcalc_reform']
+                    json_reform.assumption_text = reform_dict['taxcalc_assumption']
                     json_reform.save()
 
                     model = TaxSaveInputs()
@@ -400,14 +412,13 @@ def personal_results(request):
 
     init_context = {
         'form': form_personal_exemp,
-        'params': taxcalc_default_params,
+        'params': nested_form_parameters(int(start_year)),
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
-
 
     if no_inputs:
         form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
@@ -508,10 +519,13 @@ def get_result_context(model, request, url):
     }
 
     if model.json_text:
-        file_contents = model.json_text.text
-        file_contents = file_contents.replace(" ","&nbsp;")
+        reform_file_contents = model.json_text.reform_text
+        reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
+        assump_file_contents = model.json_text.assumption_text
+        assump_file_contents = assump_file_contents.replace(" ","&nbsp;")
     else:
-        file_contents = False
+        reform_file_contents = False
+        assump_file_contents = False
 
     if hasattr(request, 'user'):
         is_registered = True if request.user.is_authenticated() else False
@@ -532,7 +546,8 @@ def get_result_context(model, request, url):
         'quick_calc': quick_calc,
         'is_registered': is_registered,
         'is_micro': True,
-        'file_contents': file_contents,
+        'reform_file_contents': reform_file_contents,
+        'assump_file_contents': assump_file_contents,
         'allow_dyn_links': allow_dyn_links
     }
     return context

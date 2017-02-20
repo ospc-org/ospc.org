@@ -3,6 +3,8 @@
 {% load staticfiles %}
 
 {% load flatblocks %}
+{% load strings %}
+{% load inputs %}
 
 {% block content %}
 <div class="wrapper">
@@ -64,19 +66,11 @@
 
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
-                <li><a href="#payroll-taxes">Payroll Taxes</a></li>
-                <li><a href="#social-medicare">Social Security Taxability</a></li>
-                <li><a href="#adjustments">Adjustments</a></li>
-                <li><a href="#exemptions">Exemptions</a></li>
-                <li><a href="#standard-deduction">Standard Deduction</a></li>
-                <li><a href="#personal-credit">Personal Refundable Credit</a></li>
-                <li><a href="#itemized-deductions">Itemized Deductions</a></li>
-                <li><a href="#regular-taxes">Regular Taxes</a></li>
-                <li><a href="#amt">Alternative Minimum Tax</a></li>
-                <li><a href="#nonrefundable-credits">Nonrefundable Credits</a></li>
-                <li><a href="#other-taxes">Other Taxes</a></li>
-                <li><a href="#refundable-credits">Refundable Credits</a></li>
-                <li><a href="#growth">Baseline Growth Assumptions</a></li>
+                  {% for param in params %}
+                    {% for key, value in param.items %}
+                      <li><a href="#{{ key|make_id }}">{{ key|title }}</a></li>
+                    {% endfor %}
+                  {% endfor %}
               </ul>
               <div class="sidebar-button">
                 <a href="#" ></a>
@@ -134,20 +128,15 @@
                   </div>
                 </div>
               </div>
-
-              {% include 'taxbrain/includes/params/inputs/payroll.html' %}
-              {% include 'taxbrain/includes/params/inputs/soc.html' %}
-              {% include 'taxbrain/includes/params/inputs/adjust.html' %}
-              {% include 'taxbrain/includes/params/inputs/personal_exemp.html' %}
-              {% include 'taxbrain/includes/params/inputs/standard_ded.html' %}
-              {% include 'taxbrain/includes/params/inputs/personal_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/itemize_ded.html' %}
-              {% include 'taxbrain/includes/params/inputs/regular_taxes.html' %}
-              {% include 'taxbrain/includes/params/inputs/amt.html' %}
-              {% include 'taxbrain/includes/params/inputs/nonrefundable_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/other_taxes.html' %}
-              {% include 'taxbrain/includes/params/inputs/refundable_credit.html' %}
-              {% include 'taxbrain/includes/params/inputs/growth.html' %}
+              {% for param in params %}
+                {% for key, value in param.items %}
+                  {% if params|is_first:param %}
+                    {% include 'taxbrain/default_input.html' with title=key param=value is_first=True %}
+                  {% else %}
+                    {% include 'taxbrain/default_input.html' with title=key param=value is_first=False %}
+                  {% endif %}
+                {% endfor %}
+              {% endfor %}
             </div> <!-- main -->
           </div>
         </div>

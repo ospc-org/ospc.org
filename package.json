@@ -15,6 +15,7 @@
   "homepage": "https://github.com/OpenSourcePolicyCenter/webapp-public#readme",
   "devDependencies": {
     "gulp": "^3.9.1",
+    "gulp-less": "^3.3.0",
     "gulp-sourcemaps": "^1.6.0",
     "less": "^2.6.1",
     "path": "^0.12.7"

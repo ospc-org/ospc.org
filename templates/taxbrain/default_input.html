@@ -1,0 +1,36 @@
+{% load strings %}
+{% load flatblocks %}
+
+{% block provide_if_no_continue %}
+  {% if not is_first %}
+  <div class="inputs-block-control">
+    <a href="#{{ title|make_id }}" class="btn btn-okay">Looks okay</a>
+  </div>
+  {% endif %}
+{% endblock %}
+
+<fieldset id="{{ title|make_id }}" class="inputs-block">
+  <div class="inputs-block-content">
+    <div class="inputs-block-header">
+      <h1>{{ title|title }}</h1>
+    </div>
+      {% for field in param %}
+        {% for name, param_object in field.items %}
+          {% if param_object.name %}
+            <h2>{{ param_object.name|title }}</h2>
+            {% include 'taxbrain/includes/params/inputs/param.html' with param=param_object %}
+          {% else %}
+            <h2>{{ name|title }}</h2>
+            {% for x in param_object %}
+              {% for y, z in x.items %}
+                {% include 'taxbrain/includes/params/inputs/param.html' with param=z %}
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    {% flatblock "taxbrain_payroll_blurb" %}
+    {% block section_warnings %}{% endblock %}
+  </div>
+
+</fieldset>

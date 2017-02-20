@@ -45,6 +45,7 @@ def do_micro_sim_from_file(client, fname):
 
     tc_file = SimpleUploadedFile(fname, "file_content")
     data = {u'docfile': tc_file,
+            u'assumpfile': tc_file,
             u'has_errors': [u'False'],
             u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 

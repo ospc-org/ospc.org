@@ -98,8 +98,8 @@ class TaxInputTests(TestCase):
         f2_2017 = int(f2_2016 * (1.0 + irates[1]))
     
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
-                [38000, 74000, f2_2016, 50400, 75300, 37650],
-                [40000, f1_2017, f2_2017, None, None, None]]
+                [38000, 74000, f2_2016, 50400.0, 75300.0, 37650.0],
+                [40000, f1_2017, f2_2017, 50800.0, 75900.0, 37950.0]]
 
         assert ans['_II_brk2'] == exp
         assert len(ans) == 1
@@ -137,7 +137,7 @@ class TaxInputTests(TestCase):
 
         exp =  [[37450, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, f2_2016, 50400, 75300, 37650],
-                [40000, f1_2017, f2_2017, None, None, None],
+                [40000, 75687, 38014, 50800.0, 75900.0, 37950.0],
                 [41000, f1_2018, f2_2018, None, None, None]]
 
         assert ans['_II_brk2'] == exp
@@ -185,14 +185,14 @@ class TaxInputTests(TestCase):
     def test_package_up_vars_wildcards_2016(self):
         values = {"SS_Earnings_c": ['*','*',230000.]}
         ans = package_up_vars(values, first_budget_year=2016)
-        exp =  [118500., 124176, 230000.]
+        exp = [118500.0, 127200.0, 230000.0]
         assert ans['_SS_Earnings_c'] == exp
 
 
     def test_package_up_vars_wildcards_2019(self):
         values = {"SS_Earnings_c": ['*','*','*', 400000.]}
         ans = package_up_vars(values, first_budget_year=2016)
-        exp =  [118500., 124176, 129652, 400000. ]
+        exp =  [118500., 127200.0, 131677, 400000. ]
         assert ans['_SS_Earnings_c'] == exp
 
 
@@ -240,7 +240,7 @@ class TaxInputTests(TestCase):
     
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, f2_2016, 50400, 75300, 37650],
-                [40000, f1_2017, f2_2017, None, None, None],
+                [40000, 75687, f2_2017, 50800.0, 75900.0, 37950.0],
                 [41000, f1_2018, f2_2018, None, None, None]]
 
         assert ans['_II_brk2'] == exp
@@ -281,7 +281,7 @@ class TaxInputTests(TestCase):
 
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, f2_2016, 50400, 75300, 37650],
-                [40000, f1_2017, f2_2017, None, None, None],
+                [40000, 75687, f2_2017, 50800.0, 75900.0, 37950.0],
                 [41000, f1_2018, f2_2018, None, None, None]]
 
         assert ans['_II_brk2'] == exp
@@ -292,7 +292,7 @@ class TaxInputTests(TestCase):
         # package up vars needs to overwrite those default and return
         # 2015 and 2016 values
 
-        exp_em = [4000, int(4000 *(1 + irates[0]))]
+        exp_em = [4000, int(4000 *(1 + irates[0])), 4165]
         assert ans['_II_em'] == exp_em
         assert len(ans) == 2
 
@@ -314,9 +314,7 @@ class TaxInputTests(TestCase):
         # the defaults JSON file has values up to 2016. We should
         # give back values up to 2016, with user choice propagating
 
-        f2_2016 = 3200
-
-        exp =  [3200, f2_2016]
+        exp = [3200, 3258, 3332]
         assert ans['_EITC_InvestIncome_c'] == exp
 
     def test_package_up_eitc(self):

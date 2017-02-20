@@ -320,7 +320,7 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, 38000'],
+        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
                 u'II_brk2_0': [u'*, *, 39500'],
                 u'start_year': unicode(START_YEAR),
                 'csrfmiddlewaretoken':'abc123'}
@@ -522,13 +522,34 @@ class TaxBrainViewsTests(TestCase):
         assert float(tsi2.PT_brk7_3) == float(tsi2.II_brk7_3)
 
 
-    def test_taxbrain_file_post(self):
+    def test_taxbrain_file_post_only_reform(self):
         #Monkey patch to mock out running of compute jobs
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
         tc_file = SimpleUploadedFile("test_reform.json", "file_content")
         data = {u'docfile': tc_file,
+                u'has_errors': [u'False'],
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/file/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+
+
+
+    def test_taxbrain_file_post_reform_and_assumptions(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+        tc_file = SimpleUploadedFile("test_reform.json", "file_content")
+        tc_file2 = SimpleUploadedFile("test_assumptions.json", "file_content")
+        data = {u'docfile': tc_file,
+                u'assumpfile': tc_file2,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
