@@ -356,10 +356,14 @@ def personal_results(request):
         if personal_inputs.non_field_errors():
             return HttpResponse("Bad Input!", status=400)
 
-        # Accept the POST if the form is valid, or if the form has errors
+        # Parse Errors are never OK. Detect this case separate from form
+        # values out of bounds
+        has_parse_errors = any(['Unrecognize value' in e[0] for e in personal_inputs.errors.values()])
+
+        # Accept the POST if the form is valid, or if the form previously had errors
         # we don't check again so it is OK if the form is invalid the second
         # time
-        if personal_inputs.is_valid() or has_errors:
+        if not has_parse_errors and (personal_inputs.is_valid() or has_errors):
             stored_errors = None
             if has_errors and personal_inputs.errors:
                 msg = ("Form has validation errors, but allowing the user "
@@ -392,12 +396,19 @@ def personal_results(request):
         # Probably a GET request, load a default form
         form_personal_exemp = PersonalExemptionForm(first_year=start_year)
 
-    has_errors = False
-    if has_field_errors(form_personal_exemp):
+    taxcalc_default_params = default_policy(int(start_year))
+
+    has_range_errors = has_field_errors(form_personal_exemp)
+    has_parse_errors = has_field_errors(form_personal_exemp, include_parse_errors=True)
+    has_errors = has_range_errors or has_parse_errors
+    if has_range_errors:
         msg = ("Some fields have errors. Values outside of suggested ranges "
                " will be accepted if submitted again from this page.")
         form_personal_exemp.add_error(None, msg)
-        has_errors = True
+    if has_parse_errors:
+        msg = ("Some fields have unrecognized values. Enter comma separated "
+               "values for each input.")
+        form_personal_exemp.add_error(None, msg)
 
     init_context = {
         'form': form_personal_exemp,

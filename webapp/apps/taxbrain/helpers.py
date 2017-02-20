@@ -2,6 +2,7 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
+import pyparsing as pp
 import sys
 import time
 import six
@@ -24,6 +25,19 @@ INT_TO_NTH_MAP = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',
 SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
 SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
+
+# Grammar for Field inputs
+WILDCARD = pp.Word('*')
+INT_LIT = pp.Word(pp.nums)
+FLOAT_LIT = pp.Word(pp.nums + '.')
+DEC_POINT = pp.Word('.', exact=1)
+FLOAT_LIT_FULL = pp.Word(pp.nums + '.' + pp.nums)
+COMMON = pp.Word(",", exact=1)
+
+VALUE = WILDCARD | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
+MORE_VALUES = COMMON + VALUE
+INPUT = VALUE + pp.ZeroOrMore(MORE_VALUES)
+
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
