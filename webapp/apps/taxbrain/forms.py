@@ -1,12 +1,14 @@
+from __future__ import print_function
 from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
+from pyparsing import ParseException
 
 from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       int_to_nth, is_string, string_to_float_array, check_wildcards,
                       default_taxcalc_data, expand_list, propagate_user_list,
-                      convert_val)
+                      convert_val, INPUT)
 import taxcalc
                       
 
@@ -267,6 +269,27 @@ class PersonalExemptionForm(ModelForm):
             if param.coming_soon or param.hidden:
                 continue
 
+            # First make sure the text parses OK
+            BOOLEAN_FLAGS = (u'True', u'False')
+            found_parse_error = False
+            for col, col_field in enumerate(param.col_fields):
+                if col_field.id not in self.cleaned_data:
+                    continue
+
+                submitted_col_values_raw = self.cleaned_data[col_field.id]
+
+                if len(submitted_col_values_raw) > 0 and submitted_col_values_raw not in BOOLEAN_FLAGS:
+                    try:
+                        INPUT.parseString(submitted_col_values_raw)
+                    except ParseException as pe:
+                        # Parse Error - we don't recognize what they gave us
+                        self.add_error(col_field.id, "Unrecognized value: {}".format(submitted_col_values_raw))
+                        found_parse_error = True
+
+            if found_parse_error:
+                continue
+
+            # Move on if there is no min/max validation necessary
             if param.max is None and param.min is None:
                 continue
 
@@ -279,7 +302,6 @@ class PersonalExemptionForm(ModelForm):
                     submitted_col_values_list = submitted_col_values_raw.split(',')
                     param_name = parameter_name(col_field.id)
                     submitted_col_values = expand_unless_empty(submitted_col_values_list, param_name, col_field.id, self, len(submitted_col_values_list))
-
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
@@ -344,7 +366,7 @@ class PersonalExemptionForm(ModelForm):
                 if param.coming_soon:
                     attrs['disabled'] = True
 
-                if param.tc_id == '_ID_BenefitSurtax_Switch':
+                if param.tc_id == "_ID_BenefitSurtax_Switch" or param.tc_id == "_ID_BenefitCap_Switch":
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                 else:
@@ -365,7 +387,7 @@ class PersonalExemptionForm(ModelForm):
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
 
 
-def has_field_errors(form):
+def has_field_errors(form, include_parse_errors=False):
     """
     This allows us to see if we have field_errors, as opposed to only having
     form.non_field_errors. I would prefer to put this in a template tag, but
@@ -377,6 +399,15 @@ def has_field_errors(form):
 
     for field in form:
         if field.errors:
-            return True
+            if include_parse_errors:
+                if "Unrecognized value" in field.errors[0]:
+                    return True
+                else:
+                    continue
+            else:
+                if "Unrecognized value" in field.errors[0]:
+                    continue
+                else:
+                    return True
 
     return False

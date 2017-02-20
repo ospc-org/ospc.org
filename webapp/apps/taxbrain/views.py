@@ -38,7 +38,7 @@ from djqscsv import render_to_csv_response
 from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool)
+                      is_wildcard, convert_val, make_bool, nested_form_parameters)
 from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
@@ -72,7 +72,7 @@ def log_ip(request):
 def benefit_surtax_fixup(request, reform, model):
     """
     Take the incoming POST, the user reform, and the TaxSaveInputs
-    model and fixup the switches _0, ..., _6 to one array of 
+    model and fixup the switches _0, ..., _6 to one array of
     bools. Also set the model values correctly based on incoming
     POST
     """
@@ -218,7 +218,7 @@ def process_model(model, start_year, stored_errors=None, request=None,
 
 def file_input(request):
     """
-    This view handles the JSON input page 
+    This view handles the JSON input page
     """
     no_inputs = False
     start_year = START_YEAR
@@ -356,10 +356,14 @@ def personal_results(request):
         if personal_inputs.non_field_errors():
             return HttpResponse("Bad Input!", status=400)
 
-        # Accept the POST if the form is valid, or if the form has errors
+        # Parse Errors are never OK. Detect this case separate from form
+        # values out of bounds
+        has_parse_errors = any(['Unrecognize value' in e[0] for e in personal_inputs.errors.values()])
+
+        # Accept the POST if the form is valid, or if the form previously had errors
         # we don't check again so it is OK if the form is invalid the second
         # time
-        if personal_inputs.is_valid() or has_errors:
+        if not has_parse_errors and (personal_inputs.is_valid() or has_errors):
             stored_errors = None
             if has_errors and personal_inputs.errors:
                 msg = ("Form has validation errors, but allowing the user "
@@ -394,23 +398,27 @@ def personal_results(request):
 
     taxcalc_default_params = default_policy(int(start_year))
 
-    has_errors = False
-    if has_field_errors(form_personal_exemp):
+    has_range_errors = has_field_errors(form_personal_exemp)
+    has_parse_errors = has_field_errors(form_personal_exemp, include_parse_errors=True)
+    has_errors = has_range_errors or has_parse_errors
+    if has_range_errors:
         msg = ("Some fields have errors. Values outside of suggested ranges "
                " will be accepted if submitted again from this page.")
         form_personal_exemp.add_error(None, msg)
-        has_errors = True
+    if has_parse_errors:
+        msg = ("Some fields have unrecognized values. Enter comma separated "
+               "values for each input.")
+        form_personal_exemp.add_error(None, msg)
 
     init_context = {
         'form': form_personal_exemp,
-        'params': taxcalc_default_params,
+        'params': nested_form_parameters(int(start_year)),
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
-
 
     if no_inputs:
         form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")

@@ -2,6 +2,7 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
+import pyparsing as pp
 import sys
 import time
 import six
@@ -24,6 +25,19 @@ INT_TO_NTH_MAP = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth',
 SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
 SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
+
+# Grammar for Field inputs
+WILDCARD = pp.Word('*')
+INT_LIT = pp.Word(pp.nums)
+FLOAT_LIT = pp.Word(pp.nums + '.')
+DEC_POINT = pp.Word('.', exact=1)
+FLOAT_LIT_FULL = pp.Word(pp.nums + '.' + pp.nums)
+COMMON = pp.Word(",", exact=1)
+
+VALUE = WILDCARD | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
+MORE_VALUES = COMMON + VALUE
+INPUT = VALUE + pp.ZeroOrMore(MORE_VALUES)
+
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
@@ -123,7 +137,6 @@ def default_taxcalc_data(cls, start_year, metadata=False):
             dd[k] = round_gt_one_to_nearest_int(dd[k])
     return dd
 
-
 #
 # Prepare user params to send to DropQ/Taxcalc
 #
@@ -173,7 +186,7 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'Individual Income Liabilities',
     [1000000000, 'Dollars', 1],  # 'Payroll Tax Liablities',
     [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities'
-                                      
+
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [      1000,      None, 0],    # "Inds. w/ Tax Cut",
@@ -298,7 +311,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
     -----------
     x : list from user to propagate forward in time. The first value is for
         year 'first_budget_year'. The value at index i is the value for
-        budget year first_budget_year + i. 
+        budget year first_budget_year + i.
 
     defaults: list of default values; our result must be at least this long
 
@@ -306,7 +319,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
 
     cpi: Bool
 
-    first_budget_year: int 
+    first_budget_year: int
 
     multi_param_idx: int, optional. If this parameter is multi-valued, this
         is the index for which the values for 'x' apply. So, for exampe, if
@@ -695,6 +708,52 @@ class TaxCalcParam(object):
                         self.min = self.min[1:]
 
 
+def parse_sub_category(field_section, budget_year):
+    output = []
+    free_fields = []
+    for x in field_section:
+        for y, z in x.iteritems():
+            section_name = dict(z).get("section_2")
+            new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year)}
+            if section_name:
+                section_name = section_name.lower()
+                section = next((item for item in output if section_name in item), None)
+                if not section:
+                    output.append({section_name: [new_param]})
+                else:
+                    section[section_name].append(new_param)
+            else:
+                free_fields.append(field_section.pop(field_section.index(x)))
+                free_fields[free_fields.index(x)] = new_param
+    return output + free_fields
+
+
+def parse_top_level(ordered_dict):
+    output = []
+    for x, y in ordered_dict.iteritems():
+        section_name = dict(y).get("section_1")
+        if section_name:
+            section_name = section_name.lower()
+            section = next((item for item in output if section_name in item), None)
+            if not section:
+                output.append({section_name: [{x: dict(y)}]})
+            else:
+                section[section_name].append({x: dict(y)})
+    return output
+
+
+def nested_form_parameters(budget_year=2017):
+    defaults = default_taxcalc_data(
+        taxcalc.policy.Policy,
+        metadata=True,
+        start_year=budget_year
+    )
+    groups = parse_top_level(defaults)
+    for x in groups:
+        for y, z in x.iteritems():
+            x[y] = parse_sub_category(z, budget_year)
+    return groups
+
 # Create a list of default Behavior parameters
 def default_behavior(first_budget_year):
 
@@ -721,7 +780,6 @@ def default_policy(first_budget_year):
     for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
-
 
     #Growth assumptions not in default data yet. Add in the appropriate info so that
     #the params dictionary has the right info

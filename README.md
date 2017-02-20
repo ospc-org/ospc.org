@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/OpenSourcePolicyCenter/webapp-public.svg?branch=master)](https://travis-ci.org/OpenSourcePolicyCenter/webapp-public)
+
 Taxbrain Web Application
 ========================
 
