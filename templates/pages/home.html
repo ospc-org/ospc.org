@@ -48,16 +48,14 @@
             <li class="{% if section.active_nav == 'apps' %}current{% endif %}">
               <a href="/taxbrain">Apps</a>
             </li>
-	    {% if INCLUDE_GALLERY_NAV %}
-            <li class="{% if section.active_nav == 'gallery' %}current{% endif %}">
-              <a href="/gallery">gallery</a>
-            </li>
-	    {% endif %}
             <li class="{% if section.active_nav == 'about' %}current{% endif %}">
               <a href="/about">About</a>
             </li>
             <li class="{% if section.active_nav == 'news' %}current{% endif %}">
               <a href="//news.ospc.org">News</a>
+            </li>
+            <li class="{% if section.active_nav == 'gallery' %}current{% endif %}">
+              <a href="/gallery">Gallery</a>
             </li>
             {% if user.is_authenticated %}
               <li class="dropdown">
@@ -97,6 +95,7 @@
               <li><a href="/apps">Apps</a></li>
               <li><a href="/about">About</a></li>
               <li><a href="/news">News</a></li>
+              <li><a href="/gallery">Gallery</a></li>
             </ul>
           </div>
           <div class="footer-main-text">

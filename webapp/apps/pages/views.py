@@ -24,7 +24,6 @@ TAXCALC_VERSION = ".".join([TAXCALC_VERSION_INFO['version'],
 
 BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
 EMAIL_DEFAULT = '1'
-INCLUDE_GALLERY_NAV = bool(os.environ.get('INCLUDE_GALLERY_NAV', False)) #  TODO: remove this variable when gallery full integrated
 
 def settings_context_processor(request):
     return {'BLOG_URL': settings.BLOG_URL}
@@ -51,7 +50,6 @@ def homepage(request):
     test = render(request, 'pages/home_content.html', {
         'csrv_token': csrf(request)['csrf_token'],
         'email_form': form,
-        'INCLUDE_GALLERY_NAV': INCLUDE_GALLERY_NAV,
         'section': {
             'active_nav': 'home',
             'title': 'Welcome to the Open Source Policy Center',
@@ -68,7 +66,6 @@ def aboutpage(request):
     test_1 = render(request, 'pages/about.html', {
         'csrv_token': csrf(request)['csrf_token'],
         'email_form': form,
-        'INCLUDE_GALLERY_NAV': INCLUDE_GALLERY_NAV,
         'section': {
             'active_nav': 'about',
             'title': 'About',
@@ -79,7 +76,6 @@ def aboutpage(request):
 def gallerypage(request):
     return render(request, 'pages/gallery.html', {
         'manifest_url': os.environ.get('TAXPLOT_MANIFEST_URL'),
-        'INCLUDE_GALLERY_NAV': INCLUDE_GALLERY_NAV,
         'section': {
             'active_nav': 'gallery',
             'title': 'Open Source Policy Center Gallery',
