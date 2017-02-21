@@ -82,9 +82,6 @@ def gallerypage(request):
         },
     })
 
-def border_adjustment_plot(request):
-    return render(request, 'pages/border_adjustment.html')
-
 def newspage(request):
     return redirect(BLOG_URL)
 
@@ -147,6 +144,13 @@ def widgetpage(request, widget_id):
         }
     })
 
+def border_adjustment_plot(request):
+    return render(request, 'pages/border_adjustment.html', {
+        'section': {
+            'title': 'Widget',
+        }
+    })
+
 @xframe_options_exempt
 def embedpage(request, widget_id, layout='landscape'):
     form = subscribeform(request)
@@ -198,7 +202,6 @@ def embedpage(request, widget_id, layout='landscape'):
         }
 
     return render(request, 'pages/embed.html', response_obj)
-
 
 def apps_landing_page(request):
     context = {'btax_version': BTAX_VERSION,
