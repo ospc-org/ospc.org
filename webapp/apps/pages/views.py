@@ -82,6 +82,9 @@ def gallerypage(request):
         },
     })
 
+def border_adjustment_plot(request):
+    return render(request, 'pages/border_adjustment.html')
+
 def newspage(request):
     return redirect(BLOG_URL)
 
