@@ -2,7 +2,7 @@ from django.conf.urls import patterns, include, url
 
 from views import (homepage, aboutpage, newspage, gallerypage,
                    embedpage, widgetpage, newsdetailpage,
-                   apps_landing_page)
+                   apps_landing_page, docspage)
 
 urlpatterns = patterns('',
     url(r'^$', homepage, name='home'), # url(r'^apps/$', apps_landing_page, name='apps'),
@@ -14,4 +14,5 @@ urlpatterns = patterns('',
     url(r'^gallery/embed/(?P<widget_id>\w+)/$', embedpage),
     url(r'^gallery/embed/(?P<widget_id>\w+)/(?P<layout>\w+)/$', embedpage),
     url(r'^gallery/$', gallerypage, name='gallery'),
+    url(r'^docs/$', docspage, name='docs'),
 )

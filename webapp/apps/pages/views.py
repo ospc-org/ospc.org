@@ -88,6 +88,9 @@ def newspage(request):
 def newsdetailpage(request):
     return redirect(BLOG_URL)
 
+def docspage(request):
+    return render(request, 'pages/docs.html', {})
+
 
 def _discover_widgets():
     '''stubbed out data I wish to recieve from some widget discovery mechanism'''
