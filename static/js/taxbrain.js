@@ -81,7 +81,6 @@ $('.form-group > label.btn-cpi').click(function (e) {
 // only allow values to be entered if not equal to default
 // if new values entered, show info about default value
 $('.form-group > input.form-control').blur(function() {
-
   input = $(this)
   value = input.val()
   value_default = input.prop('placeholder');
@@ -160,3 +159,19 @@ $('#current-year-modal').on('hide.bs.modal', function (e) {
   $('#start-year-select option').removeAttr("selected");
   $('#start-year-select option[value="' + currentYear + '"]').attr("selected", "selected");
 });
+
+$(document).ready(function(){
+  $('.form-group > input.form-control').each(function() {
+    input = $(this)
+    value = input.val()
+    value_default = input.prop('placeholder');
+    value_changed = (value != '') && (value != value_default);
+    group = input.closest('.form-group')
+    if (value_changed) {
+      group.addClass('edited');
+    } else {
+      input.val('');
+      group.removeClass('edited');
+    }
+  })
+})
