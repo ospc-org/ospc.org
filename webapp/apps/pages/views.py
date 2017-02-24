@@ -87,7 +87,7 @@ def hellopage(request):
         'manifest_url': os.environ.get('TAXPLOT_MANIFEST_URL'),
         'section': {
             'active_nav': 'hello',
-            'title': 'Hello | OSPC',
+            'title': 'Hello',
         },
     })
 
