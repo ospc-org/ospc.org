@@ -3,3 +3,4 @@ taxcalc
 pandas
 gevent
 pillow
+pyparsing

@@ -1,0 +1,62 @@
+{% extends 'pages/home.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+
+<style>
+  #widget-iframe {
+    height: 1150px;
+    width: 1440px;
+  }
+
+  #email-button {
+    background-color: #21bfd5 !important;
+    color: #ffffff !important;
+  }
+
+  #embed_pre {
+    white-space: pre-wrap;
+    background: hsl(30,80%,90%);
+  }
+
+</style>
+
+
+  <div class="wrapper">
+    <div class="container">
+
+      <div class="page-header">
+        <h1 class="text-center">Border Adjustment Calculator</h1>
+      </div>
+
+      <iframe id="widget-iframe"
+	      src="https://ospc.shinyapps.io/border-adjustment-calculator/"
+	      scrolling="no"
+       	      frameborder="0" ></iframe>
+
+        <div class="row">
+            <div class="col-md-12">
+		    <h3>Embed this plot:</h3>
+		    <pre id="embed_pre"><code id="embed_code">&lt;iframe id="widget-iframe" src="https://ospc.shinyapps.io/border-adjustment-calculator/" style="height:1000px;width:1440px;" scrolling="no" frameborder="0" &gt;&lt;/iframe&gt;</code></pre>
+	    </div>
+        </div>
+    </div> <!-- container -->
+
+    <div class="container">
+      <section class="contact-info">
+	      {% flatblock "reach_out_community_link" %}
+        <div class="contact-info-break"></div>
+        <div class="row">
+          <div class="col-sm-5 col-sm-offset-5">
+            <h3>MATT JENSEN</h3>
+            <p>+1 202 862 5941</p>
+            <p>matt.jensen@aei.org</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div> <!-- /wrapper -->
+{% endblock %}
