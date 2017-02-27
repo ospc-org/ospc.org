@@ -99,7 +99,11 @@ $('.form-group > input.form-control').blur(function() {
   }
 });
 
-
+$("#tax-submit[type='reset']").click(function(){
+  $('.form-group.edited').each(function(){
+    $(this).removeClass("edited")
+  })
+});
 
 //
 //  Results page
