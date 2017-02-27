@@ -82,11 +82,28 @@ def gallerypage(request):
         },
     })
 
+def hellopage(request):
+    return render(request, 'pages/hello.html', {
+        'manifest_url': os.environ.get('TAXPLOT_MANIFEST_URL'),
+        'section': {
+            'active_nav': 'hello',
+            'title': 'Hello',
+        },
+    })
+
 def newspage(request):
     return redirect(BLOG_URL)
 
 def newsdetailpage(request):
     return redirect(BLOG_URL)
+
+def docspage(request):
+    return render(request, 'pages/docs.html', {
+        'section': {
+            'active_nav': 'docs',
+            'title': 'Open Source Policy Center Documentation',
+        },
+    })
 
 
 def _discover_widgets():

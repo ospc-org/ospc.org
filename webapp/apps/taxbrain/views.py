@@ -474,11 +474,10 @@ def edit_personal_results(request, pk):
 
     init_context = {
         'form': form_personal_exemp,
-        'params': taxcalc_default_params,
+        'params': nested_form_parameters(int(start_year)),
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
         'start_year': str(start_year)
-
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)
