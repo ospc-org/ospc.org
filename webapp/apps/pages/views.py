@@ -82,6 +82,15 @@ def gallerypage(request):
         },
     })
 
+def hellopage(request):
+    return render(request, 'pages/hello.html', {
+        'manifest_url': os.environ.get('TAXPLOT_MANIFEST_URL'),
+        'section': {
+            'active_nav': 'hello',
+            'title': 'Hello',
+        },
+    })
+
 def newspage(request):
     return redirect(BLOG_URL)
 
