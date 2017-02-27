@@ -57,9 +57,6 @@
             <li class="{% if section.active_nav == 'gallery' %}current{% endif %}">
               <a href="/gallery">Gallery</a>
             </li>
-            <li class="{% if section.active_nav == 'docs' %}current{% endif %}">
-              <a href="/docs">Docs</a>
-            </li>
             {% if user.is_authenticated %}
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
@@ -99,7 +96,6 @@
               <li><a href="/about">About</a></li>
               <li><a href="/news">News</a></li>
               <li><a href="/gallery">Gallery</a></li>
-              <li><a href="/docs">Docs</a></li>
             </ul>
           </div>
           <div class="footer-main-text">
