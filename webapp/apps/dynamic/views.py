@@ -774,7 +774,8 @@ def behavior_results(request, pk):
             'first_year': first_year,
             'is_registered': is_registered,
             'is_behavior': True,
-            'microsim_url': microsim_url
+            'microsim_url': microsim_url,
+            'results_type': "behavioral"
         }
         return render(request, 'taxbrain/results.html', context)
 
