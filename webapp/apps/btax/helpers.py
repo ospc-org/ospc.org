@@ -46,7 +46,6 @@ BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-r
 # Prepare user params to send to DropQ/Taxcalc
 #
 class BTaxField(TaxCalcField):
-
     pass
 
 
@@ -67,10 +66,11 @@ class BTaxParam(object):
         # as in /taxbrain. If so, see
         # TaxCalcParam for changes to
         # make here
-        self.start_year = first_budget_year = 2015
+        self.start_year = 2017
 
         values_by_year = attributes['value']
         col_labels = attributes['col_label']
+        row_label = attributes['row_label']
 
         self.tc_id = param_id
         self.nice_id = param_id[1:] if param_id[0] == '_' else param_id
@@ -90,12 +90,19 @@ class BTaxParam(object):
         # create col params
         self.col_fields = []
 
-        self.col_fields.append(TaxCalcField(
+        # Whatever the index of the year is in row_label, set default_value to
+        # the correspinding value in values_by_col based on that index.
+        try :
+            default_value = values_by_col[row_label.index(str(self.start_year))]
+        except IndexError:
+            default_value = values_by_col[0]
+
+        self.col_fields.append(BTaxField(
             self.nice_id,
             attributes['description'],
-            values_by_col[0],
+            default_value,
             self,
-            first_budget_year
+            self.start_year
         ))
 
         # we assume we can CPI inflate if first value isn't a ratio
@@ -135,7 +142,6 @@ def get_btax_defaults():
     for k,v in defaults.items():
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
-
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
         param = BTaxParam(k,defaults[k])
         BTAX_DEFAULTS[param.nice_id] = param
@@ -210,4 +216,3 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
 
             )
     return depr_argument_groups
-
