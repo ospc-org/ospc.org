@@ -21,6 +21,8 @@ from ..taxbrain.helpers import (make_bool, convert_val,
                                 expand_2D, expand_list, leave_name_in,
                                 TaxCalcField)
 
+from ..constants import START_YEAR
+
 import btax
 from btax.util import read_from_egg
 
@@ -57,16 +59,16 @@ class BTaxParam(object):
     """
     coming_soon = False
     inflatable = False
-    def __init__(self, param_id, attributes):
-        self.__load_from_json(param_id, attributes)
+    def __init__(self, param_id, attributes, start_year):
+        self.__load_from_json(param_id, attributes, start_year)
 
-    def __load_from_json(self, param_id, attributes):
+    def __load_from_json(self, param_id, attributes, start_year):
         # TODO does /ccc need to handle
         # budget year /start year logic
         # as in /taxbrain. If so, see
         # TaxCalcParam for changes to
         # make here
-        self.start_year = 2017
+        self.start_year = start_year
 
         values_by_year = attributes['value']
         col_labels = attributes['col_label']
@@ -134,8 +136,9 @@ class BTaxParam(object):
                         self.min = self.min[1:]
 
 
-def get_btax_defaults():
+def get_btax_defaults(start_year):
     from btax import DEFAULTS
+    start_year = int(start_year)
     defaults = dict(DEFAULTS)
     # Set Bogus default for now
     defaults['btax_betr_pass']['value'] = [0.0]
@@ -143,20 +146,18 @@ def get_btax_defaults():
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
-        param = BTaxParam(k,defaults[k])
+        param = BTaxParam(k,defaults[k], start_year)
         BTAX_DEFAULTS[param.nice_id] = param
     for k in BTAX_DEPREC:
         fields = ['{}_{}_Switch'.format(k, tag)
                      for tag in ('gds', 'ads',  'tax')]
         for field in fields:
-            param = BTaxParam(field, defaults[field])
+            param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
         for field in ['{}_{}'.format(k, 'exp')]:
-            param = BTaxParam(field, defaults[field])
+            param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
     return BTAX_DEFAULTS
-
-BTAX_DEFAULTS = get_btax_defaults()
 
 
 def hover_args_to_btax_depr():

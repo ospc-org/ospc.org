@@ -203,7 +203,7 @@ def btax_results(request):
         # Probably a GET request, load a default form
         form_btax_input = BTaxExemptionForm(first_year=start_year)
 
-    btax_default_params = get_btax_defaults()
+    btax_default_params = get_btax_defaults(START_YEAR)
 
     has_errors = False
     if has_field_errors(form_btax_input):
