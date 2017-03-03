@@ -429,7 +429,7 @@ def package_up_vars(user_values, first_budget_year):
     dd = default_taxcalc_data(taxcalc.policy.Policy, start_year=first_budget_year)
     dd_meta = default_taxcalc_data(taxcalc.policy.Policy,
                                    start_year=first_budget_year, metadata=True)
-    growth_dd = default_taxcalc_data(taxcalc.growth.Growth,
+    growth_dd = default_taxcalc_data(taxcalc.growdiff.Growdiff,
                                      start_year=first_budget_year)
 
     behavior_dd = default_taxcalc_data(taxcalc.Behavior, start_year=first_budget_year)
@@ -443,7 +443,7 @@ def package_up_vars(user_values, first_budget_year):
     dd_meta.update(default_taxcalc_data(taxcalc.policy.Policy,
                                         start_year=first_budget_year,
                                         metadata=True))
-    dd_meta.update(default_taxcalc_data(taxcalc.growth.Growth,
+    dd_meta.update(default_taxcalc_data(taxcalc.growdiff.Growdiff,
                                         start_year=first_budget_year,
                                         metadata=True))
     for k, v in user_values.items():
