@@ -10,9 +10,6 @@ import six
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d', 'pandas']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from ..constants import START_YEAR
 
