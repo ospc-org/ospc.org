@@ -10,9 +10,6 @@ import six
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d', 'pandas']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from ..constants import START_YEAR
 
@@ -198,7 +195,7 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [         1,   '%', 1],  # "%age Tax Decrease",
     [         1,   '%', 1],  # "Share of Overall Change"
 ]
-TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.bin_row_names
+TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.BIN_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'less_than_10':'Less than 10',
     'ten_twenty':'10-20',
@@ -213,7 +210,7 @@ TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'thousand_up':'1000+',
     'all':'All'
 }
-TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.decile_row_names
+TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.DECILE_ROW_NAMES
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'perc0-10':'0-10%',
     'perc10-20':'10-20%',
@@ -242,7 +239,7 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'fiscal_tot_base': 'Total Liabilities Baseline by Calendar Year',
     'fiscal_tot_ref': 'Total Liabilities Reform by Calendar Year',
 }
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.total_row_names
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
@@ -432,7 +429,7 @@ def package_up_vars(user_values, first_budget_year):
     dd = default_taxcalc_data(taxcalc.policy.Policy, start_year=first_budget_year)
     dd_meta = default_taxcalc_data(taxcalc.policy.Policy,
                                    start_year=first_budget_year, metadata=True)
-    growth_dd = default_taxcalc_data(taxcalc.growth.Growth,
+    growth_dd = default_taxcalc_data(taxcalc.growdiff.Growdiff,
                                      start_year=first_budget_year)
 
     behavior_dd = default_taxcalc_data(taxcalc.Behavior, start_year=first_budget_year)
@@ -446,7 +443,7 @@ def package_up_vars(user_values, first_budget_year):
     dd_meta.update(default_taxcalc_data(taxcalc.policy.Policy,
                                         start_year=first_budget_year,
                                         metadata=True))
-    dd_meta.update(default_taxcalc_data(taxcalc.growth.Growth,
+    dd_meta.update(default_taxcalc_data(taxcalc.growdiff.Growdiff,
                                         start_year=first_budget_year,
                                         metadata=True))
     for k, v in user_values.items():

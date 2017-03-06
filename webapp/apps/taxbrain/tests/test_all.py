@@ -96,7 +96,7 @@ class TaxInputTests(TestCase):
 
         f1_2017 = int(74000 * (1.0 + irates[1]))
         f2_2017 = int(f2_2016 * (1.0 + irates[1]))
-    
+
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, f2_2016, 50400.0, 75300.0, 37650.0],
                 [40000, f1_2017, f2_2017, 50800.0, 75900.0, 37950.0]]
@@ -237,7 +237,7 @@ class TaxInputTests(TestCase):
 
         f1_2018 = int(f1_2017 * (1.0 + irates[2]))
         f2_2018 = int(f2_2017 * (1.0 + irates[2]))
-    
+
         exp =  [[36000, 72250, 36500, 50200, 74900, 37450],
                 [38000, 74000, f2_2016, 50400, 75300, 37650],
                 [40000, 75687, f2_2017, 50800.0, 75900.0, 37950.0],
@@ -287,7 +287,7 @@ class TaxInputTests(TestCase):
         assert ans['_II_brk2'] == exp
 
         # For scalar parameter values, we still have that all user
-        # choices propagate up through whatever is specified as 
+        # choices propagate up through whatever is specified as
         # a default. We know that _II_em is specified up to 2016, so
         # package up vars needs to overwrite those default and return
         # 2015 and 2016 values
@@ -421,8 +421,8 @@ class TaxInputTests(TestCase):
 
     def test_arrange_totals_by_row(self):
         total_row_names = ["ind_tax", "payroll_tax", "combined_tax"]
-        tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3", 
-                'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6", 
+        tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3",
+                'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6",
                 'combined_tax_0': "7", 'combined_tax_1': "8", 'combined_tax_2': "9"}
         ans = arrange_totals_by_row(tots, total_row_names)
         exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
@@ -449,5 +449,5 @@ class TaxInputTests(TestCase):
 
     def test_default_taxcalc_data_cpi_flags_on_II_credit(self):
         taxcalc_default_params = default_policy(int(FBY))
-        assert taxcalc_default_params['II_credit'].inflatable 
-        assert taxcalc_default_params['II_credit_ps'].inflatable 
+        assert taxcalc_default_params['II_credit'].inflatable
+        assert taxcalc_default_params['II_credit_ps'].inflatable
