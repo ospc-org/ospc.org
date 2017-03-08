@@ -17,4 +17,5 @@ urlpatterns = patterns('',
     url(r'^gallery/$', gallerypage, name='gallery'),
     url(r'^docs/$', docspage, name='docs'),
     url(r'^gallery/border_adjustment$', border_adjustment_plot, name='border_adjustment'),
+    url(r'^bac/$', border_adjustment_plot, name='border_adjustment')
 )
