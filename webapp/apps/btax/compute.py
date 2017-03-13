@@ -52,13 +52,13 @@ class MockComputeBtax(MockCompute, DropqComputeBtax):
     dropq_get_results = dropq_get_results
 
 
-class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
+class MockFailedComputeBtax(MockCompute, MockFailedCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
 
 
-class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):
+class NodeDownComputeBtax(MockCompute, NodeDownCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
