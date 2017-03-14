@@ -375,7 +375,7 @@ class PersonalExemptionForm(ModelForm):
                 elif param.tc_id == "_ALD_InvInc_ec_base_RyanBrady":
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
-                elif param.tc_id ==  "_ALD_InvInc_ec_base_code_active"
+                elif param.tc_id ==  "_ALD_InvInc_ec_base_code_active":
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                 else:
