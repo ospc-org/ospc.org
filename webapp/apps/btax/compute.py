@@ -36,6 +36,26 @@ def mock_submit_calculation(self, *args, **kwargs):
     return (list(args), 1)
 
 
+def mock_dropq_results_ready(self, *args, **kwargs):
+    return ['YES',]
+
+
+def mock_dropq_get_results(self, *args, **kwargs):
+    results = {'mY_dec': None,
+               'mX_dec': None,
+               'df_dec': None,
+               'pdf_dec': None,
+               'cdf_dec': None,
+               'mY_bin': None,
+               'mX_bin': None,
+               'df_bin': None,
+               'pdf_bin': None,
+               'cdf_bin': None,
+               'fiscal_tot_diffs': None,
+               'fiscal_tot_base': None,
+               'fiscal_tot_ref': None}
+
+
 class DropqComputeBtax(DropqCompute):
     num_budget_years = 1
     package_up_vars = package_up_vars
@@ -55,6 +75,8 @@ class MockComputeBtax(MockCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
+    dropq_results_ready = mock_dropq_results_ready
+    submit_calculation = mock_submit_calculation
 
 
 class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
@@ -62,11 +84,15 @@ class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
+    dropq_results_ready = mock_dropq_results_ready
+    submit_calculation = mock_submit_calculation
 
 
 class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
+    submit_calculation = mock_submit_calculation
+    dropq_results_ready = mock_dropq_results_ready
     submit_calculation = mock_submit_calculation
 
