@@ -28,9 +28,7 @@ def package_up_vars(self, user_mods, first_budget_year):
 
 
 def dropq_get_results(self, job_ids, job_failure=False):
-    ans = self._get_results_base(job_ids, job_failure=job_failure)
-    return ans
-
+    return job_ids
 
 def mock_submit_calculation(self, *args, **kwargs):
     return (list(args), 1)
