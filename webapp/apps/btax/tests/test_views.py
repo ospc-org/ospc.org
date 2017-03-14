@@ -9,6 +9,7 @@ from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
 import taxcalc
 from taxcalc import Policy
+import ..btax.views
 
 
 START_YEAR = 2016
@@ -29,6 +30,14 @@ class BTaxViewsTests(TestCase):
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
+        if not getattr(self, 'old_denormalize', False):
+            self.old_denormalize = btax.views.denormalize
+            def denormalize(*args, **kwargs):
+                return [args, kwargs]
+            btax.views.denormalize = denormalize
+
+    def tearDown(self):
+        btax.views.denormalize = self.old_denormalize
 
     def test_btax_get(self):
         # Issue a GET request.

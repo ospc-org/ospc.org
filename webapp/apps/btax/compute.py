@@ -12,6 +12,7 @@ from ..taxbrain.compute import (DropqCompute,
                                 ENFORCE_REMOTE_VERSION_CHECK,
                                 TIMEOUT_IN_SECONDS,
                                 dropq_version)
+import ..taxbrain.views as views
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 btax_workers = os.environ.get('BTAX_WORKERS', '')
