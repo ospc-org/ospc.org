@@ -28,9 +28,6 @@ def package_up_vars(self, user_mods, first_budget_year):
     return user_mods
 
 
-def dropq_get_results(self, job_ids, job_failure=False):
-    return job_ids
-
 def mock_submit_calculation(self, *args, **kwargs):
     return (list(args), 1)
 
@@ -58,7 +55,7 @@ def mock_dropq_get_results(self, *args, **kwargs):
 class DropqComputeBtax(DropqCompute):
     num_budget_years = 1
     package_up_vars = package_up_vars
-    dropq_get_results = dropq_get_results
+    dropq_get_results = mock_dropq_get_results
 
     def submit_btax_calculation(self, mods, first_budget_year=2015):
         url_template = "http://{hn}/btax_start_job"
@@ -72,26 +69,26 @@ class DropqComputeBtax(DropqCompute):
 class MockComputeBtax(MockCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
-    dropq_get_results = dropq_get_results
+    dropq_get_results = mock_dropq_get_results
     submit_calculation = mock_submit_calculation
     dropq_results_ready = partial(mock_dropq_results_ready, "YES")
-    submit_calculation = mock_submit_calculation
+
 
 
 class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
-    dropq_get_results = dropq_get_results
+    dropq_get_results = mock_dropq_get_results
     submit_calculation = mock_submit_calculation
     dropq_results_ready = partial(mock_dropq_results_ready, "FAIL")
-    submit_calculation = mock_submit_calculation
+
 
 
 class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
-    dropq_get_results = dropq_get_results
+    dropq_get_results = mock_dropq_get_results
     submit_calculation = mock_submit_calculation
     dropq_results_ready = partial(mock_dropq_results_ready, "FAIL")
-    submit_calculation = mock_submit_calculation
+
 
