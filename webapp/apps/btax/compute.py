@@ -1,3 +1,4 @@
+from functools import partial
 import os
 from ..taxbrain.models import WorkerNodesCounter
 import json
@@ -34,8 +35,8 @@ def mock_submit_calculation(self, *args, **kwargs):
     return (list(args), 1)
 
 
-def mock_dropq_results_ready(self, *args, **kwargs):
-    return {'abc': ['YES',]}
+def mock_dropq_results_ready(arg, self, *args, **kwargs):
+    return {'abc': [arg,]}
 
 
 def mock_dropq_get_results(self, *args, **kwargs):
@@ -73,7 +74,7 @@ class MockComputeBtax(MockCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
-    dropq_results_ready = mock_dropq_results_ready
+    dropq_results_ready = partial("YES", mock_dropq_results_ready)
     submit_calculation = mock_submit_calculation
 
 
@@ -82,7 +83,7 @@ class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
-    dropq_results_ready = mock_dropq_results_ready
+    dropq_results_ready = partial("FAIL", mock_dropq_results_ready)
     submit_calculation = mock_submit_calculation
 
 
@@ -91,6 +92,6 @@ class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
-    dropq_results_ready = mock_dropq_results_ready
+    dropq_results_ready = partial("FAIL", mock_dropq_results_ready)
     submit_calculation = mock_submit_calculation
 
