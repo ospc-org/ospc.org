@@ -32,6 +32,10 @@ def dropq_get_results(self, job_ids, job_failure=False):
     return ans
 
 
+def mock_submit_calculation(self, *args, **kwargs):
+    return (list(args), kwargs)
+
+
 class DropqComputeBtax(DropqCompute):
     num_budget_years = 1
     package_up_vars = package_up_vars
@@ -50,16 +54,19 @@ class MockComputeBtax(MockCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
+    submit_calculation = mock_submit_calculation
 
 
-class MockFailedComputeBtax(MockCompute, MockFailedCompute, DropqComputeBtax):
+class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
+    submit_calculation = mock_submit_calculation
 
 
-class NodeDownComputeBtax(MockCompute, NodeDownCompute, DropqComputeBtax):
+class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
+    submit_calculation = mock_submit_calculation
 
