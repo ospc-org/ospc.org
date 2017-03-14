@@ -31,13 +31,13 @@ class BTaxViewsTests(TestCase):
         # Every test needs a client.
         self.client = Client()
         if not getattr(self, 'old_denormalize', False):
-            self.old_denormalize = btax.views.denormalize
+            self.old_denormalize = views.denormalize
             def denormalize(*args, **kwargs):
                 return [args, kwargs]
-            btax.views.denormalize = denormalize
+            views.denormalize = denormalize
 
     def tearDown(self):
-        btax.views.denormalize = self.old_denormalize
+        views.denormalize = self.old_denormalize
 
     def test_btax_get(self):
         # Issue a GET request.
