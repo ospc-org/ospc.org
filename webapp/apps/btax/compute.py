@@ -74,7 +74,7 @@ class MockComputeBtax(MockCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
-    dropq_results_ready = partial("YES", mock_dropq_results_ready)
+    dropq_results_ready = partial(mock_dropq_results_ready, "YES")
     submit_calculation = mock_submit_calculation
 
 
@@ -83,7 +83,7 @@ class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
-    dropq_results_ready = partial("FAIL", mock_dropq_results_ready)
+    dropq_results_ready = partial(mock_dropq_results_ready, "FAIL")
     submit_calculation = mock_submit_calculation
 
 
@@ -92,6 +92,6 @@ class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):
     package_up_vars = package_up_vars
     dropq_get_results = dropq_get_results
     submit_calculation = mock_submit_calculation
-    dropq_results_ready = partial("FAIL", mock_dropq_results_ready)
+    dropq_results_ready = partial(mock_dropq_results_ready, "FAIL")
     submit_calculation = mock_submit_calculation
 
