@@ -33,7 +33,7 @@ def dropq_get_results(self, job_ids, job_failure=False):
 
 
 def mock_submit_calculation(self, *args, **kwargs):
-    return (list(args), kwargs)
+    return (list(args), 1)
 
 
 class DropqComputeBtax(DropqCompute):
