@@ -9,7 +9,7 @@ from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
 import taxcalc
 from taxcalc import Policy
-from .btax import views
+from ...btax import views
 
 
 START_YEAR = 2016
