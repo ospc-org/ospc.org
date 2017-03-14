@@ -35,23 +35,23 @@ def mock_submit_calculation(self, *args, **kwargs):
 
 
 def mock_dropq_results_ready(self, *args, **kwargs):
-    return ['YES',]
+    return {'abc': ['YES',]}
 
 
 def mock_dropq_get_results(self, *args, **kwargs):
-    results = {'mY_dec': None,
-               'mX_dec': None,
-               'df_dec': None,
-               'pdf_dec': None,
-               'cdf_dec': None,
-               'mY_bin': None,
-               'mX_bin': None,
-               'df_bin': None,
-               'pdf_bin': None,
-               'cdf_bin': None,
-               'fiscal_tot_diffs': None,
-               'fiscal_tot_base': None,
-               'fiscal_tot_ref': None}
+    return {'mY_dec': None,
+            'mX_dec': None,
+            'df_dec': None,
+            'pdf_dec': None,
+            'cdf_dec': None,
+            'mY_bin': None,
+            'mX_bin': None,
+            'df_bin': None,
+            'pdf_bin': None,
+            'cdf_bin': None,
+            'fiscal_tot_diffs': None,
+            'fiscal_tot_base': None,
+            'fiscal_tot_ref': None}
 
 
 class DropqComputeBtax(DropqCompute):
