@@ -33,7 +33,7 @@ class BTaxViewsTests(TestCase):
         if not getattr(self, 'old_denormalize', False):
             self.old_denormalize = views.denormalize
             def denormalize(*args, **kwargs):
-                return [args, kwargs]
+                return [args, 1]
             views.denormalize = denormalize
 
     def tearDown(self):
