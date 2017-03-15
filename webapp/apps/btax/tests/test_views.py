@@ -75,8 +75,7 @@ class BTaxViewsTests(TestCase):
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
         # One more redirect
-        response = self.client.get(response.url)
-        # Check that we successfully load the page
+        print(dir(response))
         response = self.client.get(response.url)
         self.assertEqual(response.status_code, 200)
 
