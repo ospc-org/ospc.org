@@ -9,6 +9,7 @@ from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
 import taxcalc
 from taxcalc import Policy
+from ...btax import views
 
 
 START_YEAR = 2016
@@ -29,6 +30,14 @@ class BTaxViewsTests(TestCase):
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
+        if not getattr(self, 'old_denormalize', False):
+            self.old_denormalize = views.denormalize
+            def denormalize(*args, **kwargs):
+                return [args, 1]
+            views.denormalize = denormalize
+
+    def tearDown(self):
+        views.denormalize = self.old_denormalize
 
     def test_btax_get(self):
         # Issue a GET request.
@@ -66,8 +75,7 @@ class BTaxViewsTests(TestCase):
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
         # One more redirect
-        response = self.client.get(response.url)
-        # Check that we successfully load the page
+        print(dir(response))
         response = self.client.get(response.url)
         self.assertEqual(response.status_code, 200)
 
