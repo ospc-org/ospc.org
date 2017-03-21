@@ -441,7 +441,6 @@ class TaxSaveInputs(models.Model):
     CTC_new_refund_limit_payroll_rt = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_c_under5_bonus = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_rt = CommaSeparatedField(default=None, blank=True, null=True)
-    CTC_new_ps = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
