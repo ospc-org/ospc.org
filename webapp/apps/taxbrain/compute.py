@@ -113,8 +113,6 @@ class DropqCompute(object):
             user_mods = mods
             data['taxio_format'] = True
             data['first_budget_year'] = first_budget_year
-            if additional_data:
-                data.update(additional_data)
             print "JSON user_mods is ", user_mods
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)
@@ -133,7 +131,7 @@ class DropqCompute(object):
         num_hosts = len(hostnames)
         data['user_mods'] = json.dumps(user_mods)
         if additional_data:
-            data.update(additional_data)
+            data[additional_data.keys()[0]] = json.dumps(additional_data.values()[0])
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
