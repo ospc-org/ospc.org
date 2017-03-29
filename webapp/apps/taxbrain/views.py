@@ -104,24 +104,6 @@ def amt_fixup(request, reform, model):
             else:
                 setattr(model, 'AMT_' + cgparam, reform[cgparam][0])
 
-
-def passthrough_fixup(request, reform, model):
-    """
-    Take the individual income tax parameters from the user reform
-    and set them as the equivalent pass through tax parameters
-    """
-    pt_reforms = {}
-    for param in reform:
-        if param.startswith("II_rt") or param.startswith("II_brk"):
-            pt_param = "PT_" + param[3:]
-            pt_reforms[pt_param] = reform[param]
-            if param.endswith("_cpi"):
-                setattr(model, pt_param, reform[param])
-            else:
-                setattr(model, pt_param, reform[param][0])
-    reform.update(pt_reforms)
-
-
 def growth_fixup(mod):
     if mod['growth_choice']:
         if mod['growth_choice'] == 'factor_adjustment':
@@ -180,7 +162,6 @@ def process_model(model, start_year, stored_errors=None, request=None,
     if request:
         benefit_surtax_fixup(request.REQUEST, worker_data, model)
         amt_fixup(request.REQUEST, worker_data, model)
-        passthrough_fixup(request.REQUEST, worker_data, model)
     # start calc job
     if do_full_calc:
         submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(worker_data, int(start_year))
