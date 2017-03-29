@@ -153,6 +153,12 @@ class TaxSaveInputs(models.Model):
     ALD_Investment_ec_base_code_active = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_InvInc_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_InvInc_ec_base_RyanBrady = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_EducatorExpenses_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_HSADeduction_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_IRAContributions_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_DomesticProduction_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_Tuition_hc = CommaSeparatedField(default=None, blank=True, null=True)
+
     FEI_ec_c = CommaSeparatedField(default=None, blank=True, null=True)
     FEI_ec_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
@@ -539,6 +545,22 @@ class TaxSaveInputs(models.Model):
     AGI_surtax_trt = CommaSeparatedField(default=None, blank=True, null=True)
 
     LST = CommaSeparatedField(default=None, blank=True, null=True)
+
+    CR_RetirementSavings_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_ForeignTax_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_ResidentialEnergy_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_GeneralBusiness_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_MinimumTax_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_AmOppRefundable_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_AmOppNonRefundable_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_SchR_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_OtherCredits_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    CR_Education_hc = CommaSeparatedField(default=None, blank=True, null=True)
+
+    UBI1 = CommaSeparatedField(default=None, blank=True, null=True)
+    UBI2 = CommaSeparatedField(default=None, blank=True, null=True)
+    UBI3 = CommaSeparatedField(default=None, blank=True, null=True)
+    UBI_ecrt = CommaSeparatedField(default=None, blank=True, null=True)
 
 
     # Inflation adjustments
