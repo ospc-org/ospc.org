@@ -98,5 +98,5 @@ class DynamicElasticityViewsTests(TestCase):
         post = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        beh_params = json.loads(post['elasticity_params'])
+        beh_params = json.loads(json.loads(post['elasticity_params']))
         assert beh_params["elastic_gdp"][0]  == 0.4
