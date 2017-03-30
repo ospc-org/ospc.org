@@ -150,7 +150,7 @@ class TaxSaveInputs(models.Model):
     ALD_Dependents_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Dependents_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     ALD_Investment_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_Investment_ec_base_code_active = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_InvInc_ec_base_code_active = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_InvInc_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_InvInc_ec_base_RyanBrady = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_EducatorExpenses_hc = CommaSeparatedField(default=None, blank=True, null=True)
