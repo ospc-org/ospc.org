@@ -20,7 +20,10 @@
 <h2>Capital Gains</h2>
 {% include 'taxbrain/includes/params/inputs/param.html' with param=params.BE_cg %}
 
+<h2>Charitable Contributions</h2>
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.BE_charity_itemizers %}
+{% include 'taxbrain/includes/params/inputs/param.html' with param=params.BE_charity_non_itemizers %}
+
 {% endblock %}
 
 {% block provide_if_no_continue %}{% endblock %}
-
