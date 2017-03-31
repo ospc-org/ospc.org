@@ -64,7 +64,7 @@ class DynamicBehavioralViewsTests(TestCase):
         # microsim above
         idx = page.find('dynamic/behavioral')
         idx_ms_num_start = idx + 19
-        idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/') 
+        idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/')
         microsim_model_num = page[idx_ms_num_start:idx_ms_num_end]
         assert microsim_model_num == orig_micro_model_num
 
@@ -108,5 +108,5 @@ class DynamicBehavioralViewsTests(TestCase):
         post = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        beh_params = json.loads(post['behavior_params'])
+        beh_params = json.loads(json.loads(post['behavior_params']))
         assert beh_params["_BE_sub"][0]  == 0.25
