@@ -61,10 +61,11 @@ class DropqCompute(object):
                                        pack_up_user_mods=False,
                                        additional_data=additional_data)
 
-    def submit_dropq_calculation(self, mods, first_budget_year):
+    def submit_dropq_calculation(self, mods, first_budget_year, additional_data=None):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS)
+                                       num_years=NUM_BUDGET_YEARS,
+                                       additional_data=additional_data)
 
     def submit_json_dropq_small_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
@@ -107,13 +108,11 @@ class DropqCompute(object):
                 return False
             print "user_mods is ", user_mods
             print "submit work"
-            user_mods={first_budget_year:user_mods}
+            user_mods = {first_budget_year:user_mods}
         else:
             user_mods = mods
             data['taxio_format'] = True
             data['first_budget_year'] = first_budget_year
-            if additional_data:
-                data.update(additional_data)
             print "JSON user_mods is ", user_mods
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)
@@ -131,6 +130,8 @@ class DropqCompute(object):
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
         data['user_mods'] = json.dumps(user_mods)
+        if additional_data:
+            data[additional_data.keys()[0]] = json.dumps(additional_data.values()[0])
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
