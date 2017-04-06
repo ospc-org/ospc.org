@@ -367,7 +367,7 @@ def output_detail(request, pk):
                            zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
 
             #Just need the error message from one failed job
-            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
+            error_msgs = dropq_compute.btax_get_results([failed_jobs[0]], job_failure=True)
             error_msg = error_msgs[0]
             val_err_idx = error_msg.rfind("Error")
             context = {"error_msg": error_msg[val_err_idx:],
@@ -377,7 +377,7 @@ def output_detail(request, pk):
 
 
         if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
+            model.tax_result = dropq_compute.btax_get_results(normalize(job_ids))
 
             model.creation_date = datetime.datetime.now()
             print 'ready'
