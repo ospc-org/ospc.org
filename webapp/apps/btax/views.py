@@ -377,7 +377,7 @@ def output_detail(request, pk):
 
 
         if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.dropq_get_results(normalize(job_ids))
+            model.tax_result = dropq_compute.btax_get_results(normalize(job_ids))
 
             model.creation_date = datetime.datetime.now()
             print 'ready'

@@ -68,6 +68,9 @@ class DropqComputeBtax(DropqCompute):
                                        increment_counter=False,
                                        use_wnc_offset=False)
 
+    def btax_get_results(self, job_ids, job_failure=False):
+        return self._get_results_base(job_ids, job_failure=job_failure)
+
 
 class MockComputeBtax(MockCompute, DropqComputeBtax):
     num_budget_years = 1
