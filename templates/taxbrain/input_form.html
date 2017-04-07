@@ -31,7 +31,6 @@
           </div>
         </div>
       </section>
-
       <section class="taxbrain-info collapse" id="taxbrainInfo">
         <div class="container">
           <div class="taxbrain-history">
@@ -68,7 +67,9 @@
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                   {% for param in params %}
                     {% for key, value in param.items %}
-                      <li><a href="#{{ key|make_id }}">{{ key|title }}</a></li>
+                      {% if key != "ubi" %}
+                        <li><a href="#{{ key|make_id }}">{{ key|title }}</a></li>
+                      {% endif %}
                     {% endfor %}
                   {% endfor %}
               </ul>
@@ -130,10 +131,12 @@
               </div>
               {% for param in params %}
                 {% for key, value in param.items %}
-                  {% if params|is_first:param %}
-                    {% include 'taxbrain/default_input.html' with title=key param=value is_first=True %}
-                  {% else %}
-                    {% include 'taxbrain/default_input.html' with title=key param=value is_first=False %}
+                  {% if key != "ubi" %}
+                    {% if params|is_first:param %}
+                      {% include 'taxbrain/default_input.html' with title=key param=value is_first=True %}
+                    {% else %}
+                      {% include 'taxbrain/default_input.html' with title=key param=value is_first=False %}
+                    {% endif %}
                   {% endif %}
                 {% endfor %}
               {% endfor %}
