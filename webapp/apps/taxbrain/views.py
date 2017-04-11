@@ -458,7 +458,8 @@ def edit_personal_results(request, pk):
         'params': nested_form_parameters(int(start_year)),
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
-        'start_year': str(start_year)
+        'start_year': str(start_year),
+        'is_edit_page': True
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)
