@@ -225,13 +225,13 @@ TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'all':'All'
 }
 TAXCALC_RESULTS_TABLE_LABELS = {
-    'mX_dec': 'Base plan tax vars, weighted avg per expanded income decile',
-    'mY_dec': 'User plan tax vars, weighted avg per expanded income decile',
+    'mX_dec': 'Base plan tax vars, weighted total per expanded income decile',
+    'mY_dec': 'User plan tax vars, weighted total per expanded income decile',
     'df_dec': 'Individual Income Tax: Difference between Base and User plans by expanded income decile',
     'pdf_dec': 'Payroll Tax: Difference between Base and User plans by expanded income decile',
     'cdf_dec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',
-    'mX_bin': 'Base plan tax vars, weighted avg per expanded income bin',
-    'mY_bin': 'User plan tax vars, weighted avg per expanded income bin',
+    'mX_bin': 'Base plan tax vars, weighted total per expanded income bin',
+    'mY_bin': 'User plan tax vars, weighted total per expanded income bin',
     'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
     'pdf_bin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
     'cdf_bin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
