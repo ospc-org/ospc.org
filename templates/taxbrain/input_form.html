@@ -68,7 +68,7 @@
                   {% for param in params %}
                     {% for key, value in param.items %}
                       {% if key != "ubi" %}
-                        <li><a href="#{{ key|make_id }}">{{ key|title }}</a></li>
+                        <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
                       {% endif %}
                     {% endfor %}
                   {% endfor %}
