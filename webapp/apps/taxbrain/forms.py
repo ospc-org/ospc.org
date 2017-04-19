@@ -372,8 +372,6 @@ class PersonalExemptionForm(ModelForm):
                 if param.tc_id == "_ID_BenefitSurtax_Switch" or param.tc_id == "_ID_BenefitCap_Switch":
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
-                elif field.label in hidden_fields:
-                    widgets[field.id] = forms.HiddenInput(attrs=attrs)
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
 
