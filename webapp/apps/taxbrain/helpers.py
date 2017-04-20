@@ -580,6 +580,8 @@ class TaxCalcParam(object):
     A collection of TaxCalcFields that represents all configurable details
     for one of TaxCalc's Parameters
     """
+    FORM_HIDDEN_PARAMS = ["widow", "separate", "dependent"]
+
     def __init__(self, param_id, attributes, first_budget_year):
         self.__load_from_json(param_id, attributes, first_budget_year)
 
@@ -623,11 +625,7 @@ class TaxCalcParam(object):
             if col_labels == ["0kids", "1kid", "2kids", "3+kids"]:
                 col_labels = ["0 Kids", "1 Kid", "2 Kids", "3+ Kids"]
 
-            elif col_labels == ["single", "joint", "separate", "head of household",
-                                "widow", "separate"] or col_labels == \
-                               ["single", "joint", "separate", "head of household",
-                               "widow", "separate","dependent"]:
-
+            elif set(col_labels) & set(self.FORM_HIDDEN_PARAMS):
                 col_labels = ["Single", "Married filing Jointly",
                               "Married filing Separately", "Head of Household"]
 
