@@ -10,7 +10,7 @@ from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       default_taxcalc_data, expand_list, propagate_user_list,
                       convert_val, INPUT)
 import taxcalc
-                      
+
 
 def bool_like(x):
     b = True if x == 'True' or x == True else False
@@ -151,7 +151,6 @@ class PersonalExemptionForm(ModelForm):
                  'comp_data': a sequence of values associated with param
                  'epx_col_values': a (possibly) expanded set of column values
                                    for comparison against comp_data
-            
         """
 
         len_param_values = len(param_values)
@@ -355,6 +354,10 @@ class PersonalExemptionForm(ModelForm):
         exclude = ['creation_date']
         widgets = {}
         labels = {}
+        hidden_fields = [
+            "Widow",
+            "widow"
+        ]
 
         for param in TAXCALC_DEFAULTS_2016.values():
             for field in param.col_fields:

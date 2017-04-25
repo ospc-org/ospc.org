@@ -59,8 +59,12 @@
                 </select>
             </label>
               <div class="reset-button">
-                <a href="#" ></a>
-                <input id="tax-submit" class="btn btn-tertiary btn-block" style="background-color:#96000b" type="reset" name="full_calc" value="Reset Parameters">
+                {% if is_edit_page %}
+                  <a href="/taxbrain" class="btn btn-tertiary btn-block" style="background-color:#96000b">Reset Parameters</a>
+                {% else %}
+                  <a href="#" ></a>
+                  <input id="tax-submit" class="btn btn-tertiary btn-block" style="background-color:#96000b" type="reset" name="full_calc" value="Reset Parameters">
+                {% endif %}
             </div>
 
               <ul class="nav sidebar-nav">
@@ -68,7 +72,7 @@
                   {% for param in params %}
                     {% for key, value in param.items %}
                       {% if key != "ubi" %}
-                        <li><a href="#{{ key|make_id }}">{{ key|title }}</a></li>
+                        <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
                       {% endif %}
                     {% endfor %}
                   {% endfor %}
