@@ -242,17 +242,8 @@ def dynamic_behavioral(request, pk):
 
             else:
                 microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
-                el_keys = ('first_year', 'elastic_gdp')
-                behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                behavior_params = { k:v for k, v in worker_data.items()
-                                    if k.startswith("BE_") or k == "first_year"}
-                behavior_params = {('_' + k) if k.startswith('BE') else k:v for k,v in behavior_params.items()}
-
-                additional_data = {'behavior_params': json.dumps(behavior_params)}
-                # start calc job
                 submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(microsim_data,
-                                                                         int(start_year), additional_data)
-
+                                                                         int(start_year))
 
             if not submitted_ids:
                 no_inputs = True
@@ -376,13 +367,8 @@ def dynamic_elasticities(request, pk):
 
             else:
                 microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
-                el_keys = ('first_year', 'elastic_gdp')
-                elasticity_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                additional_data = {'elasticity_params': json.dumps(elasticity_params)}
-                # start calc job
                 submitted_ids, max_q_length = dropq_compute.submit_json_elastic_calculation(microsim_data,
-                                                                         int(start_year),
-                                                                         additional_data)
+                                                                         int(start_year))
 
             if not submitted_ids:
                 no_inputs = True
