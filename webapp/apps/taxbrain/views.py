@@ -470,7 +470,7 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
-    if getattr(getattr(a, "json_text", False), "assumption_text", False):
+    if getattr(getattr(model, "json_text", False), "assumption_text", False):
         allow_dyn_links = False
     else:
         allow_dyn_links = True
