@@ -354,9 +354,14 @@ class PersonalExemptionForm(ModelForm):
         exclude = ['creation_date']
         widgets = {}
         labels = {}
-        hidden_fields = [
-            "Widow",
-            "widow"
+        boolean_fields = [
+            "_ID_BenefitSurtax_Switch",
+            "_ID_BenefitCap_Switch",
+            "_ALD_InvInc_ec_base_RyanBrady",
+            "_NIIT_PT_taxed",
+            "_CG_nodiff",
+            "_EITC_indiv",
+            "_CTC_new_refund_limited"
         ]
 
         for param in TAXCALC_DEFAULTS_2016.values():
@@ -369,7 +374,7 @@ class PersonalExemptionForm(ModelForm):
                 if param.coming_soon:
                     attrs['disabled'] = True
 
-                if param.tc_id == "_ID_BenefitSurtax_Switch" or param.tc_id == "_ID_BenefitCap_Switch":
+                if param.tc_id in boolean_fields:
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                 else:

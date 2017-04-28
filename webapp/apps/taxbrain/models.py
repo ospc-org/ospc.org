@@ -156,7 +156,6 @@ class TaxSaveInputs(models.Model):
     ALD_Investment_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_InvInc_ec_base_code_active = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_InvInc_ec_rt = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_InvInc_ec_base_RyanBrady = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_EducatorExpenses_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_HSADeduction_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_IRAContributions_hc = CommaSeparatedField(default=None, blank=True, null=True)
@@ -282,7 +281,6 @@ class TaxSaveInputs(models.Model):
     CG_brk3_4 = CommaSeparatedField(default=None, blank=True, null=True)
     CG_brk3_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     CG_rt4    = CommaSeparatedField(default=None, blank=True, null=True)
-    CG_nodiff = CommaSeparatedField(default=None, blank=True, null=True)
     AMT_CG_rt1 = CommaSeparatedField(default=None, blank=True, null=True)
     AMT_CG_brk1_0 = CommaSeparatedField(default=None, blank=True, null=True)
     AMT_CG_brk1_1 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -315,7 +313,6 @@ class TaxSaveInputs(models.Model):
     NIIT_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_4 = CommaSeparatedField(default=None, blank=True, null=True)
     NIIT_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    NIIT_PT_taxed = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Parameters used for Personal Income Tax Rate
     II_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
@@ -446,7 +443,6 @@ class TaxSaveInputs(models.Model):
     EITC_MinEligAge_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     EITC_MaxEligAge = CommaSeparatedField(default=None, blank=True, null=True)
     EITC_MaxEligAge_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    EITC_indiv = CommaSeparatedField(default=None, blank=True, null=True)
     EITC_ps_MarriedJ_0 = CommaSeparatedField(default=None, blank=True, null=True)
     EITC_ps_MarriedJ_1 = CommaSeparatedField(default=None, blank=True, null=True)
     EITC_ps_MarriedJ_2 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -469,7 +465,6 @@ class TaxSaveInputs(models.Model):
     CTC_ps_4 = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     CTC_additional = CommaSeparatedField(default=None, blank=True, null=True)
-    CTC_new_refund_limited = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_refund_limit_rt = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_refund_limit_payroll_rt = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_c_under5_bonus = CommaSeparatedField(default=None, blank=True, null=True)
@@ -600,6 +595,12 @@ class TaxSaveInputs(models.Model):
     UBI3 = CommaSeparatedField(default=None, blank=True, null=True)
     UBI_ecrt = CommaSeparatedField(default=None, blank=True, null=True)
 
+    # Boolean Checkbox Fields
+    ALD_InvInc_ec_base_RyanBrady = models.CharField(default="False", blank=True, null=True, max_length=50)
+    NIIT_PT_taxed = models.CharField(default="False", blank=True, null=True, max_length=50)
+    CG_nodiff = models.CharField(default="False", blank=True, null=True, max_length=50)
+    EITC_indiv = models.CharField(default="False", blank=True, null=True, max_length=50)
+    CTC_new_refund_limited = models.CharField(default="False", blank=True, null=True, max_length=50)
 
     # Inflation adjustments
     inflation = models.FloatField(default=None, blank=True, null=True,
