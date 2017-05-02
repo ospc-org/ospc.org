@@ -14,16 +14,16 @@
     <div class="inputs-block-header">
       <h1>
         {{ title }}
-        <button
-          class="btn btn-primary"
-          type="button"
-          data-toggle="collapse"
-          data-target="#{{ title|make_id }}-collapse"
-          aria-expanded="false"
-          aria-controls="{{ title|make_id }}-collapse">
-        +
-        </button>
       </h1>
+      <button
+        class="btn btn-primary"
+        type="button"
+        data-toggle="collapse"
+        data-target="#{{ title|make_id }}-collapse"
+        aria-expanded="false"
+        aria-controls="{{ title|make_id }}-collapse">
+        +
+      </button>
     </div>
     <div class="collapse" id="{{ title|make_id }}-collapse">
       {% for field in param %}
