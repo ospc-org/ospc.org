@@ -7,14 +7,25 @@
 
 {% block content %}
 <div class="inputs-block-header">
-  <h1>Macroeconomic Variables</h1>
-  {% flatblock "ccc_macro_econ_blurb" %}
-  {% block section_warnings %}
-  {% endblock %}
+    <h1>Macroeconomic Variables</h1>
+    <button
+        class="btn btn-primary collapse-button"
+        type="button"
+        data-toggle="collapse"
+        data-target="#macro-econ-collapse"
+        aria-expanded="false"
+        aria-controls="macro-econ-collapse">
+        <span class="glyphicon glyphicon-plus" style="font-size:2em; margin-bottom:5px"></span>
+    </button>
+    {% flatblock "ccc_macro_econ_blurb" %}
+    {% block section_warnings %}
+    {% endblock %}
 </div>
 
-{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_econ_nomint %}
-{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_econ_inflat %}
+<div class="collapse" id="macro-econ-collapse">
+    {% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_econ_nomint %}
+    {% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_econ_inflat %}
+</div>
 
 {% endblock %}
 
