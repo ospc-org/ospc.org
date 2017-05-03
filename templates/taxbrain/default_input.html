@@ -16,13 +16,13 @@
         {{ title }}
       </h1>
       <button
-        class="btn btn-primary"
+        class="btn btn-primary collapse-button"
         type="button"
         data-toggle="collapse"
         data-target="#{{ title|make_id }}-collapse"
         aria-expanded="false"
         aria-controls="{{ title|make_id }}-collapse">
-        +
+        <span class="glyphicon glyphicon-plus" style="font-size:2em; margin-bottom:5px"></span>
       </button>
     </div>
     <div class="collapse" id="{{ title|make_id }}-collapse">
