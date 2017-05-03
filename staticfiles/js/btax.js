@@ -50,4 +50,11 @@ $(document).ready(function(){
       group.removeClass('edited');
     }
   })
+  $('div.inputs-block-content').each(function(){
+    var that = this;
+    is_edited = $(that).find('div.form-group').hasClass("edited");
+    if(is_edited){
+      $(that).find("div.collapse").addClass("in");
+    }
+  })
 })

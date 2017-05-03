@@ -11,36 +11,40 @@
   {% flatblock "ccc_depreciation_blurb" %}
   {% block section_warnings %}
   {% endblock %}
+  <button
+    class="btn btn-primary collapse-button"
+    type="button"
+    data-toggle="collapse"
+    data-target="#deprecation-collapse"
+    aria-expanded="false"
+    aria-controls="deprecation-collapse">
+    <span class="glyphicon glyphicon-plus" style="font-size:2em; margin-bottom:5px"></span>
+  </button>
 </div>
-<table class="table-bordered table-striped table-check-all">
-<th>
-<td class="col-sm-3">
-    Property Class
-</td>
-<td class="col-sm-2">
-    <label data-toggle="tooltip" title="{{ hover_notes.gds_note }}" >GDS</label>
-</td>
-<td class="col-sm-2">
-    <label data-toggle="tooltip" title="{{ hover_notes.ads_note }}" >ADS</label>
-</td>
-<td class="col-sm-2">
-    <label data-toggle="tooltip" title="{{ hover_notes.economic_note }}" >Economic</label>
-</td>
-<td class="col-sm-3">
-    <label data-toggle="tooltip" title="{{ hover_notes.bonus_note }}" >Bonus</label>
-</td>
-</th>
-{% for args in depr_argument_groups %}
-  {% include 'btax/includes/params/inputs/gds_ads.html' with param1=args.param1 field1=args.field1 param2=args.param2 field2=args.field2 param3=args.param3 field3=args.field3 param4=args.param4 field4=args.field4 radio_group_name=args.radio_group_name field3_cb=args.fields3_cb field4_cb=args.field4_cb pretty_asset_yr_str=args.pretty_asset_yr_str td_style_class=args.td_style_class label=args.label tr_style_class=args.tr_style_class %}
-{% endfor %}
-</table>
+<div class="collapse" id="deprecation-collapse">
+    <table class="table-bordered table-striped table-check-all">
+    <th>
+    <td class="col-sm-3">
+        Property Class
+    </td>
+    <td class="col-sm-2">
+        <label data-toggle="tooltip" title="{{ hover_notes.gds_note }}" >GDS</label>
+    </td>
+    <td class="col-sm-2">
+        <label data-toggle="tooltip" title="{{ hover_notes.ads_note }}" >ADS</label>
+    </td>
+    <td class="col-sm-2">
+        <label data-toggle="tooltip" title="{{ hover_notes.economic_note }}" >Economic</label>
+    </td>
+    <td class="col-sm-3">
+        <label data-toggle="tooltip" title="{{ hover_notes.bonus_note }}" >Bonus</label>
+    </td>
+    </th>
+    {% for args in depr_argument_groups %}
+      {% include 'btax/includes/params/inputs/gds_ads.html' with param1=args.param1 field1=args.field1 param2=args.param2 field2=args.field2 param3=args.param3 field3=args.field3 param4=args.param4 field4=args.field4 radio_group_name=args.radio_group_name field3_cb=args.fields3_cb field4_cb=args.field4_cb pretty_asset_yr_str=args.pretty_asset_yr_str td_style_class=args.td_style_class label=args.label tr_style_class=args.tr_style_class %}
+    {% endfor %}
+    </table>
+</div>
 {% endblock %}
 
 {% block next_section_shortname %}other{% endblock %}
-
-
-
-
-
-
-
