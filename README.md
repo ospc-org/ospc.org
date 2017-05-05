@@ -73,7 +73,7 @@ For Ubuntu the command is:
 createdb taxcalc
 ```
 
-If you need to add a user and grant permissions make sure to have psql installed as well.
+If you need to add a user and grant permissions make sure to have psql installed as well.  If the command fails, ensure you have started Postgres after installing it.  For example, with a homebrew installation of Postgres, it is necessary to run a `pg_ctl` command to start the Postgres service.
 
 ## Create a directory
 Make sure to create a directory wherever you keep your projects.
@@ -129,19 +129,20 @@ Once the server has started foreman will use port 5000.
 
 ## Building Static Files
 To setup your environment for building static assets:
-```bash 
+```bash
 npm install
 npm install -g bower
 bower install
 ```
 
 To compile LESS assets:
-```bash 
+```bash
+npm install gulp
 gulp less
 ```
 
 Collect static files and make sure changes get committed back:
-```bash 
+```bash
 python manage.py collectstatic
 ```
 
@@ -170,7 +171,7 @@ DATABASES = {
 ### Using SQLite as an alternative to Postgres
 Your environment settings file should include a variable named `DATABASE_URL`. If you would rather use SQLite than Postgres for your development, simply comment out or delete this line. The application will default to using SQLite as your database.
 
-# PLEASE DO NOT COMMIT YOUR LOCAL CHANGES TO THE DATABASE CONFIG IN THE SETTINGS FILE.  GIT STASH THEM! 
+# PLEASE DO NOT COMMIT YOUR LOCAL CHANGES TO THE DATABASE CONFIG IN THE SETTINGS FILE.  GIT STASH THEM!
 ## ALTERNATIVELY, STOP TRACKING LOCAL CHANGES TO THIS FILE WITH:
 ## `git update-index --assume-unchanged webapp/settings.py`
 
@@ -187,4 +188,5 @@ Django will then run the migrations and all the tables will be created in the db
 ./manage.py runserver
 ```
 
+If you want to use your local Django app to submit and run jobs, then you'll need to [follow instructions in the `deploy`](https://github.com/OpenSourcePolicyCenter/deploy) repository (note those instructions are subject to change during refactoring in May / June 2017).
 Now you have a live project being run locally!
