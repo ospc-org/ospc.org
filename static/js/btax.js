@@ -35,26 +35,3 @@ $('#start-year-select').change(function() {
   $('#current-year-link').attr('href', '/ccc/?start_year=' + $(this).val());
   $('#current-year-alert').removeClass('hidden');
 });
-
-$(document).ready(function(){
-  $('.form-group > input.form-control').each(function() {
-    input = $(this)
-    value = input.val()
-    value_default = input.prop('placeholder');
-    value_changed = (value != '') && (value != value_default);
-    group = input.closest('.form-group')
-    if (value_changed) {
-      group.addClass('edited');
-    } else {
-      input.val('');
-      group.removeClass('edited');
-    }
-  })
-  $('div.inputs-block-content').each(function(){
-    var that = this;
-    is_edited = $(that).find('div.form-group').hasClass("edited");
-    if(is_edited){
-      $(that).find("div.collapse").addClass("in");
-    }
-  })
-})
