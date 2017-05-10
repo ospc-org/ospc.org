@@ -36,7 +36,21 @@ $(document).ready(function(){
     is_edited = $(that).find('div.form-group').hasClass("edited");
     if(is_edited){
       $(that).find("div.collapse").addClass("in");
+      $(that).find("span.glyphicon").removeClass("glyphicon-plus").addClass("glyphicon-minus")
     }
+  })
+
+  $("button.collapse-button").each(function(){
+    $(this).on("click", function(){
+      span = $(this).find("span")
+      if(span.hasClass("glyphicon-plus")){
+        span.removeClass("glyphicon-plus")
+        span.addClass("glyphicon-minus")
+      } else {
+        span.removeClass("glyphicon-minus")
+        span.addClass("glyphicon-plus")
+      }
+    })
   })
 
   $("form").on("submit", function(e){
