@@ -25,6 +25,12 @@ $(document).ready(function(){
     }
   })
 
+  $("#depreciation").find("input[type=radio]:checked").each(function(){
+    if($(this).prop("placeholder") == "False"){
+      $("#depreciation .collapse").addClass("in")
+    }
+  })
+
   $('div.inputs-block-content').each(function(){
     var that = this;
     is_edited = $(that).find('div.form-group').hasClass("edited");

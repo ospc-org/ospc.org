@@ -175,5 +175,3 @@ class BTaxExemptionForm(ModelForm):
                     attrs['disabled'] = True
 
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
-
-
