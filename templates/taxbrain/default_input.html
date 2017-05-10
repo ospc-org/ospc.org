@@ -1,14 +1,6 @@
 {% load strings %}
 {% load flatblocks %}
 
-{% block provide_if_no_continue %}
-  {% if not is_first %}
-  <div class="inputs-block-control">
-    <a href="#{{ title|make_id }}" class="btn btn-okay">Looks okay</a>
-  </div>
-  {% endif %}
-{% endblock %}
-
 <fieldset id="{{ title|make_id }}" class="inputs-block">
   <div class="inputs-block-content">
     <div class="inputs-block-header">
