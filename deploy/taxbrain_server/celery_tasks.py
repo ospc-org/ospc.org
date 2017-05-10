@@ -23,7 +23,7 @@ EXPECTED_KEYS = ('policy', 'consumption', 'behavior',
                 'gdp_elasticity',)
 TEST_FAIL = False
 MOCK_CELERY = bool(int(os.environ.get('MOCK_CELERY', 0)))
-REDISGREEN_URL = os.environ.get('REDISGREEN_URL')
+REDISGREEN_URL = os.environ.get('REDISGREEN_URL', "redis://localhost:6379")
 if not REDISGREEN_URL and not MOCK_CELERY:
     raise ValueError('Expected environment variable for redis: REDISGREEN_URL')
 celery_app = Celery('tasks2', broker=REDISGREEN_URL, backend=REDISGREEN_URL)
