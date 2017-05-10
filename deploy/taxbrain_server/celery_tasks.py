@@ -2,6 +2,8 @@ from __future__ import print_function
 from argparse import Namespace
 import json
 import os
+import sys
+import tempfile
 import time
 
 from celery import Celery, states
@@ -15,17 +17,15 @@ import taxcalc
 import ogusa
 import run_ogusa
 from taxcalc import Policy, Calculator
-import tempfile
-import os
+
 
 EXPECTED_KEYS = ('policy', 'consumption', 'behavior',
                 'growdiff_baseline', 'growdiff_response',
                 'gdp_elasticity',)
 TEST_FAIL = False
-MOCK_CELERY = bool(int(os.environ.get('MOCK_CELERY', 0)))
-REDISGREEN_URL = os.environ.get('REDISGREEN_URL', "redis://localhost:6379")
-if not REDISGREEN_URL and not MOCK_CELERY:
-    raise ValueError('Expected environment variable for redis: REDISGREEN_URL')
+
+from taxbrain_server.utils import set_env
+globals().update(set_env())
 celery_app = Celery('tasks2', broker=REDISGREEN_URL, backend=REDISGREEN_URL)
 if MOCK_CELERY:
     CELERY_ALWAYS_EAGER = True
@@ -242,3 +242,26 @@ def example_async():
     results['ogusa_version'] = ogusa_version
     json_res = json.dumps(results)
     return json_res
+
+
+def main():
+    import subprocess as sp
+    pfx = sys.prefix
+    args = [os.path.join(pfx, 'bin', 'celery'),
+            '-A',
+            'taxbrain_server.celery_tasks',
+            'worker',
+            '--concurrency=1',
+            '-P',
+            'eventlet',
+            '-l',
+            'info']
+    proc = sp.Popen(args,
+                    env=os.environ,
+                    stdout=sp.PIPE,
+                    stderr=sp.STDOUT)
+    while proc.poll() is None:
+        line = proc.stdout.readline().decode()
+        print(line, end='')
+    print(proc.stdout.read().decode())
+    return proc.poll()

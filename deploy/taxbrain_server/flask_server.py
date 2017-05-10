@@ -19,11 +19,14 @@ import requests
 import redis
 from retrying import retry
 
-from celery_tasks import (celery_app, dropq_task_async, dropq_task_small_async,
-                          ogusa_async, elasticity_gdp_task_async, btax_async,
-                          example_async, MOCK_CELERY)
+from taxbrain_server.utils import set_env
+globals().update(set_env())
+from taxbrain_server.celery_tasks import (celery_app, dropq_task_async,
+                                          dropq_task_small_async,
+                                          ogusa_async, elasticity_gdp_task_async,
+                                          btax_async, example_async, MOCK_CELERY)
 
-import os
+
 
 app = Flask('sampleapp')
 
@@ -379,8 +382,10 @@ def app_tracking_context(args=None):
         checker_thread.daemon = True
         checker_thread.start()
         if not MOCK_CELERY:
+            print('Run forever')
             yield app.run(host='0.0.0.0', port=args.port, debug=True, use_reloader=False)
         else:
+            print('Mock app')
             yield app
     except Exception as e:
         EXIT_EVENT.set()

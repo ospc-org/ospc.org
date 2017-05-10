@@ -16,7 +16,7 @@ install-into-environment:
     - name: |
         source activate aei_dropq &&
         conda install --channel ospc pytest mock taxcalc btax ogusa pandas xlrd bokeh flask requests greenlet --yes &&
-        pip install celery retrying eventlet redis supervisor plotly requests-mock requests
+        pip install -r /home/ubuntu/deploy/requirements.txt
     - user: ubuntu
     - cwd: /home/ubuntu
     - env:
