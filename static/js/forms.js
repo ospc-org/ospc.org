@@ -9,12 +9,11 @@ $(document).ready(function(){
     // The form should be setting the default value to "checked"
     // or "unchecked", instead of using a stringy placeholder, but I decided to
     // leave the form as-is to avoid dealing with the spaghetti form code.
-    // if (input.attr("type") == "checkbox"){
-    //   value = input.prop("checked") ? "1.0" : "0.0"
-    // } else {
-    //   value = input.val()
-    // }
-    value = input.val();
+    if (input.attr("type") == "checkbox"){
+      value = input.prop("checked") ? "1.0" : "0.0"
+    } else {
+      value = input.val()
+    }
     value_default = input.prop('placeholder');
     value_changed = (value != '') && (value != value_default);
     group = input.closest('.form-group')
