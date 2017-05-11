@@ -20,7 +20,7 @@ install_reqs(){
         conda remove $repo &> /dev/null;
     done
     conda install -c ospc taxcalc ogusa btax || return 1;
-    pip uninstall -y taxbrain_server || return 1;
+    pip uninstall -y taxbrain_server &> /dev/null;
     python setup.py develop || return 1;
     return 0;
 }
