@@ -15,6 +15,5 @@ def set_env():
     ENV = {}
     for k, v in ENV_DEFAULTS.items():
         ENV[k] = os.environ.get(k, v)
-        os.environ[k] = str(ENV[k]) if not isinstance(v, bool) else str(int(v))
     globals().update(ENV)
     return ENV
