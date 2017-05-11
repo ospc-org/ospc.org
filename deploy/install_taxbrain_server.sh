@@ -1,3 +1,4 @@
+#!/bin/bash
 install_env(){
     export has_env=1;
     conda env list | grep aei_dropq &> /dev/null || export has_env=0;
