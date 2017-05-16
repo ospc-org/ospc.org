@@ -1,17 +1,12 @@
 #!/bin/bash
+source deactivate
 install_env(){
     export has_env=1;
-    conda env list | grep aei_dropq &> /dev/null || export has_env=0;
-    if [ "$has_env" = "1" ];then
-        conda env update --file fab/dropq_environment.yml || return 1;
-    else
-        conda env create --file fab/dropq_environment.yml || return 1;
-    fi
-    return 0;
+    conda env remove --name aei_dropq &> /dev/null;
+    conda env create --file fab/dropq_environment.yml || return 1;
 }
 
 install_reqs(){
-    source deactivate
     install_env || return 1;
     source activate aei_dropq || return 1;
     pip install -r requirements.txt || return 1;
@@ -24,4 +19,4 @@ install_reqs(){
     python setup.py develop || return 1;
     return 0;
 }
-install_reqs
+install_reqs && source activate aei_dropq

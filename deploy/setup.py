@@ -35,7 +35,7 @@ config = {
          'console_scripts': [
              'taxbrain-flask-worker = taxbrain_server.flask_server:main',
              'taxbrain-celery-worker = taxbrain_server.celery_tasks:main',
-             'taxbrain-run-all = taxbrain_server.process_mgr:main',
+             'taxbrain-run-all = taxbrain_server.local_proc_mgr:main',
         ]
     },
     'install_requires': [],

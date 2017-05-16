@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals, division
 from argparse import Namespace
 import json
 import os

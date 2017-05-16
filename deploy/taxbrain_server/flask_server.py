@@ -1,4 +1,4 @@
-from __future__ import division, unicode_literals, print_function
+from __future__ import print_function, unicode_literals, division
 import argparse
 from contextlib import contextmanager
 import copy
