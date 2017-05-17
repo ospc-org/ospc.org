@@ -1,3 +1,21 @@
+$('.form-group > input.form-control').blur(function() {
+  input = $(this)
+  value = input.val()
+  value_default = input.prop('placeholder');
+  value_changed = (value != '') && (value != value_default);
+  group = input.closest('.form-group')
+
+  //console.log('bluring ' + input  + ' with value ' + value + ' with default ' +
+  //  value_default + ' changed ' + value_changed )
+
+  if (value_changed) {
+    group.addClass('edited');
+  } else {
+    input.val(''); // show placeholder instead of value entered that = default
+    group.removeClass('edited');
+  }
+});
+
 $(document).ready(function(){
   $('.form-group > input.form-control').each(function() {
     input = $(this)
