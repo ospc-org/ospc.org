@@ -26,7 +26,8 @@ OGUSA_WORKER_IDX = 0
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 
-OGUSA_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.OGUSA_ROW_NAMES
+OGUSA_RESULTS_TOTAL_ROW_KEYS  = ['GDP', 'Consumption', 'Investment', 'Hours Worked',
+    'Wages', 'Interest Rates', 'Total Taxes']
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
 ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
