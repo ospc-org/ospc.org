@@ -57,7 +57,7 @@ def copy_deploy_repo(sudo_func, put_func, run_func):
         run_func('rm -rf {}'.format(REMOTE_DEPLOY))
         run_func('mkdir {}'.format(REMOTE_DEPLOY))
         put_func(deploy_zip, os.path.join(REMOTE_DEPLOY, 'deploy.zip'))
-        run_func('cd {} && unzip deploy.zip'.format(REMOTE_DEPLOY)) # TODO && rm deploy.zip?
+        run_func('cd {} && unzip deploy.zip && mv ./deploy/* ./ && rm -r ./deploy'.format(REMOTE_DEPLOY)) # TODO && rm deploy.zip?
         remote_reset_server = os.path.join(os.path.dirname(REMOTE_DEPLOY), 'reset_server.sh')
         run_func('cd {} && cp reset_server.sh {}'.format(os.path.join(REMOTE_DEPLOY, 'fab'), remote_reset_server))
     finally:
