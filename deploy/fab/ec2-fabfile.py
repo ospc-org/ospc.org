@@ -76,11 +76,7 @@ if 'xxx' == os.environ.get('SERVER_FILE_PATH', 'xxx').lower():
     quit()
 
 else:
-    PUF_FILE_PATH = os.path.abspath(os.path.expanduser(os.environ.get('PUF_FILE_PATH')))
     SERVER_FILE_PATH = os.path.abspath(os.path.expanduser(os.environ.get('SERVER_FILE_PATH')))
-    if not os.path.exists(PUF_FILE_PATH):
-        print("{} does not exist".format(PUF_FILE_PATH))
-        quit()
 
 ec2 = boto.ec2.connect_to_region('us-east-1', #N. Virginia
         aws_access_key_id = os.environ.get('AWS_ID'),
