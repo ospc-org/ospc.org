@@ -5,7 +5,7 @@ export DEP=/home/ubuntu/deploy
 source /home/ubuntu/miniconda2/bin/activate aei_dropq
 conda config --set always_yes true
 conda clean --all
-conda install pandas=0.18.0
+conda install pandas=0.20.1
 echo $rs get taxpuf package
 cd $DEP
 export TAXPUF_CHANNEL="https://conda.anaconda.org/t/$(cat /home/ubuntu/.ospc_anaconda_token)/opensourcepolicycenter"
@@ -36,11 +36,19 @@ echo $rs Install taxcalc
 cd $DEP/.. && rm -rf Tax-Calculator B-Tax OG-USA
 git clone http://github.com/open-source-economics/Tax-Calculator
 cd Tax-Calculator && git fetch --all && git fetch origin --tags && git checkout $TAXCALC_VERSION
+if [ "$TAXCALC_INSTALL_LABEL" = "" ];then
+    export TAXCALC_INSTALL_LABEL=" -c ospc ";
+fi
+if [ "$BTAX_INSTALL_LABEL" = "" ];then
+    export BTAX_INSTALL_LABEL=" -c ospc ";
+fi
+if [ "$OGUSA_INSTALL_LABEL" = "" ];then
+    export OGUSA_INSTALL_LABEL=" -c ospc ";
+fi
 if [ "$TAXCALC_INSTALL_METHOD" = "git" ];then
-
     python setup.py install
 else
-    conda install -c ospc taxcalc=$TAXCALC_VERSION
+    conda install $TAXCALC_INSTALL_LABEL taxcalc=$TAXCALC_VERSION
     conda list | grep 'taxcalc' | awk -F' ' '{print $2}' | xargs -n 1 git checkout
 fi
 echo $rs Install OG-USA
@@ -49,7 +57,7 @@ if [ "$OGUSA_INSTALL_METHOD" = "git" ];then
     git clone http://github.com/open-source-economics/OG-USA
     cd OG-USA && git fetch --all && git fetch origin --tags && git checkout $OGUSA_VERSION && python setup.py install
 else
-    conda install -c ospc ogusa=$OGUSA_VERSION --no-deps
+    conda install $OGUSA_INSTALL_LABEL ogusa=$OGUSA_VERSION --no-deps
 fi
 echo $rs Install B-Tax
 if [ "$BTAX_INSTALL_METHOD" = "git" ];then
@@ -58,7 +66,7 @@ if [ "$BTAX_INSTALL_METHOD" = "git" ];then
     export BTAX_CUR_DIR=`pwd`/btax
     cd B-Tax && git fetch --all && git fetch origin --tags && git checkout $BTAX_VERSION && python setup.py install
 else
-    conda install -c ospc btax=$BTAX_VERSION --no-deps
+    conda install $BTAX_INSTALL_LABEL btax=$BTAX_VERSION --no-deps
 fi
 
 # TODO LATER

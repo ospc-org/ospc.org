@@ -2,7 +2,7 @@ create-environment:
   cmd.run:
     - name: |
         conda env remove --name aei_dropq --yes ;
-        conda create --name aei_dropq python=2.7 --yes
+        conda create --name aei_dropq python=2.7 --yes --file /home/ubuntu/deploy/fab/dropq_environment.yml
     - user: ubuntu
     - cwd: /home/ubuntu
     - env:
@@ -15,7 +15,7 @@ install-into-environment:
   cmd.run:
     - name: |
         source activate aei_dropq &&
-        conda install --channel ospc pytest mock taxcalc btax ogusa pandas xlrd bokeh flask requests greenlet --yes &&
+        conda install --channel ospc pytest mock pandas xlrd bokeh flask requests greenlet --yes &&
         pip install -r /home/ubuntu/deploy/requirements.txt
     - user: ubuntu
     - cwd: /home/ubuntu

@@ -5,12 +5,13 @@ import subprocess as sp
 import tempfile
 
 d = os.path.dirname
-DEPLOY_REPO = d(d(os.path.abspath(__file__)))
+DEPLOY_LOCAL_DIR = d(d(os.path.abspath(__file__)))
+WEBAPP_REPO = d(DEPLOY_LOCAL_DIR)
 REMOTE_DEPLOY = '/home/ubuntu/deploy'
 
 def check_unmodified():
     args = 'git ls-files -m'.split()
-    proc = sp.Popen(args, stdout=sp.PIPE, stderr=sp.PIPE, cwd=DEPLOY_REPO, env=os.environ)
+    proc = sp.Popen(args, stdout=sp.PIPE, stderr=sp.PIPE, cwd=WEBAPP_REPO, env=os.environ)
     if proc.wait() != 0:
         raise ValueError("Failed subproc {} - {} {}".format(args, proc.stdout.read(), proc.stderr.read()))
     lines = proc.stdout.read().splitlines()
@@ -27,13 +28,15 @@ def copy_deploy_repo(sudo_func, put_func, run_func):
     tmp = os.path.join(tempfile.mkdtemp(), 'deploy')
     try:
         args = 'git ls-files'.split()
-        proc = sp.Popen(args, stdout=sp.PIPE, stderr=sp.PIPE, cwd=DEPLOY_REPO, env=os.environ)
+        proc = sp.Popen(args, stdout=sp.PIPE, stderr=sp.PIPE, cwd=WEBAPP_REPO, env=os.environ)
         if proc.wait() != 0:
             raise ValueError("Failed subproc {} - {} {}".format(args, proc.stdout.read(), proc.stderr.read()))
         lines = proc.stdout.read().splitlines()
         for line in lines:
             fname_rel = line.strip()
-            src = os.path.join(DEPLOY_REPO, fname_rel)
+            if not fname_rel.startswith('deploy'):
+                continue
+            src = os.path.join(WEBAPP_REPO, fname_rel)
             dst = os.path.join(tmp, fname_rel)
             dirr = os.path.dirname(dst)
             if not os.path.exists(dirr):

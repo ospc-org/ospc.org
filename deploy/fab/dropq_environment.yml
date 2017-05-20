@@ -1,7 +1,7 @@
 name: aei_dropq
 dependencies:
-- python=2.7.9
-- pandas>=0.18
+- python=2.7
+- pandas>=0.20.1
 - flask
 - greenlet
 - bokeh
@@ -14,7 +14,7 @@ dependencies:
   - retrying
   - plotly
   - redis
+
 channels:
   - ospc
-  - amfarrell
   - defaults

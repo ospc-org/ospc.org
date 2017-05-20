@@ -29,6 +29,12 @@ def cli():
     parser.add_argument('btax_install_method', choices=('git', 'conda'), help="Install method - choices: %(choices)s")
     parser.add_argument('ogusa_version', help="OG-USA git tag or conda version")
     parser.add_argument('ogusa_install_method', choices=('git', 'conda'), help="Install method - choices: %(choices)s")
+    parser.add_argument('--taxcalc_install_label', default=' -c ospc ',
+                        help="Conda label for ospc's taxcalc: Default- %(default)s")
+    parser.add_argument('--ogusa_install_label', default=' -c ospc ',
+                        help="Conda label for ospc's ogusa: Default- %(default)s")
+    parser.add_argument('--btax_install_label', default=' -c ospc ',
+                        help="Conda label for ospc's btax: Default- %(default)s")
     parser.add_argument('--user', default='ubuntu', help='Login user, typically (default): %(default)s')
     parser.add_argument('--allow-uncommited',
                         action='store_true',
@@ -67,7 +73,7 @@ def main():
     args = cli()
     env_str = []
     for k in dir(args):
-        if 'install_method' in k or 'version' in k:
+        if 'install_method' in k or 'version' in k or 'install_label' in k:
             os.environ[k.upper()] = getattr(args, k)
             env_str.append('{}={}'.format(k.upper(), getattr(args, k)))
     fname = next_log_file(args)
