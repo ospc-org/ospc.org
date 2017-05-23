@@ -35,9 +35,6 @@ class DropqCompute(object):
 
     num_budget_years = NUM_BUDGET_YEARS
 
-    def __init__(self):
-        pass
-
     # Override if needed, e.g. btax
     def package_up_vars(self, *args, **kwargs):
         return _package_up_vars(*args, **kwargs)

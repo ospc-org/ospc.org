@@ -22,7 +22,7 @@ def read_json_policy_reform_text(text_string):
             raise ValueError(msg.format(rkey))
     # convert the policy dictionary in raw_dict
     rpol_dict = convert_parameter_dict(raw_dict['policy'])
-    return rpol_dict
+    return {"user_mods": str(rpol_dict), "year": "0"}
 
 
 def convert_parameter_dict(param_key_dict):
@@ -68,14 +68,12 @@ def convert_parameter_dict(param_key_dict):
             year_key_dict[year][param] = val
     return year_key_dict
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-with open(os.path.join(dir_path, "tests", "reform.json")) as f:
-    file_data = f.read()
-    data1 = Calculator.read_json_policy_reform_text(file_data)
-    data2 = read_json_policy_reform_text(file_data)
-
-
-def test_potato():
-    print(data1)
-    print(data2)
-    assert 1
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# with open(os.path.join(dir_path, "tests", "reform.json")) as f:
+#     file_data = f.read()
+#     data = read_json_policy_reform_text(file_data)
+#
+#
+# def test_potato():
+#     print(data)
+#     assert 1
