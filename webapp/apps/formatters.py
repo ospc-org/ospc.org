@@ -22,7 +22,7 @@ def read_json_policy_reform_text(text_string):
             raise ValueError(msg.format(rkey))
     # convert the policy dictionary in raw_dict
     rpol_dict = convert_parameter_dict(raw_dict['policy'])
-    return {"user_mods": str(rpol_dict), "year": "0"}
+    return rpol_dict
 
 
 def convert_parameter_dict(param_key_dict):

@@ -224,15 +224,15 @@ def file_input(request):
         reform_dict = {}
         if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
-            reform_dict = read_json_policy_reform_text(inmemfile_reform.read().strip())
-            reform_dict['taxcalc_reform'] = reform_text
-#             if 'assumpfile' in request.FILES:
-#                 inmemfile_assumption = request.FILES['assumpfile']
-#                 assumption_text = inmemfile_assumption.read().strip()
-#                 reform_dict['taxcalc_assumption'] = assumption_text
-#             else:
-#                 reform_dict['taxcalc_assumption'] = ""
-# 
+            inmemfile_strip = inmemfile_reform.read().strip()
+            reform_dict = read_json_policy_reform_text(inmemfile_strip)
+            # if 'assumpfile' in request.FILES:
+            #     inmemfile_assumption = request.FILES['assumpfile']
+            #     assumption_text = inmemfile_assumption.read().strip()
+            #     reform_dict['taxcalc_assumption'] = assumption_text
+            # else:
+            #     reform_dict['taxcalc_assumption'] = ""
+            # 
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
@@ -243,14 +243,10 @@ def file_input(request):
         else:
             try:
                 log_ip(request)
-                mods = { 'reform': reform_dict, 'assumptions': ""}
-                #Submit calculation
                 if do_full_calc:
-                    submitted_ids, max_q_length -
-                    dropq_compute.submit_dropq_calculation(mods, int(start_year), is_file=True)
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(reform_dict, int(start_year), is_file=True)
                 else:
-                    submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(mods, int(start_year)
-                            is_file=True)
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(reform_dict, int(start_year), is_file=True)
 
                 if not submitted_ids:
                     raise JobFailError("couldn't submit ids")

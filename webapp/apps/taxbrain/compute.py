@@ -62,8 +62,8 @@ class DropqCompute(object):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
-                                       additional_data=additional_data)
-                                       is_file=is_file)
+                                       additional_data=additional_data,
+                                       pack_up_user_mods=not is_file)
 
     def submit_json_dropq_small_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
@@ -76,7 +76,7 @@ class DropqCompute(object):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
-                                       increment_counter=False)
+                                       increment_counter=False,
                                        is_file=is_file)
 
     def submit_elastic_calculation(self, mods, first_budget_year):
@@ -99,20 +99,14 @@ class DropqCompute(object):
                            use_wnc_offset=True,
                            pack_up_user_mods=True,
                            additional_data=None):
-        print "mods is ", mods
         data = {}
         if pack_up_user_mods:
             user_mods = self.package_up_vars(mods, first_budget_year)
             if not bool(user_mods):
                 return False
-            print "user_mods is ", user_mods
-            print "submit work"
             user_mods = {first_budget_year:user_mods}
         else:
             user_mods = mods
-            data['taxio_format'] = True
-            data['first_budget_year'] = first_budget_year
-            print "JSON user_mods is ", user_mods
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
