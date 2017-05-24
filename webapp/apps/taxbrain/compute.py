@@ -58,11 +58,12 @@ class DropqCompute(object):
                                        pack_up_user_mods=False,
                                        additional_data=additional_data)
 
-    def submit_dropq_calculation(self, mods, first_budget_year, additional_data=None):
+    def submit_dropq_calculation(self, mods, first_budget_year, additional_data=None, is_file=False):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
                                        additional_data=additional_data)
+                                       is_file=is_file)
 
     def submit_json_dropq_small_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
@@ -71,11 +72,12 @@ class DropqCompute(object):
                                        increment_counter=False,
                                        pack_up_user_mods=False)
 
-    def submit_dropq_small_calculation(self, mods, first_budget_year):
+    def submit_dropq_small_calculation(self, mods, first_budget_year, is_file=False):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
                                        increment_counter=False)
+                                       is_file=is_file)
 
     def submit_elastic_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}/elastic_gdp_start_job"
