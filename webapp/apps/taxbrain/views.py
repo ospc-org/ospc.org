@@ -222,17 +222,16 @@ def file_input(request):
         do_full_calc = False if fields.get('quick_calc') else True
         error_messages = {}
         reform_dict = {}
+        assumption_dict = {}
         if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
             inmemfile_strip = inmemfile_reform.read().strip()
             reform_dict = read_json_policy_reform_text(inmemfile_strip)
-            # if 'assumpfile' in request.FILES:
-            #     inmemfile_assumption = request.FILES['assumpfile']
-            #     assumption_text = inmemfile_assumption.read().strip()
-            #     reform_dict['taxcalc_assumption'] = assumption_text
-            # else:
-            #     reform_dict['taxcalc_assumption'] = ""
-            # 
+            if 'assumpfile' in request.FILES:
+                inmemfile_assumption = request.FILES['assumpfile']
+                assumption_text = inmemfile_assumption.read().strip()
+                assumption_dict = json.loads(assumption_text)
+
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
@@ -244,9 +243,18 @@ def file_input(request):
             try:
                 log_ip(request)
                 if do_full_calc:
-                    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(reform_dict, int(start_year), is_file=True)
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                        reform_dict,
+                        int(start_year),
+                        is_file=True,
+                        additional_data=assumption_dict
+                    )
                 else:
-                    submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(reform_dict, int(start_year), is_file=True)
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
+                        reform_dict,
+                        int(start_year),
+                        is_file=True
+                    )
 
                 if not submitted_ids:
                     raise JobFailError("couldn't submit ids")

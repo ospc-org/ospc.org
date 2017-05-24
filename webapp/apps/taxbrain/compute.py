@@ -58,7 +58,7 @@ class DropqCompute(object):
                                        pack_up_user_mods=False,
                                        additional_data=additional_data)
 
-    def submit_dropq_calculation(self, mods, first_budget_year, additional_data=None, is_file=False):
+    def submit_dropq_calculation(self, mods, first_budget_year, additional_data={}, is_file=False):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
@@ -77,7 +77,7 @@ class DropqCompute(object):
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
                                        increment_counter=False,
-                                       is_file=is_file)
+                                       pack_up_user_mods=not is_file)
 
     def submit_elastic_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}/elastic_gdp_start_job"
@@ -98,7 +98,7 @@ class DropqCompute(object):
                            increment_counter=True,
                            use_wnc_offset=True,
                            pack_up_user_mods=True,
-                           additional_data=None):
+                           additional_data={}):
         data = {}
         if pack_up_user_mods:
             user_mods = self.package_up_vars(mods, first_budget_year)
@@ -124,7 +124,7 @@ class DropqCompute(object):
         num_hosts = len(hostnames)
         data['user_mods'] = json.dumps(user_mods)
         if additional_data:
-            data[additional_data.keys()[0]] = json.dumps(additional_data.values()[0])
+            data["behavior_params"] = json.dumps(additional_data)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
