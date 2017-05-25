@@ -261,8 +261,8 @@ def file_input(request):
                 else:
                     job_ids = denormalize(submitted_ids)
                     json_reform = JSONReformTaxCalculator()
-                    json_reform.reform_text = reform_dict['taxcalc_reform']
-                    json_reform.assumption_text = reform_dict['taxcalc_assumption']
+                    json_reform.reform_text = json.dumps(reform_dict)
+                    json_reform.assumption_text = json.dumps(assumption_dict) if assumption_dict else ""
                     json_reform.save()
 
                     model = TaxSaveInputs()
