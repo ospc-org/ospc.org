@@ -27003,7 +27003,7 @@ DataTable.ext.buttons.csvFlash = $.extend( {}, flashButton, {
 		var data = _exportData( dt, config );
 
 		flash.setAction( 'csv' );
-		flash.setFileName( _filename( config ) );
+		flash.setFileName( 'test_name' );
 		_setText( flash, data.str );
 	},
 
@@ -27674,6 +27674,9 @@ DataTable.ext.buttons.csvHtml5 = {
 		var newLine = _newLine( config );
 		var output = _exportData( dt, config ).str;
 		var charset = config.charset;
+        var url = window.location.href;
+        var myRegexp = /(\d+)/g;
+        var run_number = myRegexp.exec(url);
 
 		if ( charset !== false ) {
 			if ( ! charset ) {
@@ -27690,11 +27693,11 @@ DataTable.ext.buttons.csvHtml5 = {
 
 		_saveAs(
 			new Blob( [output], {type: 'text/csv'+charset} ),
-			_filename( config )
+			run_number[1] + '_liabilities.csv'
 		);
 	},
 
-	filename: '*',
+	filename: 'test_name_2',
 
 	extension: '.csv',
 
