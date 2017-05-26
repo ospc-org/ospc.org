@@ -1,4 +1,4 @@
-// Title: 2016 Trump Campaign Tax Plan
+reform_text = """// Title: 2016 Trump Campaign Tax Plan
 // Reform_File_Author: Matt Jensen
 // Reform_Reference: https://www.donaldjtrump.com/policies/tax-plan
 // Reform_Description:
@@ -108,4 +108,4 @@
 // -  Tax carried interest as ordinary business income
 // -  Repeal pass-through business tax expenditures
 // -  Corporate tax provisions
-// -  Estate tax provisions
+// -  Estate tax provisions"""

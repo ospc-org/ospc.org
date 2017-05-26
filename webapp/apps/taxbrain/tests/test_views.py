@@ -16,6 +16,8 @@ import taxcalc
 from taxcalc import Policy
 from .utils import *
 
+from ...test_assets import *
+
 START_YEAR = 2016
 
 
@@ -481,18 +483,16 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", "file_content")
-        data = {u'docfile': tc_file,
+        data = {u'docfile': reform_text,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-
 
 
     def test_taxbrain_file_post_reform_and_assumptions(self):
@@ -500,16 +500,14 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", "file_content")
-        tc_file2 = SimpleUploadedFile("test_assumptions.json", "file_content")
-        data = {u'docfile': tc_file,
-                u'assumpfile': tc_file2,
+        data = {u'docfile': reform_text,
+                u'assumpfile': assumptions_text,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))

@@ -9,7 +9,7 @@ def read_json_policy_reform_text(text_string):
     try:
         raw_dict = json.loads(json_str)
     except ValueError as valerr:
-        raise ValueError("oops")
+        raise ValueError("Failed to parse JSON")
     # check key contents of dictionary
     actual_keys = raw_dict.keys()
     for rkey in Calculator.REQUIRED_REFORM_KEYS:
