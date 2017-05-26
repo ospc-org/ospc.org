@@ -97,8 +97,7 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file
-        fname = "../../taxbrain/tests/test_reform.json"
-        micro1 = do_micro_sim_from_file(self.client, fname)
+        micro1 = do_micro_sim_from_file(self.client)
 
         # Do the partial equilibrium simulation based on the microsim
         be_reform = {u'BE_sub': [u'0.25']}

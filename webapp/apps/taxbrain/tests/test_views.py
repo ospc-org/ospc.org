@@ -483,13 +483,14 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        data = {u'docfile': reform_text,
+        tc_file = SimpleUploadedFile("test_reform.json", reform_text)
+        data = {u'docfile': tc_file,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
@@ -500,14 +501,16 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        data = {u'docfile': reform_text,
-                u'assumpfile': assumptions_text,
+        tc_file = SimpleUploadedFile("test_reform.json", reform_text)
+        tc_file2 = SimpleUploadedFile("test_assumptions.json", assumptions_text)
+        data = {u'docfile': tc_file,
+                u'assumpfile': tc_file2,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
