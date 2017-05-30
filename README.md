@@ -90,29 +90,13 @@ git clone git@github.com:OpenSourcePolicyCenter/webapp.git
 
 ## Create a conda environment for your local development
 
-```
-conda create -n webapp pip python=2.7
-source activate webapp
-```
+Follow [these instructions in README_local_development.md](https://github.com/OpenSourcePolicyCenter/webapp-public/blob/master/README_local_development.md) for installing all the Python packages you'll need and installing the right versions of the open-source-economics packages.
 
-Install the required packages listed in the conda-requirements.txt file. taxcalc
-package is kept in a conda channel:
-
+Then make sure you have done:
 ```
-conda install --file conda-requirements.txt -c ospc
+source activate aei_dropq
 ```
-
-Then use pip to install the remaining packages
-
-```
-pip install -r requirements.txt
-```
-
-then:
-
-```
-pip install -r requirements_dev.txt
-```
+before continuing the remaining instructions.
 
 ## Using foreman
 Since Django can be a more involved process using foreman might be a better tool for some situations.  If no work will be done on the back end, then foreman might be the tool of choice (although once Django is setup all you will have to do is run the server locally to make use of it.)
@@ -129,19 +113,19 @@ Once the server has started foreman will use port 5000.
 
 ## Building Static Files
 To setup your environment for building static assets:
-```bash 
+```bash
 npm install
 npm install -g bower
 bower install
 ```
 
 To compile LESS assets:
-```bash 
+```bash
 gulp less
 ```
 
 Collect static files and make sure changes get committed back:
-```bash 
+```bash
 python manage.py collectstatic
 ```
 
@@ -170,7 +154,7 @@ DATABASES = {
 ### Using SQLite as an alternative to Postgres
 Your environment settings file should include a variable named `DATABASE_URL`. If you would rather use SQLite than Postgres for your development, simply comment out or delete this line. The application will default to using SQLite as your database.
 
-# PLEASE DO NOT COMMIT YOUR LOCAL CHANGES TO THE DATABASE CONFIG IN THE SETTINGS FILE.  GIT STASH THEM! 
+# PLEASE DO NOT COMMIT YOUR LOCAL CHANGES TO THE DATABASE CONFIG IN THE SETTINGS FILE.  GIT STASH THEM!
 ## ALTERNATIVELY, STOP TRACKING LOCAL CHANGES TO THIS FILE WITH:
 ## `git update-index --assume-unchanged webapp/settings.py`
 
@@ -187,4 +171,30 @@ Django will then run the migrations and all the tables will be created in the db
 ./manage.py runserver
 ```
 
-Now you have a live project being run locally!
+
+Now you have a live project being run locally at least for the front end Django app.  You'll be able to see the pages and forms of ospc.org on http://localhost:8000 but you won't be able to submit and run jobs without error unless you follow the instructions below for starting flask, celery and redis.
+
+### Fourth, run celery:
+In another separate terminal tab or window:
+```
+taxbrain-celery-worker
+```
+### Fifth, run flask:
+In another separate terminal tab or window:
+```
+taxbrain-flask-worker
+```
+### Sixth, run redis
+In another separate terminal tab or window:
+```
+redis-server
+```
+### Seventh, if you edit your code...
+
+If you edit your code or reinstall any part of the code, including even javascript assets, then you must to Ctrl+C to kill and restart each of the following processes:
+ * The `runserver` process
+ * The `taxbrain-celery-worker` process
+ * The `taxbrain-flask-worker` process
+
+
+
