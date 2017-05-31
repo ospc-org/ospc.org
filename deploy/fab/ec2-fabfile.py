@@ -30,10 +30,12 @@ from fabric.contrib.files import (
 
 import logging
 from copy_deploy_repo import copy_deploy_repo, check_unmodified
+from redeploy import cli as deploy_versions_cli, main as reset_server_main
 
-check_unmodified()
+DEPLOYMENT_VERSIONS_ARGS = deploy_versions_cli()
 if not 'OSPC_ANACONDA_TOKEN' in os.environ:
     raise ValueError('OSPC_ANACONDA_TOKEN must be defined in env vars')
+check_unmodified()
 #based on https://github.com/ContinuumIO/wakari-deploy/blob/master/ami_creation/fabfile.py
 ssh_transport = logging.getLogger("ssh.transport")
 ssh_transport.disabled = True
@@ -259,8 +261,6 @@ def run_salt():
     run("ln -s ~/deploy/fab/salt ~/salt")
     sudo('sudo /usr/bin/salt-call state.highstate --retcode-passthrough --log-level=debug --config-dir="$HOME/deploy/fab/salt"')
 
-def reset_server():
-    run("source /home/ubuntu/reset_server.sh")
 
 def wait_for_login_prompt(instance, retry_count=20):
     import time
@@ -348,7 +348,7 @@ execute(install_ogusa_repo)
 execute(convenience_aliases)
 execute(write_ospc_anaconda_token)
 execute(run_salt)
-execute(reset_server)
+reset_server_main # formerly execute(reset_server)
 
 for instance in instances:
     ssh_command = 'ssh -i {key} ubuntu@{ip} "'.format(ip=instance.ip_address, key=key_filename)

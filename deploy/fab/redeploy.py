@@ -69,8 +69,8 @@ def run(pem, ip, fname, cmd):
     proc_mgr('ssh -i {} ubuntu@{} "{}"'.format(pem, ip, cmd), fname)
 
 
-def main():
-    args = cli()
+def main(args=None):
+    args = args or cli()
     env_str = []
     for k in dir(args):
         if 'install_method' in k or 'version' in k or 'install_label' in k:
