@@ -27672,6 +27672,7 @@ DataTable.ext.buttons.csvHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var newLine = _newLine( config );
+        var title = $('h1').text().substring(0, 8);
 		var output = _exportData( dt, config ).str;
 		var charset = config.charset;
         var url = window.location.href;
@@ -27693,11 +27694,11 @@ DataTable.ext.buttons.csvHtml5 = {
 
 		_saveAs(
 			new Blob( [output], {type: 'text/csv'+charset} ),
-			run_number[1] + '_liabilities.csv'
+			run_number[1] + '_' + title + '.csv'
 		);
 	},
 
-	filename: 'test_name_2',
+	filename: '*',
 
 	extension: '.csv',
 
@@ -27733,6 +27734,9 @@ DataTable.ext.buttons.excelHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var xml = '';
+        var url = window.location.href;
+        var myRegexp = /(\d+)/g;
+        var run_number = myRegexp.exec(url);
 		var data = dt.buttons.exportData( config.exportOptions );
 		var addRow = function ( row ) {
 			var cells = [];
@@ -27785,7 +27789,7 @@ DataTable.ext.buttons.excelHtml5 = {
 
 		_saveAs(
 			zip.generate( {type:"blob"} ),
-			_filename( config )
+			run_number[1] +'.csv'
 		);
 	},
 
@@ -27931,7 +27935,7 @@ DataTable.ext.buttons.pdfHtml5 = {
 
 	orientation: 'portrait',
 
-	pageSize: 'A4',
+	pageSize: 'letter',
 
 	header: true,
 
@@ -28085,7 +28089,7 @@ DataTable.ext.buttons.print = {
 		setTimeout( function () {
 			if ( config.autoPrint ) {
 				win.print(); // blocking - so close will not
-				win.close(); // execute until this is done
+				// win.close(); // execute until this is done
 			}
 		}, 250 );
 	},
