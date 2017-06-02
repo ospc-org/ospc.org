@@ -76,11 +76,11 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
     print('user_reform', user_reform, user_mods)
     reform_style = [True if x else False for x in user_reform]
     if beh_params:
-        # combine behavioral parameters with user_mods
-        beh_first_year = beh_params['first_year']
-        del beh_params['first_year']
-        beh_dict = {int(beh_first_year):beh_params}
-        user_reform['behavior'] = beh_dict
+        for x, y in beh_params.items():
+            for z in y.keys():
+                if z.isdigit():
+                    convert_int_key(y)
+        user_reform.update(beh_params)
     for key in EXPECTED_KEYS:
         if key not in user_reform:
             user_reform[key] = {}
