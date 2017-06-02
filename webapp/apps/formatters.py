@@ -25,6 +25,51 @@ def read_json_policy_reform_text(text_string):
     return rpol_dict
 
 
+def read_json_econ_assump_text(text_string):
+    # strip out //-comments without changing line numbers
+    json_str = re.sub('//.*', ' ', text_string)
+    # convert JSON text into a Python dictionary
+    try:
+        raw_dict = json.loads(json_str)
+    except ValueError as valerr:
+        msg = 'Economic assumption text below contains invalid JSON:\n'
+        msg += str(valerr) + '\n'
+        msg += 'Above location of the first error may be approximate.\n'
+        msg += 'The invalid JSON asssump text is between the lines:\n'
+        bline = 'XX----.----1----.----2----.----3----.----4'
+        bline += '----.----5----.----6----.----7'
+        msg += bline + '\n'
+        linenum = 0
+        for line in json_str.split('\n'):
+            linenum += 1
+            msg += '{:02d}{}'.format(linenum, line) + '\n'
+        msg += bline + '\n'
+        raise ValueError(msg)
+    # check key contents of dictionary
+    actual_keys = raw_dict.keys()
+    for rkey in Calculator.REQUIRED_ASSUMP_KEYS:
+        if rkey not in actual_keys:
+            msg = 'key "{}" is not in economic assumption file'
+            raise ValueError(msg.format(rkey))
+    for rkey in actual_keys:
+        if rkey in Calculator.REQUIRED_REFORM_KEYS:
+            msg = 'key "{}" should be in policy reform file'
+            raise ValueError(msg.format(rkey))
+    # convert the assumption dictionaries in raw_dict
+    key = 'consumption'
+    cons_dict = {key: convert_parameter_dict(raw_dict[key])}
+    key = 'behavior'
+    behv_dict = {key: convert_parameter_dict(raw_dict[key])}
+    cons_dict.update(behv_dict)
+    key = 'growdiff_baseline'
+    gdiff_base_dict = {key: convert_parameter_dict(raw_dict[key])}
+    cons_dict.update(gdiff_base_dict)
+    key = 'growdiff_response'
+    gdiff_resp_dict = {key: convert_parameter_dict(raw_dict[key])}
+    cons_dict.update(gdiff_resp_dict)
+    return cons_dict
+
+
 def convert_parameter_dict(param_key_dict):
     """
     Converts specified param_key_dict into a dictionary whose primary

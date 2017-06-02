@@ -238,6 +238,8 @@ def dynamic_behavioral(request, pk):
                 benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
+                import pdb; pdb.set_trace()
+                assert 0
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=additional_data)
 
             else:

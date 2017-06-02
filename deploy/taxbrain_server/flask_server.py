@@ -19,9 +19,9 @@ import requests
 import redis
 from retrying import retry
 
-from taxbrain_server.utils import set_env
+from utils import set_env
 globals().update(set_env())
-from taxbrain_server.celery_tasks import (celery_app, dropq_task_async,
+from celery_tasks import (celery_app, dropq_task_async,
                                           dropq_task_small_async,
                                           ogusa_async, elasticity_gdp_task_async,
                                           btax_async, example_async, MOCK_CELERY)

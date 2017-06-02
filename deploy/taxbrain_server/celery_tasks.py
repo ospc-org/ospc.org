@@ -24,7 +24,7 @@ EXPECTED_KEYS = ('policy', 'consumption', 'behavior',
                 'gdp_elasticity',)
 TEST_FAIL = False
 
-from taxbrain_server.utils import set_env
+from utils import set_env
 globals().update(set_env())
 celery_app = Celery('tasks2', broker=REDISGREEN_URL, backend=REDISGREEN_URL)
 if MOCK_CELERY:
@@ -52,32 +52,6 @@ def convert_int_key(user_mods):
     return user_mods
 
 
-def taxio_reform_formatter(user_mods):
-    reform_mods = user_mods['reform']
-    reform_tmp = tempfile.NamedTemporaryFile(delete=False)
-    reform_tmp.write(reform_mods)
-    reform_tmp.close()
-
-    assump_mods = user_mods['assumptions']
-    if assump_mods:
-        assump_tmp = tempfile.NamedTemporaryFile(delete=False)
-        assump_tmp.write(assump_mods)
-        assump_tmp.close()
-        assumptions = assump_tmp.name
-    else:
-        assumptions = None
-
-    user_reform = Calculator.read_json_param_files(reform_tmp.name, assumptions)
-    if not 'gdp_elasticity' in user_reform:
-        user_reform['gdp_elasticity'] = {}
-    os.remove(reform_tmp.name)
-    if assump_mods:
-        os.remove(assump_tmp.name)
-    policy = user_reform.get('policy') or {}
-    user_reform['policy'] = convert_int_key(policy)
-    return user_reform
-
-
 def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
     print("user mods: ", user_mods)
     # The reform style indicates what kind of reform we ran.
@@ -99,8 +73,6 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
             if key.startswith('_BE_'):
                 user_mods[first_year].pop(key)
         user_reform = {"policy": user_mods}
-    else:
-        user_reform = taxio_reform_formatter(user_mods)
     print('user_reform', user_reform, user_mods)
     reform_style = [True if x else False for x in user_reform]
     if beh_params:
@@ -118,7 +90,7 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
                                 if k not in ('taxrec_df',)})
     (mY_dec_i, mX_dec_i, df_dec_i, pdf_dec_i, cdf_dec_i, mY_bin_i, mX_bin_i,
      df_bin_i, pdf_bin_i, cdf_bin_i, fiscal_tot_i,
-     fiscal_tot_i_bl, fiscal_tot_i_ref) = taxcalc.dropq.run_nth_year_model(**kw)
+     fiscal_tot_i_bl, fiscal_tot_i_ref) = taxcalc.dropq.run_nth_year_tax_calc_model(**kw)
 
     results = {'mY_dec': mY_dec_i, 'mX_dec': mX_dec_i, 'df_dec': df_dec_i,
                'pdf_dec': pdf_dec_i, 'cdf_dec': cdf_dec_i, 'mY_bin': mY_bin_i,

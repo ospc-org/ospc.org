@@ -7,8 +7,10 @@ install_env(){
     return 0;
 }
 install_conda_reqs(){
+    echo ---------------------------------------Installing conda requirements;
+    channel=" -c ospc"
     for pkg in $(cat ../conda-requirements.txt);do
-        echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $pkg && conda install $pkg || return 1;
+        echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg || return 1;
     done
 }
 install_reqs(){
