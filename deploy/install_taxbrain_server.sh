@@ -10,8 +10,10 @@ install_conda_reqs(){
     echo ---------------------------------------Installing conda requirements;
     channel=" -c ospc"
     for pkg in $(cat ../conda-requirements.txt);do
-        echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg || return 1;
+        echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg -y || return 1;
     done
+    echo install $channel ogusa -y
+    conda install $channel ogusa -y
 }
 install_reqs(){
     install_conda_reqs || return 1;
@@ -26,8 +28,7 @@ install_reqs(){
     return 0;
 }
 msg(){
-    echo Last step: Install taxcalc ogusa and btax via conda or setup.py install;
-    echo See the Tax-Calculator README and README_local_development.md on installing those;
+    echo Local server installation complete!
     return 0;
 }
 install_env && source activate aei_dropq && install_reqs && msg || echo FAILED
