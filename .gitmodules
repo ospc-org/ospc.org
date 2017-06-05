@@ -1,0 +1,3 @@
+[submodule "Tax-Calculator"]
+	path = Tax-Calculator
+	url = https://github.com/open-source-economics/Tax-Calculator.git
