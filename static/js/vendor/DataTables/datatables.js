@@ -27740,10 +27740,16 @@ DataTable.ext.buttons.excelHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var xml = '';
+        var data = dt.buttons.exportData( config.exportOptions );
         var url = window.location.href;
         var myRegexp = /(\d+)/g;
         var run_number = myRegexp.exec(url);
-		var data = dt.buttons.exportData( config.exportOptions );
+        if (data.header[2][0] !== "T") {
+            var title = $('h1').text().split(" ", 3);
+        }
+        else {
+            var title = $('h1:last').text().split(" ", 3);
+        }
 		var addRow = function ( row ) {
 			var cells = [];
 
@@ -27795,7 +27801,7 @@ DataTable.ext.buttons.excelHtml5 = {
 
 		_saveAs(
 			zip.generate( {type:"blob"} ),
-			run_number[1] +'.csv'
+            run_number[0] + '_' + title[0] + '_' + title[1] + '_' + title[2] + '.xlsx'
 		);
 	},
 
