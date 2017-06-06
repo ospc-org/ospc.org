@@ -27680,7 +27680,7 @@ DataTable.ext.buttons.csvHtml5 = {
             var title = $('h1').text().split(" ", 3);
         }
         else {
-            var title = $('h1:last').text().substring(0, 8);
+            var title = $('h1:last').text().split(" ", 3);
         }
 		var charset = config.charset;
 
@@ -27699,7 +27699,7 @@ DataTable.ext.buttons.csvHtml5 = {
 
 		_saveAs(
 			new Blob( [output], {type: 'text/csv'+charset} ),
-			run_number[0] + '_' + title + '.csv'
+			run_number[0] + '_' + title[0] + '_' + title[1] + '_' + title[2] + '.csv'
 		);
 	},
 
