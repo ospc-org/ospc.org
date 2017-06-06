@@ -8,7 +8,9 @@ install:
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
-  - ./deploy/install_taxbrain_server.sh
+  - pushd deploy
+  - ./install_taxbrain_server.sh
+  - popd
   - source activate aei_dropq
 
 before_script:
