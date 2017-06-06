@@ -27672,7 +27672,7 @@ DataTable.ext.buttons.csvHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var newLine = _newLine( config );
-        var title = $('h1').text().substring(0, 8);
+        var title = $('h1:first').text().substring(0, 8);
 		var output = _exportData( dt, config ).str;
 		var charset = config.charset;
         var url = window.location.href;
