@@ -27672,12 +27672,17 @@ DataTable.ext.buttons.csvHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var newLine = _newLine( config );
-        var title = $('h1:first').text().substring(0, 8);
-		var output = _exportData( dt, config ).str;
-		var charset = config.charset;
+        var output = _exportData( dt, config ).str;
         var url = window.location.href;
         var myRegexp = /(\d+)/g;
         var run_number = myRegexp.exec(url);
+        if (output.substring(6,7) == 1) {
+            var title = $('h1').text().split(" ", 3);
+        }
+        else {
+            var title = $('h1:last').text().substring(0, 8);
+        }
+		var charset = config.charset;
 
 		if ( charset !== false ) {
 			if ( ! charset ) {
@@ -27694,7 +27699,7 @@ DataTable.ext.buttons.csvHtml5 = {
 
 		_saveAs(
 			new Blob( [output], {type: 'text/csv'+charset} ),
-			run_number[1] + '_' + title + '.csv'
+			run_number[0] + '_' + title + '.csv'
 		);
 	},
 
@@ -27716,6 +27721,7 @@ DataTable.ext.buttons.csvHtml5 = {
 
 	footer: false
 };
+
 
 //
 // Excel (xlsx) export
