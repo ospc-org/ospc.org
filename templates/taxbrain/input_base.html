@@ -91,12 +91,27 @@
   {% else %}
   <script src="{% static 'js/taxbrain.js' %}"></script>
   {% endif %}
+  <script src="{% static 'js/forms.js' %}"></script>
   <script type="text/javascript">
     $('.what-is a').click(function() {
       setTimeout(function() {
         $('.inputs-sidebar').data('bs.affix').options.offset = $('#affix-offset').height();
       }, 1000);
     });
+  </script>
+  <!-- Drip -->
+  <script type="text/javascript">
+    var _dcq = _dcq || [];
+    var _dcs = _dcs || {};
+    _dcs.account = '1515132';
+
+    (function() {
+      var dc = document.createElement('script');
+      dc.type = 'text/javascript'; dc.async = true;
+      dc.src = '//tag.getdrip.com/1515132.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(dc, s);
+    })();
   </script>
   {% block bottom_scripts %}
   {% endblock %}

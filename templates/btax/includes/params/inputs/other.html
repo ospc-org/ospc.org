@@ -7,20 +7,26 @@
 
 {% block content %}
 <div class="inputs-block-header">
-  <h1>Other</h1>
-  {% flatblock "ccc_other_blurb" %}
-  {% block section_warnings %}
-  {% endblock %}
+    <h1>Other</h1>
+    <button
+        class="btn btn-primary collapse-button"
+        type="button"
+        data-toggle="collapse"
+        data-target="#other-collapse"
+        aria-expanded="false"
+        aria-controls="other-collapse">
+        <span class="glyphicon glyphicon-plus" style="font-size:2em; margin-bottom:5px"></span>
+    </button>
+    {% flatblock "ccc_other_blurb" %}
+    {% block section_warnings %}
+    {% endblock %}
 </div>
-
-{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_hair %}
-
-{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_corpeq %}
-
-{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_proptx%}
-
-{% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_invest%}
-
+<div class="collapse" id="other-collapse">
+    {% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_hair %}
+    {% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_corpeq %}
+    {% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_proptx%}
+    {% include 'taxbrain/includes/params/inputs/param.html' with param=params.btax_other_invest%}
+</div>
 
 {% endblock %}
 
