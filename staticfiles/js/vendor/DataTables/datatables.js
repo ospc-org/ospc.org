@@ -27677,10 +27677,10 @@ DataTable.ext.buttons.csvHtml5 = {
         var myRegexp = /(\d+)/g;
         var run_number = myRegexp.exec(url);
         if (output.substring(6,7) == 1) {
-            var title = $('h1').text().split(" ", 3);
+            var title = '_liabilities_change';
         }
         else {
-            var title = $('h1:last').text().split(" ", 3);
+            var title = $('h1:last').text().split(" ", 3)[1];
         }
 		var charset = config.charset;
 
@@ -27699,7 +27699,7 @@ DataTable.ext.buttons.csvHtml5 = {
 
 		_saveAs(
 			new Blob( [output], {type: 'text/csv'+charset} ),
-			run_number[0] + '_' + title[0] + '_' + title[1] + '_' + title[2] + '.csv'
+			run_number[0] + title + '.csv'
 		);
 	},
 
@@ -27745,10 +27745,10 @@ DataTable.ext.buttons.excelHtml5 = {
         var myRegexp = /(\d+)/g;
         var run_number = myRegexp.exec(url);
         if (data.header[2][0] !== "T") {
-            var title = $('h1').text().split(" ", 3);
+            var title = '_liabilities_change';
         }
         else {
-            var title = $('h1:last').text().split(" ", 3);
+            var title = $('h1:last').text().split(" ", 3)[1];
         }
 		var addRow = function ( row ) {
 			var cells = [];
@@ -27801,7 +27801,7 @@ DataTable.ext.buttons.excelHtml5 = {
 
 		_saveAs(
 			zip.generate( {type:"blob"} ),
-            run_number[0] + '_' + title[0] + '_' + title[1] + '_' + title[2] + '.xlsx'
+            run_number[0] + title + '.xlsx'
 		);
 	},
 
