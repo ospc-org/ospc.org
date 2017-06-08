@@ -80,7 +80,7 @@ def main(args=None):
     for k in dir(args):
         if 'install_method' in k or 'version' in k or 'install_label' in k:
             os.environ[k.upper()] = getattr(args, k)
-            env_str.append('{}={}'.format(k.upper(), getattr(args, k)))
+            env_str.append('{}="{}"'.format(k.upper(), getattr(args, k)))
     fname = next_log_file(args)
     ip_address = args.ip_address
     pem = args.pem
@@ -93,7 +93,7 @@ def main(args=None):
     put_func = lambda x, y: put(pem, ip_address, fname, x, y)
     run_func = lambda cmd: run(pem, ip_address, fname, cmd)
     copy_deploy_repo(None, put_func, run_func)
-    template = 'ssh -i {} {}@{} "{} bash reset_server.sh"'
+    template = 'ssh -i {} {}@{} \'{} bash reset_server.sh\''
     cmd = template.format(pem, user, ip_address, " ".join(env_str))
     proc_mgr(cmd, fname)
 

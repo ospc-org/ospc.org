@@ -63,7 +63,7 @@ echo $rs Install B-Tax
 if [ "$BTAX_INSTALL_METHOD" = "git" ];then
     cd $DEP/..
     git clone http://github.com/open-source-economics/B-Tax
-    export BTAX_CUR_DIR=`pwd`/btax
+    export BTAX_CUR_DIR=`pwd`/B-Tax/btax
     cd B-Tax && git fetch --all && git fetch origin --tags && git checkout $BTAX_VERSION && python setup.py install
 else
     conda install $BTAX_INSTALL_LABEL btax=$BTAX_VERSION --no-deps
@@ -74,7 +74,7 @@ fi
 echo $rs redis-cli FLUSHALL
 redis-cli FLUSHALL
 
-cd Tax-Calculator && git fetch origin
+cd ${DEP}/../Tax-Calculator && git fetch origin
 conda list | grep 'taxcalc' | awk -F' ' '{print $2}' | xargs -n 1 git checkout
 cp ~/deploy/puf.csv.gz ./ && gunzip -k puf.csv.gz
 cd taxcalc/tests
