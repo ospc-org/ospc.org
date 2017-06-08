@@ -27675,12 +27675,41 @@ DataTable.ext.buttons.csvHtml5 = {
         var output = _exportData( dt, config ).str;
         var url = window.location.href;
         var myRegexp = /(\d+)/g;
+        var regExp = /\(([^)]+)\)/;
         var run_number = myRegexp.exec(url);
         if (output.substring(6,7) == 1) {
             var title = '_liabilities_change';
         }
         else {
-            var title = $('h1:last').text().split(" ", 3)[1];
+            var titles = $('h1:last').text().split(" ",20);
+            if (titles[0] == 'COMBINED'){
+                if (titles[15] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_payroll-income_deciles' 
+                }
+                if (titles[15] == 'BIN'){
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_payroll-income_bins' 
+                }
+            }
+            else if (titles[0] == 'BASE'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles' 
+                }
+                if (titles[9] == 'BIN'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins' 
+                }
+            }
+            else if (titles[0] == 'USER'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles' 
+                }
+                if (titles[9] == 'BIN'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins' 
+                }
+            }
+            else {
+                var title = titles
+            }
+
         }
 		var charset = config.charset;
 
