@@ -27686,7 +27686,7 @@ DataTable.ext.buttons.csvHtml5 = {
                 if (titles[15] == 'DECILE'){
                     var title = '_' + regExp.exec(titles[16])[1] + '_difference_payroll-income_deciles' 
                 }
-                if (titles[15] == 'BIN'){
+                else {
                     var title = '_' + regExp.exec(titles[16])[1] + '_difference_payroll-income_bins' 
                 }
             }
@@ -27694,7 +27694,7 @@ DataTable.ext.buttons.csvHtml5 = {
                 if (titles[9] == 'DECILE'){
                     var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles' 
                 }
-                if (titles[9] == 'BIN'){
+                else {
                     var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins' 
                 }
             }
@@ -27702,9 +27702,26 @@ DataTable.ext.buttons.csvHtml5 = {
                 if (titles[9] == 'DECILE'){
                     var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles' 
                 }
-                if (titles[9] == 'BIN'){
+                else {
                     var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins' 
                 }
+            }
+            else if (titles[0] == 'PAYROLL'){
+                if (titles[11] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_deciles' 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_bins' 
+                }
+            }
+            else if (titles[0] == 'INDIVIDUAL'){
+                if (titles[12] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_income_deciles' 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_income_bins' 
+                }
+
             }
             else {
                 var title = titles
