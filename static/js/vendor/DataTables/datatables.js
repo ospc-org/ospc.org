@@ -27684,10 +27684,10 @@ DataTable.ext.buttons.csvHtml5 = {
             var titles = $('h1:last').text().split(" ",20);
             if (titles[0] == 'COMBINED'){
                 if (titles[15] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_payroll-income_deciles' 
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_deciles' 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_payroll-income_bins' 
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_bins' 
                 }
             }
             else if (titles[0] == 'BASE'){
@@ -27716,10 +27716,10 @@ DataTable.ext.buttons.csvHtml5 = {
             }
             else if (titles[0] == 'INDIVIDUAL'){
                 if (titles[12] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_income_deciles' 
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_deciles' 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_income_bins' 
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_bins' 
                 }
 
             }
