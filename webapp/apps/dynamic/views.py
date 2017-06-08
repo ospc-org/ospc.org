@@ -56,6 +56,8 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                           ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
                           INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
+from ..formatters import format_dynamic_params
+
 
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
@@ -238,22 +240,17 @@ def dynamic_behavioral(request, pk):
                 benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
-                import pdb; pdb.set_trace()
-                assert 0
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=additional_data)
 
-            else:
-                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
-                el_keys = ('first_year', 'elastic_gdp')
-                behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                behavior_params = { k:v for k, v in worker_data.items()
-                                    if k.startswith("BE_") or k == "first_year"}
-                behavior_params = {('_' + k) if k.startswith('BE') else k:v for k,v in behavior_params.items()}
-
-                additional_data = {'behavior_params': json.dumps(behavior_params)}
+            elif taxbrain_model.json_text.reform_text and not taxbrain_model.json_text.assumption_text:
+                behavior_params = format_dynamic_params(worker_data)
                 # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(microsim_data,
-                                                                         int(start_year), additional_data)
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                    json.loads(taxbrain_model.json_text.reform_text),
+                    int(start_year),
+                    is_file=True,
+                    additional_data=behavior_params,
+                )
 
 
             if not submitted_ids:

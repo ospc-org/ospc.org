@@ -1,5 +1,4 @@
 #!/bin/bash
-source deactivate
 install_env(){
     export has_env=1;
     conda env remove --name aei_dropq &> /dev/null;
