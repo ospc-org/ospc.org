@@ -18,10 +18,11 @@ def next_log_file(args):
         f.write('Redeploy with {}'.format(json.dumps(kw)))
     return fname
 
-def cli():
+def cli(ip_address=None):
 
     parser = argparse.ArgumentParser(description='Re-deploy the deploy app from laptop to EC2 box that already has deploy on it')
-    parser.add_argument('ip_address', help='IP address that already has been deployed (has reset_server.sh in home dir)')
+    if not ip_address:
+        parser.add_argument('ip_address', help='IP address that already has been deployed (has reset_server.sh in home dir)')
     parser.add_argument('pem', help='Full local path to the PEM file for EC2 box access, typically something like /path/to/latest.pem')
     parser.add_argument('taxcalc_version', help="Tax-Calculator git tag or conda version")
     parser.add_argument('taxcalc_install_method', choices=('git', 'conda'), help="Install method - choices: %(choices)s")
@@ -42,7 +43,11 @@ def cli():
                              're-deployed.  By default there is an exception '
                              'if attempting to re-deploy the deploy repo '
                              'with uncommited changes')
-    return parser.parse_args()
+    args = parser.parse_args()
+    if ip_address:
+        args.ip_address = ip_address
+    return args
+
 
 def proc_mgr(cmd, fname):
     proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.STDOUT,

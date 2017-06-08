@@ -32,7 +32,7 @@ import logging
 from copy_deploy_repo import copy_deploy_repo, check_unmodified
 from redeploy import cli as deploy_versions_cli, main as reset_server_main
 
-DEPLOYMENT_VERSIONS_ARGS = deploy_versions_cli()
+DEPLOYMENT_VERSIONS_ARGS = deploy_versions_cli(ip_address='skip')
 if not 'OSPC_ANACONDA_TOKEN' in os.environ:
     raise ValueError('OSPC_ANACONDA_TOKEN must be defined in env vars')
 check_unmodified()
@@ -348,7 +348,7 @@ execute(install_ogusa_repo)
 execute(convenience_aliases)
 execute(write_ospc_anaconda_token)
 execute(run_salt)
-reset_server_main # formerly execute(reset_server)
+partial(reset_server_main, DEPLOYMENT_VERSIONS_ARGS) # formerly execute(reset_server)
 
 for instance in instances:
     ssh_command = 'ssh -i {key} ubuntu@{ip} "'.format(ip=instance.ip_address, key=key_filename)
