@@ -27684,42 +27684,42 @@ DataTable.ext.buttons.csvHtml5 = {
             var titles = $('h1:last').text().split(" ",20);
             if (titles[0] == 'COMBINED'){
                 if (titles[15] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_deciles' 
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_deciles'; 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_bins' 
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_bins';
                 }
             }
             else if (titles[0] == 'BASE'){
                 if (titles[9] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles' 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles';
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins' 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins'; 
                 }
             }
             else if (titles[0] == 'USER'){
                 if (titles[9] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles' 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles'; 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins' 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins'; 
                 }
             }
             else if (titles[0] == 'PAYROLL'){
                 if (titles[11] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_deciles' 
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_deciles'; 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_bins' 
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_bins'; 
                 }
             }
             else if (titles[0] == 'INDIVIDUAL'){
                 if (titles[12] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_deciles' 
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_deciles'; 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_bins' 
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_bins'; 
                 }
 
             }
@@ -27789,12 +27789,57 @@ DataTable.ext.buttons.excelHtml5 = {
         var data = dt.buttons.exportData( config.exportOptions );
         var url = window.location.href;
         var myRegexp = /(\d+)/g;
+        var regExp = /\(([^)]+)\)/;
         var run_number = myRegexp.exec(url);
         if (data.header[2][0] !== "T") {
             var title = '_liabilities_change';
         }
         else {
-            var title = $('h1:last').text().split(" ", 3)[1];
+            var titles = $('h1:last').text().split(" ", 20);
+            if (titles[0] == 'COMBINED'){
+                if (titles[15] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_bins'; 
+                }
+            }
+            else if (titles[0] == 'BASE'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins'; 
+                }
+            }
+            else if (titles[0] == 'USER'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins'; 
+                }
+            }
+            else if (titles[0] == 'PAYROLL'){
+                if (titles[11] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_bins'; 
+                }
+            }
+            else if (titles[0] == 'INDIVIDUAL'){
+                if (titles[12] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_bins'; 
+                }
+
+            }
+            else {
+                var title = titles
+            }
         }
 		var addRow = function ( row ) {
 			var cells = [];
