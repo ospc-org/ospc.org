@@ -3,6 +3,9 @@ export rs="reset_server.sh STATUS: "
 echo $rs activate aei_dropq
 export DEP=/home/ubuntu/deploy
 source /home/ubuntu/miniconda2/bin/activate aei_dropq
+pushd ${DEP}
+python setup.py install
+popd
 conda config --set always_yes true
 conda clean --all
 conda install pandas=0.20.1
@@ -21,8 +24,8 @@ supervisorctl -c $SUPERVISORD_CONF stop all
 
 for repeat in 1 2 3;
     do
-        bash ${DEP}/ensure_procs_killed.sh flask;
-        bash ${DEP}/ensure_procs_killed.sh celery;
+        bash ${DEP}/taxbrain_server/scripts/ensure_procs_killed.sh flask;
+        bash ${DEP}/taxbrain_server/scripts/ensure_procs_killed.sh celery;
         sleep 2;
     done
 cd $DEP/..

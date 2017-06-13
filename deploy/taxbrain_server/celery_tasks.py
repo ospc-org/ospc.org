@@ -237,3 +237,7 @@ def main():
         print(line, end='')
     print(proc.stdout.read().decode())
     return proc.poll()
+
+
+if __name__ == "__main__":
+    main()
