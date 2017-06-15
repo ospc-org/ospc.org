@@ -102,6 +102,7 @@ def dynamic_input(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
+            submitted_ids = None
 
             if not taxbrain_model.json_text:
                 taxbrain_dict = dict(taxbrain_model.__dict__)
@@ -242,7 +243,7 @@ def dynamic_behavioral(request, pk):
                 # start calc job
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=additional_data)
 
-            elif taxbrain_model.json_text.reform_text and not taxbrain_model.json_text.assumption_text:
+            else:
                 behavior_params = format_dynamic_params(worker_data)
                 # start calc job
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(

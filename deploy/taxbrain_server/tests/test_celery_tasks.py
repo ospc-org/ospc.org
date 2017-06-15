@@ -177,4 +177,3 @@ def test_elasticity_gdp_task_async():
                                                     first_budget_year,
                                                     gdp_elasticity)
         assert 'elasticity_gdp' in result
-
