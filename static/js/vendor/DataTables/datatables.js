@@ -27845,7 +27845,8 @@ DataTable.ext.buttons.pdfHtml5 = {
 
 		var doc = {
 			pageSize: config.pageSize,
-			pageOrientation: config.orientation,
+            maxPagesNumber: 0, 
+			pageOrientation: 'landscape',
 			content: [
 				{
 					table: {
@@ -28054,7 +28055,6 @@ DataTable.ext.buttons.print = {
 		// Open a new window for the printable table
 		var win = window.open( '', '' );
 		var title = config.title.replace( '*', $('title').text() );
-
 		win.document.close();
 
 		// Inject the title and also a copy of the style and link tags from this
@@ -28081,7 +28081,7 @@ DataTable.ext.buttons.print = {
 
 		setTimeout( function () {
 			if ( config.autoPrint ) {
-				win.print(); // blocking - so close will not
+				win.print(true, 0, 0); // blocking - so close will not
 				win.close(); // execute until this is done
 			}
 		}, 250 );
