@@ -27845,7 +27845,7 @@ DataTable.ext.buttons.pdfHtml5 = {
 
 		var doc = {
 			pageSize: config.pageSize,
-            maxPagesNumber: 0, 
+            maxPagesNumber: 1, 
 			pageOrientation: 'landscape',
 			content: [
 				{
