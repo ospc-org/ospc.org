@@ -581,8 +581,8 @@ $(function() {
 
     // mock data --------------------
     tablesObj['fiscal_change'] = JSON.parse(JSON.stringify(tablesObj['fiscal_change']));
-    tablesObj['fiscal_change']['title'] =  'TOTAL LIABILITIES BY CALENDAR YEAR';
-    tablesObj['fiscal_change']['label'] =  'TOTAL LIABILITIES BY CALENDAR YEAR';
+    tablesObj['fiscal_change']['title'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)';
+    tablesObj['fiscal_change']['label'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)';
 
     tablesObj['fiscal_currentlaw'] =  JSON.parse(JSON.stringify(tablesObj['fiscal_currentlaw']));
     tablesObj['fiscal_currentlaw']['title'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CURRENT LAW)';
