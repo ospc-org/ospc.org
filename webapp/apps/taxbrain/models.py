@@ -400,7 +400,6 @@ class TaxSaveInputs(models.Model):
     II_brk7_4 = CommaSeparatedField(default=None, blank=True, null=True)
     II_brk7_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     II_rt8 = CommaSeparatedField(default=None, blank=True, null=True)
-    II_rt8 = CommaSeparatedField(default=None, blank=True, null=True)
     II_credit_nr_0 = CommaSeparatedField(default=None, blank=True, null=True)
     II_credit_nr_1 = CommaSeparatedField(default=None, blank=True, null=True)
     II_credit_nr_2 = CommaSeparatedField(default=None, blank=True, null=True)
