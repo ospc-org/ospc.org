@@ -361,7 +361,8 @@ class PersonalExemptionForm(ModelForm):
             "_NIIT_PT_taxed",
             "_CG_nodiff",
             "_EITC_indiv",
-            "_CTC_new_refund_limited"
+            "_CTC_new_refund_limited",
+            "_II_no_em_nu18",
         ]
 
         for param in TAXCALC_DEFAULTS_2016.values():
