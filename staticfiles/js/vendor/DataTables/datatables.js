@@ -27046,6 +27046,24 @@ DataTable.ext.buttons.excelFlash = $.extend( {}, flashButton, {
 			return '<row>'+cells.join('')+'</row>';
 		};
 
+        var addTit = function ( row ) {
+            var cells = [];
+            
+            cells.push(  
+                    '<c t="inlineStr"><is><t>'+(row)+ '</t></is></c>'                                 
+            );
+            
+
+            return '<row>'+cells.join('')+'</row>';
+        };
+
+        if (data.header[2][0] !== "T") {
+            xml += addTit( $('tr:first').text() );
+        }
+        else {
+            xml += addTit( $('h1:last').text() );
+        }
+
 		if ( config.header ) {
 			xml += addRow( data.header );
 		}
