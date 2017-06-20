@@ -342,7 +342,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
     pp.set_year(first_budget_year)
     # irates are rates for 2015, 2016, and 2017
     if cpi:
-        irates = pp.indexing_rates_for_update(param_name=name,
+        irates = pp._indexing_rates_for_update(param_name=name,
                                               calyear=first_budget_year,
                                               num_years_to_expand=num_years)
     else:
