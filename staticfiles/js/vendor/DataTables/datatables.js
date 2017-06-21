@@ -27590,7 +27590,16 @@ DataTable.ext.buttons.copyHtml5 = {
 
 	action: function ( e, dt, button, config ) {
 		var exportData = _exportData( dt, config );
-		var output = exportData.str;
+        var data = dt.buttons.exportData( config.exportOptions );
+        var output_ = exportData.str;
+        if (data.header[2][0] !== "T") {
+            var str = $('tr:first').text() + '\n'
+            var output = str + output_
+            }
+        else{
+            var str = $('h1:last').text() + '\n'
+            var output = str + output_
+        }
 		var hiddenDiv = $('<div/>')
 			.css( {
 				height: 1,
