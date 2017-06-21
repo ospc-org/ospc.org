@@ -27699,8 +27699,16 @@ DataTable.ext.buttons.csvHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var newLine = _newLine( config );
-		var output = _exportData( dt, config ).str;
-		var charset = config.charset;
+		var output_ = _exportData( dt, config ).str;
+        var data = dt.buttons.exportData( config.exportOptions );
+        if (data.header[2][0] !== "T") {
+            var str = $('tr:first').text() + '\n'
+            var output = str + output_
+            }
+        else{
+            var str = $('h1:last').text() + '\n'
+            var output = str + output_
+        }
 
 		if ( charset !== false ) {
 			if ( ! charset ) {
