@@ -50,8 +50,6 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                          INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
                          START_YEARS)
 
-from ..formatters import read_json_policy_reform_text, read_json_econ_assump_text
-
 
 tcversion_info = taxcalc._version.get_versions()
 
@@ -227,11 +225,13 @@ def file_input(request):
         if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
             inmemfile_strip = inmemfile_reform.read().strip()
-            reform_dict = read_json_policy_reform_text(inmemfile_strip)
+            reform_dict = taxcalc.Calculator._read_json_policy_reform_text(inmemfile_strip,
+                    False)
             if 'assumpfile' in request.FILES:
                 inmemfile_assumption = request.FILES['assumpfile']
                 assumption_text = inmemfile_assumption.read().strip()
-                assumption_dict = read_json_econ_assump_text(assumption_text)
+                assumption_dict = taxcalc.Calculator._read_json_econ_assump_text(assumption_text,
+                        False)
 
         else:
             msg = "No reform file uploaded."
