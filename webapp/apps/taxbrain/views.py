@@ -51,6 +51,8 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                          INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
                          START_YEARS)
 
+from formatters import read_json_econ_assump_text, read_json_policy_reform_text
+
 
 tcversion_info = taxcalc._version.get_versions()
 
@@ -225,30 +227,17 @@ def file_input(request):
         assumption_dict = {}
         if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
-            reform_text = inmemfile_reform.read().strip()
-            reform_file = tempfile.NamedTemporaryFile(delete=False)
-            reform_file.write(reform_text)
-            reform_file.close()
+            inmemfile_strip = inmemfile_reform.read().strip()
+            reform_dict = read_json_policy_reform_text(inmemfile_strip)
             if 'assumpfile' in request.FILES:
                 inmemfile_assumption = request.FILES['assumpfile']
                 assumption_text = inmemfile_assumption.read().strip()
-                assump_file = tempfile.NamedTemporaryFile(delete=False)
-                assump_file.write(assumption_text)
-                assump_file.close()
-                # assumption_dict = taxcalc.Calculator._read_json_econ_assump_text(assumption_text,
-                #         False)
-                reforms = taxcalc.Calculator.read_json_param_files(reform_file.name, assump_file.name, arrays_not_lists=False)
-                os.remove(reform_file.name)
-                os.remove(assump_file.name)
-            else:
-                reforms = taxcalc.Calculator.read_json_param_files(reform_file.name, None, arrays_not_lists=False)
-                os.remove(reform_file.name)
+                assumption_dict = read_json_econ_assump_text(assumption_text)
 
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
 
-        import pdb; pdb.set_trace()
         if error_messages:
             has_errors = True
             errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
