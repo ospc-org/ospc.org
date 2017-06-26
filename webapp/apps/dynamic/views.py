@@ -375,14 +375,16 @@ def dynamic_elasticities(request, pk):
                                                                         int(start_year))
 
             else:
-                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
                 el_keys = ('first_year', 'elastic_gdp')
                 elasticity_params = { k:v for k, v in worker_data.items() if k in el_keys}
                 additional_data = {'elasticity_params': json.dumps(elasticity_params)}
-                # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_json_elastic_calculation(microsim_data,
-                                                                         int(start_year),
-                                                                         additional_data)
+                submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
+                    json.loads(taxbrain_model.json_text.reform_text),
+                    int(start_year),
+                    is_file=True,
+                    additional_data=additional_data,
+                )
+
 
             if not submitted_ids:
                 no_inputs = True
