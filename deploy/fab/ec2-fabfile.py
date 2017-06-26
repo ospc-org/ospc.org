@@ -264,9 +264,6 @@ def run_salt():
 
 
 def _env_str(args):
-    TAXCALC_INSTALL_LABEL
-    OGUSA_INSTALL_METHOD
-    VERSION
     s = []
     for k in dir(args):
         val = getattr(args, k)
