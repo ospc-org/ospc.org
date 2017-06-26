@@ -4,6 +4,7 @@ import pdfkit
 import json
 import pytz
 import os
+import tempfile
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -224,19 +225,30 @@ def file_input(request):
         assumption_dict = {}
         if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
-            inmemfile_strip = inmemfile_reform.read().strip()
-            reform_dict = taxcalc.Calculator._read_json_policy_reform_text(inmemfile_strip,
-                    False)
+            reform_text = inmemfile_reform.read().strip()
+            reform_file = tempfile.NamedTemporaryFile(delete=False)
+            reform_file.write(reform_text)
+            reform_file.close()
             if 'assumpfile' in request.FILES:
                 inmemfile_assumption = request.FILES['assumpfile']
                 assumption_text = inmemfile_assumption.read().strip()
-                assumption_dict = taxcalc.Calculator._read_json_econ_assump_text(assumption_text,
-                        False)
+                assump_file = tempfile.NamedTemporaryFile(delete=False)
+                assump_file.write(assumption_text)
+                assump_file.close()
+                # assumption_dict = taxcalc.Calculator._read_json_econ_assump_text(assumption_text,
+                #         False)
+                reforms = taxcalc.Calculator.read_json_param_files(reform_file.name, assump_file.name, arrays_not_lists=False)
+                os.remove(reform_file.name)
+                os.remove(assump_file.name)
+            else:
+                reforms = taxcalc.Calculator.read_json_param_files(reform_file.name, None, arrays_not_lists=False)
+                os.remove(reform_file.name)
 
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
 
+        import pdb; pdb.set_trace()
         if error_messages:
             has_errors = True
             errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
@@ -248,11 +260,10 @@ def file_input(request):
                         reform_dict,
                         int(start_year),
                         is_file=True,
-                        additional_data=assumption_dict
                     )
                 else:
                     submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                        reform_dict,
+                        reforms,
                         int(start_year),
                         is_file=True
                     )
