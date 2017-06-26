@@ -268,14 +268,14 @@ def _env_str(args):
     for k in dir(args):
         val = getattr(args, k)
         if any(tok in k.lower() for tok in ('install', 'method' 'version')):
-            s.append('{}="{}"'.format(k, val))
+            s.append('{}="{}"'.format(k.upper(), val))
     return " ".join(s)
 
 def reset_server():
     e = _env_str(DEPLOYMENT_VERSIONS_ARGS)
     command = "{} source /home/ubuntu/reset_server.sh".format(e)
     print('Running', command)
-    run(command)
+    run(command, shell=True, shell_escape=False)
 
 
 def wait_for_login_prompt(instance, retry_count=20):
