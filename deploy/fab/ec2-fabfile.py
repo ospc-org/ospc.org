@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from functools import partial
 import os
 import sys
 import boto.exception
@@ -348,7 +349,7 @@ execute(install_ogusa_repo)
 execute(convenience_aliases)
 execute(write_ospc_anaconda_token)
 execute(run_salt)
-partial(reset_server_main, DEPLOYMENT_VERSIONS_ARGS) # formerly execute(reset_server)
+partial(reset_server_main, DEPLOYMENT_VERSIONS_ARGS)() # formerly execute(reset_server)
 
 for instance in instances:
     ssh_command = 'ssh -i {key} ubuntu@{ip} "'.format(ip=instance.ip_address, key=key_filename)
