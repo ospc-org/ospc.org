@@ -2,7 +2,7 @@ create-environment:
   cmd.run:
     - name: |
         conda env remove --name aei_dropq --yes ;
-        conda create --name aei_dropq python=2.7 --yes --file /home/ubuntu/deploy/fab/dropq_environment.yml
+        conda env create --name aei_dropq python=2.7 --yes --file /home/ubuntu/deploy/fab/dropq_environment.yml
     - user: ubuntu
     - cwd: /home/ubuntu
     - env:
