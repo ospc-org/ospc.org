@@ -79,17 +79,12 @@ class DropqCompute(object):
                                        increment_counter=False,
                                        pack_up_user_mods=not is_file)
 
-    def submit_elastic_calculation(self, mods, first_budget_year):
-        url_template = "http://{hn}/elastic_gdp_start_job"
-        return self.submit_calculation(mods, first_budget_year, url_template,
-                                       start_budget_year=1)
-
-    def submit_json_elastic_calculation(self, mods, first_budget_year, additional_data):
+    def submit_elastic_calculation(self, mods, first_budget_year, is_file=False, additional_data={}):
         url_template = "http://{hn}/elastic_gdp_start_job"
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=1,
-                                       pack_up_user_mods=False,
-                                       additional_data=additional_data)
+                                       additional_data=additional_data,
+                                       pack_up_user_mods=not is_file)
 
 
     def submit_calculation(self, mods, first_budget_year, url_template,
@@ -124,7 +119,7 @@ class DropqCompute(object):
         num_hosts = len(hostnames)
         data['user_mods'] = json.dumps(user_mods)
         if additional_data:
-            data["behavior_params"] = json.dumps(additional_data)
+            data[additional_data.keys()[0]] = json.dumps(additional_data)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
