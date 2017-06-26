@@ -83,7 +83,7 @@ cp ~/deploy/puf.csv.gz ./ && gunzip -k puf.csv.gz
 cd taxcalc/tests
 echo $rs Test the correct puf is here - Tax-Calculator
 py.test -m "requires_pufcsv"
-cd $DEP/tests
+cd $DEP/taxbrain_server/tests
 echo $rs Test the mock celery - mock flask tests in deploy
 MOCK_CELERY=1 TAX_ESTIMATE_PATH=$OGUSA_PATH py.test -p no:django -v
 cd $DEP
