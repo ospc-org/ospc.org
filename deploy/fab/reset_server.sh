@@ -60,7 +60,7 @@ if [ "$OGUSA_INSTALL_METHOD" = "git" ];then
     git clone http://github.com/open-source-economics/OG-USA
     cd OG-USA && git fetch --all && git fetch origin --tags && git checkout $OGUSA_VERSION && python setup.py install
 else
-    conda install $OGUSA_INSTALL_LABEL ogusa=$OGUSA_VERSION --no-deps
+    conda install $OGUSA_INSTALL_LABEL ogusa=$OGUSA_VERSION
 fi
 echo $rs Install B-Tax
 if [ "$BTAX_INSTALL_METHOD" = "git" ];then
@@ -69,7 +69,7 @@ if [ "$BTAX_INSTALL_METHOD" = "git" ];then
     export BTAX_CUR_DIR=`pwd`/B-Tax/btax
     cd B-Tax && git fetch --all && git fetch origin --tags && git checkout $BTAX_VERSION && python setup.py install
 else
-    conda install $BTAX_INSTALL_LABEL btax=$BTAX_VERSION --no-deps
+    conda install $BTAX_INSTALL_LABEL btax=$BTAX_VERSION
 fi
 
 # TODO LATER
