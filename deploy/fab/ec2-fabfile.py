@@ -263,6 +263,24 @@ def run_salt():
     sudo('sudo /usr/bin/salt-call state.highstate --retcode-passthrough --log-level=debug --config-dir="$HOME/deploy/fab/salt"')
 
 
+def _env_str(args):
+    TAXCALC_INSTALL_LABEL
+    OGUSA_INSTALL_METHOD
+    VERSION
+    s = []
+    for k in dir(args):
+        val = getattr(args, k)
+        if any(tok in k.lower() for tok in ('install', 'method' 'version')):
+            s.append('{}="{}"'.format(k, val))
+    return " ".join(s)
+
+def reset_server():
+    e = _env_str(DEPLOYMENT_VERSIONS_ARGS)
+    command = "{} source /home/ubuntu/reset_server.sh".format(e)
+    print('Running', command)
+    run(command)
+
+
 def wait_for_login_prompt(instance, retry_count=20):
     import time
     import re
@@ -331,6 +349,7 @@ print("hosts:", env.hosts)
 print("ips:", fqdns)
 
 #Wait for the machines to actually come up:
+
 for instance in instances[:]:
     try:
         wait_for_login_prompt(instance)
@@ -349,7 +368,7 @@ execute(install_ogusa_repo)
 execute(convenience_aliases)
 execute(write_ospc_anaconda_token)
 execute(run_salt)
-partial(reset_server_main, DEPLOYMENT_VERSIONS_ARGS)() # formerly execute(reset_server)
+execute(reset_server)
 
 for instance in instances:
     ssh_command = 'ssh -i {key} ubuntu@{ip} "'.format(ip=instance.ip_address, key=key_filename)
