@@ -6,7 +6,7 @@ source /home/ubuntu/miniconda2/bin/activate aei_dropq
 pushd ${DEP}
 python setup.py install
 popd
-rm -rf /home/ubuntu/logs && /mkdir home/ubuntu/logs
+rm -rf /home/ubuntu/logs && mkdir /home/ubuntu/logs
 conda config --set always_yes true
 conda clean --all
 conda install pandas=0.20.1
