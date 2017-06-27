@@ -470,9 +470,8 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
-    if model.reform_style:
-        rs = [True if x=='True' else False for x in model.reform_style.split(',')]
-        allow_dyn_links = True if (len(rs) < 2 or rs[1] is False) else False
+    if getattr(getattr(model, "json_text", False), "assumption_text", False):
+        allow_dyn_links = False
     else:
         allow_dyn_links = True
     if 'fiscal_tots' in output:
