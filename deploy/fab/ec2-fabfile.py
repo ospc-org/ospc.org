@@ -94,7 +94,7 @@ KEYNAME = "{}-aei-dropq-{}".format(AMI_ID,os.environ.get('USER', 'ospc'))
 #SECURITY_GROUP = 'launch-wizard-26'
 #SECURITY_GROUP = 'dropq-security-group'
 SECURITY_GROUP = 'dropq-iam-group'
-NODE_COUNT = 1
+NODE_COUNT = int(os.environ.get('WORKER_NODE_COUNT', 1))
 
 def create_box():
     old_ids = set(i.id for i in ec2.get_only_instances())
