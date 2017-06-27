@@ -225,14 +225,7 @@ def dynamic_behavioral(request, pk):
                         print "missing this: ", key
 
                 microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
-
-                el_keys = ('first_year', 'elastic_gdp')
-                behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                behavior_params = { k:v for k, v in worker_data.items()
-                                    if k.startswith("BE_") or k == "first_year"}
-                behavior_params = {('_' + k) if k.startswith('BE') else k:v for k,v in behavior_params.items()}
-
-                additional_data = {'behavior_params': behavior_params}
+                behavior_params = format_dynamic_params(worker_data)
 
                 #Don't need to pass around the microsim results
                 if 'tax_result' in microsim_data:
@@ -241,7 +234,7 @@ def dynamic_behavioral(request, pk):
                 benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=additional_data)
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=behavior_params)
 
             else:
                 behavior_params = format_dynamic_params(worker_data)

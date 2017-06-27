@@ -249,6 +249,7 @@ def file_input(request):
                         reform_dict,
                         int(start_year),
                         is_file=True,
+                        additional_data=assumption_dict
                     )
                 else:
                     submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(

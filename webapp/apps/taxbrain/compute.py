@@ -119,7 +119,10 @@ class DropqCompute(object):
         num_hosts = len(hostnames)
         data['user_mods'] = json.dumps(user_mods)
         if additional_data:
-            data[additional_data.keys()[0]] = json.dumps(additional_data)
+            if "behavior" in additional_data.keys():
+                data["behavior_params"] = json.dumps(additional_data)
+            else:
+                data[additional_data.keys()[0]] = json.dumps(additional_data)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
