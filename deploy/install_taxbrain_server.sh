@@ -7,7 +7,7 @@ install_env(){
 }
 install_conda_reqs(){
     echo ---------------------------------------Installing conda requirements;
-    channel=" -c ospc"
+    channel=" -c ospc/label/dev"
     for pkg in $(cat ../conda-requirements.txt);do
         echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg -y || return 1;
     done
