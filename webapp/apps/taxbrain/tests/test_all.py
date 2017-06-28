@@ -81,7 +81,7 @@ class TaxInputTests(TestCase):
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
         # irates are rates for 2015, 2016, and 2017
-        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+        irates = pp._indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
                                             num_years_to_expand=3)
 
         # User choices propagate through to all future years
@@ -116,7 +116,7 @@ class TaxInputTests(TestCase):
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
         # irates are rates for 2015, 2016, and 2017
-        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+        irates = pp._indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
                                             num_years_to_expand=3)
 
         # User choices propagate through to all future years
@@ -219,7 +219,7 @@ class TaxInputTests(TestCase):
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
         # irates are rates for 2015, 2016, and 2017
-        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+        irates = pp._indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
                                             num_years_to_expand=4)
 
         # User choices propagate through to all future years
@@ -260,7 +260,7 @@ class TaxInputTests(TestCase):
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
         # irates are rates for 2015, 2016, and 2017
-        irates = pp.indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
+        irates = pp._indexing_rates_for_update(param_name='II_brk2', calyear=FBY,
                                             num_years_to_expand=4)
 
         # User choices propagate through to all future years
@@ -306,7 +306,7 @@ class TaxInputTests(TestCase):
         pp = Policy(start_year=2013)
         pp.set_year(FBY)
         # irates are rates for 2015, 2016, and 2017
-        irates = pp.indexing_rates_for_update(param_name='EITC_InvestIncome_c', calyear=FBY,
+        irates = pp._indexing_rates_for_update(param_name='EITC_InvestIncome_c', calyear=FBY,
                                             num_years_to_expand=2)
 
         # User choices propagate through to all future years
