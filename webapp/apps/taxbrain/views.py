@@ -51,8 +51,6 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                          INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
                          START_YEARS)
 
-from ..formatters import read_json_econ_assump_text, read_json_policy_reform_text
-
 
 tcversion_info = taxcalc._version.get_versions()
 
@@ -224,20 +222,29 @@ def file_input(request):
         do_full_calc = False if fields.get('quick_calc') else True
         error_messages = {}
         reform_dict = {}
-        assumption_dict = {}
         if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
-            inmemfile_strip = inmemfile_reform.read().strip()
-            reform_dict = read_json_policy_reform_text(inmemfile_strip)
+            reform_text = inmemfile_reform.read()
+            reform_file = tempfile.NamedTemporaryFile(delete=False)
+            reform_file.write(reform_text)
+            reform_file.close()
             if 'assumpfile' in request.FILES:
                 inmemfile_assumption = request.FILES['assumpfile']
-                assumption_text = inmemfile_assumption.read().strip()
-                assumption_dict = read_json_econ_assump_text(assumption_text)
+                assumptions_text = inmemfile_assumption.read()
+                assumptions_file = tempfile.NamedTemporaryFile(delete=False)
+                assumptions_file.write(assumptions_text)
+                assumptions_file.close()
+                reform_dict = taxcalc.Calculator.read_json_param_files(reform_file.name, assumptions_file.name, arrays_not_lists=False)
+            else:
+                assumptions_text = ""
+                reform_dict = taxcalc.Calculator.read_json_param_files(reform_file.name, None, arrays_not_lists=False)
 
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
 
+        reforms = reform_dict["policy"]
+        assumptions = {k: v for k, v in reform_dict.items() if k != "policy"}
         if error_messages:
             has_errors = True
             errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
@@ -246,16 +253,17 @@ def file_input(request):
                 log_ip(request)
                 if do_full_calc:
                     submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                        reform_dict,
+                        reforms,
                         int(start_year),
                         is_file=True,
-                        additional_data=assumption_dict
+                        additional_data=assumptions
                     )
                 else:
                     submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
                         reforms,
                         int(start_year),
-                        is_file=True
+                        is_file=True,
+                        additional_data=assumptions
                     )
 
                 if not submitted_ids:
@@ -263,8 +271,10 @@ def file_input(request):
                 else:
                     job_ids = denormalize(submitted_ids)
                     json_reform = JSONReformTaxCalculator()
-                    json_reform.reform_text = json.dumps(reform_dict)
-                    json_reform.assumption_text = json.dumps(assumption_dict) if assumption_dict else ""
+                    json_reform.reform_text = json.dumps(reforms)
+                    json_reform.assumption_text = json.dumps(assumptions) if assumptions_text else ""
+                    json_reform.raw_reform_text = reform_text
+                    json_reform.raw_assumption_text = assumptions_text if assumptions_text else ""
                     json_reform.save()
 
                     model = TaxSaveInputs()
@@ -558,6 +568,8 @@ def output_detail(request, pk):
     model = url.unique_inputs
     if model.tax_result:
         context = get_result_context(model, request, url)
+        context["raw_reform_text"] = model.json_text.raw_reform_text
+        context["raw_assumption_text"] = model.json_text.raw_assumption_text
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
         return render(request, 'taxbrain/failed.html', {"error_msg": model.error_text.text})
