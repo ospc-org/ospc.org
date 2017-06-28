@@ -338,11 +338,11 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
 
     is_rate = any([ i < 1.0 for i in x])
 
-    pp = Policy(start_year=2013)
-    pp.set_year(first_budget_year)
+    current_policy = Policy(start_year=2013)
+    current_policy.set_year(first_budget_year)
     # irates are rates for 2015, 2016, and 2017
     if cpi:
-        irates = pp.indexing_rates_for_update(param_name=name,
+        irates = current_policy._indexing_rates_for_update(param_name=name,
                                               calyear=first_budget_year,
                                               num_years_to_expand=num_years)
     else:
