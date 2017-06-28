@@ -51,7 +51,7 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                          INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
                          START_YEARS)
 
-from formatters import read_json_econ_assump_text, read_json_policy_reform_text
+from ..formatters import read_json_econ_assump_text, read_json_policy_reform_text
 
 
 tcversion_info = taxcalc._version.get_versions()
