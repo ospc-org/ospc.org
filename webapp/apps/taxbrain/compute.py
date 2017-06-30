@@ -35,9 +35,6 @@ class DropqCompute(object):
 
     num_budget_years = NUM_BUDGET_YEARS
 
-    def __init__(self):
-        pass
-
     # Override if needed, e.g. btax
     def package_up_vars(self, *args, **kwargs):
         return _package_up_vars(*args, **kwargs)
@@ -61,11 +58,12 @@ class DropqCompute(object):
                                        pack_up_user_mods=False,
                                        additional_data=additional_data)
 
-    def submit_dropq_calculation(self, mods, first_budget_year, additional_data=None):
+    def submit_dropq_calculation(self, mods, first_budget_year, additional_data={}, is_file=False):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
-                                       additional_data=additional_data)
+                                       additional_data=additional_data,
+                                       pack_up_user_mods=not is_file)
 
     def submit_json_dropq_small_calculation(self, mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
@@ -74,23 +72,19 @@ class DropqCompute(object):
                                        increment_counter=False,
                                        pack_up_user_mods=False)
 
-    def submit_dropq_small_calculation(self, mods, first_budget_year):
+    def submit_dropq_small_calculation(self, mods, first_budget_year, is_file=False):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
-                                       increment_counter=False)
+                                       increment_counter=False,
+                                       pack_up_user_mods=not is_file)
 
-    def submit_elastic_calculation(self, mods, first_budget_year):
-        url_template = "http://{hn}/elastic_gdp_start_job"
-        return self.submit_calculation(mods, first_budget_year, url_template,
-                                       start_budget_year=1)
-
-    def submit_json_elastic_calculation(self, mods, first_budget_year, additional_data):
+    def submit_elastic_calculation(self, mods, first_budget_year, is_file=False, additional_data={}):
         url_template = "http://{hn}/elastic_gdp_start_job"
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        start_budget_year=1,
-                                       pack_up_user_mods=False,
-                                       additional_data=additional_data)
+                                       additional_data=additional_data,
+                                       pack_up_user_mods=not is_file)
 
 
     def submit_calculation(self, mods, first_budget_year, url_template,
@@ -99,21 +93,15 @@ class DropqCompute(object):
                            increment_counter=True,
                            use_wnc_offset=True,
                            pack_up_user_mods=True,
-                           additional_data=None):
-        print "mods is ", mods
+                           additional_data={}):
         data = {}
         if pack_up_user_mods:
             user_mods = self.package_up_vars(mods, first_budget_year)
             if not bool(user_mods):
                 return False
-            print "user_mods is ", user_mods
-            print "submit work"
             user_mods = {first_budget_year:user_mods}
         else:
             user_mods = mods
-            data['taxio_format'] = True
-            data['first_budget_year'] = first_budget_year
-            print "JSON user_mods is ", user_mods
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
@@ -131,7 +119,10 @@ class DropqCompute(object):
         num_hosts = len(hostnames)
         data['user_mods'] = json.dumps(user_mods)
         if additional_data:
-            data[additional_data.keys()[0]] = json.dumps(additional_data.values()[0])
+            if "behavior" in additional_data.keys():
+                data["behavior_params"] = json.dumps(additional_data)
+            else:
+                data[additional_data.keys()[0]] = json.dumps(additional_data)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0

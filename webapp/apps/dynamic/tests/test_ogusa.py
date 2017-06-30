@@ -202,7 +202,7 @@ class DynamicOGUSAViewsTests(TestCase):
         self.client.login(username='temporary', password='temporary')
         # Do the microsim from file
         fname = "../../taxbrain/tests/test_reform.json"
-        micro1 = do_micro_sim_from_file(self.client, fname)
+        micro1 = do_micro_sim_from_file(self.client)
         start_year = 2016
 
         # Do the partial equilibrium simulation based on the microsim
@@ -216,5 +216,3 @@ class DynamicOGUSAViewsTests(TestCase):
         ans = dynamic_params_from_model(dsi)
         assert ans[u'frisch'] == u'0.43'
         assert ans[u'g_y_annual'] == u'0.03'
-
-

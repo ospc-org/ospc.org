@@ -64,17 +64,19 @@
         <a href="/dynamic/behavioral/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
         {% if is_micro %}
+        {% if not assump_file_contents %}
         <button onclick="buttonAction()" class="text-white btn btn-secondary">Link to Dynamic Simulations</button>
+        {% endif %}
         {% endif %}
       </div>
       {% if reform_file_contents %}
       <h2> The following reform files were uploaded for this simulation: </h2>
       <div class="file-contents">
           {%autoescape off %}
-          {{reform_file_contents | linebreaks | safe }}
+          {{ raw_reform_text | linebreaks | safe }}
           {%endautoescape %}
           {%autoescape off %}
-          {{assump_file_contents | linebreaks | safe }}
+          {{ raw_assumption_text | linebreaks | safe }}
           {%endautoescape %}
        </div>
       {% endif %}

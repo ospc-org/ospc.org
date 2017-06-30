@@ -15,6 +15,8 @@ from ..compute import MockDynamicCompute
 import taxcalc
 from taxcalc import Policy
 
+from ...test_assets import *
+
 START_YEAR = u'2016'
 
 def do_micro_sim(client, reform):
@@ -36,24 +38,23 @@ def do_micro_sim(client, reform):
     return response
 
 
-def do_micro_sim_from_file(client, fname):
+def do_micro_sim_from_file(client):
     #Monkey patch to mock out running of compute jobs
     import sys
     from webapp.apps.taxbrain import views
     webapp_views = sys.modules['webapp.apps.taxbrain.views']
     webapp_views.dropq_compute = MockCompute()
 
-    tc_file = SimpleUploadedFile(fname, "file_content")
+    tc_file = SimpleUploadedFile("test_reform.json", reform_text)
+    tc_file2 = SimpleUploadedFile("test_assumptions.json", assumptions_text)
     data = {u'docfile': tc_file,
-            u'assumpfile': tc_file,
+            u'assumpfile': tc_file2,
             u'has_errors': [u'False'],
             u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
 
     response = client.post('/taxbrain/file/', data)
     # Check that redirect happens
-    assert response.status_code==302
-    idx = response.url[:-1].rfind('/')
-    assert response.url[:idx].endswith("taxbrain")
+    assert response.status_code == 302
     return response
 
 

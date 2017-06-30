@@ -8,21 +8,10 @@ install:
   - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update conda
-  - conda create -n webappdev python=$TRAVIS_PYTHON_VERSION pytest setuptools
-  - source activate webappdev
-  - conda install -c ospc --file conda-requirements.txt
-  - conda update -c ospc --force taxcalc
-  - pip install -r requirements.txt
-  - pip install -r requirements_dev.txt
-  - pip install pytest-django
-  - pip install pytest-xdist
-  - export AWS_STORAGE_BUCKET_NAME=taxbraingzipped
-  - export SECRET_KEY="abcde%!z@cu@o29$zjifeoudt1ute&0ii33!8huud71&4#l2#817pei"
-  - git clone https://github.com/open-source-economics/B-Tax
-  - cd B-Tax && python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax
-  - python setup.py develop && export BTAX_CUR_DIR=`pwd`/btax && cd ..
+  - pushd deploy
+  - ./install_taxbrain_server.sh
+  - popd
+  - source activate aei_dropq
 
 before_script:
   - python manage.py syncdb --noinput

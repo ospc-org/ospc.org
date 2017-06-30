@@ -79,7 +79,9 @@ class JSONReformTaxCalculator(models.Model):
     through the JSON iput page.
     '''
     reform_text = models.CharField(blank=True, null=False, max_length=4000)
+    raw_reform_text = models.CharField(blank=True, null=False, max_length=4000)
     assumption_text = models.CharField(blank=True, null=False, max_length=4000)
+    raw_assumption_text = models.CharField(blank=True, null=False, max_length=4000)
 
 class ErrorMessageTaxCalculator(models.Model):
     '''

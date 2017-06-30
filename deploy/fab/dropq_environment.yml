@@ -1,0 +1,20 @@
+name: aei_dropq
+dependencies:
+- python=2.7.12
+- pandas>=0.20.1
+- flask
+- greenlet
+- bokeh
+- xlrd
+- pip:
+  - fabric
+  - boto
+  - celery
+  - eventlet
+  - retrying
+  - plotly
+  - redis
+
+channels:
+  - ospc
+  - defaults

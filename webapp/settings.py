@@ -12,7 +12,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 import os
 
-SECRET_KEY = os.environ.get('SECRET_KEY', '')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'secret key')
 SITE_ID = os.environ.get('SITE_ID', 1)
 
 # Allow all host headers
