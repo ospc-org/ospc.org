@@ -568,8 +568,8 @@ def output_detail(request, pk):
     model = url.unique_inputs
     if model.tax_result:
         context = get_result_context(model, request, url)
-        context["raw_reform_text"] = model.json_text.raw_reform_text
-        context["raw_assumption_text"] = model.json_text.raw_assumption_text
+        context["raw_reform_text"] = model.json_text.raw_reform_text if model.json_text else ""
+        context["raw_assumption_text"] = model.json_text.raw_assumption_tet if model.json_text else ""
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
         return render(request, 'taxbrain/failed.html', {"error_msg": model.error_text.text})
