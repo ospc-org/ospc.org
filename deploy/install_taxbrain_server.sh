@@ -2,12 +2,12 @@
 install_env(){
     export has_env=1;
     conda env remove --name aei_dropq &> /dev/null;
-    conda env create --file fab/dropq_environment.yml || return 1;
+    conda env create --file fab/dropq_environment.yml || return 0;
     return 0;
 }
 install_conda_reqs(){
     echo ---------------------------------------Installing conda requirements;
-    channel=" -c ospc/label/dev"
+    channel="-c ospc/label/dev -c ospc "
     for pkg in $(cat ../conda-requirements.txt);do
         echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg -y || return 1;
     done
