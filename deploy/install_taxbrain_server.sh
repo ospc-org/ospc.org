@@ -24,6 +24,7 @@ install_reqs(){
     pip install -r requirements.txt || return 1;
     pip uninstall -y taxbrain_server &> /dev/null;
     python setup.py develop || return 1;
+    rm -rf taxbrain_server/logs
     mkdir taxbrain_server/logs || return 1;
     return 0;
 }
