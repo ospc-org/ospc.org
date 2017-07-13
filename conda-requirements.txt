@@ -1,6 +1,6 @@
 nomkl
-taxcalc
-btax
+taxcalc==0.9.0
+btax==0.1.6
 pandas
 gevent
 pillow
