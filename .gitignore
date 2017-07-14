@@ -10,3 +10,7 @@ src/django-flatblocks
 src/dropq
 webapp_test.sh
 puf.csv.gz
+
+logs/
+
+dump.rdb

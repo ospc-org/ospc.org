@@ -111,12 +111,12 @@ if os.environ.get('DATABASE_URL', None):
     import dj_database_url
     DATABASES['default'] = dj_database_url.config()
 else:
-  DATABASES = {
-      'default': {
+    DATABASES = {
+        'default': {
           'ENGINE': 'django.db.backends.sqlite3',
           'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-      }
-  }
+        }
+    }
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -150,7 +150,7 @@ DEFAULT_FILE_STORAGE = "storages.backends.s3boto.S3BotoStorage"
 # Amazon S3 settings.
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ID", "")
-AWS_STORAGE_BUCKET_NAME = os.environ["AWS_STORAGE_BUCKET_NAME"]
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 AWS_S3_HOST = os.environ.get("AWS_S3_HOST", None)
 
 # Tell django-storages that when coming up with the URL for an item in S3 storage, keep
@@ -175,7 +175,7 @@ if True:
 else:
     STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
-SENDGRID_API_KEY=os.environ.get('SENDGRID_API_KEY')
+SENDGRID_API_KEY=os.environ.get("SENDGRID_API_KEY", "")
 EMAIL_BACKEND = "sgbackend.SendGridBackend"
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
 
