@@ -27003,7 +27003,7 @@ DataTable.ext.buttons.csvFlash = $.extend( {}, flashButton, {
 		var data = _exportData( dt, config );
 
 		flash.setAction( 'csv' );
-		flash.setFileName( _filename( config ) );
+		flash.setFileName( 'test_name' );
 		_setText( flash, data.str );
 	},
 
@@ -27672,7 +27672,62 @@ DataTable.ext.buttons.csvHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var newLine = _newLine( config );
-		var output = _exportData( dt, config ).str;
+        var output = _exportData( dt, config ).str;
+        var url = window.location.href;
+        var myRegexp = /(\d+)/g;
+        var regExp = /\(([^)]+)\)/;
+        var run_number = myRegexp.exec(url);
+        if (output.substring(6,7) == 1) {
+            var title = '_liabilities_change';
+        }
+        else {
+            var titles = $('h1:last').text().split(" ",20);
+            if (titles[0] == 'COMBINED'){
+                if (titles[15] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_bins';
+                }
+            }
+            else if (titles[0] == 'BASE'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles';
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins'; 
+                }
+            }
+            else if (titles[0] == 'USER'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins'; 
+                }
+            }
+            else if (titles[0] == 'PAYROLL'){
+                if (titles[11] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_bins'; 
+                }
+            }
+            else if (titles[0] == 'INDIVIDUAL'){
+                if (titles[12] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_bins'; 
+                }
+
+            }
+            else {
+                var title = titles
+            }
+
+        }
 		var charset = config.charset;
 
 		if ( charset !== false ) {
@@ -27690,7 +27745,7 @@ DataTable.ext.buttons.csvHtml5 = {
 
 		_saveAs(
 			new Blob( [output], {type: 'text/csv'+charset} ),
-			_filename( config )
+			run_number[0] + title + '.csv'
 		);
 	},
 
@@ -27713,6 +27768,7 @@ DataTable.ext.buttons.csvHtml5 = {
 	footer: false
 };
 
+
 //
 // Excel (xlsx) export
 //
@@ -27730,7 +27786,61 @@ DataTable.ext.buttons.excelHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var xml = '';
-		var data = dt.buttons.exportData( config.exportOptions );
+        var data = dt.buttons.exportData( config.exportOptions );
+        var url = window.location.href;
+        var myRegexp = /(\d+)/g;
+        var regExp = /\(([^)]+)\)/;
+        var run_number = myRegexp.exec(url);
+        if (data.header[2][0] !== "T") {
+            var title = '_liabilities_change';
+        }
+        else {
+            var titles = $('h1:last').text().split(" ", 20);
+            if (titles[0] == 'COMBINED'){
+                if (titles[15] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[16])[1] + '_difference_combined_bins'; 
+                }
+            }
+            else if (titles[0] == 'BASE'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins'; 
+                }
+            }
+            else if (titles[0] == 'USER'){
+                if (titles[9] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins'; 
+                }
+            }
+            else if (titles[0] == 'PAYROLL'){
+                if (titles[11] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[12])[1] + '_difference_payroll_bins'; 
+                }
+            }
+            else if (titles[0] == 'INDIVIDUAL'){
+                if (titles[12] == 'DECILE'){
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_deciles'; 
+                }
+                else {
+                    var title = '_' + regExp.exec(titles[13])[1] + '_difference_individual_bins'; 
+                }
+
+            }
+            else {
+                var title = titles
+            }
+        }
 		var addRow = function ( row ) {
 			var cells = [];
 
@@ -27755,6 +27865,25 @@ DataTable.ext.buttons.excelHtml5 = {
 
 			return '<row>'+cells.join('')+'</row>';
 		};
+
+        var addTit = function ( row ) {
+            var cells = [];
+
+            
+            cells.push(  
+                    '<c t="inlineStr"><is><t>'+(row)+ '</t></is></c>'                                 
+            );
+            
+
+            return '<row>'+cells.join('')+'</row>';
+        };
+
+        if (data.header[2][0] !== "T") {
+            xml += addTit( $('tr:first').text() );
+        }
+        else {
+            xml += addTit( $('h1:last').text() );
+        }
 
 		if ( config.header ) {
 			xml += addRow( data.header );
@@ -27782,7 +27911,7 @@ DataTable.ext.buttons.excelHtml5 = {
 
 		_saveAs(
 			zip.generate( {type:"blob"} ),
-			_filename( config )
+            run_number[0] + title + '.xlsx'
 		);
 	},
 
@@ -27928,7 +28057,7 @@ DataTable.ext.buttons.pdfHtml5 = {
 
 	orientation: 'portrait',
 
-	pageSize: 'A4',
+	pageSize: 'letter',
 
 	header: true,
 
@@ -28082,7 +28211,7 @@ DataTable.ext.buttons.print = {
 		setTimeout( function () {
 			if ( config.autoPrint ) {
 				win.print(); // blocking - so close will not
-				win.close(); // execute until this is done
+				// win.close(); // execute until this is done
 			}
 		}, 250 );
 	},
