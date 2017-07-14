@@ -6,6 +6,7 @@ dependencies:
 - greenlet
 - bokeh
 - xlrd
+- redis
 - pip:
   - fabric
   - boto
@@ -13,7 +14,6 @@ dependencies:
   - eventlet
   - retrying
   - plotly
-  - redis
 
 channels:
   - ospc
