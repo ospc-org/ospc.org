@@ -72,10 +72,11 @@ class DropqCompute(object):
                                        increment_counter=False,
                                        pack_up_user_mods=False)
 
-    def submit_dropq_small_calculation(self, mods, first_budget_year, is_file=False):
+    def submit_dropq_small_calculation(self, mods, first_budget_year, additional_data={}, is_file=False):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit_calculation(mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
+                                       additional_data=additional_data,
                                        increment_counter=False,
                                        pack_up_user_mods=not is_file)
 
