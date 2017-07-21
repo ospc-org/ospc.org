@@ -97,8 +97,7 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file
-        fname = "../../taxbrain/tests/test_reform.json"
-        micro1 = do_micro_sim_from_file(self.client, fname)
+        micro1 = do_micro_sim_from_file(self.client)
 
         # Do the partial equilibrium simulation based on the microsim
         be_reform = {u'BE_sub': [u'0.25']}
@@ -108,5 +107,5 @@ class DynamicBehavioralViewsTests(TestCase):
         post = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        beh_params = json.loads(json.loads(post['behavior_params']))
+        beh_params = json.loads(post["behavior_params"])["behavior"]["2016"]
         assert beh_params["_BE_sub"][0]  == 0.25

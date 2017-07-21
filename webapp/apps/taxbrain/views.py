@@ -4,6 +4,7 @@ import pdfkit
 import json
 import pytz
 import os
+import tempfile
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -223,41 +224,57 @@ def file_input(request):
         reform_dict = {}
         if 'docfile' in request.FILES:
             inmemfile_reform = request.FILES['docfile']
-            reform_text = inmemfile_reform.read().strip()
-            reform_dict['taxcalc_reform'] = reform_text
+            reform_text = inmemfile_reform.read()
+            reform_file = tempfile.NamedTemporaryFile(delete=False)
+            reform_file.write(reform_text)
+            reform_file.close()
             if 'assumpfile' in request.FILES:
                 inmemfile_assumption = request.FILES['assumpfile']
-                assumption_text = inmemfile_assumption.read().strip()
-                reform_dict['taxcalc_assumption'] = assumption_text
+                assumptions_text = inmemfile_assumption.read()
+                assumptions_file = tempfile.NamedTemporaryFile(delete=False)
+                assumptions_file.write(assumptions_text)
+                assumptions_file.close()
+                reform_dict = taxcalc.Calculator.read_json_param_files(reform_file.name, assumptions_file.name, arrays_not_lists=False)
             else:
-                reform_dict['taxcalc_assumption'] = ""
+                assumptions_text = ""
+                reform_dict = taxcalc.Calculator.read_json_param_files(reform_file.name, None, arrays_not_lists=False)
 
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
 
+        reforms = reform_dict["policy"]
+        assumptions = {k: v for k, v in reform_dict.items() if k != "policy"}
         if error_messages:
             has_errors = True
             errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
         else:
             try:
                 log_ip(request)
-                mods = { 'reform': reform_dict['taxcalc_reform'], 'assumptions': reform_dict['taxcalc_assumption']}
-                #Submit calculation
                 if do_full_calc:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(mods,
-                                                                                              int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                        reforms,
+                        int(start_year),
+                        is_file=True,
+                        additional_data=assumptions
+                    )
                 else:
-                    submitted_ids, max_q_length = dropq_compute.submit_json_dropq_small_calculation(mods,
-                                                                                                    int(start_year))
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
+                        reforms,
+                        int(start_year),
+                        is_file=True,
+                        additional_data=assumptions
+                    )
 
                 if not submitted_ids:
                     raise JobFailError("couldn't submit ids")
                 else:
                     job_ids = denormalize(submitted_ids)
                     json_reform = JSONReformTaxCalculator()
-                    json_reform.reform_text = reform_dict['taxcalc_reform']
-                    json_reform.assumption_text = reform_dict['taxcalc_assumption']
+                    json_reform.reform_text = json.dumps(reforms)
+                    json_reform.assumption_text = json.dumps(assumptions) if assumptions_text else ""
+                    json_reform.raw_reform_text = reform_text
+                    json_reform.raw_assumption_text = assumptions_text if assumptions_text else ""
                     json_reform.save()
 
                     model = TaxSaveInputs()
@@ -551,6 +568,8 @@ def output_detail(request, pk):
     model = url.unique_inputs
     if model.tax_result:
         context = get_result_context(model, request, url)
+        context["raw_reform_text"] = model.json_text.raw_reform_text if model.json_text else ""
+        context["raw_assumption_text"] = model.json_text.raw_assumption_text if model.json_text else ""
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
         return render(request, 'taxbrain/failed.html', {"error_msg": model.error_text.text})

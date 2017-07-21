@@ -16,6 +16,8 @@ import taxcalc
 from taxcalc import Policy
 from .utils import *
 
+from ...test_assets import *
+
 START_YEAR = 2016
 
 
@@ -481,7 +483,7 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", "file_content")
+        tc_file = SimpleUploadedFile("test_reform.json", reform_text)
         data = {u'docfile': tc_file,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
@@ -494,14 +496,13 @@ class TaxBrainViewsTests(TestCase):
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
 
-
     def test_taxbrain_file_post_reform_and_assumptions(self):
         #Monkey patch to mock out running of compute jobs
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", "file_content")
-        tc_file2 = SimpleUploadedFile("test_assumptions.json", "file_content")
+        tc_file = SimpleUploadedFile("test_reform.json", reform_text)
+        tc_file2 = SimpleUploadedFile("test_assumptions.json", assumptions_text)
         data = {u'docfile': tc_file,
                 u'assumpfile': tc_file2,
                 u'has_errors': [u'False'],

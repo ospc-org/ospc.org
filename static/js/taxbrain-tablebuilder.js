@@ -207,7 +207,7 @@ $(function() {
                     <table class="table table-striped" style="width:100%">\
                         <thead>\
                             <tr>\
-                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %><% if (model.get("reference") !== "fiscal_reform") { %> (<%= model.get("year") %>)<% } %></h1></th>\
+                                <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %></h1></th>\
                             </tr>\
                             <tr>\
                                 <th></th>\
@@ -581,8 +581,8 @@ $(function() {
 
     // mock data --------------------
     tablesObj['fiscal_change'] = JSON.parse(JSON.stringify(tablesObj['fiscal_change']));
-    tablesObj['fiscal_change']['title'] =  'TOTAL LIABILITIES CHANGE BY CALENDAR YEAR';
-    tablesObj['fiscal_change']['label'] =  'TOTAL LIABILITIES CHANGE BY CALENDAR YEAR';
+    tablesObj['fiscal_change']['title'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)';
+    tablesObj['fiscal_change']['label'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)';
 
     tablesObj['fiscal_currentlaw'] =  JSON.parse(JSON.stringify(tablesObj['fiscal_currentlaw']));
     tablesObj['fiscal_currentlaw']['title'] =  'TOTAL LIABILITIES BY CALENDAR YEAR (CURRENT LAW)';

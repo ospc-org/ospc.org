@@ -56,6 +56,8 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                           ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
                           INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
+from ..formatters import format_dynamic_params
+
 
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
@@ -100,6 +102,7 @@ def dynamic_input(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
+            submitted_ids = None
 
             if not taxbrain_model.json_text:
                 taxbrain_dict = dict(taxbrain_model.__dict__)
@@ -222,14 +225,7 @@ def dynamic_behavioral(request, pk):
                         print "missing this: ", key
 
                 microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
-
-                el_keys = ('first_year', 'elastic_gdp')
-                behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                behavior_params = { k:v for k, v in worker_data.items()
-                                    if k.startswith("BE_") or k == "first_year"}
-                behavior_params = {('_' + k) if k.startswith('BE') else k:v for k,v in behavior_params.items()}
-
-                additional_data = {'behavior_params': behavior_params}
+                behavior_params = format_dynamic_params(worker_data)
 
                 #Don't need to pass around the microsim results
                 if 'tax_result' in microsim_data:
@@ -238,20 +234,17 @@ def dynamic_behavioral(request, pk):
                 benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=additional_data)
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=behavior_params)
 
             else:
-                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
-                el_keys = ('first_year', 'elastic_gdp')
-                behavior_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                behavior_params = { k:v for k, v in worker_data.items()
-                                    if k.startswith("BE_") or k == "first_year"}
-                behavior_params = {('_' + k) if k.startswith('BE') else k:v for k,v in behavior_params.items()}
-
-                additional_data = {'behavior_params': json.dumps(behavior_params)}
+                behavior_params = format_dynamic_params(worker_data)
                 # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_json_dropq_calculation(microsim_data,
-                                                                         int(start_year), additional_data)
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                    json.loads(taxbrain_model.json_text.reform_text),
+                    int(start_year),
+                    is_file=True,
+                    additional_data=behavior_params,
+                )
 
 
             if not submitted_ids:
@@ -375,14 +368,17 @@ def dynamic_elasticities(request, pk):
                                                                         int(start_year))
 
             else:
-                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
                 el_keys = ('first_year', 'elastic_gdp')
                 elasticity_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                additional_data = {'elasticity_params': json.dumps(elasticity_params)}
-                # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_json_elastic_calculation(microsim_data,
-                                                                         int(start_year),
-                                                                         additional_data)
+                additional_data = {'elasticity_params': elasticity_params}
+                reform_text = json.loads(taxbrain_model.json_text.reform_text)
+                reform_text[reform_text.keys()[0]]["elastic_gdp"] = elasticity_params["elastic_gdp"]
+                submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
+                    reform_text,
+                    int(start_year),
+                    is_file=True
+                )
+
 
             if not submitted_ids:
                 no_inputs = True
