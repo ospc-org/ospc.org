@@ -88,9 +88,6 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
               taxrec_df=tax_data, user_mods=user_reform)
     print('keywords to dropq', {k: v for k, v in kw.items()
                                 if k not in ('taxrec_df',)})
-    import pickle
-    with open("saved.p", "w") as f:
-        pickle.dump(kw, f)
     (mY_dec_i, mX_dec_i, df_dec_i, pdf_dec_i, cdf_dec_i, mY_bin_i, mX_bin_i,
      df_bin_i, pdf_bin_i, cdf_bin_i, fiscal_tot_i,
      fiscal_tot_i_bl, fiscal_tot_i_ref) = taxcalc.dropq.run_nth_year_tax_calc_model(**kw)
