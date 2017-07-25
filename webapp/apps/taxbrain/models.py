@@ -78,10 +78,10 @@ class JSONReformTaxCalculator(models.Model):
     an instance of this model if the user created the TaxBrain job
     through the JSON iput page.
     '''
-    reform_text = models.CharField(blank=True, null=False, max_length=4000)
-    raw_reform_text = models.CharField(blank=True, null=False, max_length=4000)
-    assumption_text = models.CharField(blank=True, null=False, max_length=4000)
-    raw_assumption_text = models.CharField(blank=True, null=False, max_length=4000)
+    reform_text = models.TextField(blank=True, null=False)
+    raw_reform_text = models.TextField(blank=True, null=False)
+    assumption_text = models.TextField(blank=True, null=False)
+    raw_assumption_text = models.TextField(blank=True, null=False)
 
 class ErrorMessageTaxCalculator(models.Model):
     '''
