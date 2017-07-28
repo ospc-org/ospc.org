@@ -1,9 +1,9 @@
-The goal of this document is to formalize a process for releasing new taxcalc,
+This document formalizes a process for releasing new taxcalc,
 og-usa, b-tax, webapp-public, and taxpuf packages to ospc.org. More
-fundamentally, this is a document about how to maintain compatibility across
+fundamentally, it is meant to facilitate compatibility across
 these open source projects.
 
-Assigned Upstream Project (UP) Contributors:
+### Assigned Upstream Project (UP) Contributors
     - Tax-Calculator: @martinholmer or @matthjensen
     - OG-USA: @rickecon or @jdebacker 
     - Webapp-public: @brittainhard
@@ -11,6 +11,7 @@ Assigned Upstream Project (UP) Contributors:
     - TaxData/taxpuf: @andersonfrailey or @hdoupe
 
 
+### Process
 
 1. Upstream project (UP) tags a new release with changelog.
     - Responsibility: Assigned UP contributor
