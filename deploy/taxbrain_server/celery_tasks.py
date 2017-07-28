@@ -60,18 +60,14 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
     # index indicates whether the reform dictionary was non-empty
     # The four reform dictionaries from file-based reforms are:
     # policy, behavior, growth, consumption (in that order)
-    reform_style = [True]
-    if first_budget_year is not None:
-        first_year = int(first_budget_year)
-    else:
-        first_year = int(user_mods.keys()[0])
-
+    first_budget_year = int(first_budget_year)
     user_mods = convert_int_key(user_mods)
-    print('first_year', first_year)
-    if user_mods.get(first_year):
-        for key in set(user_mods[first_year]):
-            if key.startswith('_BE_'):
-                user_mods[first_year].pop(key)
+    print('first_year', first_budget_year)
+    for reform_year in user_mods.keys():
+        if user_mods.get(reform_year):
+            for key in set(user_mods[reform_year]):
+                if key.startswith('_BE_'):
+                    user_mods[reform_year].pop(key)
         user_reform = {"policy": user_mods}
     print('user_reform', user_reform, user_mods)
     reform_style = [True if x else False for x in user_reform]
@@ -84,7 +80,7 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
     for key in EXPECTED_KEYS:
         if key not in user_reform:
             user_reform[key] = {}
-    kw = dict(year_n=year, start_year=first_year,
+    kw = dict(year_n=year, start_year=first_budget_year,
               taxrec_df=tax_data, user_mods=user_reform)
     print('keywords to dropq', {k: v for k, v in kw.items()
                                 if k not in ('taxrec_df',)})

@@ -228,7 +228,6 @@ def file_input(request):
             reform_file = tempfile.NamedTemporaryFile(delete=False)
             reform_file.write(reform_text)
             reform_file.close()
-            os.remove(reform_file.name)
             if 'assumpfile' in request.FILES:
                 inmemfile_assumption = request.FILES['assumpfile']
                 assumptions_text = inmemfile_assumption.read()
@@ -236,7 +235,6 @@ def file_input(request):
                 assumptions_file.write(assumptions_text)
                 assumptions_file.close()
                 reform_dict = taxcalc.Calculator.read_json_param_files(reform_file.name, assumptions_file.name, arrays_not_lists=False)
-                os.remove(assumptions_file.name)
             else:
                 assumptions_text = ""
                 reform_dict = taxcalc.Calculator.read_json_param_files(reform_file.name, None, arrays_not_lists=False)
@@ -244,7 +242,6 @@ def file_input(request):
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
-
         reforms = reform_dict["policy"]
         assumptions = {k: v for k, v in reform_dict.items() if k != "policy"}
         if error_messages:
