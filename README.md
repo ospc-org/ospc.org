@@ -3,6 +3,8 @@
 Taxbrain Web Application
 ========================
 
+
+
 # Deploying To Heroku
 
 Production
@@ -49,6 +51,10 @@ The migration commands presented in the Production section also hold true for de
 
 The above command will turn DEBUG on.  Setting to any other string will turn DEBUG off.
 
+Release Process
+---------------
+
+To review the steps for the release process, see [RELEASE_PROCESS.md](https://github.com/OpenSourcePolicyCenter/webapp-public/blob/master/RELEASE_PROCESS.md)
 
 # Installing Locally
 To develop the application locally, you need a script containing the environment variables necessary for communicating with the computation nodes. You should ask your project manager or administrator for this script.
