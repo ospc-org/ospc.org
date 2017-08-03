@@ -18,6 +18,7 @@ SUBMIT_DROPQ_DATA = {
     "url_template": 'http://{hn}/dropq_start_job',
     "additional_data": {'growdiff_response': {}, 'consumption': {}, 'behavior': {}, 'growdiff_baseline': {}},
     "is_file": True
+}
 
 
 class MockComputeTests(MockCompute):
