@@ -118,7 +118,8 @@ class DropqCompute(object):
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
-        data['user_mods'] = json.dumps(user_mods)
+        data["user_mods"] = json.dumps(user_mods)
+        data["first_budget_year"] = str(first_budget_year)
         if additional_data:
             if "behavior" in additional_data.keys():
                 data["behavior_params"] = json.dumps(additional_data)

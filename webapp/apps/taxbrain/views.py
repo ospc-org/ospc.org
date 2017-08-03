@@ -242,7 +242,6 @@ def file_input(request):
         else:
             msg = "No reform file uploaded."
             error_messages['Tax-Calculator:'] = msg
-
         reforms = reform_dict["policy"]
         assumptions = {k: v for k, v in reform_dict.items() if k != "policy"}
         if error_messages:
