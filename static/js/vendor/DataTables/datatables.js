@@ -27046,6 +27046,24 @@ DataTable.ext.buttons.excelFlash = $.extend( {}, flashButton, {
 			return '<row>'+cells.join('')+'</row>';
 		};
 
+        var addTit = function ( row ) {
+            var cells = [];
+            
+            cells.push(  
+                    '<c t="inlineStr"><is><t>'+(row)+ '</t></is></c>'                                 
+            );
+            
+
+            return '<row>'+cells.join('')+'</row>';
+        };
+
+        if (data.header[2][0] !== "T") {
+            xml += addTit( $('tr:first').text() );
+        }
+        else {
+            xml += addTit( $('h1:last').text() );
+        }
+
 		if ( config.header ) {
 			xml += addRow( data.header );
 		}
@@ -27572,7 +27590,16 @@ DataTable.ext.buttons.copyHtml5 = {
 
 	action: function ( e, dt, button, config ) {
 		var exportData = _exportData( dt, config );
-		var output = exportData.str;
+        var data = dt.buttons.exportData( config.exportOptions );
+        var output_ = exportData.str;
+        if (data.header[2][0] !== "T") {
+            var str = $('tr:first').text() + '\n'
+            var output = str + output_
+            }
+        else{
+            var str = $('h1:last').text() + '\n'
+            var output = str + output_
+        }
 		var hiddenDiv = $('<div/>')
 			.css( {
 				height: 1,
@@ -27672,12 +27699,21 @@ DataTable.ext.buttons.csvHtml5 = {
 	action: function ( e, dt, button, config ) {
 		// Set the text
 		var newLine = _newLine( config );
-        var output = _exportData( dt, config ).str;
+		var output_ = _exportData( dt, config ).str;
+        var data = dt.buttons.exportData( config.exportOptions );
+        if (data.header[2][0] !== "T") {
+            var str = $('tr:first').text() + '\n'
+            var output = str + output_
+            }
+        else{
+            var str = $('h1:last').text() + '\n'
+            var output = str + output_
+        }
         var url = window.location.href;
         var myRegexp = /(\d+)/g;
         var regExp = /\(([^)]+)\)/;
         var run_number = myRegexp.exec(url);
-        if (output.substring(6,7) == 1) {
+        if (output_.substring(6,7) == 1) {
             var title = '_liabilities_change';
         }
         else {
