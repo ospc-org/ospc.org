@@ -91,7 +91,7 @@ mkdir project_name
 ## Clone the repo in the new directory
 
 ```
-git clone git@github.com:OpenSourcePolicyCenter/webapp.git
+git clone git@github.com:OpenSourcePolicyCenter/webapp-public.git
 ```
 
 ## Create a conda environment for your local development
