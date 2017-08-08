@@ -505,7 +505,6 @@ class TaxBrainViewsTests(TestCase):
         assert tsi2.ID_Medical_frt_add4aged == u'-0.02'
 
 
-
     def test_taxbrain_file_post_only_reform(self):
         #Monkey patch to mock out running of compute jobs
         import sys
