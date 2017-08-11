@@ -103,24 +103,24 @@ def get_dropq_result(start_year, reform, assump=None, db_path=DB_PATH):
 # following numpy.testing.assert_equal
 # needed to adjust tolerances but numpy.testing.assert_equal does
 # not do that
+MSG = "\n\tNOT EQUAL: \n\t\t TB: {tb} \n\n\t\t DQ: {dq} \n\n\t\t keys: {k}"
 def assert_results_equal(tb, dq, keys=[]):
-    msg = "\n\tNOT EQUAL: \n\t\t TB: {tb} \n\n\t\t DQ: {dq} \n\n\t\t keys: {k}"
     if isinstance(tb, dict) and isinstance(dq, dict):
         try:
             assert len(tb) == len(dq)
         except AssertionError:
-            raise AssertionError(msg.format(tb=tb, dq=dq, k=keys))
+            raise AssertionError(MSG.format(tb=tb, dq=dq, k=keys))
         for k in tb.keys():
             try:
                 assert k in dq
             except AssertionError:
-                raise AssertionError(msg.format(tb=tb, dq=dq, k=keys))
+                raise AssertionError(MSG.format(tb=tb, dq=dq, k=keys))
             assert_results_equal(tb[k], dq[k], keys=keys + [k])
     elif isinstance(tb, list) and isinstance(dq, list):
         try:
             assert len(tb) == len(dq)
         except AssertionError:
-            raise AssertionError(msg.format(tb=tb, dq=dq, k=keys))
+            raise AssertionError(MSG.format(tb=tb, dq=dq, k=keys))
         for k in range(len(tb)):
             assert_results_equal(tb[k], dq[k], keys=keys + [k])
     else:
@@ -133,7 +133,7 @@ def assert_results_equal(tb, dq, keys=[]):
                 except ValueError:
                     assert tb == dq
         except AssertionError:
-            raise AssertionError(msg.format(tb=tb, dq=dq, k=keys))
+            raise AssertionError(MSG.format(tb=tb, dq=dq, k=keys))
 
 if __name__=='__main__':
     tb = get_taxbrain_result(50)
