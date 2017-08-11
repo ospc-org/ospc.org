@@ -88,22 +88,3 @@ def post_file(session, data, reform_path, assump_path=None, url=None):
 #
 #     print(r)
 #     print(r.text)
-
-
-if __name__ == "__main__":
-    session, csrftoken = get_session(url=LOCAL_BASE_URL)
-    data = get_data()
-    data[u'csrfmiddlewaretoken'] = csrftoken
-    # session, pk, response = post_reform(session, data)
-
-    # r1 = "/Users/henrydoupe/Documents/Tax-Calculator/file-upload-tests/r1.json"
-    # ryan_brady = "/Users/henrydoupe/Documents/Tax-Calculator/taxcalc/reforms/RyanBrady.json"
-    # trump_2016 = "/Users/henrydoupe/Documents/Tax-Calculator/taxcalc/reforms/Trump2016.json"
-    # session, pk, response = post_file(session, data, trump_2016,
-    #                                   url=LOCAL_BASE_URL + 'file/')
-
-    r1 = "/Users/henrydoupe/Documents/Tax-Calculator/file-upload-tests/r1.json"
-    a0 = "/Users/henrydoupe/Documents/Tax-Calculator/file-upload-tests/a0.json"
-    print("TESTING", r1, a0)
-    session, pk, response = post_file(session, data, r1, a0,
-                                      url=LOCAL_BASE_URL + 'file/')

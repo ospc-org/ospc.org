@@ -134,19 +134,3 @@ def assert_results_equal(tb, dq, keys=[]):
                     assert tb == dq
         except AssertionError:
             raise AssertionError(MSG.format(tb=tb, dq=dq, k=keys))
-
-if __name__=='__main__':
-    tb = get_taxbrain_result(50)
-    print(tb)
-    # print(tb)
-    # trump_2016 = "/Users/henrydoupe/Documents/Tax-Calculator/taxcalc/reforms/Trump2016.json"
-    # with open(trump_2016, 'r') as f:
-    #     ref = f.read()
-    # dq = get_dropq_result(2017, ref, reform_file=True)
-    # #
-    # # with open('trump_results.json', 'w') as js:
-    # #     js.write(json.dumps(results))
-    # # with open('trump_results.json', 'r') as js:
-    # #     dq = json.loads(js.read())
-    #
-    # assert_results_equal(tb, dq)

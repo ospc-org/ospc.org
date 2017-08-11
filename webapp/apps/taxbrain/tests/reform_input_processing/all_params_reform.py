@@ -186,7 +186,3 @@ def get_formatted_reform(reform=REFORM):
             formatted[form_param] = v[0]
 
     return formatted
-
-if __name__ == '__main__':
-    ref = get_formatted_reform()
-    print(ref)
