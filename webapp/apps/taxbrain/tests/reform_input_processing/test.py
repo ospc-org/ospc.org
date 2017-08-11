@@ -67,7 +67,7 @@ def test_full_run(start_year, reform, assump=None, reform_dq=None, data=DATA):
     return dq, tb, pk, test_passed
 
 if __name__ == "__main__":
-    passes
+    # passes
     trump_2016 = "/Users/henrydoupe/Documents/Tax-Calculator/taxcalc/reforms/Trump2016.json"
     print("TESTING: ", trump_2016)
     db, tb, pk, test_passed = test_full_run(2017, trump_2016)
