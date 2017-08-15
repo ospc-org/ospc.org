@@ -28235,7 +28235,7 @@ DataTable.ext.buttons.print = {
 
 		// Inject the table and other surrounding information
 		$(win.document.body).html(
-			'<h1>'+title+'</h1>'+
+			'<h1>'+ 'TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)' +'</h1>'+
 			'<div>'+config.message+'</div>'+
 			html
 		);
