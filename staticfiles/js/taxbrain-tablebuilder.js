@@ -209,7 +209,7 @@ $(function() {
                   <li data-tablename="fiscal_reform" <% if (selectedTableName == "fiscal_reform") { %>class="active" <% } %>><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.fiscal_reform %>" href="#">Reform</a></li>\
                   <li data-tablename="fiscal_change" <% if (selectedTableName == "fiscal_change") { %>class="active" <% } %>><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.fiscal_change %>" href="#">Change</a></li>\
                 </ul>\
-                    <table class="table table-striped" style="width:95%">\
+                    <table class="table table-striped" style="width:100%">\
                         <thead>\
                             <tr>\
                                 <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %></h1></th>\
