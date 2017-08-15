@@ -506,7 +506,8 @@ def dynamic_landing(request, pk):
             'pk': pk,
             'is_authenticated': request.user.is_authenticated(),
             'include_ogusa': include_ogusa,
-            'start_year': request.GET['start_year']
+            'start_year': request.GET['start_year'],
+            'taxcalc_version': taxcalc_version
              }
 
     return render_to_response('dynamic/landing.html', init_context)
