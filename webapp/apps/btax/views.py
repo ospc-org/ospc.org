@@ -55,7 +55,7 @@ dropq_compute = DropqComputeBtax()
 
 BTAX_VERSION_INFO = btax._version.get_versions()
 
-BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-revisionid'][:6]])
+BTAX_VERSION = BTAX_VERSION_INFO['version']
 JOB_PROC_TIME_IN_SECONDS = 30
 
 

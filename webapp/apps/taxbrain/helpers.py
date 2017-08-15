@@ -139,7 +139,7 @@ def default_taxcalc_data(cls, start_year, metadata=False):
 #
 
 tcversion_info = taxcalc._version.get_versions()
-taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
+taxcalc_version = tcversion_info['version']
 
 TAXCALC_COMING_SOON_FIELDS = []
 

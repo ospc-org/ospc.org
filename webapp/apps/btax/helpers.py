@@ -39,7 +39,7 @@ BTAX_ECON = ['btax_econ_nomint', 'btax_econ_inflat',]
 
 
 BTAX_VERSION_INFO = btax._version.get_versions()
-BTAX_VERSION = ".".join([BTAX_VERSION_INFO['version'], BTAX_VERSION_INFO['full-revisionid'][:6]])
+BTAX_VERSION = BTAX_VERSION_INFO['version']
 
 
 #
@@ -210,4 +210,3 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
 
             )
     return depr_argument_groups
-

@@ -54,7 +54,7 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
 
 tcversion_info = taxcalc._version.get_versions()
 
-taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
+taxcalc_version = tcversion_info['version']
 JOB_PROC_TIME_IN_SECONDS = 30
 
 def log_ip(request):

@@ -99,8 +99,8 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
 
     #Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
-    results['dropq_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
+    results['taxcalc_version'] = vinfo['version']
+    results['dropq_version'] = vinfo['version']
 
     json_res = json.dumps(results)
     return json_res
@@ -141,8 +141,8 @@ def elasticity_gdp_task_async(year, user_mods, first_budget_year, elast_params):
     results = {'elasticity_gdp': gdp_elast_i}
     #Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
-    results['dropq_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
+    results['taxcalc_version'] = vinfo['version']
+    results['dropq_version'] = vinfo['version']
 
     json_res = json.dumps(results)
     return json_res
@@ -163,12 +163,12 @@ def ogusa_async(user_mods, ogusa_params, guid):
     diff_table = taxcalc.dropq.format_macro_results(diff_data)
     results = {'df_ogusa': diff_table}
     vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
-    results['dropq_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
+    results['taxcalc_version'] = vinfo['version']
+    results['dropq_version'] = vinfo['version']
 
     #ogusa uses different version convention
     ogvinfo = ogusa._version.get_versions()
-    ogusa_version = ".".join([ogvinfo['version'], ogvinfo['full-revisionid'][:6]])
+    ogusa_version = ogvinfo['version']
     results['ogusa_version'] = ogusa_version
     json_res = json.dumps(results)
     return json_res
@@ -181,10 +181,10 @@ def btax_async(user_mods):
     results.update(runner_json_tables(**user_mods))
     #Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
-    results['dropq_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
+    results['taxcalc_version'] = vinfo['version']
+    results['dropq_version'] = vinfo['version']
     binfo = btax._version.get_versions()
-    results['btax_version'] = binfo['version'] + '.' +  binfo['full-revisionid'][:6]
+    results['btax_version'] = binfo['version']
     return json.dumps(results)
 
 
@@ -200,13 +200,13 @@ def example_async():
 
     #Add version to results
     vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
+    results['taxcalc_version'] = vinfo['version']
     dqvinfo = taxcalc.dropq._version.get_versions()
-    results['dropq_version'] = vinfo['version'] + '.' + dqvinfo['full'][:6]
+    results['dropq_version'] = vinfo['version']
 
     #ogusa uses different version convention
     ogvinfo = ogusa._version.get_versions()
-    ogusa_version = ".".join([ogvinfo['version'], ogvinfo['full-revisionid'][:6]])
+    ogusa_version = ogvinfo['version']
     results['ogusa_version'] = ogusa_version
     json_res = json.dumps(results)
     return json_res

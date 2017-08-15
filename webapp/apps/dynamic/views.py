@@ -28,7 +28,7 @@ from django.contrib.auth.models import User
 from django import forms
 
 from djqscsv import render_to_csv_response
-from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm, 
+from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
                     has_field_errors, DynamicElasticityInputsModelForm)
 from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
@@ -60,7 +60,7 @@ from ..formatters import format_dynamic_params
 
 
 tcversion_info = taxcalc._version.get_versions()
-taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
+taxcalc_version = tcversion_info['version']
 
 version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
 with open(version_path, "r") as f:
@@ -210,7 +210,7 @@ def dynamic_behavioral(request, pk):
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
-            #get microsim data 
+            #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
@@ -302,7 +302,7 @@ def dynamic_behavioral(request, pk):
 
 def dynamic_elasticities(request, pk):
     """
-    This view handles the dynamic macro elasticities input page and 
+    This view handles the dynamic macro elasticities input page and
     calls the function that handles the calculation on the inputs.
     """
 
@@ -342,7 +342,7 @@ def dynamic_elasticities(request, pk):
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
-            #get microsim data 
+            #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
