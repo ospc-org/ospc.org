@@ -6,6 +6,11 @@ $(function() {
 
         defaults: {
             row_labels: [
+                'Individual Income Tax Liability',
+                'Payroll Tax Liability',
+                'Combined Payroll and Individual Income Tax Liability'
+            ],
+            row_labels_change: [
                 'Individual Income Tax Liability Change',
                 'Payroll Tax Liability Change',
                 'Combined Payroll and Individual Income Tax Liability Change'
@@ -204,7 +209,7 @@ $(function() {
                   <li data-tablename="fiscal_reform" <% if (selectedTableName == "fiscal_reform") { %>class="active" <% } %>><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.fiscal_reform %>" href="#">Reform</a></li>\
                   <li data-tablename="fiscal_change" <% if (selectedTableName == "fiscal_change") { %>class="active" <% } %>><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.fiscal_change %>" href="#">Change</a></li>\
                 </ul>\
-                    <table class="table table-striped" style="width:100%">\
+                    <table class="table table-striped" style="width:95%">\
                         <thead>\
                             <tr>\
                                 <th class="text-center" colspan="<%= model.get("cols").length + 1 %>"><h1><%= model.get("label").toUpperCase() %></h1></th>\
@@ -225,7 +230,7 @@ $(function() {
                             </tr>\
                             <% _.each(model.get("rows"), function(row, idx) { %>\
                             <tr>\
-                                <td class="text-center single-line"><strong><%= model.get("row_labels")[idx] %></strong></td>\
+                                <td class="text-center single-line"><strong><% if (selectedTableName == "fiscal_change") { %><%= model.get("row_labels_change")[idx] %><% } else { %><%= model.get("row_labels")[idx] %><% } %></strong></td>\
                                 <% _.each(row.cells, function(cell, idx) { %>\
                                 <td class="text-center"><% if (cell["tot_value"]) { %><%= cell["tot_value"] %><% } else { %><%= cell["year_values"][model.get("year")] %><% } %></td>\
                                 <% }) %>\
