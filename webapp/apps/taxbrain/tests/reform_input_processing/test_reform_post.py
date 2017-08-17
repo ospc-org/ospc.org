@@ -14,6 +14,9 @@ import pytest
 
 import traceback
 
+CUR_PATH = cur_path = os.path.abspath(os.path.dirname(__file__))
+
+
 def run_reform(start_year, reform, assump=None, reform_dq=None, data=DATA):
     print("START_YEAR:", start_year)
     print("REFORM:", reform)
@@ -64,46 +67,46 @@ def run_reform(start_year, reform, assump=None, reform_dq=None, data=DATA):
 
 def test_trump_reform():
     # passes
-    trump_2016 = "reforms/Trump2016.json"
+    trump_2016 = os.path.join(CUR_PATH, "reforms/Trump2016.json")
     print("TESTING: ", trump_2016)
     db, tb, pk = run_reform(2017, trump_2016)
 
 
 def test_ryanbrady_reform():
     # passes
-    ryan_brady = "reforms/RyanBrady.json"
+    ryan_brady = os.path.join(CUR_PATH, "reforms/RyanBrady.json")
     print("TESTING", ryan_brady)
     db, tb, pk = run_reform(2017, ryan_brady)
 
 
 def test_r1a0_2013_reform():
     # passes
-    r1 = "reforms/r1.json"
-    a0 = "reforms/a0.json"
+    r1 = os.path.join(CUR_PATH, "reforms/r1.json")
+    a0 = os.path.join(CUR_PATH, "reforms/a0.json")
     print("TESTING", r1, a0)
     db, tb, pk = run_reform(2013, r1, assump=a0)
 
 
 def test_r1a0_2017_reform():
     # passes
-    r1 = "reforms/r1.json"
-    a0 = "reforms/a0.json"
+    r1 = os.path.join(CUR_PATH, "reforms/r1.json")
+    a0 = os.path.join(CUR_PATH, "reforms/a0.json")
     print("TESTING", r1, a0)
     db, tb, pk = run_reform(2017, r1, assump=a0)
 
 
 def test_r1a1_2015_reform():
     # passes
-    r1 = "reforms/r1.json"
-    a1 = "reforms/a1.json"
+    r1 = os.path.join(CUR_PATH, "reforms/r1.json")
+    a1 = os.path.join(CUR_PATH, "reforms/a1.json")
     print("TESTING", r1, a1)
     db, tb, pk = run_reform(2015, r1, assump=a1)
 
 
 def test_r1a2_2016_reform():
     # passes
-    r1 = "reforms/r1.json"
-    a2 = "reforms/a2.json"
+    r1 = os.path.join(CUR_PATH, "reforms/r1.json")
+    a2 = os.path.join(CUR_PATH, "reforms/a2.json")
     print("TESTING", r1, a2)
     db, tb, pk = run_reform(2016, r1, assump=a2)
 
