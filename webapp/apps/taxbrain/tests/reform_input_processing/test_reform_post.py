@@ -58,13 +58,14 @@ def run_reform(start_year, reform, assump=None, reform_dq=None, data=DATA):
 
     print("TIME", (datetime.now() - start).seconds)
     if tb is None:
-        print("no results after", round(wait_time/60.0), "minutes")
+        assert "no results after {} minutes".format(round(wait_time/60.0))
     else:
         assert_results_equal(tb, dq)
 
     return dq, tb, pk
 
 
+@pytest.mark.requires_pufcsv
 def test_trump_reform():
     # passes
     trump_2016 = os.path.join(CUR_PATH, "reforms/Trump2016.json")
@@ -72,6 +73,7 @@ def test_trump_reform():
     db, tb, pk = run_reform(2017, trump_2016)
 
 
+@pytest.mark.requires_pufcsv
 def test_ryanbrady_reform():
     # passes
     ryan_brady = os.path.join(CUR_PATH, "reforms/RyanBrady.json")
@@ -79,6 +81,7 @@ def test_ryanbrady_reform():
     db, tb, pk = run_reform(2017, ryan_brady)
 
 
+@pytest.mark.requires_pufcsv
 def test_r1a0_2013_reform():
     # passes
     r1 = os.path.join(CUR_PATH, "reforms/r1.json")
@@ -86,7 +89,7 @@ def test_r1a0_2013_reform():
     print("TESTING", r1, a0)
     db, tb, pk = run_reform(2013, r1, assump=a0)
 
-
+@pytest.mark.requires_pufcsv
 def test_r1a0_2017_reform():
     # passes
     r1 = os.path.join(CUR_PATH, "reforms/r1.json")
@@ -95,6 +98,7 @@ def test_r1a0_2017_reform():
     db, tb, pk = run_reform(2017, r1, assump=a0)
 
 
+@pytest.mark.requires_pufcsv
 def test_r1a1_2015_reform():
     # passes
     r1 = os.path.join(CUR_PATH, "reforms/r1.json")
@@ -103,6 +107,7 @@ def test_r1a1_2015_reform():
     db, tb, pk = run_reform(2015, r1, assump=a1)
 
 
+@pytest.mark.requires_pufcsv
 def test_r1a2_2016_reform():
     # passes
     r1 = os.path.join(CUR_PATH, "reforms/r1.json")
@@ -111,6 +116,7 @@ def test_r1a2_2016_reform():
     db, tb, pk = run_reform(2016, r1, assump=a2)
 
 
+@pytest.mark.requires_pufcsv
 @pytest.mark.xfail
 def test_allparams_2017_reform():
     # fails--results not within 2 percent
