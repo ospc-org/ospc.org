@@ -1,6 +1,6 @@
 import os
 
-DIAGNOSTIC_TOOLTIP = "Key variables in the computation of tax liabilities."
+DISTRIBUTION_TOOLTIP = "Key variables in the computation of tax liabilities."
 DIFFERENCE_TOOLTIP = "Key variables that highlight the differences between two tax plans."
 PAYROLL_TOOLTIP = " Include employee and employer payroll taxes in output."
 INCOME_TOOLTIP = "Include individual income taxes in output."
