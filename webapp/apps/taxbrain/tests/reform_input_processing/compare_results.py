@@ -12,9 +12,11 @@ import numpy as np
 import pandas as pd
 import os
 
-DB_PATH = '/Users/henrydoupe/Documents/webapp-public/db.sqlite3'
-PUF_PATH = '/Users/henrydoupe/Documents/webapp-public/deploy/taxbrain_server/puf.csv'
+cur_path = os.path.abspath(os.path.dirname(__file__))
+DB_PATH = os.path.join(cur_path, "../../../../../db.sqlite3")
+PUF_PATH = os.path.join(cur_path, "../../../../../deploy/taxbrain_server/puf.csv")
 PUF = pd.read_csv(PUF_PATH)
+
 
 def get_taxbrain_result(pk, db_path=DB_PATH):
     """
@@ -33,7 +35,7 @@ def get_taxbrain_result(pk, db_path=DB_PATH):
     else:
         return None
 
-def get_dropq_result(start_year, reform, assump=None, db_path=DB_PATH):
+def get_dropq_result(start_year, reform, assump=None, taxrec_df=PUF):
     """
     get and format dropq results in a way corresponding to taxbrain
     """
@@ -69,7 +71,7 @@ def get_dropq_result(start_year, reform, assump=None, db_path=DB_PATH):
 
     # get dropq results for next 10 years or until 2026
     for year in np.arange(0, min(10, 2026-start_year+1)):
-        kw = dict(year_n=year, start_year=start_year, taxrec_df=PUF,
+        kw = dict(year_n=year, start_year=start_year, taxrec_df=taxrec_df,
                   user_mods=user_mods)
 
         dq_res = run_nth_year_tax_calc_model(**kw)
