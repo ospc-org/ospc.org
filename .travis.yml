@@ -20,4 +20,4 @@ before_script:
   - python manage.py migrate --fake
 
 script:
-  - py.test webapp/apps/
+  - py.test webapp/apps/ -m "not requires_pufcsv"
