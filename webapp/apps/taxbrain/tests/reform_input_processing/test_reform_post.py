@@ -12,7 +12,6 @@ import os
 import json
 import pytest
 
-import traceback
 
 CUR_PATH = cur_path = os.path.abspath(os.path.dirname(__file__))
 

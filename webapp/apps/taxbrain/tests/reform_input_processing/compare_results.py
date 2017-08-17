@@ -1,8 +1,6 @@
 from post_reform import (get_session, get_data, get_session,
                          LOCAL_BASE_URL, TEST_BASE_URL)
 
-from gen_reform import taxbrain_to_policy_reform
-
 from taxcalc import Calculator
 from taxcalc.dropq import run_nth_year_tax_calc_model
 
