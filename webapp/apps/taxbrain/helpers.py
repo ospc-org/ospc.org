@@ -711,7 +711,6 @@ def parse_sub_category(field_section, budget_year):
             section_name = dict(z).get("section_2")
             new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year)}
             if section_name:
-                section_name = section_name.lower()
                 section = next((item for item in output if section_name in item), None)
                 if not section:
                     output.append({section_name: [new_param]})
@@ -728,7 +727,6 @@ def parse_top_level(ordered_dict):
     for x, y in ordered_dict.iteritems():
         section_name = dict(y).get("section_1")
         if section_name:
-            section_name = section_name.lower()
             section = next((item for item in output if section_name in item), None)
             if not section:
                 output.append({section_name: [{x: dict(y)}]})
