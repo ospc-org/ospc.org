@@ -185,7 +185,7 @@ def btax_async(user_mods):
             dataframes = json.loads(tables["dataframes"])
             for x, y in dataframes.items():
                 dataframes[x] = json.loads(y)
-            results.update(dataframes)
+            results["dataframes"] = dataframes
     else:
         results.update(tables)
     vinfo = taxcalc._version.get_versions()
