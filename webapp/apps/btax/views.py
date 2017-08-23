@@ -339,7 +339,7 @@ def output_detail(request, pk):
             'unique_url': url,
             'btax_version': BTAX_VERSION,
             'taxcalc_version': TAXCALC_VERSION,
-            'table_json': json.dumps(tables),
+            'table_json': json.dumps(tables['json_table']),
             'created_on': created_on,
             'first_year': first_year,
             'is_btax': True,
