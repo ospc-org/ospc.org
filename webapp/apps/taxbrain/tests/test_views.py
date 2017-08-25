@@ -570,13 +570,13 @@ class TaxBrainViewsTests(TestCase):
             u'STD_1': [u'50000'],
             u'STD_cpi': [u'1'],
             u'csrfmiddlewaretoken':'abc123',
-            u'start_year': unicode(2017)
+            u'start_year': unicode(2013)
         }
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 302)
-        data["start_year"] = 2018
+        data["start_year"] = 2017
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 302)
-        data["start_year"] = 2016
+        data["start_year"] = 2018
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 302)
