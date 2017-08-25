@@ -557,3 +557,21 @@ class TaxBrainViewsTests(TestCase):
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
+
+    def test_potato(self):
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+        data = {
+            u'has_errors': [u'False'],
+            u'STD_0': [u'50000'],
+            u'STD_3': [u'50000'],
+            u'STD_2': [u'50000'],
+            u'STD_1': [u'50000'],
+            u'STD_cpi': [u'1'],
+            u'csrfmiddlewaretoken':'abc123',
+            u'start_year': unicode(2013)
+        }
+        response = self.client.post('/taxbrain/', data)
+        self.assertEqual(response.status_code, 200)
