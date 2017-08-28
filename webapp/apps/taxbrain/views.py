@@ -10,7 +10,7 @@ import tempfile
 from mock import Mock
 import sys
 MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d', 'pandas']
+                'mpl_toolkits.mplot3d']
 ENABLE_QUICK_CALC = bool(os.environ.get('ENABLE_QUICK_CALC', ''))
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
