@@ -36,8 +36,8 @@ class DropqCompute(object):
     num_budget_years = NUM_BUDGET_YEARS
 
     # Override if needed, e.g. btax
-    def package_up_vars(self, *args, **kwargs):
-        return _package_up_vars(*args, **kwargs)
+    # def package_up_vars(self, *args, **kwargs):
+    #     return _package_up_vars(*args, **kwargs)
 
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)
@@ -96,14 +96,14 @@ class DropqCompute(object):
                            pack_up_user_mods=True,
                            additional_data={}):
         data = {}
-        if pack_up_user_mods:
-            user_mods = self.package_up_vars(mods, first_budget_year)
-            if not bool(user_mods):
-                return False
-            user_mods = {first_budget_year:user_mods}
-        else:
-            user_mods = mods
-
+        # if pack_up_user_mods:
+        #     user_mods = self.package_up_vars(mods, first_budget_year)
+        #     if not bool(user_mods):
+        #         return False
+        #     user_mods = {first_budget_year:user_mods}
+        # else:
+        #     user_mods = mods
+        user_mods = mods
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
             wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)

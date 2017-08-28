@@ -325,6 +325,207 @@ def file_input(request):
     return render(request, 'taxbrain/input_file.html', init_context)
 
 
+def personal_results_wip(request):
+    """
+    This view handles the input page and calls the function that
+    handles the calculation on the inputs.
+    """
+    start_year = START_YEAR
+    # Probably a GET request, load a default form
+    no_inputs = False
+    taxcalc_default_params = default_policy(int(start_year))
+    has_errors = False
+    errors = None
+
+    def minimal_processing(fields, start_year):
+        default_params = taxcalc.Policy.default_data(start_year=start_year,
+                                                     metadata=True)
+        ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
+                  u'full_calc', 'first_year')
+
+        def convert_to_python_val(item):
+            if item == u'True':
+                return 1.0
+            elif item == u'False':
+                return 0.0
+            else:
+                try:
+                    return float(item)
+                except ValueError:
+                    msg = "Value {} is not boolean or numeric"
+                    raise ValueError(msg.format(item))
+
+        def get_default_policy_param_name(param):
+            if '_' + param in default_params:
+                return '_' + param
+            param_pieces = param.split('_')
+            end_piece = param_pieces[-1]
+            no_suffix = '_' + '_'.join(param_pieces[:-1])
+            if end_piece == 'cpi':
+                if no_suffix in default_params:
+                    return '_' + param
+                else:
+                    msg = "Received unexpected parameter: {}"
+                    return HttpResponse(msg.format(param),
+                                        status=400)
+            if no_suffix in default_params:
+                try:
+                    ix = int(end_piece)
+                except ValueError:
+                    msg = "Parsing {}: Expected integer for index but got {}"
+                    raise ValueError(msg.format(param, ix))
+                col_label = default_params[no_suffix]['col_label'][ix]
+                return no_suffix + '_' + col_label
+            if param not in ignore:
+                msg = "Received unexpected parameter: {}"
+                return HttpResponse(msg.format(param),
+                                    status=400)
+
+        reform = {}
+        for param in fields:
+            if len(fields[param]) > 0 and param not in ignore:
+                list_params = fields[param].split(',')
+                param_name = get_default_policy_param_name(param)
+                reform[param_name] = {}
+                for i in range(len(list_params)):
+                    if list_params[i] == '*':
+                        # may need to do something here
+                        pass
+                    else:
+                        v = convert_to_python_val(list_params[i])
+                        if param.endswith('_cpi'):
+                            reform[param_name][str(start_year + i)] = v
+                        else:
+                            reform[param_name][str(start_year + i)] = [v]
+
+
+        return reform
+
+    if request.method=='POST':
+        # Client is attempting to send inputs, validate as form data
+        # Need need to the pull the start_year out of the query string
+        # to properly set up the Form
+        has_errors = make_bool(request.POST['has_errors'])
+        start_year = request.REQUEST['start_year']
+        fields = dict(request.REQUEST)
+        # Assume we do the full calculation unless we find out otherwise
+        do_full_calc = False if fields.get('quick_calc') else True
+        fields['first_year'] = fields['start_year']
+
+        if do_full_calc and 'full_calc' in fields:
+            del fields['full_calc']
+        elif 'quick_calc' in fields:
+            del fields['quick_calc']
+
+        policy_dict = minimal_processing(fields, int(start_year))
+        policy_dict = {"policy": policy_dict}
+        policy_dict = taxcalc.Calculator.read_json_param_files(json.dumps(policy_dict),
+                                                               None,
+                                                               arrays_not_lists=False)
+        reforms = policy_dict["policy"]
+        assumptions = {k: v for k, v in policy_dict.items() if k != "policy"}
+
+        error_messages = {} #TODO: fill this in with ValueError and unexpected inputs
+        if error_messages:
+            has_errors = True
+            errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
+        else:
+            try:
+                log_ip(request)
+                if do_full_calc:
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                        reforms,
+                        int(start_year),
+                        is_file=False,
+                        additional_data=assumptions
+                    )
+                else:
+                    submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
+                        reforms,
+                        int(start_year),
+                        is_file=False,
+                        additional_data=assumptions
+                    )
+
+                if not submitted_ids:
+                    raise JobFailError("couldn't submit ids")
+                else:
+                    # TODO: save inputs for user edit page
+                    job_ids = denormalize(submitted_ids)
+                    json_reform = JSONReformTaxCalculator()
+                    json_reform.reform_text = json.dumps(policy_dict)
+                    json_reform.assumption_text = ""
+                    json_reform.raw_reform_text = json.dumps(fields)
+                    json_reform.raw_assumption_text = ""
+                    json_reform.save()
+
+                    model = TaxSaveInputs()
+                    model.job_ids = job_ids
+                    model.json_text = json_reform
+                    model.first_year = int(start_year)
+                    model.quick_calc = not do_full_calc
+                    model.save()
+                    unique_url = OutputUrl()
+                    if request and request.user.is_authenticated():
+                        current_user = User.objects.get(pk=request.user.id)
+                        unique_url.user = current_user
+
+                    if unique_url.taxcalc_vers != None:
+                        pass
+                    else:
+                        unique_url.taxcalc_vers = taxcalc_version
+
+                    unique_url.unique_inputs = model
+                    unique_url.model_pk = model.pk
+                    cur_dt = datetime.datetime.utcnow()
+                    future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                    expected_completion = cur_dt + future_offset
+                    unique_url.exp_comp_datetime = expected_completion
+                    unique_url.save()
+
+                return redirect(unique_url)
+
+            except JobFailError:
+                # Bail here and reload the page until we have a better answer
+                pass
+    else:
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in START_YEARS:
+            start_year = params['start_year'][0]
+
+        # Probably a GET request, load a default form
+        form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+
+    taxcalc_default_params = default_policy(int(start_year))
+
+    has_range_errors = has_field_errors(form_personal_exemp)
+    has_parse_errors = has_field_errors(form_personal_exemp, include_parse_errors=True)
+    has_errors = has_range_errors or has_parse_errors
+    if has_range_errors:
+        msg = ("Some fields have errors. Values outside of suggested ranges "
+               " will be accepted if submitted again from this page.")
+        form_personal_exemp.add_error(None, msg)
+    if has_parse_errors:
+        msg = ("Some fields have unrecognized values. Enter comma separated "
+               "values for each input.")
+        form_personal_exemp.add_error(None, msg)
+
+    init_context = {
+        'form': form_personal_exemp,
+        'params': nested_form_parameters(int(start_year)),
+        'taxcalc_version': taxcalc_version,
+        'start_years': START_YEARS,
+        'start_year': start_year,
+        'has_errors': has_errors,
+        'enable_quick_calc': ENABLE_QUICK_CALC
+    }
+
+    if no_inputs:
+        form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
+
+    return render(request, 'taxbrain/input_form.html', init_context)
+
+
 def personal_results(request):
     """
     This view handles the input page and calls the function that
@@ -383,8 +584,8 @@ def personal_results(request):
                 form_personal_exemp = personal_inputs
         else:
             # received POST but invalid results, return to form with errors
-            form_personal_exemp = personal_inputs
-
+            form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+            # no_inputs = True
     else:
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
