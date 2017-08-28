@@ -7,7 +7,7 @@ import pytz
 from mock import Mock
 import sys
 MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d', 'pandas']
+                'mpl_toolkits.mplot3d']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import btax
@@ -49,6 +49,8 @@ from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
                         START_YEAR, START_YEARS)
+
+from .bubble_plot.bubble_plot_tabs import bubble_plot_tabs
 
 
 dropq_compute = DropqComputeBtax()
@@ -331,6 +333,9 @@ def output_detail(request, pk):
             "coc": COC_TOOLTIP,
             "dprc": DPRC_TOOLTIP,
         }
+
+        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(model.tax_result[0]['dataframes'])
+
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
         context = tables.copy()
@@ -343,6 +348,10 @@ def output_detail(request, pk):
             'created_on': created_on,
             'first_year': first_year,
             'is_btax': True,
+            'bubble_js': bubble_js,
+            'bubble_div': bubble_div,
+            'cdn_js': cdn_js,
+            'cdn_css': cdn_css,
         })
         return render(request, 'btax/results.html', context)
 
