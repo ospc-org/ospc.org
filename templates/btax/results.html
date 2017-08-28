@@ -7,6 +7,12 @@
 <link href="{% static 'js/vendor/DataTables/datatables.min.css' %}" rel="stylesheet"></link>
 <link href="{% static 'css/vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet"></link>
 <link href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css" rel="stylesheet">
+<link rel='stylesheet' href={{cdn_css|safe}} type="text/css"/>
+<script type="text/javascript" src={{cdn_js|safe}}></script>
+<link
+  href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.4.min.css"
+  rel="stylesheet" type="text/css">
+<script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-0.12.4.min.js"></script>
 
 <style>
   .btn {
@@ -147,6 +153,14 @@
                 </label>
           </div>
 	  </div>
+
+    <div class="text-center vis-div">
+
+      {{ bubble_div|safe }}
+      {{ bubble_js|safe }}
+
+    </div>
+
 	  <div class="row">
 		  <div id="results-table-area" class="col-sm-12">
           </div>
