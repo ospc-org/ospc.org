@@ -6,7 +6,7 @@ import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['pandas']
+MOCK_MODULES = []
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
@@ -28,7 +28,7 @@ from django.contrib.auth.models import User
 from django import forms
 
 from djqscsv import render_to_csv_response
-from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm, 
+from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
                     has_field_errors, DynamicElasticityInputsModelForm)
 from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
@@ -210,7 +210,7 @@ def dynamic_behavioral(request, pk):
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
-            #get microsim data 
+            #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
@@ -302,7 +302,7 @@ def dynamic_behavioral(request, pk):
 
 def dynamic_elasticities(request, pk):
     """
-    This view handles the dynamic macro elasticities input page and 
+    This view handles the dynamic macro elasticities input page and
     calls the function that handles the calculation on the inputs.
     """
 
@@ -342,7 +342,7 @@ def dynamic_elasticities(request, pk):
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
-            #get microsim data 
+            #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
