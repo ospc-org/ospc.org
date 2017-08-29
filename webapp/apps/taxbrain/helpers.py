@@ -246,6 +246,73 @@ TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'combined_tax':'Combined Payroll and Individual Income Tax Liability Change',
 }
 
+
+def to_json_reform(fields, start_year):
+    """
+    Convert fields style dictionary to json reform style dictionary
+    For example:
+    fields = {u'start_year': u'2017', u'csrfmiddlewaretoken': u'abc123',
+              u'has_errors': u'False', 'start_year': u'2017',
+              u'ID_InterestPaid_c_1': u'', u'STD_3': u'*,*,20000',
+              u'STD_2': u'*,*,10000', u'STD_1': u'*,*,20000',
+              u'STD_0': u'*,*,10000', u'EITC_ps_cpi': u'1'}
+    to
+    reform = {"_STD_0": {"2019": [10000.0]}, "_STD_1": {"2019": [20000.0]},
+              "_STD_2": {"2019": [10000.0]}, "_STD_3": {"2019": [20000.0]},
+              "_EITC_ps_cpi': {"2017": 1.0}}
+    """
+    default_params = taxcalc.Policy.default_data(start_year=start_year,
+                                                 metadata=True)
+    ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
+              u'full_calc', u'quick_calc', 'first_year', '_state',
+              'creation_date', 'id')
+
+
+    def get_default_policy_param_name(param):
+        if '_' + param in default_params:
+            return '_' + param
+        param_pieces = param.split('_')
+        end_piece = param_pieces[-1]
+        no_suffix = '_' + '_'.join(param_pieces[:-1])
+        if end_piece == 'cpi':
+            if no_suffix in default_params:
+                return '_' + param
+            else:
+                msg = "Received unexpected parameter: {}"
+                raise ValueError(msg.format(param))
+        if no_suffix in default_params:
+            try:
+                ix = int(end_piece)
+            except ValueError:
+                msg = "Parsing {}: Expected integer for index but got {}"
+                raise ValueError(msg.format(param, ix))
+            col_label = default_params[no_suffix]['col_label'][ix]
+            return no_suffix + '_' + col_label
+        msg = "Received unexpected parameter: {}"
+        raise ValueError(msg.format(param))
+
+    reform = {}
+    for param in fields:
+        if param not in ignore:
+            param_name = get_default_policy_param_name(param)
+            reform[param_name] = {}
+            if not isinstance(fields[param], list):
+                assert isinstance(fields[param], bool) and param.endswith('_cpi')
+                reform[param_name][str(start_year)] = fields[param]
+                continue
+            for i in range(len(fields[param])):
+                if is_wildcard(fields[param][i]):
+                    # may need to do something here
+                    pass
+                else:
+                    assert (isinstance(fields[param][i], (int, float)) or
+                            isinstance(fields[param][i], bool))
+                    reform[param_name][str(start_year + i)] = [fields[param][i]]
+    return reform
+
+
+
+
 def expand_1D(x, num_years):
     """
     Expand the given data to account for the given number of budget years.
