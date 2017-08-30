@@ -271,20 +271,21 @@ def get_default_policy_param_name(param, default_params):
     raise ValueError(msg.format(param))
 
 
-
 def to_json_reform(fields, start_year):
     """
     Convert fields style dictionary to json reform style dictionary
     For example:
-    fields = {u'start_year': u'2017', u'csrfmiddlewaretoken': u'abc123',
-              u'has_errors': u'False', 'start_year': u'2017',
-              u'ID_InterestPaid_c_1': u'', u'STD_3': u'*,*,20000',
-              u'STD_2': u'*,*,10000', u'STD_1': u'*,*,20000',
-              u'STD_0': u'*,*,10000', u'EITC_ps_cpi': u'1'}
+    fields = {'_state': <django.db.models.base.ModelState object at 0x10c764950>,
+              'creation_date': datetime.datetime(2015, 1, 1, 0, 0), 'id': 64,
+              'ID_ps_cpi': True, 'quick_calc': False,
+              'FICA_ss_trt': [u'*', 0.1, u'*', 0.2], 'first_year': 2017,
+              'ID_BenefitSurtax_Switch_0': [True], 'ID_Charity_c_cpi': True,
+              'EITC_rt_2': [1.0]}
     to
-    reform = {"_STD_0": {"2019": [10000.0]}, "_STD_1": {"2019": [20000.0]},
-              "_STD_2": {"2019": [10000.0]}, "_STD_3": {"2019": [20000.0]},
-              "_EITC_ps_cpi': {"2017": 1.0}}
+    reform = {'_CG_nodiff': {'2017': [False]},
+              '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
+              '_ID_Charity_c_cpi': {'2017': True},
+              '_EITC_rt_2kids': {'2017': [1.0]}}
     """
     default_params = taxcalc.Policy.default_data(start_year=start_year,
                                                  metadata=True)
@@ -309,6 +310,7 @@ def to_json_reform(fields, start_year):
                     assert (isinstance(fields[param][i], (int, float)) or
                             isinstance(fields[param][i], bool))
                     reform[param_name][str(start_year + i)] = [fields[param][i]]
+
     return reform
 
 
