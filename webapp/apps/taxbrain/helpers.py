@@ -247,6 +247,31 @@ TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
 }
 
 
+def get_default_policy_param_name(param, default_params):
+    if '_' + param in default_params:
+        return '_' + param
+    param_pieces = param.split('_')
+    end_piece = param_pieces[-1]
+    no_suffix = '_' + '_'.join(param_pieces[:-1])
+    if end_piece == 'cpi':
+        if no_suffix in default_params:
+            return '_' + param
+        else:
+            msg = "Received unexpected parameter: {}"
+            raise ValueError(msg.format(param))
+    if no_suffix in default_params:
+        try:
+            ix = int(end_piece)
+        except ValueError:
+            msg = "Parsing {}: Expected integer for index but got {}"
+            raise ValueError(msg.format(param, ix))
+        col_label = default_params[no_suffix]['col_label'][ix]
+        return no_suffix + '_' + col_label
+    msg = "Received unexpected parameter: {}"
+    raise ValueError(msg.format(param))
+
+
+
 def to_json_reform(fields, start_year):
     """
     Convert fields style dictionary to json reform style dictionary
@@ -267,34 +292,10 @@ def to_json_reform(fields, start_year):
               u'full_calc', u'quick_calc', 'first_year', '_state',
               'creation_date', 'id')
 
-
-    def get_default_policy_param_name(param):
-        if '_' + param in default_params:
-            return '_' + param
-        param_pieces = param.split('_')
-        end_piece = param_pieces[-1]
-        no_suffix = '_' + '_'.join(param_pieces[:-1])
-        if end_piece == 'cpi':
-            if no_suffix in default_params:
-                return '_' + param
-            else:
-                msg = "Received unexpected parameter: {}"
-                raise ValueError(msg.format(param))
-        if no_suffix in default_params:
-            try:
-                ix = int(end_piece)
-            except ValueError:
-                msg = "Parsing {}: Expected integer for index but got {}"
-                raise ValueError(msg.format(param, ix))
-            col_label = default_params[no_suffix]['col_label'][ix]
-            return no_suffix + '_' + col_label
-        msg = "Received unexpected parameter: {}"
-        raise ValueError(msg.format(param))
-
     reform = {}
     for param in fields:
         if param not in ignore:
-            param_name = get_default_policy_param_name(param)
+            param_name = get_default_policy_param_name(param, default_params)
             reform[param_name] = {}
             if not isinstance(fields[param], list):
                 assert isinstance(fields[param], bool) and param.endswith('_cpi')
