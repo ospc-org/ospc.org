@@ -42,8 +42,6 @@ if (interest_button == 0) {
 var new_equip_data = eval(format_str + 'equipment' + interest_str + c_nc_str + type_str).data
 var new_struc_data = eval(format_str + 'structure' + interest_str + c_nc_str + type_str).data
 
-debugger
-
 for (var i = 0; i < equip_data['size_c'].length; i++) {
     equip_data['size'][i] = new_equip_data['size' + c_nc_str][i];
     struc_data['size'][i] = new_struc_data['size' + c_nc_str][i];
