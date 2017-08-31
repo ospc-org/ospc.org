@@ -7,26 +7,28 @@ var format_button = format_buttons.active;
 var type_button = type_buttons.active;
 var interest_button = interest_buttons.active;
 
+var n_nc_str, format_str, type_str, interest_button
+
 if (c_nc_button == 0) {
-    var c_nc_str = '_c';
+    c_nc_str = '_c';
 } else if (c_nc_button == 1) {
-    var c_nc_str = '_nc';
+    c_nc_str = '_nc';
 }
 
 if (format_button == 0) {
-    var format_str = 'base_';
+    format_str = 'base_';
 } else if (format_button == 1) {
-    var format_str = 'reform_';
+    format_str = 'reform_';
 } else if (format_button == 2) {
-    var format_str = 'change_';
+    format_str = 'change_';
 }
 
 if (type_button == 0) {
-    var type_str = ''
+    type_str = ''
 } else if (type_button == 1) {
-    var type_str = '_e'
+    type_str = '_e'
 } else if (type_button == 2) {
-    var type_str = '_d'
+    type_str = '_d'
 }
 
 if (interest_button == 0) {
@@ -42,14 +44,28 @@ if (interest_button == 0) {
 var new_equip_data = eval(format_str + 'equipment' + interest_str + c_nc_str + type_str).data
 var new_struc_data = eval(format_str + 'structure' + interest_str + c_nc_str + type_str).data
 
-for (var i = 0; i < equip_data['size_c'].length; i++) {
-    equip_data['size'][i] = new_equip_data['size' + c_nc_str][i];
-    struc_data['size'][i] = new_struc_data['size' + c_nc_str][i];
-
-    equip_data['rate'][i] = new_equip_data['rate'][i];
-    struc_data['rate'][i] = new_struc_data['rate'][i];
+equip_data['size'] = []
+equip_data['rate'] = []
+equip_data['hover'] = []
+equip_data['short_category'] = []
+for (var i = 0; i < new_equip_data['size'].length; i++) {
+    equip_data['size'].push(new_equip_data['size' + c_nc_str][i]);
+    equip_data['rate'].push(new_equip_data['rate'][i]);
+    equip_data['hover'].push(new_equip_data['hover'][i]);
+    equip_data['short_category'].push(new_equip_data['short_category'][i]);
 }
 
-equip_source.trigger('change');
-struc_source.trigger('change');
+struc_data['size'] = []
+struc_data['rate'] = []
+struc_data['hover'] = []
+struc_data['short_category'] = []
+for (var i = 0; i < new_struc_data['size'].length; i++) {
+    struc_data['size'].push(new_struc_data['size' + c_nc_str][i]);
+    struc_data['rate'].push(new_struc_data['rate'][i]);
+    struc_data['hover'].push(new_struc_data['hover'][i]);
+    struc_data['short_category'].push(new_struc_data['short_category'][i]);
+}
+
+equip_source.change.emit();
+struc_source.change.emit();
 """
