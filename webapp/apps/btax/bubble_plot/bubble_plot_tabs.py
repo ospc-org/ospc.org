@@ -21,7 +21,7 @@ from controls_callback_script import CONTROLS_CALLBACK_SCRIPT
 def bubble_plot_tabs(dataframes):
     dataframes = dataframes.copy()
 
-    #remove data from Intellectual Property, Land, and Inventories Categories
+    # convert asset dicts to pandas dataframes
     base_df = pd.DataFrame.from_dict(dataframes['base_output_by_asset'])
     reform_df = pd.DataFrame.from_dict(dataframes['reform_output_by_asset'])
     change_df = pd.DataFrame.from_dict(dataframes['changed_output_by_asset'])
@@ -31,28 +31,34 @@ def bubble_plot_tabs(dataframes):
 
     data_sources = {}
     for i, df in enumerate(list_df):
+        # remove data from Intellectual Property, Land, and Inventories Categories
         df = df[~df['asset_category'].isin(['Intellectual Property','Land','Inventories'])].copy()
         df = df.dropna()
 
-        #define the size DataFrame
-        if sum(df['assets_c']) == 0:
-            df['size'] = df['assets_c']
-            df['size_c'] = df['assets_c']
-            df['size_nc'] = df['assets_nc']
-        else:
+        # define the size DataFrame, if change, use base sizes
+        if list_string[i] == 'base' or list_string[i] == 'reform':
             SIZES = list(range(20, 80, 15))
-            df['size'] = pd.qcut(df['assets_c'].values, len(SIZES), labels=SIZES)
-            df['size_c'] = pd.qcut(df['assets_c'].values, len(SIZES), labels=SIZES)
-            df['size_nc'] = pd.qcut(df['assets_nc'].values, len(SIZES), labels=SIZES)
+            size = pd.qcut(df['assets_c'].values, len(SIZES), labels=SIZES)
+            size_c = pd.qcut(df['assets_c'].values, len(SIZES), labels=SIZES)
+            size_nc = pd.qcut(df['assets_nc'].values, len(SIZES), labels=SIZES)
+            df['size'] = size
+            df['size_c'] = size_c
+            df['size_nc'] = size_nc
+        else:
+            df['size'] = size
+            df['size_c'] = size_c
+            df['size_nc'] = size_nc
 
-        #Form the two Categories: Equipment and Structures
+        # form the two Categories: Equipment and Structures
         equipment_df = df[(~df.asset_category.str.contains('Structures')) & (~df.asset_category.str.contains('Buildings'))]
         structure_df = df[(df.asset_category.str.contains('Structures')) | (df.asset_category.str.contains('Buildings'))]
 
-        format_fields = ['metr_c', 'metr_nc', 'metr_c_d', 'metr_nc_d', 'metr_c_e', 'metr_nc_e',
-                         'mettr_c', 'mettr_nc', 'mettr_c_d', 'mettr_nc_d', 'mettr_c_e', 'mettr_nc_e',
-                         'rho_c', 'rho_nc', 'rho_c_d', 'rho_nc_d', 'rho_c_e', 'rho_nc_e',
-                         'z_c', 'z_nc', 'z_c_d', 'z_nc_d', 'z_c_e', 'z_nc_e']
+        format_fields = ['metr_c', 'metr_nc', 'metr_c_d', 'metr_nc_d',
+                         'metr_c_e', 'metr_nc_e', 'mettr_c', 'mettr_nc',
+                         'mettr_c_d', 'mettr_nc_d', 'mettr_c_e', 'mettr_nc_e',
+                         'rho_c', 'rho_nc', 'rho_c_d', 'rho_nc_d', 'rho_c_e',
+                         'rho_nc_e', 'z_c', 'z_nc', 'z_c_d', 'z_nc_d', 'z_c_e',
+                         'z_nc_e']
 
         # Make short category
         make_short = {'Instruments and Communications Equipment': 'Instruments and Communications',
@@ -66,40 +72,40 @@ def bubble_plot_tabs(dataframes):
                       'Other Structures': 'Other',
                       'Computers and Software': 'Computers and Software',
                       'Industrial Machinery': 'Industrial Machinery'}
-
         equipment_df['short_category'] = equipment_df['asset_category'].map(make_short)
         structure_df['short_category'] = structure_df['asset_category'].map(make_short)
 
-        #Add the Reform and the Baseline to Equipment Asset
+        # Add the Reform and the Baseline to Equipment Asset
         for f in format_fields:
             equipment_copy = equipment_df.copy()
             equipment_copy['rate'] = equipment_copy[f]
             equipment_copy['hover'] = equipment_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
-            simple_equipment_copy = equipment_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category'])
+            simple_equipment_copy = equipment_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
             data_sources[list_string[i] + '_equipment_' + f] = ColumnDataSource(simple_equipment_copy)
 
-        #Add the Reform and the Baseline to Structures Asset
+        # Add the Reform and the Baseline to Structures Asset
         for f in format_fields:
             structure_copy = structure_df.copy()
             structure_copy['rate'] = structure_copy[f]
             structure_copy['hover'] = structure_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
-            simple_structure_copy = structure_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category'])
+            simple_structure_copy = structure_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
             data_sources[list_string[i] + '_structure_' + f] = ColumnDataSource(simple_structure_copy)
 
+        # Create initial data sources to plot on load
         if list_string[i] == 'base':
             equipment_copy = equipment_df.copy()
             equipment_copy['rate'] = equipment_copy['mettr_c']
             equipment_copy['hover'] = equipment_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
-            simple_equipment_copy = equipment_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category'])
+            simple_equipment_copy = equipment_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
             data_sources['equip_source'] = ColumnDataSource(simple_equipment_copy)
 
             structure_copy = structure_df.copy()
             structure_copy['rate'] = structure_copy['mettr_c']
             structure_copy['hover'] = structure_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
-            simple_structure_copy = structure_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category'])
+            simple_structure_copy = structure_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
             data_sources['struc_source'] = ColumnDataSource(simple_structure_copy)
 
-    #Define categories for Equipments assets
+    # Define categories for Equipments assets
     equipment_assets = ['Computers and Software',
                         'Instruments and Communications',
                         'Office and Residential',
@@ -108,7 +114,7 @@ def bubble_plot_tabs(dataframes):
                         'Other Industrial',
                         'Other']
 
-    #Define categories for Structures assets
+    # Define categories for Structures assets
     structure_assets = ['Residential Bldgs',
                         'Nonresidential Bldgs',
                         'Mining and Drilling',
@@ -227,6 +233,7 @@ def bubble_plot_tabs(dataframes):
                   [format_buttons, type_buttons]]
     )
 
+    # Create components
     js, div = components(layout)
     cdn_js = CDN.js_files[0]
     cdn_css = CDN.css_files[0]
