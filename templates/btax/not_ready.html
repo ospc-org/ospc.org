@@ -39,9 +39,10 @@ $(function() {
             type: 'post',
             data: { csrfmiddlewaretoken: $('meta[name="csrf-token"]').attr('content') },
             success: function(data, textStatus, xhr) {
-                console.log(xhr.status)
                 if (xhr.status === 202) {
                     insertEta(data.eta);
+                    clearInterval(interval);
+                    interval = setInterval(ajaxEta, data.wait_interval);
                 } else if (xhr.status === 200) {
                     clearInterval(interval);
                     insertEta(data.eta);
@@ -49,11 +50,11 @@ $(function() {
                         window.location.reload(1);
                     }, 5000)
                 }
-            }
+            },
         });
     }
     ajaxEta();
-    interval = setInterval(ajaxEta, 15000);
+    interval = setInterval(ajaxEta, 7000);
 });
 </script>
 {% endblock %}
