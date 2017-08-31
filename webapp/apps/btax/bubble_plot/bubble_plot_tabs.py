@@ -36,7 +36,7 @@ def bubble_plot_tabs(dataframes):
         df = df.dropna()
 
         # define the size DataFrame, if change, use base sizes
-        if list_string[i] == 'base' or list_string[i] == 'reform':
+        if list_string[i] == 'base':
             SIZES = list(range(20, 80, 15))
             size = pd.qcut(df['assets_c'].values, len(SIZES), labels=SIZES)
             size_c = pd.qcut(df['assets_c'].values, len(SIZES), labels=SIZES)
