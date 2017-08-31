@@ -27,4 +27,4 @@ boto
 django-storages
 django-htmlmin
 pyparsing
-bokeh==0.12.4
+bokeh>=0.12.7
