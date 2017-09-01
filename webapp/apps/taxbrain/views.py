@@ -481,6 +481,25 @@ def edit_personal_results(request, pk):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
+def add_summary_column(table):
+    import copy
+    summary = copy.deepcopy(table["cols"][-1])
+    summary["label"] = "Summary"
+    table["cols"].append(summary)
+    table["col_labels"].append("Summary")
+    for x in table["rows"]:
+        row_total = 0
+        for y in x["cells"]:
+            row_total += float(y["value"])
+        x["cells"].append({
+            'format': {u'decimals': 1, u'divisor': 1000000000},
+            u'value': unicode(row_total),
+            u'year_values': {}
+        })
+    return table
+
+
+
 def get_result_context(model, request, url):
     output = model.tax_result
     first_year = model.first_year
@@ -528,9 +547,9 @@ def get_result_context(model, request, url):
         is_registered = True if request.user.is_authenticated() else False
     else:
         is_registered = False
-    tables['fiscal_change'] = tables['fiscal_tot_diffs']
-    tables['fiscal_currentlaw'] = tables['fiscal_tot_base']
-    tables['fiscal_reform'] = tables['fiscal_tot_ref']
+    tables['fiscal_change'] = add_summary_column(tables['fiscal_tot_diffs'])
+    tables['fiscal_currentlaw'] = add_summary_column(tables['fiscal_tot_base'])
+    tables['fiscal_reform'] = add_summary_column(tables['fiscal_tot_ref'])
     json_table = json.dumps(tables)
 
     context = {
