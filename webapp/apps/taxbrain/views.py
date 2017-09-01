@@ -484,15 +484,18 @@ def edit_personal_results(request, pk):
 def add_summary_column(table):
     import copy
     summary = copy.deepcopy(table["cols"][-1])
-    summary["label"] = "Summary"
+    summary["label"] = "Total"
     table["cols"].append(summary)
-    table["col_labels"].append("Summary")
+    table["col_labels"].append("Total")
     for x in table["rows"]:
         row_total = 0
         for y in x["cells"]:
             row_total += float(y["value"])
         x["cells"].append({
-            'format': {u'decimals': 1, u'divisor': 1000000000},
+            'format': {
+                u'decimals': 1,
+                u'divisor': 1000000000
+            },
             u'value': unicode(row_total),
             u'year_values': {}
         })
