@@ -324,13 +324,7 @@ def output_detail(request, pk):
 
     model = url.unique_inputs
     if model.tax_result:
-        exp_comp_dt = url.exp_comp_datetime
-        utc_now = datetime.datetime.utcnow()
-        utc_now = utc_now.replace(tzinfo=pytz.utc)
-        dt = exp_comp_dt - utc_now
-        exp_num_minutes = dt.total_seconds() / 60.
-        exp_num_minutes = round(exp_num_minutes, 2)
-        exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
+        exp_num_minutes = 0.25
         JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
 
         tables = url.unique_inputs.tax_result[0]
