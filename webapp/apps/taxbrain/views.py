@@ -162,6 +162,7 @@ def get_reform_from_file(request):
 
 
 def get_reform_from_gui(request, model=None, stored_errors=None):
+    # TODO: review logic and consider moving to PersonalExemptionForm
     # print(dict(request.POST))
     start_year = request.REQUEST['start_year']
     if stored_errors and request:
@@ -200,7 +201,7 @@ def get_reform_from_gui(request, model=None, stored_errors=None):
 
     return (reform_dict, assumptions_dict, "", "", errors)
 
-def submit_to_backend(request, user=None):
+def submit_reform(request, user=None):
     start_year = START_YEAR
     no_inputs = False
 
@@ -323,7 +324,7 @@ def file_input(request):
     errors = None
 
     if request.method=='POST':
-        return submit_to_backend(request)
+        return submit_reform(request)
     else:     # GET request, load a default form
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
@@ -367,7 +368,7 @@ def personal_results(request):
         elif 'quick_calc' in fields:
             del fields['quick_calc']
 
-        return submit_to_backend(request)
+        return submit_reform(request)
         # personal_inputs = PersonalExemptionForm(start_year, fields)
 
         # If an attempt is made to post data we don't accept
@@ -446,6 +447,7 @@ def submit_micro(request, pk):
     Its primary purpose is to facilitate a mechanism to submit a full microsim
     job after one has submitted parameters for a 'quick calculation'
     """
+    #TODO: get this function to work with submit_reform
     try:
         url = OutputUrl.objects.get(pk=pk)
     except:
