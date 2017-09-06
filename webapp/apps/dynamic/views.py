@@ -34,7 +34,7 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
-from ..taxbrain.views import (growth_fixup, benefit_surtax_fixup, make_bool, dropq_compute,
+from ..taxbrain.views import (growth_fixup, benefit_switch_fixup, make_bool, dropq_compute,
                               JOB_PROC_TIME_IN_SECONDS)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
                                 convert_val)
@@ -123,7 +123,7 @@ def dynamic_input(request, pk):
                 if 'tax_result' in microsim_data:
                     del microsim_data['tax_result']
 
-                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
                 # start calc job
                 submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
@@ -231,7 +231,7 @@ def dynamic_behavioral(request, pk):
                 if 'tax_result' in microsim_data:
                     del microsim_data['tax_result']
 
-                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=behavior_params)
@@ -361,7 +361,7 @@ def dynamic_elasticities(request, pk):
                 if 'tax_result' in microsim_data:
                     del microsim_data['tax_result']
 
-                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
                 submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,

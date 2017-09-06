@@ -58,6 +58,7 @@ tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = ".".join([tcversion_info['version'], tcversion_info['full'][:6]])
 JOB_PROC_TIME_IN_SECONDS = 30
 
+
 def log_ip(request):
     """
     Attempt to get the IP address of this request and log it
@@ -120,6 +121,8 @@ def growth_fixup(mod):
 
     del mod['growth_choice']
 
+    return mod
+
 
 def denormalize(x):
     ans = ["#".join([i[0],i[1]]) for i in x]
@@ -130,6 +133,58 @@ def denormalize(x):
 def normalize(x):
     ans = [i.split('#') for i in x]
     return ans
+
+
+def parse_errors_warnings(errors_warnings, reform_json, map_back_to_tb):
+    """
+    Parse error messages so that they can be mapped to Taxbrain param ID. This
+    allows the message to be displayed under the field where the value is
+    entered.
+
+    TaxCalculator returns an error message for all fields including those
+    specified implicitly by wildcards or by not entering a number for each
+    year in the remaining budget window.  This function keeps only the error
+    messages where the user explicitly specified a number for a budget window.
+
+    returns: dictionary 'parsed' with keys: 'errors' and 'warnings'
+        parsed['errors/warnings'] = {year: {tb_param_name: 'error message'}}
+    """
+    parsed = {'errors': {}, 'warnings': {}}
+    for action in errors_warnings:
+        msgs = errors_warnings[action]
+        if len(msgs) == 0:
+            continue
+        for msg in msgs.split('\n'):
+            if len(msg) == 0: # new line
+                continue
+            msg_spl = msg.split()
+            msg_action = msg_spl[0]
+            year = msg_spl[1]
+            curr_id = msg_spl[2]
+            msg_parse = msg_spl[3:]
+            msg_val = float(msg_spl[4])
+            mapped = None
+            if curr_id in map_back_to_tb:
+                mapped = map_back_to_tb[curr_id]
+            else:
+                for param in map_back_to_tb:
+                    # year not stated in user input reform
+                    if year not in reform_json[param]:
+                        continue
+                    val = reform_json[param][msg_spl[1]]
+                    if isinstance(val, list):
+                        val = val[0]
+                    if param.startswith(curr_id) and val == msg_val:
+                        mapped = map_back_to_tb[param]
+                if mapped is None:
+                    continue
+                    # mapped = curr_id  # TODO: handle case where value not found
+            if year not in parsed[action]:
+                parsed[action][year] = {}
+            parsed[action][year][mapped] = ' '.join([msg_action] + msg_parse +
+                                                    ['for', year])
+
+    return parsed
 
 
 def get_reform_from_file(request):
@@ -153,35 +208,29 @@ def get_reform_from_file(request):
                                                                None,
                                                                arrays_not_lists=False)
 
-    errors = taxcalc.dropq.reform_warnings_errors(policy_dict)
+    errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
     reform_dict = policy_dict["policy"]
     assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
 
     return (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors)
+            errors_warnings)
 
 
 def get_reform_from_gui(request, model=None, stored_errors=None):
-    # TODO: review logic and consider moving to PersonalExemptionForm
-    # print(dict(request.POST))
+    # TODO: consider moving to PersonalExemptionForm
     start_year = request.REQUEST['start_year']
-    if stored_errors and request:
-        # Force the entered value on to the model
-        for attr in stored_errors:
-            setattr(model, attr, request.POST[attr])
 
     # prepare taxcalc params from TaxSaveInputs model
     curr_dict = dict(model.__dict__)
-    growth_fixup(curr_dict)
-
+    curr_dict = growth_fixup(curr_dict)
+    # split unicode string into list of values from start year to number
+    # comma separated values
     for key, value in curr_dict.items():
         if type(value) == type(unicode()): #TODO: isinstance(value, unicode)
             curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
-        # else: #TODO: remove, doesn't do anything
-        #     print("missing this: ", key)
 
     worker_data = {k: v for k, v in curr_dict.items()
-                   if not (v == [] or v == None)}
+                   if not (v == [] or v is None)}
     assert request is not None # TODO: maybe not necessary
     worker_data = benefit_switch_fixup(request.REQUEST, worker_data, model,
                                        name="ID_BenefitSurtax_Switch")
@@ -189,23 +238,31 @@ def get_reform_from_gui(request, model=None, stored_errors=None):
                                        name="ID_BenefitCap_Switch")
     amt_fixup(request.REQUEST, worker_data, model)
 
-    policy_dict = to_json_reform(worker_data, int(start_year))
-    policy_dict = {"policy": policy_dict}
-    policy_dict = taxcalc.Calculator.read_json_param_files(json.dumps(policy_dict),
+    # convert GUI input to json style taxcalc reform
+    policy_dict_json, map_back_to_tb = to_json_reform(worker_data, int(start_year))
+    policy_dict_json = {"policy": policy_dict_json}
+    # convert json style taxcalc reform to dict style taxcalc reform
+    policy_dict = taxcalc.Calculator.read_json_param_files(json.dumps(policy_dict_json),
                                                            None,
                                                            arrays_not_lists=False)
-
-    errors = taxcalc.dropq.reform_warnings_errors(policy_dict)
+    # get errors and warnings on user input from taxcalc
+    errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
+    errors_warnings = parse_errors_warnings(errors_warnings,
+                                            policy_dict_json["policy"],
+                                            map_back_to_tb)
+    # separate reform and assumptions
     reform_dict = policy_dict["policy"]
     assumptions_dict = {k: v for k, v in reform_dict.items() if k != "policy"}
 
-    return (reform_dict, assumptions_dict, "", "", errors)
+    return (reform_dict, assumptions_dict, "", "", errors_warnings)
 
 def submit_reform(request, user=None):
     start_year = START_YEAR
     no_inputs = False
 
     has_errors = make_bool(request.POST['has_errors'])
+    taxcalc_errors = False
+    taxcalc_warnings = False
     start_year = request.REQUEST['start_year']
     fields = dict(request.REQUEST)
     #TODO: use either first_year or start_year; validation error is thrown
@@ -226,86 +283,110 @@ def submit_reform(request, user=None):
         is_file = True
         model = None
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors) = get_reform_from_file(request)
+            errors_warnings) = get_reform_from_file(request)
     else:
         personal_inputs = PersonalExemptionForm(start_year, fields)
         model = personal_inputs.save()
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors) = get_reform_from_gui(request, model=model)
+            errors_warnings) = get_reform_from_gui(request, model=model)
+        # TODO: is this covered in get_default_policy_param_name?
+        # If an attempt is made to post data we don't accept
+        # raise a 400
+        if personal_inputs.non_field_errors() and False:
+            return HttpResponse("Bad Input!", status=400)
 
-    pol = taxcalc.Policy()
-    pol.implement_reform(reform_dict)
+
+    print('ERROR', errors_warnings)
 
     if reform_dict == {}:
         msg = "No reform file uploaded"
         error_messages['Tax-Calculator:'] = msg
     # TODO: account for errors
-    if error_messages:
-        has_errors = True
-        errors = ["{} {}".format(k, v) for k, v in error_messages.items()]
-    else:
+    # first only account for GUI errors
+    if not has_errors and (error_messages or (errors_warnings['errors'] != {}
+       and personal_inputs is not None)):
+        print('here')
+        taxcalc_errors = True if errors_warnings['errors'] else False
+        taxcalc_warnings = True if errors_warnings['warnings'] else False
+        # TODO: parse warnings for file_input
+        # only handle GUI errors for now
+        if errors_warnings and personal_inputs is not None:
+            for action in errors_warnings:
+                for year in errors_warnings[action]:
+                    for param in errors_warnings[action][year]:
+                        personal_inputs.add_error(param,
+                                                  errors_warnings[action][year][param])
+
+        return personal_inputs, taxcalc_errors, taxcalc_warnings
+    # case where user has been warned and has fixed errors if necassary but may
+    # or may not have fixed warnings
+    if has_errors:
+        assert not taxcalc_errors
     # try: # TODO: is try-catch necessary here?
-        log_ip(request)
-        # TODO: drop is_file and package_up_user_mods keywords
-        if do_full_calc:
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=is_file,
-                additional_data=assumptions_dict
-            )
-        else:
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=is_file,
-                additional_data=assumptions_dict
-            )
-        job_ids = denormalize(submitted_ids)
-        json_reform = JSONReformTaxCalculator()
-        if is_file:
-            json_reform.reform_text = json.dumps(reform_dict)
-            json_reform.assumption_text = json.dumps(assumptions_dict)
-            json_reform.raw_reform_text = reform_text
-            json_reform.raw_assumption_text = assumptions_text
-        else:
-            json_reform.reform_text = ""
-            json_reform.assumption_text = ""
-            json_reform.raw_reform_text = ""
-            json_reform.raw_assumption_text = ""
+    log_ip(request)
+    # TODO: drop is_file and package_up_user_mods keywords
+    if do_full_calc:
+        submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+            reform_dict,
+            int(start_year),
+            is_file=is_file,
+            additional_data=assumptions_dict
+        )
+    else:
+        submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
+            reform_dict,
+            int(start_year),
+            is_file=is_file,
+            additional_data=assumptions_dict
+        )
+    job_ids = denormalize(submitted_ids)
+    json_reform = JSONReformTaxCalculator()
+    # save file_input user params
+    if is_file:
+        json_reform.reform_text = json.dumps(reform_dict)
+        json_reform.assumption_text = json.dumps(assumptions_dict)
+        json_reform.raw_reform_text = reform_text
+        json_reform.raw_assumption_text = assumptions_text
+    # save GUI user params
+    else:
+        json_reform.reform_text = ""
+        json_reform.assumption_text = ""
+        json_reform.raw_reform_text = ""
+        json_reform.raw_assumption_text = ""
 
-        json_reform.save()
+    json_reform.save()
 
-        if model is None: # case where reform is uploaded file
-            model = TaxSaveInputs()
-        model.job_ids = job_ids
-        model.json_text = json_reform
-        model.first_year = int(start_year)
-        model.quick_calc = not do_full_calc
-        model.save()
+    # create model for file_input case
+    if model is None:
+        model = TaxSaveInputs()
+    model.job_ids = job_ids
+    model.json_text = json_reform
+    model.first_year = int(start_year)
+    model.quick_calc = not do_full_calc
+    model.save()
 
-        unique_url = OutputUrl()
-        if user:
-            unique_url.user = user
-        elif request and request.user.is_authenticated():
-            current_user = User.objects.get(pk=request.user.id)
-            unique_url.user = current_user
+    # create OutputUrl object
+    unique_url = OutputUrl()
+    if user:
+        unique_url.user = user
+    elif request and request.user.is_authenticated():
+        current_user = User.objects.get(pk=request.user.id)
+        unique_url.user = current_user
 
-        if unique_url.taxcalc_vers is not None:
-            pass
-        else:
-            unique_url.taxcalc_vers = taxcalc_version
+    if unique_url.taxcalc_vers is not None:
+        pass
+    else:
+        unique_url.taxcalc_vers = taxcalc_version
 
-        unique_url.unique_inputs = model
-        unique_url.model_pk = model.pk
-        cur_dt = datetime.datetime.utcnow()
-        future_offset_seconds = ((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS)
-        future_offset = datetime.timedelta(seconds=future_offset_seconds)
-        expected_completion = cur_dt + future_offset
-        unique_url.exp_comp_datetime = expected_completion
-        unique_url.save()
-
-        return redirect(unique_url)
+    unique_url.unique_inputs = model
+    unique_url.model_pk = model.pk
+    cur_dt = datetime.datetime.utcnow()
+    future_offset_seconds = ((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS)
+    future_offset = datetime.timedelta(seconds=future_offset_seconds)
+    expected_completion = cur_dt + future_offset
+    unique_url.exp_comp_datetime = expected_completion
+    unique_url.save()
+    return unique_url, taxcalc_errors, taxcalc_warnings
 
         # except JobFailError:
             # Bail here and reload the page until we have a better answer
@@ -316,15 +397,13 @@ def file_input(request):
     """
     This view handles the JSON input page
     """
-    # no_inputs = False
     start_year = START_YEAR
-
-    # taxcalc_default_params = default_policy(int(start_year))
-    has_errors = False
     errors = None
 
     if request.method=='POST':
-        return submit_reform(request)
+        unique_url, taxcalc_errors, taxcalc_warnings = submit_reform(request)
+        # TODO: handle taxcalc_errors and taxcalc_warnings
+        return redirect(unique_url)
     else:     # GET request, load a default form
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
@@ -337,7 +416,6 @@ def file_input(request):
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
         'start_year': start_year,
-        'has_errors': has_errors,
         'enable_quick_calc': ENABLE_QUICK_CALC
         # 'input_type': "file" #TODO: look into this. Doesn't appear to do anything
     }
@@ -350,8 +428,10 @@ def personal_results(request):
     This view handles the input page and calls the function that
     handles the calculation on the inputs.
     """
-    no_inputs = False
     start_year = START_YEAR
+    taxcalc_errors = False
+    taxcalc_warnings = False
+    has_parse_errors = False
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
@@ -368,65 +448,37 @@ def personal_results(request):
         elif 'quick_calc' in fields:
             del fields['quick_calc']
 
-        return submit_reform(request)
-        # personal_inputs = PersonalExemptionForm(start_year, fields)
+        obj, taxcalc_errors, taxcalc_warnings = submit_reform(request)
 
-        # If an attempt is made to post data we don't accept
-        # raise a 400
-        # if personal_inputs.non_field_errors():
-        #     print(personal_inputs.non_field_errors())
-        #     return HttpResponse("Bad Input!", status=400)
+        if not taxcalc_errors and not taxcalc_warnings:
+            return redirect(obj)
+        else:
+            personal_inputs = obj
 
         # Parse Errors are never OK. Detect this case separate from form
         # values out of bounds
-        # has_parse_errors = any(['Unrecognize value' in e[0] for e in personal_inputs.errors.values()])
-
-        # Accept the POST if the form is valid, or if the form previously had errors
-        # we don't check again so it is OK if the form is invalid the second
-        # time
-        if not has_parse_errors and (personal_inputs.is_valid() or has_errors):
-            stored_errors = None
-            if has_errors and personal_inputs.errors:
-                msg = ("Form has validation errors, but allowing the user "
-                       "to proceed anyway since we already showed them the "
-                       "errors once.")
-                msg2 = "Dropping these errors {}"
-                msg2 = msg2.format(personal_inputs.errors)
-                logging.warn(msg)
-                logging.warn(msg2)
-                stored_errors = dict(personal_inputs._errors)
-                personal_inputs._errors = {}
-
-            model = personal_inputs.save()
-            log_ip(request)
-
-        else:
-            # received POST but invalid results, return to form with errors
-            form_personal_exemp = PersonalExemptionForm(first_year=start_year)
-            # no_inputs = True
+        has_parse_errors = any(['Unrecognize value' in e[0]
+                                for e in personal_inputs.errors.values()])
     else:
+        # Probably a GET request, load a default form
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
-        # Probably a GET request, load a default form
-        form_personal_exemp = PersonalExemptionForm(first_year=start_year)
+        personal_inputs = PersonalExemptionForm(first_year=start_year)
 
-    has_range_errors = has_field_errors(form_personal_exemp)
-    has_parse_errors = has_field_errors(form_personal_exemp, include_parse_errors=True)
-    has_errors = has_range_errors or has_parse_errors
-    # if has_range_errors:
-    #     msg = ("Some fields have errors. Values outside of suggested ranges "
-    #            " will be accepted if submitted again from this page.")
-    #     form_personal_exemp.add_error(None, msg)
-    # if has_parse_errors:
-    #     msg = ("Some fields have unrecognized values. Enter comma separated "
-    #            "values for each input.")
-    #     form_personal_exemp.add_error(None, msg)
+    has_errors = taxcalc_errors or taxcalc_warnings or has_parse_errors
+    if taxcalc_warnings:
+        msg = ("Some fields have errors. Values outside of suggested ranges "
+               " will be accepted if submitted again from this page.")
+        personal_inputs.add_error(None, msg)
+    if has_parse_errors:
+        msg = ("Some fields have unrecognized values. Enter comma separated "
+               "values for each input.")
+        personal_inputs.add_error(None, msg)
 
     init_context = {
-        'form': form_personal_exemp,
-        'errors': None,
+        'form': personal_inputs,
         'params': nested_form_parameters(int(start_year)),
         'taxcalc_version': taxcalc_version,
         'start_years': START_YEARS,
