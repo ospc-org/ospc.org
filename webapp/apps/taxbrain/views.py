@@ -5,6 +5,7 @@ import json
 import pytz
 import os
 import tempfile
+import re
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -135,7 +136,7 @@ def normalize(x):
     return ans
 
 
-def parse_errors_warnings(errors_warnings, reform_json, map_back_to_tb):
+def parse_errors_warnings(errors_warnings, map_back_to_tb):
     """
     Parse error messages so that they can be mapped to Taxbrain param ID. This
     allows the message to be displayed under the field where the value is
@@ -162,30 +163,93 @@ def parse_errors_warnings(errors_warnings, reform_json, map_back_to_tb):
             year = msg_spl[1]
             curr_id = msg_spl[2]
             msg_parse = msg_spl[3:]
-            msg_val = float(msg_spl[4])
-            mapped = None
-            if curr_id in map_back_to_tb:
-                mapped = map_back_to_tb[curr_id]
-            else:
-                for param in map_back_to_tb:
-                    # year not stated in user input reform
-                    if year not in reform_json[param]:
-                        continue
-                    val = reform_json[param][msg_spl[1]]
-                    if isinstance(val, list):
-                        val = val[0]
-                    if param.startswith(curr_id) and val == msg_val:
-                        mapped = map_back_to_tb[param]
-                if mapped is None:
-                    continue
-                    # mapped = curr_id  # TODO: handle case where value not found
             if year not in parsed[action]:
                 parsed[action][year] = {}
-            parsed[action][year][mapped] = ' '.join([msg_action] + msg_parse +
-                                                    ['for', year])
+            parsed[action][year][curr_id[1:]] = ' '.join([msg_action] + msg_parse +
+                                                         ['for', year])
 
     return parsed
 
+def read_json_reform(reform, assumptions, map_back_to_tb={}):
+    """
+    Reads reform and gathers errors.  For some errors, Tax-Calculator throws
+    a ValueError and others it does not.  If a reform has both ValueError
+    throwing errors and non-ValueError throwing errors/warnings then the
+    non-ValueError errors will not be caught since an error is raised mid-way
+    through parsing.
+
+    The solution here is to recursively try to read the reform and remove
+    parameters that cause ValueErrors until no ValueErrors are thrown.
+    """
+    def get_policy_dict(reform, value_errors={'errors': {}}):
+        try:
+            if isinstance(reform, dict):
+                reform = json.dumps(reform)
+            # convert json style taxcalc reform to dict style taxcalc reform
+            policy_dict = taxcalc.Calculator.read_json_param_files(reform,
+                                                                   assumptions,
+                                                                   arrays_not_lists=False)
+            return policy_dict, value_errors
+        except ValueError as e:
+            print(e, e.__str__)
+            # e.__str__() gives string of warnings raised by ValueError
+            errors_warnings = {'errors': e.__str__(), 'warnings': ""}
+            errors_warnings = parse_errors_warnings(errors_warnings,
+                                                    map_back_to_tb)
+            # need to get python dict representation so that keys that cause
+            # ValueErrors are removed
+            if os.path.exists(reform):
+                f = open(reform)
+                reform = f.read()
+                f.close()
+            assert isinstance(reform, str)
+            reform = re.sub('//.*', ' ', reform)
+            try:
+                reform = json.loads(reform)
+            except json.JSONDecodeError as j:
+                raise Exception("Expected file but got {}".format(reform))
+            # map for index parameter to named index
+            # ( Id_casualty_c_0 --> ID_casualty_c_single)
+            map_to_tc = {v: k for k, v in map_back_to_tb.items()}
+            # remove params that are causing the problem; save errors in value_errors
+            # if this does not occur then warnings will not be displayed since
+            # ValueError message only contains error messages.
+            for year in errors_warnings['errors']:
+                for param in errors_warnings['errors'][year]:
+                    # don't think we need to keep this
+                    # errant_policy[param] = {year: policy_dict_json['policy'][param].pop(year)}
+                    # TODO: replace map_to_tc with lookup so that this can be
+                    # done for file input too
+                    if year not in value_errors['errors']:
+                        value_errors['errors'][year] = {}
+                    if year in reform['policy'][map_to_tc[param]]:
+                        del reform['policy'][map_to_tc[param]][year]
+                    value_errors['errors'][year][param] = \
+                        errors_warnings['errors'][year][param]
+            return get_policy_dict(reform, value_errors=value_errors)
+
+    policy_dict, value_errors = get_policy_dict(reform)
+    # get policy_dict using user_input that does not raise ValueErrors
+    # policy_dict = taxcalc.Calculator.read_json_param_files(json.dumps(reform),
+    #                                                        None,
+    #                                                        arrays_not_lists=False)
+    # get errors and warnings on parameters that do not cause ValueErrors
+    errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
+    errors_warnings = parse_errors_warnings(errors_warnings,
+                                            map_back_to_tb)
+    # merge errors back together if necessary
+    for action in value_errors:
+        for year in value_errors[action]:
+            for param in value_errors[action][year]:
+                if year in errors_warnings[action]:
+                    errors_warnings[action][year][param] = value_errors[action][year][param]
+                else:
+                    errors_warnings[action][year] = {param: value_errors[action][year][param]}
+    # separate reform and assumptions
+    reform_dict = policy_dict["policy"]
+    assumptions_dict = {k: v for k, v in reform_dict.items() if k != "policy"}
+
+    return reform_dict, assumptions_dict, errors_warnings
 
 def get_reform_from_file(request):
     inmemfile_reform = request.FILES['docfile']
@@ -199,18 +263,14 @@ def get_reform_from_file(request):
         assumptions_file = tempfile.NamedTemporaryFile(delete=False)
         assumptions_file.write(assumptions_text)
         assumptions_file.close()
-        policy_dict = taxcalc.Calculator.read_json_param_files(reform_file.name,
-                                                               assumptions_file.name,
-                                                               arrays_not_lists=False)
+        assumptions_file_name = assumptions_file.name
     else:
         assumptions_text = ""
-        policy_dict = taxcalc.Calculator.read_json_param_files(reform_file.name,
-                                                               None,
-                                                               arrays_not_lists=False)
+        assumptions_file_name = None
 
-    errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
-    reform_dict = policy_dict["policy"]
-    assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
+    (reform_dict, assumptions_dict,
+        errors_warnings) = read_json_reform(reform_file.name,
+                                            assumptions_file_name)
 
     return (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings)
@@ -239,20 +299,14 @@ def get_reform_from_gui(request, model=None, stored_errors=None):
     amt_fixup(request.REQUEST, worker_data, model)
 
     # convert GUI input to json style taxcalc reform
-    policy_dict_json, map_back_to_tb = to_json_reform(worker_data, int(start_year))
+    policy_dict_json, map_back_to_tb = to_json_reform(worker_data,
+                                                      int(start_year))
     policy_dict_json = {"policy": policy_dict_json}
-    # convert json style taxcalc reform to dict style taxcalc reform
-    policy_dict = taxcalc.Calculator.read_json_param_files(json.dumps(policy_dict_json),
-                                                           None,
-                                                           arrays_not_lists=False)
-    # get errors and warnings on user input from taxcalc
-    errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
-    errors_warnings = parse_errors_warnings(errors_warnings,
-                                            policy_dict_json["policy"],
+    policy_dict_json = json.dumps(policy_dict_json)
+    (reform_dict, assumptions_dict,
+        errors_warnings) = read_json_reform(policy_dict_json,
+                                            None,
                                             map_back_to_tb)
-    # separate reform and assumptions
-    reform_dict = policy_dict["policy"]
-    assumptions_dict = {k: v for k, v in reform_dict.items() if k != "policy"}
 
     return (reform_dict, assumptions_dict, "", "", errors_warnings)
 
@@ -303,8 +357,13 @@ def submit_reform(request, user=None):
         error_messages['Tax-Calculator:'] = msg
     # TODO: account for errors
     # first only account for GUI errors
-    if not has_errors and (error_messages or (errors_warnings['errors'] != {}
-       and personal_inputs is not None)):
+    # 4 cases:
+    #   0. no warning/erro messages --> run model
+    #   1. has seen warning/error messages and now there are no errors -- > run model
+    #   2. has not seen warning/error messages --> show warning/error messages
+    #   3. has seen warning/error messages --> there are still error messages
+    if (not has_errors and (error_messages or (errors_warnings['warnings'] != {}
+        and personal_inputs is not None))) or errors_warnings['errors'] != {}:
         print('here')
         taxcalc_errors = True if errors_warnings['errors'] else False
         taxcalc_warnings = True if errors_warnings['warnings'] else False
@@ -314,6 +373,7 @@ def submit_reform(request, user=None):
             for action in errors_warnings:
                 for year in errors_warnings[action]:
                     for param in errors_warnings[action][year]:
+                        print(param, errors_warnings[action][year][param])
                         personal_inputs.add_error(param,
                                                   errors_warnings[action][year][param])
 

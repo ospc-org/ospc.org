@@ -161,7 +161,7 @@ TAXCALC_HIDDEN_FIELDS = [
 # Display TaxCalc result data
 #
 TAXCALC_RESULTS_START_YEAR = START_YEAR
-TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.TABLE_LABELS
+TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.DIST_TABLE_LABELS
 TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS
 TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     #   divisor,   unit,   decimals
@@ -211,7 +211,7 @@ TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     'thousand_up':'1000+',
     'all':'All'
 }
-TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.DECILE_ROW_NAMES
+TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.DEC_ROW_NAMES
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'perc0-10':'0-10%',
     'perc10-20':'10-20%',
@@ -240,7 +240,7 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'fiscal_tot_base': 'Total Liabilities Baseline by Calendar Year',
     'fiscal_tot_ref': 'Total Liabilities Reform by Calendar Year',
 }
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.AGGR_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
