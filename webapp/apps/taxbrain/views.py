@@ -191,7 +191,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
                                                                    arrays_not_lists=False)
             return policy_dict, value_errors
         except ValueError as e:
-            print(e, e.__str__)
+            print('VALUEERROR', e, e.__str__)
             # e.__str__() gives string of warnings raised by ValueError
             errors_warnings = {'errors': e.__str__(), 'warnings': ""}
             errors_warnings = parse_errors_warnings(errors_warnings,
@@ -350,7 +350,7 @@ def submit_reform(request, user=None):
             return HttpResponse("Bad Input!", status=400)
 
 
-    print('ERROR', errors_warnings)
+    # print('ERROR', errors_warnings)
 
     if reform_dict == {}:
         msg = "No reform file uploaded"
@@ -364,18 +364,18 @@ def submit_reform(request, user=None):
     #   3. has seen warning/error messages --> there are still error messages
     if (not has_errors and (error_messages or (errors_warnings['warnings'] != {}
         and personal_inputs is not None))) or errors_warnings['errors'] != {}:
-        print('here')
         taxcalc_errors = True if errors_warnings['errors'] else False
         taxcalc_warnings = True if errors_warnings['warnings'] else False
         # TODO: parse warnings for file_input
         # only handle GUI errors for now
         if errors_warnings and personal_inputs is not None:
             for action in errors_warnings:
-                for year in errors_warnings[action]:
-                    for param in errors_warnings[action][year]:
-                        print(param, errors_warnings[action][year][param])
+                for year in sorted(errors_warnings[action].keys(),
+                                   key=lambda x: float(x)):
+                    year_str = str(year)
+                    for param in errors_warnings[action][year_str]:
                         personal_inputs.add_error(param,
-                                                  errors_warnings[action][year][param])
+                                                  errors_warnings[action][year_str][param])
 
         return personal_inputs, taxcalc_errors, taxcalc_warnings
     # case where user has been warned and has fixed errors if necassary but may
@@ -492,6 +492,7 @@ def personal_results(request):
     taxcalc_errors = False
     taxcalc_warnings = False
     has_parse_errors = False
+    start = datetime.datetime.now()
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
@@ -546,7 +547,8 @@ def personal_results(request):
         'has_errors': has_errors,
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
-
+    finish = datetime.datetime.now()
+    print('TIME', (finish-start).seconds)
     # if no_inputs:
     #     form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
 
@@ -654,7 +656,6 @@ def get_result_context(model, request, url):
     else:
         reform_file_contents = False
         assump_file_contents = False
-    print("JSONTEXT", reform_file_contents, model.json_text)
 
     if hasattr(request, 'user'):
         is_registered = True if request.user.is_authenticated() else False

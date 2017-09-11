@@ -291,7 +291,6 @@ class PersonalExemptionForm(ModelForm):
         boolean_fields = [
             "_ID_BenefitSurtax_Switch",
             "_ID_BenefitCap_Switch",
-            "_ID_AmountCap_Switch",
             "_ALD_InvInc_ec_base_RyanBrady",
             "_NIIT_PT_taxed",
             "_CG_nodiff",
