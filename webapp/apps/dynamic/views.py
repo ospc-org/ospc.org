@@ -218,11 +218,6 @@ def dynamic_behavioral(request, pk):
                         taxbrain_model=None,
                         behavior_model=model
                     )
-                assumptions_dict = {"behavior": assumptions_dict,
-                                    "growdiff_response": {},
-                                    "consumption": {},
-                                    "growdiff_baseline": {}}
-
             # start calc job
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
                 reform_dict,
