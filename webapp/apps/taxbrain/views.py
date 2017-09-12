@@ -400,10 +400,9 @@ def submit_reform(request, user=None):
             for action in errors_warnings:
                 for year in sorted(errors_warnings[action].keys(),
                                    key=lambda x: float(x)):
-                    year_str = str(year)
-                    for param in errors_warnings[action][year_str]:
+                    for param in errors_warnings[action][year]:
                         personal_inputs.add_error(param,
-                                                  errors_warnings[action][year_str][param])
+                                                  errors_warnings[action][year][param])
 
         return personal_inputs, taxcalc_errors, taxcalc_warnings
     # case where user has been warned and has fixed errors if necassary but may
