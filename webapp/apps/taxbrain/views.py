@@ -386,7 +386,7 @@ def submit_reform(request, user=None):
     # TODO: account for errors
     # first only account for GUI errors
     # 4 cases:
-    #   0. no warning/erro messages --> run model
+    #   0. no warning/error messages --> run model
     #   1. has seen warning/error messages and now there are no errors -- > run model
     #   2. has not seen warning/error messages --> show warning/error messages
     #   3. has seen warning/error messages --> there are still error messages
