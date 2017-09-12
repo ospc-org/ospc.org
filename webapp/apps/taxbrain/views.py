@@ -235,12 +235,9 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
                     value_errors['errors'][year][param] = \
                         errors_warnings['errors'][year][param]
             return get_policy_dict(reform, value_errors=value_errors)
-
-    policy_dict, value_errors = get_policy_dict(reform)
     # get policy_dict using user_input that does not raise ValueErrors
-    # policy_dict = taxcalc.Calculator.read_json_param_files(json.dumps(reform),
-    #                                                        None,
-    #                                                        arrays_not_lists=False)
+    # and save ValueError data
+    policy_dict, value_errors = get_policy_dict(reform)
     # get errors and warnings on parameters that do not cause ValueErrors
     errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
     errors_warnings = parse_errors_warnings(errors_warnings,
@@ -289,6 +286,12 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
     # TODO: consider moving to PersonalExemptionForm
     start_year = request.REQUEST['start_year']
     taxbrain_data = {}
+    assumptions_data = {}
+    map_back_to_tb = {}
+
+    policy_dict_json = {}
+    assumptions_dict_json = {}
+
     # prepare taxcalc params from TaxSaveInputs model
     if taxbrain_model is not None:
         taxbrain_data = dict(taxbrain_model.__dict__)
@@ -303,26 +306,24 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
                                              taxbrain_model,
                                              name="ID_BenefitCap_Switch")
         taxbrain_data = amt_fixup(request.REQUEST,
-                                  taxbrain_data, 
+                                  taxbrain_data,
                                   taxbrain_model)
+        # convert GUI input to json style taxcalc reform
+        policy_dict_json, map_back_to_tb = to_json_reform(taxbrain_data,
+                                                          int(start_year))
     if behavior_model is not None:
         assumptions_data = dict(behavior_model.__dict__)
         assumptions_data = parse_fields(assumptions_data)
+        (assumptions_dict_json,
+            map_back_assump) = to_json_reform(assumptions_data,
+                                              int(start_year),
+                                              cls=taxcalc.Behavior)
+        map_back_to_tb.update(map_back_assump)
 
-    map_back_to_tb = {}
-
-    # convert GUI input to json style taxcalc reform
-    policy_dict_json, map_back_to_tb = to_json_reform(taxbrain_data,
-                                                      int(start_year))
     policy_dict_json = {"policy": policy_dict_json}
 
     policy_dict_json = json.dumps(policy_dict_json)
 
-    (assumptions_dict_json,
-        map_back_assump) = to_json_reform(assumptions_data,
-                                          int(start_year),
-                                          cls=taxcalc.Behavior)
-    map_back_to_tb.update(map_back_assump)
     assumptions_dict_json = {"behavior": assumptions_dict_json,
                              "growdiff_response": {},
                              "consumption": {},

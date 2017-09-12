@@ -65,12 +65,11 @@ def convert_val(x):
 
 def parse_fields(param_dict):
     for k, v in param_dict.copy().items():
+        if v == u'' or v is None:
+            del param_dict[k]
+            continue
         if type(v) == type(unicode()): #TODO: isinstance(value, unicode)
-            if v == u'' or v ==None:
-                del param_dict[k]
-                continue
-            param_dict[k] = [convert_val(x) for x in v.split(',')
-                             if x]
+            param_dict[k] = [convert_val(x) for x in v.split(',') if x]
     return param_dict
 
 def int_to_nth(x):
