@@ -41,7 +41,7 @@ from .forms import PersonalExemptionForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       is_wildcard, convert_val, make_bool, nested_form_parameters,
-                      to_json_reform)
+                      to_json_reform, parse_fields)
 from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
@@ -107,6 +107,8 @@ def amt_fixup(request, reform, model):
                 setattr(model, 'AMT_' + cgparam, reform[cgparam])
             else:
                 setattr(model, 'AMT_' + cgparam, reform[cgparam][0])
+
+    return reform
 
 def growth_fixup(mod):
     if mod['growth_choice']:
@@ -181,10 +183,15 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
     The solution here is to recursively try to read the reform and remove
     parameters that cause ValueErrors until no ValueErrors are thrown.
     """
+    # no validation on assumptions--they are just carried through
+    if isinstance(assumptions, dict):
+        assumptions = json.dumps(assumptions)
+
     def get_policy_dict(reform, value_errors={'errors': {}}):
         try:
             if isinstance(reform, dict):
                 reform = json.dumps(reform)
+
             # convert json style taxcalc reform to dict style taxcalc reform
             policy_dict = taxcalc.Calculator.read_json_param_files(reform,
                                                                    assumptions,
@@ -220,6 +227,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
                     # errant_policy[param] = {year: policy_dict_json['policy'][param].pop(year)}
                     # TODO: replace map_to_tc with lookup so that this can be
                     # done for file input too
+                    # TODO: handle assumptions errors
                     if year not in value_errors['errors']:
                         value_errors['errors'][year] = {}
                     if year in reform['policy'][map_to_tc[param]]:
@@ -276,39 +284,58 @@ def get_reform_from_file(request):
             errors_warnings)
 
 
-def get_reform_from_gui(request, model=None, stored_errors=None):
+def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
+                        stored_errors=None):
     # TODO: consider moving to PersonalExemptionForm
     start_year = request.REQUEST['start_year']
-
+    taxbrain_data = {}
     # prepare taxcalc params from TaxSaveInputs model
-    curr_dict = dict(model.__dict__)
-    curr_dict = growth_fixup(curr_dict)
-    # split unicode string into list of values from start year to number
-    # comma separated values
-    for key, value in curr_dict.items():
-        if type(value) == type(unicode()): #TODO: isinstance(value, unicode)
-            curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
+    if taxbrain_model is not None:
+        taxbrain_data = dict(taxbrain_model.__dict__)
+        taxbrain_data = growth_fixup(taxbrain_data)
+        taxbrain_data = parse_fields(taxbrain_data)
+        taxbrain_data = benefit_switch_fixup(request.REQUEST,
+                                             taxbrain_data,
+                                             taxbrain_model,
+                                             name="ID_BenefitSurtax_Switch")
+        taxbrain_data = benefit_switch_fixup(request.REQUEST,
+                                             taxbrain_data,
+                                             taxbrain_model,
+                                             name="ID_BenefitCap_Switch")
+        taxbrain_data = amt_fixup(request.REQUEST,
+                                  taxbrain_data, 
+                                  taxbrain_model)
+    if behavior_model is not None:
+        assumptions_data = dict(behavior_model.__dict__)
+        assumptions_data = parse_fields(assumptions_data)
 
-    worker_data = {k: v for k, v in curr_dict.items()
-                   if not (v == [] or v is None)}
-    assert request is not None # TODO: maybe not necessary
-    worker_data = benefit_switch_fixup(request.REQUEST, worker_data, model,
-                                       name="ID_BenefitSurtax_Switch")
-    worker_data = benefit_switch_fixup(request.REQUEST, worker_data, model,
-                                       name="ID_BenefitCap_Switch")
-    amt_fixup(request.REQUEST, worker_data, model)
+    map_back_to_tb = {}
 
     # convert GUI input to json style taxcalc reform
-    policy_dict_json, map_back_to_tb = to_json_reform(worker_data,
+    policy_dict_json, map_back_to_tb = to_json_reform(taxbrain_data,
                                                       int(start_year))
     policy_dict_json = {"policy": policy_dict_json}
+
     policy_dict_json = json.dumps(policy_dict_json)
+
+    (assumptions_dict_json,
+        map_back_assump) = to_json_reform(assumptions_data,
+                                          int(start_year),
+                                          cls=taxcalc.Behavior)
+    map_back_to_tb.update(map_back_assump)
+    assumptions_dict_json = {"behavior": assumptions_dict_json,
+                             "growdiff_response": {},
+                             "consumption": {},
+                             "growdiff_baseline": {}}
+    assumptions_dict_json = json.dumps(assumptions_dict_json)
+
     (reform_dict, assumptions_dict,
         errors_warnings) = read_json_reform(policy_dict_json,
-                                            None,
+                                            assumptions_dict_json,
                                             map_back_to_tb)
 
     return (reform_dict, assumptions_dict, "", "", errors_warnings)
+
 
 def submit_reform(request, user=None):
     start_year = START_YEAR
@@ -342,7 +369,7 @@ def submit_reform(request, user=None):
         personal_inputs = PersonalExemptionForm(start_year, fields)
         model = personal_inputs.save()
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors_warnings) = get_reform_from_gui(request, model=model)
+            errors_warnings) = get_reform_from_gui(request, taxbrain_model=model)
         # TODO: is this covered in get_default_policy_param_name?
         # If an attempt is made to post data we don't accept
         # raise a 400

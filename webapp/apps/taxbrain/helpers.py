@@ -63,6 +63,16 @@ def convert_val(x):
     except ValueError:
         return make_bool(x)
 
+def parse_fields(param_dict):
+    for k, v in param_dict.copy().items():
+        if type(v) == type(unicode()): #TODO: isinstance(value, unicode)
+            if v == u'' or v ==None:
+                del param_dict[k]
+                continue
+            param_dict[k] = [convert_val(x) for x in v.split(',')
+                             if x]
+    return param_dict
+
 def int_to_nth(x):
     if x < 1:
         return None
@@ -272,7 +282,7 @@ def get_default_policy_param_name(param, default_params):
     raise ValueError(msg.format(param))
 
 
-def to_json_reform(fields, start_year):
+def to_json_reform(fields, start_year, cls=taxcalc.Policy):
     """
     Convert fields style dictionary to json reform style dictionary
     For example:
@@ -289,11 +299,13 @@ def to_json_reform(fields, start_year):
               '_EITC_rt_2kids': {'2017': [1.0]}}
     """
     map_back_to_tb = {}
-    default_params = taxcalc.Policy.default_data(start_year=start_year,
-                                                 metadata=True)
+    default_params = cls.default_data(start_year=start_year,
+                                      metadata=True)
     ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
               u'full_calc', u'quick_calc', 'first_year', '_state',
-              'creation_date', 'id')
+              'creation_date', 'id', 'job_ids', 'jobs_not_ready',
+              'json_text_id', 'tax_result', 'reform_style',
+              '_micro_sim_cache', 'micro_sim_id', )
 
     reform = {}
     for param in fields:
