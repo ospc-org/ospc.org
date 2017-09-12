@@ -409,8 +409,8 @@ def submit_reform(request, user=None):
         json_reform.raw_assumption_text = assumptions_text
     # save GUI user params
     else:
-        json_reform.reform_text = ""
-        json_reform.assumption_text = ""
+        json_reform.reform_text = json.dumps(reform_dict)
+        json_reform.assumption_text = json.dumps(assumptions_dict)
         json_reform.raw_reform_text = ""
         json_reform.raw_assumption_text = ""
 
@@ -648,7 +648,8 @@ def get_result_context(model, request, url):
         'fiscal_change': FISCAL_CHANGE,
     }
 
-    if model.json_text is not None:
+    if (model.json_text is not None and (model.json_text.raw_reform_text and
+       model.json_text.raw_assumptions_text)):
         reform_file_contents = model.json_text.reform_text
         reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
         assump_file_contents = model.json_text.assumption_text
