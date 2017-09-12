@@ -247,7 +247,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
                     errors_warnings[action][year] = {param: value_errors[action][year][param]}
     # separate reform and assumptions
     reform_dict = policy_dict["policy"]
-    assumptions_dict = {k: v for k, v in reform_dict.items() if k != "policy"}
+    assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
 
     return reform_dict, assumptions_dict, errors_warnings
 
