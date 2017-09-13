@@ -92,7 +92,7 @@ class DynamicBehavioralViewsTests(TestCase):
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
         reform = json.loads(post['user_mods'])
-        assert reform["2020"][u'_SS_Earnings_c'][0]  == 150000.0
+        assert reform["2020"][u'_SS_Earnings_c'][0]  == 15000.0
 
 
     def test_behavioral_reform_from_file(self):
