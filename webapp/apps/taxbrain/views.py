@@ -186,7 +186,6 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
     # no validation on assumptions--they are just carried through
     if isinstance(assumptions, dict):
         assumptions = json.dumps(assumptions)
-
     def get_policy_dict(reform, value_errors={'errors': {}}):
         try:
             if isinstance(reform, dict):
@@ -221,19 +220,59 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
             # remove params that are causing the problem; save errors in value_errors
             # if this does not occur then warnings will not be displayed since
             # ValueError message only contains error messages.
-            for year in errors_warnings['errors']:
-                for param in errors_warnings['errors'][year]:
-                    # don't think we need to keep this
-                    # errant_policy[param] = {year: policy_dict_json['policy'][param].pop(year)}
-                    # TODO: replace map_to_tc with lookup so that this can be
-                    # done for file input too
-                    # TODO: handle assumptions errors
-                    if year not in value_errors['errors']:
-                        value_errors['errors'][year] = {}
-                    if year in reform['policy'][map_to_tc[param]]:
-                        del reform['policy'][map_to_tc[param]][year]
-                    value_errors['errors'][year][param] = \
-                        errors_warnings['errors'][year][param]
+            def delete_param_add_error(param, reform_year, error_year):
+                tc_param = map_to_tc[param]
+                if error_year not in value_errors['errors']:
+                    value_errors['errors'][error_year] = {}
+                if (tc_param in reform['policy']
+                        and reform_year in reform['policy'][tc_param]):
+                    print('DELETING', param, tc_param)
+                    del reform['policy'][tc_param][reform_year]
+                    if reform['policy'][map_to_tc[param]] == {}:
+                        del reform['policy'][tc_param]
+                value_errors['errors'][error_year][param] = \
+                    errors_warnings['errors'][error_year][param]
+
+            # get first year in which ValueError is raised
+            first_year_errors = min(errors_warnings['errors'].keys(),
+                                    key=int)
+            # get param causing error
+            errant_param = errors_warnings['errors'][first_year_errors].keys()[0]
+            # print('message', errors_warnings['errors'][first_year_errors][errant_param])
+            # get years in which this parameter was modified by user
+            # in some (rare) cases an error is thrown for a parameter
+            # that is not in the reform dictionary.
+            # e.g. test_views.test_taxbrain_rt_to_passthrough
+            if map_to_tc[errant_param] not in reform["policy"]:
+                # ex message:
+                # "ERROR: value 422774.38 > max value 418400.0 for _II_brk6_0
+                # for 2017"
+                # this gets II_brk6_0
+                msg = errors_warnings['errors'][first_year_errors][errant_param]
+                errant_param = msg.split()[-3][1:]
+                errors_warnings['errors'][first_year_errors][errant_param] = msg
+            # print('errant_param', errant_param)
+            # print('errors_warnings', errors_warnings)
+            years_reform = reform["policy"][map_to_tc[errant_param]].keys()
+            # create list of tuples using user modified years and first year
+            # of error
+            diff_tups = zip()
+            diff_tups = zip(years_reform,
+                            [first_year_errors] * len(years_reform))
+            # find minimum difference between year in which ValueError is first
+            # raised and years in which user modified parameter s.t. difference
+            # is greater than zero
+            errant_year = min(diff_tups, key=lambda x: int(x[1]) - int(x[0])
+                              if int(x[1]) > int(x[0]) else 1000)[0]
+            if int(errant_year) <= int(first_year_errors):
+                for error_year in errors_warnings['errors']:
+                    if errant_param in errors_warnings['errors'][error_year]:
+                        delete_param_add_error(errant_param, errant_year,
+                                               error_year)
+            else:
+                raise Exception("ValueError was caused before"
+                                " user modification")
+
             return get_policy_dict(reform, value_errors=value_errors)
     # get policy_dict using user_input that does not raise ValueErrors
     # and save ValueError data
@@ -383,14 +422,17 @@ def submit_reform(request, user=None):
     if reform_dict == {}:
         msg = "No reform file uploaded"
         error_messages['Tax-Calculator:'] = msg
+        no_inputs = True
+        if personal_inputs is not None:
+            personal_inputs.add_error(None, "Please specify a tax-law change before submitting.")
     # TODO: account for errors
     # first only account for GUI errors
-    # 4 cases:
+    # 4 cases: (do not run model if reform isn't specified)
     #   0. no warning/error messages --> run model
     #   1. has seen warning/error messages and now there are no errors -- > run model
     #   2. has not seen warning/error messages --> show warning/error messages
     #   3. has seen warning/error messages --> there are still error messages
-    if (not has_errors and (error_messages or (errors_warnings['warnings'] != {}
+    if (not has_errors and (no_inputs or error_messages or (errors_warnings['warnings'] != {}
         and personal_inputs is not None))) or errors_warnings['errors'] != {}:
         taxcalc_errors = True if errors_warnings['errors'] else False
         taxcalc_warnings = True if errors_warnings['warnings'] else False
@@ -404,7 +446,7 @@ def submit_reform(request, user=None):
                         personal_inputs.add_error(param,
                                                   errors_warnings[action][year][param])
 
-        return personal_inputs, taxcalc_errors, taxcalc_warnings
+        return personal_inputs, taxcalc_errors, taxcalc_warnings, no_inputs
     # case where user has been warned and has fixed errors if necassary but may
     # or may not have fixed warnings
     if has_errors:
@@ -473,7 +515,7 @@ def submit_reform(request, user=None):
     expected_completion = cur_dt + future_offset
     unique_url.exp_comp_datetime = expected_completion
     unique_url.save()
-    return unique_url, taxcalc_errors, taxcalc_warnings
+    return unique_url, taxcalc_errors, taxcalc_warnings, no_inputs
 
         # except JobFailError:
             # Bail here and reload the page until we have a better answer
@@ -488,13 +530,19 @@ def file_input(request):
     errors = None
 
     if request.method=='POST':
-        unique_url, taxcalc_errors, taxcalc_warnings = submit_reform(request)
-        # TODO: handle taxcalc_errors and taxcalc_warnings
-        return redirect(unique_url)
-    else:     # GET request, load a default form
-        params = parse_qs(urlparse(request.build_absolute_uri()).query)
-        if 'start_year' in params and params['start_year'][0] in START_YEARS:
-            start_year = params['start_year'][0]
+        if 'docfile' not in dict(request.FILES):
+            errors = ["Please specify a tax-law change before submitting."]
+        else:
+            (unique_url, taxcalc_errors,
+                taxcalc_warnings, no_inputs) = submit_reform(request)
+            # TODO: handle taxcalc_errors and taxcalc_warnings
+            # if no_inputs:
+            #     raise IOError('handle no-inputs situation')
+            return redirect(unique_url)
+    # GET request, load a default form
+    params = parse_qs(urlparse(request.build_absolute_uri()).query)
+    if 'start_year' in params and params['start_year'][0] in START_YEARS:
+        start_year = params['start_year'][0]
 
     init_context = {
         'form': None,
@@ -519,6 +567,7 @@ def personal_results(request):
     taxcalc_errors = False
     taxcalc_warnings = False
     has_parse_errors = False
+    no_inputs = False
     start = datetime.datetime.now()
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
@@ -536,9 +585,10 @@ def personal_results(request):
         elif 'quick_calc' in fields:
             del fields['quick_calc']
 
-        obj, taxcalc_errors, taxcalc_warnings = submit_reform(request)
+        (obj, taxcalc_errors,
+            taxcalc_warnings, no_inputs) = submit_reform(request)
 
-        if not taxcalc_errors and not taxcalc_warnings:
+        if not taxcalc_errors and not taxcalc_warnings and not no_inputs:
             return redirect(obj)
         else:
             personal_inputs = obj
@@ -554,6 +604,9 @@ def personal_results(request):
             start_year = params['start_year'][0]
 
         personal_inputs = PersonalExemptionForm(first_year=start_year)
+
+    if no_inputs:
+        personal_inputs.add_error(None, "Please specify a tax-law change before submitting.")
 
     has_errors = taxcalc_errors or taxcalc_warnings or has_parse_errors
     if taxcalc_warnings:
@@ -576,8 +629,6 @@ def personal_results(request):
     }
     finish = datetime.datetime.now()
     print('TIME', (finish-start).seconds)
-    # if no_inputs:
-    #     form_personal_exemp.add_error(None, "Please specify a tax-law change before submitting.")
 
     return render(request, 'taxbrain/input_form.html', init_context)
 
