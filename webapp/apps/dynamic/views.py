@@ -212,7 +212,7 @@ def dynamic_behavioral(request, pk):
             else:
                 is_file = True
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
-                (reform_dict, assumptions_dict, _, _,
+                (_, assumptions_dict, _, _,
                     errors_warnings) = get_reform_from_gui(
                         request,
                         taxbrain_model=None,
