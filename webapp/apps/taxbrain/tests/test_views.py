@@ -4,6 +4,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test.client import RequestFactory
 import mock
 import json
+import pytest
 
 from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
 from ..models import convert_to_floats
@@ -171,6 +172,7 @@ class TaxBrainViewsTests(TestCase):
         # Make sure the failure message is in the response
         self.failUnless("Your calculation failed" in str(response))
 
+    @pytest.mark.xfail
     def test_taxbrain_has_growth_params(self):
         #Monkey patch to mock out running of compute jobs
         import sys
