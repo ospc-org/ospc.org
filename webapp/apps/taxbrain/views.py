@@ -407,15 +407,13 @@ def submit_reform(request, user=None):
             errors_warnings) = get_reform_from_file(request)
     else:
         personal_inputs = PersonalExemptionForm(start_year, fields)
+        # If an attempt is made to post data we don't accept
+        # raise a 400
+        if personal_inputs.non_field_errors():
+            return HttpResponse("Bad Input!", status=400), False, False, False
         model = personal_inputs.save()
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings) = get_reform_from_gui(request, taxbrain_model=model)
-        # TODO: is this covered in get_default_policy_param_name?
-        # If an attempt is made to post data we don't accept
-        # raise a 400
-        if personal_inputs.non_field_errors() and False:
-            return HttpResponse("Bad Input!", status=400)
-
 
     # print('ERROR', errors_warnings)
 
@@ -587,6 +585,11 @@ def personal_results(request):
 
         (obj, taxcalc_errors,
             taxcalc_warnings, no_inputs) = submit_reform(request)
+
+        # case where extra inputs are supplied
+        # TODO: assert HttpResponse status is 404
+        if isinstance(obj, HttpResponse):
+            return obj
 
         if not taxcalc_errors and not taxcalc_warnings and not no_inputs:
             return redirect(obj)
