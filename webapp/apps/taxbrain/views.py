@@ -280,6 +280,8 @@ def submit_reform(request, user=None):
     has_errors = make_bool(request.POST['has_errors'])
     taxcalc_errors = False
     taxcalc_warnings = False
+    is_valid = True
+    has_parse_errors = False
     start_year = request.REQUEST['start_year']
     fields = dict(request.REQUEST)
     #TODO: use either first_year or start_year; validation error is thrown
@@ -291,8 +293,7 @@ def submit_reform(request, user=None):
         del fields['full_calc']
     elif 'quick_calc' in fields:
         del fields['quick_calc']
-
-    error_messages = {}
+    errors_warnings = {'warnings': {}, 'errors': {}}
     reform_dict = {}
     personal_inputs = None
     is_file = False
@@ -306,41 +307,64 @@ def submit_reform(request, user=None):
         # If an attempt is made to post data we don't accept
         # raise a 400
         if personal_inputs.non_field_errors():
-            return HttpResponse("Bad Input!", status=400), False, False, False
-        model = personal_inputs.save()
-        (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors_warnings) = get_reform_from_gui(request, taxbrain_model=model)
-
-    # print('ERROR', errors_warnings)
+            return HttpResponse("Bad Input!", status=400), True
+        is_valid = personal_inputs.is_valid()
+        if is_valid:
+            model = personal_inputs.save()
+            (reform_dict, assumptions_dict, reform_text, assumptions_text,
+                errors_warnings) = get_reform_from_gui(request,
+                                                       taxbrain_model=model)
 
     if reform_dict == {}:
-        msg = "No reform file uploaded"
-        error_messages['Tax-Calculator:'] = msg
         no_inputs = True
-        if personal_inputs is not None:
-            personal_inputs.add_error(None, "Please specify a tax-law change before submitting.")
     # TODO: account for errors
     # first only account for GUI errors
-    # 4 cases: (do not run model if reform isn't specified)
+    # 5 cases:
     #   0. no warning/error messages --> run model
     #   1. has seen warning/error messages and now there are no errors -- > run model
     #   2. has not seen warning/error messages --> show warning/error messages
-    #   3. has seen warning/error messages --> there are still error messages
-    if (not has_errors and (no_inputs or error_messages or (errors_warnings['warnings'] != {}
-        and personal_inputs is not None))) or errors_warnings['errors'] != {}:
+    #   3. has seen warning/error messages and there are still error messages
+    #        --> show warning/error messages again
+    #   4. no user input --> do not run model
+
+    warn_msgs = errors_warnings['warnings'] != {}
+    stop_errors = no_inputs or not is_valid or errors_warnings['errors'] != {}
+
+    if stop_errors or (not has_errors and warn_msgs):
         taxcalc_errors = True if errors_warnings['errors'] else False
         taxcalc_warnings = True if errors_warnings['warnings'] else False
-        # TODO: parse warnings for file_input
-        # only handle GUI errors for now
-        if errors_warnings and personal_inputs is not None:
-            for action in errors_warnings:
-                for year in sorted(errors_warnings[action].keys(),
-                                   key=lambda x: float(x)):
-                    for param in errors_warnings[action][year]:
-                        personal_inputs.add_error(param,
-                                                  errors_warnings[action][year][param])
+        if personal_inputs is not None:
+            # TODO: parse warnings for file_input
+            # only handle GUI errors for now
+            if ((taxcalc_errors or taxcalc_warnings)
+                    and personal_inputs is not None):
+                for action in errors_warnings:
+                    for year in sorted(errors_warnings[action].keys(),
+                                       key=lambda x: float(x)):
+                        for param in errors_warnings[action][year]:
+                            personal_inputs.add_error(
+                                param,
+                                errors_warnings[action][year][param]
+                            )
+            has_parse_errors = any(['Unrecognize value' in e[0]
+                                    for e in personal_inputs.errors.values()])
+            if no_inputs:
+                personal_inputs.add_error(
+                    None,
+                    "Please specify a tax-law change before submitting."
+                )
+            if taxcalc_warnings or taxcalc_errors:
+                msg = ("Some fields have errors. Values outside of suggested "
+                       "ranges will be accepted if they only cause warnings "
+                       "and are submitted again from this page.")
+                personal_inputs.add_error(None, msg)
+            if has_parse_errors:
+                msg = ("Some fields have unrecognized values. Enter comma "
+                       "separated values for each input.")
+                personal_inputs.add_error(None, msg)
 
-        return personal_inputs, taxcalc_errors, taxcalc_warnings, no_inputs
+        return (personal_inputs, any([taxcalc_errors, taxcalc_warnings,
+                no_inputs, not is_valid]))
     # case where user has been warned and has fixed errors if necassary but may
     # or may not have fixed warnings
     if has_errors:
@@ -409,11 +433,8 @@ def submit_reform(request, user=None):
     expected_completion = cur_dt + future_offset
     unique_url.exp_comp_datetime = expected_completion
     unique_url.save()
-    return unique_url, taxcalc_errors, taxcalc_warnings, no_inputs
-
-        # except JobFailError:
-            # Bail here and reload the page until we have a better answer
-            # raise HttpResponse("Something is broken", status=400)
+    return (unique_url, any([taxcalc_errors, taxcalc_warnings, no_inputs,
+            not is_valid]))
 
 
 def file_input(request):
@@ -427,8 +448,7 @@ def file_input(request):
         if 'docfile' not in dict(request.FILES):
             errors = ["Please specify a tax-law change before submitting."]
         else:
-            (unique_url, taxcalc_errors,
-                taxcalc_warnings, no_inputs) = submit_reform(request)
+            unique_url, has_errors = submit_reform(request)
             # TODO: handle taxcalc_errors and taxcalc_warnings
             # if no_inputs:
             #     raise IOError('handle no-inputs situation')
@@ -446,7 +466,6 @@ def file_input(request):
         'start_years': START_YEARS,
         'start_year': start_year,
         'enable_quick_calc': ENABLE_QUICK_CALC
-        # 'input_type': "file" #TODO: look into this. Doesn't appear to do anything
     }
 
     return render(request, 'taxbrain/input_file.html', init_context)
@@ -460,8 +479,8 @@ def personal_results(request):
     start_year = START_YEAR
     taxcalc_errors = False
     taxcalc_warnings = False
-    has_parse_errors = False
     no_inputs = False
+    has_errors = False
     start = datetime.datetime.now()
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
@@ -479,23 +498,20 @@ def personal_results(request):
         elif 'quick_calc' in fields:
             del fields['quick_calc']
 
-        (obj, taxcalc_errors,
-            taxcalc_warnings, no_inputs) = submit_reform(request)
+        obj, has_errors = submit_reform(request)
 
         # case where extra inputs are supplied
         # TODO: assert HttpResponse status is 404
-        if isinstance(obj, HttpResponse):
+        if has_errors and isinstance(obj, HttpResponse):
             return obj
 
-        if not taxcalc_errors and not taxcalc_warnings and not no_inputs:
+        if not has_errors:
             return redirect(obj)
         else:
             personal_inputs = obj
 
-        # Parse Errors are never OK. Detect this case separate from form
-        # values out of bounds
-        has_parse_errors = any(['Unrecognize value' in e[0]
-                                for e in personal_inputs.errors.values()])
+        has_errors = True
+
     else:
         # Probably a GET request, load a default form
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
@@ -504,18 +520,6 @@ def personal_results(request):
 
         personal_inputs = PersonalExemptionForm(first_year=start_year)
 
-    if no_inputs:
-        personal_inputs.add_error(None, "Please specify a tax-law change before submitting.")
-
-    has_errors = taxcalc_errors or taxcalc_warnings or has_parse_errors
-    if taxcalc_warnings:
-        msg = ("Some fields have errors. Values outside of suggested ranges "
-               " will be accepted if submitted again from this page.")
-        personal_inputs.add_error(None, msg)
-    if has_parse_errors:
-        msg = ("Some fields have unrecognized values. Enter comma separated "
-               "values for each input.")
-        personal_inputs.add_error(None, msg)
 
     init_context = {
         'form': personal_inputs,
