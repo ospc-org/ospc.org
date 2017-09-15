@@ -44,11 +44,14 @@ from ..taxbrain.helpers import (format_csv,
                                 convert_val,
                                 make_bool)
 from ..taxbrain.views import (benefit_surtax_fixup,
-                              denormalize, normalize,taxcalc_version as TAXCALC_VERSION)
+                              denormalize, normalize)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
                         START_YEAR, START_YEARS)
+
+from ..formatters import get_version
+from django.conf import settings
 
 
 dropq_compute = DropqComputeBtax()
@@ -56,6 +59,15 @@ dropq_compute = DropqComputeBtax()
 BTAX_VERSION_INFO = btax._version.get_versions()
 
 BTAX_VERSION = BTAX_VERSION_INFO['version']
+
+WEBAPP_VERSION = settings.WEBAPP_VERSION
+
+
+tcversion_info = taxcalc._version.get_versions()
+
+TAXCALC_VERSION = tcversion_info['version']
+
+
 JOB_PROC_TIME_IN_SECONDS = 30
 
 
@@ -180,6 +192,11 @@ def btax_results(request):
                     pass
                 else:
                     unique_url.taxcalc_vers = TAXCALC_VERSION
+                if unique_url.webapp_vers is not None:
+                    pass
+                else:
+                    unique_url.webapp_vers = WEBAPP_VERSION
+
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
                 cur_dt = datetime.datetime.utcnow()
@@ -220,6 +237,7 @@ def btax_results(request):
         'params': btax_default_params,
         'btax_version': BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
+        'webapp_version': WEBAPP_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
@@ -258,12 +276,18 @@ def edit_btax_results(request, pk):
     form_btax_input = make_bool_gds_ads(form_btax_input)
     hover_notes = hover_args_to_btax_depr()
 
+    btax_vers_disp = get_version(url, 'btax_vers', BTAX_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
+    context_vers_disp = {'btax_version': btax_vers_disp,
+                         'webapp_version': webapp_vers_disp}
+
     init_context = {
         'form': form_btax_input,
         'make_bool': make_bool,
         'params': btax_default_params,
-        'btax_version': BTAX_VERSION,
-        'taxcalc_version': TAXCALC_VERSION,
+        'btax_version': btax_vers_disp,
+        'webapp_version': webapp_vers_disp,
         'start_years': START_YEARS,
         'start_year': str(start_year),
         'has_errors': has_errors,
@@ -300,6 +324,7 @@ def generate_mock_results(request):
     context.update({
         'btax_version':BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
+        'webapp_vers': WEBAPP_VERSION,
         'table_json': str(mock_json),
         'is_btax': True,
     })
@@ -320,6 +345,12 @@ def output_detail(request, pk):
     except:
         raise Http404
 
+    btax_vers_disp = get_version(url, 'btax_vers', BTAX_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
+    context_vers_disp = {'btax_version': btax_vers_disp,
+                         'webapp_version': webapp_vers_disp}
+
     model = url.unique_inputs
     if model.tax_result:
         tables = url.unique_inputs.tax_result[0]
@@ -337,13 +368,12 @@ def output_detail(request, pk):
         context.update({
             'locals': locals(),
             'unique_url': url,
-            'btax_version': BTAX_VERSION,
-            'taxcalc_version': TAXCALC_VERSION,
             'table_json': json.dumps(tables),
             'created_on': created_on,
             'first_year': first_year,
             'is_btax': True,
         })
+        context.update(context_vers_disp)
         return render(request, 'btax/results.html', context)
 
     else:
@@ -406,6 +436,8 @@ def output_detail(request, pk):
 
             else:
                 print "rendering not ready yet"
-                not_ready_data = {'eta': '100', 'is_btax': True}
-                return render_to_response('btax/not_ready.html', not_ready_data,
+                context = {'eta': '100', 'is_btax': True}
+                context.update(context_vers_disp)
+                print(context)
+                return render_to_response('btax/not_ready.html', context,
                                           context_instance=RequestContext(request))

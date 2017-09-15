@@ -56,18 +56,20 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                           ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
                           INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
-from ..formatters import format_dynamic_params
+from ..formatters import format_dynamic_params, get_version
 
 
 tcversion_info = taxcalc._version.get_versions()
-taxcalc_version = tcversion_info['version']
+TAXCALC_VERSION = tcversion_info['version']
 
+# TODO: use import ogusa; ogusa.__version__
 version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
 with open(version_path, "r") as f:
     ogversion_info = json.load(f)
-ogusa_version = ".".join([ogversion_info['version'],
-                         ogversion_info['full-revisionid'][:6]])
+OGUSA_VERSION = ogversion_info['version']
 
+from django.conf import settings
+WEBAPP_VERSION = settings.WEBAPP_VERSION
 
 def dynamic_input(request, pk):
     """
@@ -134,7 +136,7 @@ def dynamic_input(request, pk):
                                                                          int(start_year),
                                                                          microsim_data,
                                                                          pack_up_user_mods=False)
-
+            # TODO: use OutputUrl class
             if submitted_ids:
                 model.job_ids = denormalize(submitted_ids)
                 model.guids = denormalize(guids)
@@ -166,8 +168,9 @@ def dynamic_input(request, pk):
     init_context = {
         'form': form_personal_exemp,
         'params': ogusa_default_params,
-        'taxcalc_version': taxcalc_version,
-        'ogusa_version': ogusa_version,
+        'taxcalc_version': TAXCALC_VERSION,
+        'ogusa_version': OGUSA_VERSION,
+        'webapp_version': WEBAPP_VERSION,
         'start_year': start_year,
         'pk': pk,
         'is_disabled': disabled_flag,
@@ -185,7 +188,6 @@ def dynamic_behavioral(request, pk):
     This view handles the dynamic behavioral input page and calls the function that
     handles the calculation on the inputs.
     """
-
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
@@ -262,7 +264,12 @@ def dynamic_behavioral(request, pk):
                 if unique_url.taxcalc_vers != None:
                     pass
                 else:
-                    unique_url.taxcalc_vers = taxcalc_version
+                    unique_url.taxcalc_vers = TAXCALC_VERSION
+
+                if unique_url.webapp_vers != None:
+                    pass
+                else:
+                    unique_url.webapp_vers = WEBAPP_VERSION
 
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
@@ -289,7 +296,8 @@ def dynamic_behavioral(request, pk):
     init_context = {
         'form': form_personal_exemp,
         'params': behavior_default_params,
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': TAXCALC_VERSION,
+        'webapp_version': WEBAPP_VERSION,
         'start_year': start_year,
         'pk': pk
     }
@@ -396,7 +404,12 @@ def dynamic_elasticities(request, pk):
                 if unique_url.taxcalc_vers != None:
                     pass
                 else:
-                    unique_url.taxcalc_vers = taxcalc_version
+                    unique_url.taxcalc_vers = TAXCALC_VERSION
+
+                if unique_url.webapp_vers != None:
+                    pass
+                else:
+                    unique_url.webapp_vers = WEBAPP_VERSION
 
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
@@ -421,7 +434,8 @@ def dynamic_elasticities(request, pk):
     init_context = {
         'form': form_personal_exemp,
         'params': elasticity_default_params,
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': TAXCALC_VERSION,
+        'webapp_version': WEBAPP_VERSION,
         'start_year': start_year,
         'pk': pk
     }
@@ -451,10 +465,14 @@ def edit_dynamic_behavioral(request, pk):
     form_personal_exemp = DynamicBehavioralInputsModelForm(first_year=start_year, instance=model)
     behavior_default_params = default_behavior_parameters(int(start_year))
 
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
     init_context = {
         'form': form_personal_exemp,
         'params': behavior_default_params,
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': taxcalc_vers_disp,
+        'webapp_vers_disp': webapp_vers_disp,
         'start_year': str(start_year),
         'pk': model.micro_sim.pk
     }
@@ -482,11 +500,14 @@ def edit_dynamic_elastic(request, pk):
     form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year, instance=model)
     elasticity_default_params = default_elasticity_parameters(int(start_year))
 
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
 
     init_context = {
         'form': form_personal_exemp,
         'params': elasticity_default_params,
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': taxcalc_vers_disp,
+        'webapp_vers': webapp_vers_disp,
         'start_year': str(start_year),
         'pk': model.micro_sim.pk
     }
@@ -507,8 +528,9 @@ def dynamic_landing(request, pk):
             'is_authenticated': request.user.is_authenticated(),
             'include_ogusa': include_ogusa,
             'start_year': request.GET['start_year'],
-            'taxcalc_version': taxcalc_version
-             }
+            'taxcalc_version': TAXCALC_VERSION,
+            'webapp_version': WEBAPP_VERSION
+            }
 
     return render_to_response('dynamic/landing.html', init_context)
 
@@ -594,11 +616,11 @@ def elastic_results(request, pk):
     except:
         raise Http404
 
-    if url.taxcalc_vers != None:
-        pass
-    else:
-        url.taxcalc_vers = taxcalc_version
-        url.save()
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
+    context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
+                         'webapp_version': webapp_vers_disp}
 
     model = url.unique_inputs
     if model.tax_result:
@@ -612,7 +634,8 @@ def elastic_results(request, pk):
         context = {
             'locals':locals(),
             'unique_url':url,
-            'taxcalc_version':taxcalc_version,
+            'taxcalc_version':taxcalc_vers_disp,
+            'webapp_version':webapp_vers_disp,
             'tables':tables,
             'created_on':created_on,
             'first_year':first_year,
@@ -681,7 +704,9 @@ def elastic_results(request, pk):
 
             else:
                 print "rendering not ready yet"
-                return render_to_response('dynamic/not_ready.html', {'eta':'100'}, context_instance=RequestContext(request))
+                context = {'eta': '100'}
+                context.update(context_vers_disp)
+                return render_to_response('dynamic/not_ready.html', context, context_instance=RequestContext(request))
 
 
 def ogusa_results(request, pk):
@@ -693,12 +718,6 @@ def ogusa_results(request, pk):
     except:
         raise Http404
 
-    if url.ogusa_vers != None:
-        pass
-    else:
-        url.ogusa_vers = ogusa_version
-        url.save()
-
     output = url.unique_inputs.tax_result
     first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
@@ -706,10 +725,16 @@ def ogusa_results(request, pk):
     hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
     microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
 
+    ogusa_vers_disp = get_version(url, 'ogusa_vers', OGUSA_VERSION)
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
     context = {
         'locals':locals(),
         'unique_url':url,
-        'ogusa_version':url.ogusa_vers,
+        'ogusa_version':ougsa_vers_display,
+        'webapp_version': webapp_vers_disp,
+        'taxcalc_vers': taxcalc_vers_disp,
         'tables':tables,
         'created_on':created_on,
         'first_year':first_year,
@@ -729,11 +754,11 @@ def behavior_results(request, pk):
     except:
         raise Http404
 
-    if url.taxcalc_vers != None:
-        pass
-    else:
-        url.taxcalc_vers = taxcalc_version
-        url.save()
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
+    context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
+                         'webapp_version': webapp_vers_disp}
 
     model = url.unique_inputs
 
@@ -773,7 +798,6 @@ def behavior_results(request, pk):
         context = {
             'locals':locals(),
             'unique_url':url,
-            'taxcalc_version':taxcalc_version,
             'tables': json_table,
             'created_on': created_on,
             'first_year': first_year,
@@ -782,6 +806,7 @@ def behavior_results(request, pk):
             'microsim_url': microsim_url,
             'results_type': "behavioral"
         }
+        context.update(context_vers_disp)
         return render(request, 'taxbrain/results.html', context)
 
     else:
@@ -821,10 +846,13 @@ def behavior_results(request, pk):
                 exp_num_minutes = round(exp_num_minutes, 2)
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
                 if exp_num_minutes > 0:
+                    print(context)
                     return JsonResponse({'eta': exp_num_minutes}, status=202)
                 else:
                     return JsonResponse({'eta': exp_num_minutes}, status=200)
 
             else:
                 print "rendering not ready yet"
-                return render_to_response('dynamic/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
+                context = {'eta': '100'}
+                context.update(context_vers_disp)
+                return render_to_response('dynamic/not_ready.html', context, context_instance=RequestContext(request))

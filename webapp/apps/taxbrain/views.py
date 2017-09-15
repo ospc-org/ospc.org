@@ -51,10 +51,15 @@ from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
                          INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
                          START_YEARS)
 
+from ..formatters import get_version
+
+from django.conf import settings
+WEBAPP_VERSION = settings.WEBAPP_VERSION
 
 tcversion_info = taxcalc._version.get_versions()
 
-taxcalc_version = tcversion_info['version']
+TAXCALC_VERSION = tcversion_info['version']
+
 JOB_PROC_TIME_IN_SECONDS = 30
 
 def log_ip(request):
@@ -187,7 +192,12 @@ def process_model(model, start_year, stored_errors=None, request=None,
         if unique_url.taxcalc_vers != None:
             pass
         else:
-            unique_url.taxcalc_vers = taxcalc_version
+            unique_url.taxcalc_vers = TAXCALC_VERSION
+
+        if unique_url.webapp_vers != None:
+            pass
+        else:
+            unique_url.webapp_vers = WEBAPP_VERSION
 
         unique_url.unique_inputs = model
         unique_url.model_pk = model.pk
@@ -290,7 +300,12 @@ def file_input(request):
                     if unique_url.taxcalc_vers != None:
                         pass
                     else:
-                        unique_url.taxcalc_vers = taxcalc_version
+                        unique_url.taxcalc_vers = TAXCALC_VERSION
+
+                    if unique_url.webapp_vers != None:
+                        pass
+                    else:
+                        unique_url.webapp_vers = WEBAPP_VERSION
 
                     unique_url.unique_inputs = model
                     unique_url.model_pk = model.pk
@@ -313,7 +328,8 @@ def file_input(request):
     init_context = {
         'params': taxcalc_default_params,
         'errors': errors,
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': TAXCALC_VERSION,
+        'webapp_version': WEBAPP_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
@@ -410,7 +426,8 @@ def personal_results(request):
     init_context = {
         'form': form_personal_exemp,
         'params': nested_form_parameters(int(start_year)),
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': TAXCALC_VERSION,
+        'webapp_version': WEBAPP_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
@@ -469,10 +486,14 @@ def edit_personal_results(request, pk):
     form_personal_exemp = PersonalExemptionForm(first_year=start_year, instance=model)
     taxcalc_default_params = default_policy(int(start_year))
 
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
     init_context = {
         'form': form_personal_exemp,
         'params': nested_form_parameters(int(start_year)),
-        'taxcalc_version': taxcalc_version,
+        'taxcalc_version': taxcalc_vers_disp,
+        'webapp_version': webapp_vers_disp,
         'start_years': START_YEARS,
         'start_year': str(start_year),
         'is_edit_page': True
@@ -536,7 +557,6 @@ def get_result_context(model, request, url):
     context = {
         'locals':locals(),
         'unique_url':url,
-        'taxcalc_version':taxcalc_version,
         'tables': json_table,
         'created_on': created_on,
         'first_year': first_year,
@@ -565,8 +585,15 @@ def output_detail(request, pk):
         raise Http404
 
     model = url.unique_inputs
+
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
+    context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
+                         'webapp_version': webapp_vers_disp}
     if model.tax_result:
         context = get_result_context(model, request, url)
+        context.update(context_vers_disp)
         context["raw_reform_text"] = model.json_text.raw_reform_text if model.json_text else ""
         context["raw_assumption_text"] = model.json_text.raw_assumption_text if model.json_text else ""
         return render(request, 'taxbrain/results.html', context)
@@ -615,6 +642,7 @@ def output_detail(request, pk):
             model.creation_date = datetime.datetime.now()
             model.save()
             context = get_result_context(model, request, url)
+            context.update(context_vers_disp)
             return render(request, 'taxbrain/results.html', context)
 
         else:
@@ -633,12 +661,14 @@ def output_detail(request, pk):
                 exp_num_minutes = round(exp_num_minutes, 2)
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
                 if exp_num_minutes > 0:
-                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                    return JsonResponse({'eta': '100'}, status=202)
                 else:
-                    return JsonResponse({'eta': exp_num_minutes}, status=200)
+                    return JsonResponse({'eta': '100'}, status=200)
 
             else:
-                return render_to_response('taxbrain/not_ready.html', {'eta': '100'}, context_instance=RequestContext(request))
+                context = {'eta': '100'}
+                context.update(context_vers_disp)
+                return render_to_response('taxbrain/not_ready.html', context, context_instance=RequestContext(request))
 
 
 @permission_required('taxbrain.view_inputs')

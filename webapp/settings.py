@@ -39,6 +39,8 @@ TEMPLATE_DIRS = (
 
 from django.conf import global_settings
 
+WEBAPP_VERSION = "1.0.2"
+
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
     'webapp.apps.pages.views.settings_context_processor',
     'webapp.context_processors.google_analytics',
