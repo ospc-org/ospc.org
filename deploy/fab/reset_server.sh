@@ -19,8 +19,8 @@ write-latest-taxpuf && gunzip -k puf.csv.gz
 export SUPERVISORD_CONF=/home/ubuntu/deploy/fab/supervisord.conf
 echo $rs stop all
 supervisorctl -c $SUPERVISORD_CONF stop all
-supervisord -c $SUPERVISORD_CONF
-supervisorctl -c $SUPERVISORD_CONF stop all
+# supervisord -c $SUPERVISORD_CONF
+# supervisorctl -c $SUPERVISORD_CONF stop all
 
 for repeat in 1 2 3;
     do
@@ -93,6 +93,6 @@ rm -f asset_data.pkl
 python -c "from btax.execute import runner;runner(False,2013,{})"
 echo $rs supervisorctl -c $SUPERVISORD_CONF start all
 conda clean --all
-supervisorctl start all
+supervisorctl -c $SUPERVISORD_CONF start all
 python -c "from taxcalc import *;from btax import *;from ogusa import *" && ps ax | grep flask | grep python && ps ax | grep celery | grep python && echo $rs RUNNING FLASK AND CELERY PIDS ABOVE
 echo $rs DONE - OK
