@@ -18,7 +18,6 @@ import ogusa
 import run_ogusa
 from taxcalc import Policy, Calculator
 
-
 EXPECTED_KEYS = ('policy', 'consumption', 'behavior',
                 'growdiff_baseline', 'growdiff_response',
                 'gdp_elasticity',)
@@ -178,7 +177,8 @@ def ogusa_async(user_mods, ogusa_params, guid):
 def btax_async(user_mods):
     print("user mods: ", user_mods)
     results = {}
-    results.update(runner_json_tables(**user_mods))
+    result = runner_json_tables(**user_mods)
+    results.update(result)
     #Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version'] + '.' + vinfo['full'][:6]
