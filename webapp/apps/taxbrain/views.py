@@ -82,7 +82,7 @@ def benefit_switch_fixup(request, reform, model, name="ID_BenefitSurtax_Switch")
     """
     _ids = [name + '_' + str(i) for i in range(7)]
     values_from_model = [[reform[_id][0] for _id in _ids]]
-    final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
+    final_values = [[1.0 if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
     for _id, val in zip(_ids, final_values[0]):
         reform[_id] = [val]
         setattr(model, _id, unicode(val))
