@@ -141,13 +141,8 @@ def normalize(x):
 def parse_errors_warnings(errors_warnings, map_back_to_tb):
     """
     Parse error messages so that they can be mapped to Taxbrain param ID. This
-    allows the message to be displayed under the field where the value is
+    allows the messages to be displayed under the field where the value is
     entered.
-
-    TaxCalculator returns an error message for all fields including those
-    specified implicitly by wildcards or by not entering a number for each
-    year in the remaining budget window.  This function keeps only the error
-    messages where the user explicitly specified a number for a budget window.
 
     returns: dictionary 'parsed' with keys: 'errors' and 'warnings'
         parsed['errors/warnings'] = {year: {tb_param_name: 'error message'}}
@@ -175,6 +170,11 @@ def parse_errors_warnings(errors_warnings, map_back_to_tb):
 def read_json_reform(reform, assumptions, map_back_to_tb={}):
     """
     Read reform and parse errors
+
+    returns reform and assumption dictionaries that are compatible with
+            taxcalc.Policy.implement_reform
+            parsed warning and error messsages to be displayed on input page
+            if necessary
     """
     policy_dict = taxcalc.Calculator.read_json_param_files(
         reform,
@@ -192,6 +192,15 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
     return reform_dict, assumptions_dict, errors_warnings
 
 def get_reform_from_file(request):
+    """
+    Parse files from request object and collect errors_warnings
+
+    returns reform and assumptions dictionaries that are compatible with
+            taxcalc.Policy.implement_reform
+            raw reform and assumptions text
+            parsed warning and error messsages to be displayed on input page
+            if necessary
+    """
     inmemfile_reform = request.FILES['docfile']
     reform_text = inmemfile_reform.read()
     reform_file = tempfile.NamedTemporaryFile(delete=False)
@@ -218,7 +227,17 @@ def get_reform_from_file(request):
 
 def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
                         stored_errors=None):
-    # TODO: consider moving to PersonalExemptionForm
+    """
+    Parse request and model objects and collect reforms and warnings
+    This function is also called by dynamic/views.behavior_model.  In the
+    future, this could be used as a generic GUI parameter parsing function.
+
+    returns reform and assumptions dictionaries that are compatible with
+            taxcalc.Policy.implement_reform
+            raw reform and assumptions text
+            parsed warning and error messsages to be displayed on input page
+            if necessary
+    """
     start_year = request.REQUEST['start_year']
     taxbrain_data = {}
     assumptions_data = {}
@@ -274,6 +293,16 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
 
 
 def submit_reform(request, user=None):
+    """
+    Submits TaxBrain reforms.  This handles data from the GUI interface
+    and the file input interface.  With some tweaks this model could be used
+    to submit reforms for all PolicyBrain models
+
+    returns OutputUrl object with parsed user input and warning/error messages
+            if necessary
+            boolean variable indicating whether this reform has errors or not
+
+    """
     start_year = START_YEAR
     no_inputs = False
 
@@ -439,12 +468,14 @@ def submit_reform(request, user=None):
 
 def file_input(request):
     """
-    This view handles the JSON input page
+    Receive request from file input interface and returns parsed data or an
+    input form
     """
     start_year = START_YEAR
     errors = None
 
     if request.method=='POST':
+        # File is not submitted
         if 'docfile' not in dict(request.FILES):
             errors = ["Please specify a tax-law change before submitting."]
         else:
@@ -473,15 +504,11 @@ def file_input(request):
 
 def personal_results(request):
     """
-    This view handles the input page and calls the function that
-    handles the calculation on the inputs.
+    Receive data from GUI interface and returns parsed data or default data if
+    get request
     """
     start_year = START_YEAR
-    taxcalc_errors = False
-    taxcalc_warnings = False
-    no_inputs = False
     has_errors = False
-    start = datetime.datetime.now()
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
@@ -500,17 +527,17 @@ def personal_results(request):
 
         obj, has_errors = submit_reform(request)
 
-        # case where extra inputs are supplied
+        # case where validation failed in forms.PersonalExemptionForm
         # TODO: assert HttpResponse status is 404
         if has_errors and isinstance(obj, HttpResponse):
             return obj
 
+        # No errors--submit to model
         if not has_errors:
             return redirect(obj)
+        # Errors from taxcalc.dropq.reform_warnings_errors
         else:
             personal_inputs = obj
-
-        has_errors = True
 
     else:
         # Probably a GET request, load a default form
@@ -530,8 +557,6 @@ def personal_results(request):
         'has_errors': has_errors,
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
-    finish = datetime.datetime.now()
-    print('TIME', (finish-start).seconds)
 
     return render(request, 'taxbrain/input_form.html', init_context)
 
@@ -575,13 +600,8 @@ def edit_personal_results(request, pk):
 
     model = TaxSaveInputs.objects.get(pk=url.model_pk)
     start_year = model.first_year
-    #Get the user-input from the model in a way we can render
-    ser_model = serializers.serialize('json', [model])
-    user_inputs = json.loads(ser_model)
-    inputs = user_inputs[0]['fields']
 
     form_personal_exemp = PersonalExemptionForm(first_year=start_year, instance=model)
-    taxcalc_default_params = default_policy(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,

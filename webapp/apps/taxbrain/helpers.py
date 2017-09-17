@@ -258,6 +258,12 @@ TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
 
 
 def get_default_policy_param_name(param, default_params):
+    """
+    Map TaxBrain field name to Tax-Calculator parameter name
+    For example: STD_0 maps to _STD_single
+
+    returns: Tax-Calculator param name
+    """
     if '_' + param in default_params:
         return '_' + param
     param_pieces = param.split('_')
@@ -296,6 +302,8 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
               '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
               '_ID_Charity_c_cpi': {'2017': True},
               '_EITC_rt_2kids': {'2017': [1.0]}}
+
+    returns json style reform
     """
     map_back_to_tb = {}
     default_params = cls.default_data(start_year=start_year,
