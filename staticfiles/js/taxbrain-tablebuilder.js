@@ -321,9 +321,9 @@ $(function() {
                   <li data-plan="Y"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.reform %>" href="#">Reform</a></li>\
                 </ul>\
                 <ul id="tax" class="nav nav-pills nav-justified">\
-                  <li class="active" data-payrolltax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll</a></li>\
+                  <li class="active" data-payrolltax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll Tax</a></li>\
                   <li><h1 class="text-center" style="margin:0">+</h1></li>\
-                  <li class="active" data-incometax="true"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income</a></li>\
+                  <li class="active" data-incometax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income Tax</a></li>\
                 </ul>\
                 <br>\
                 <br>\
