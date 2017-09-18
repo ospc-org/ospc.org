@@ -99,8 +99,6 @@ class DropqCompute(object):
             if not bool(user_mods):
                 return False
             user_mods = {first_budget_year: user_mods}
-        else:
-            user_mods = mods
         data = {}
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
