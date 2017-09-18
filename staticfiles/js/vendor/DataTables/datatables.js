@@ -27728,18 +27728,18 @@ DataTable.ext.buttons.csvHtml5 = {
             }
             else if (titles[0] == 'BASE'){
                 if (titles[9] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles';
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_currentlaw_deciles';
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins'; 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_currentlaw_bins'; 
                 }
             }
             else if (titles[0] == 'USER'){
                 if (titles[9] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles'; 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_reform_deciles'; 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins'; 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_reform_bins'; 
                 }
             }
             else if (titles[0] == 'PAYROLL'){
@@ -27842,18 +27842,18 @@ DataTable.ext.buttons.excelHtml5 = {
             }
             else if (titles[0] == 'BASE'){
                 if (titles[9] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_deciles'; 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_currentlaw_deciles'; 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_currentlaw_bins'; 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_currentlaw_bins'; 
                 }
             }
             else if (titles[0] == 'USER'){
                 if (titles[9] == 'DECILE'){
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_deciles'; 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_reform_deciles'; 
                 }
                 else {
-                    var title = '_' + regExp.exec(titles[10])[1] + '_diagnostic_reform_bins'; 
+                    var title = '_' + regExp.exec(titles[10])[1] + '_distribution_reform_bins'; 
                 }
             }
             else if (titles[0] == 'PAYROLL'){

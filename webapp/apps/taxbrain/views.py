@@ -46,7 +46,7 @@ from .compute import DropqCompute, MockCompute, JobFailError
 
 dropq_compute = DropqCompute()
 
-from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                          REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
                          FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
@@ -678,7 +678,7 @@ def get_result_context(model, request, url):
 
     tables = taxcalc_results_to_tables(output, first_year)
     tables["tooltips"] = {
-        'diagnostic': DIAGNOSTIC_TOOLTIP,
+        'distribution': DISTRIBUTION_TOOLTIP,
         'difference': DIFFERENCE_TOOLTIP,
         'payroll': PAYROLL_TOOLTIP,
         'income': INCOME_TOOLTIP,

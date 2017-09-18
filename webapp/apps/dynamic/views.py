@@ -50,7 +50,7 @@ from .compute import DynamicCompute
 
 dynamic_compute = DynamicCompute()
 
-from ..constants import (DIAGNOSTIC_TOOLTIP, DIFFERENCE_TOOLTIP,
+from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                           PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                           REFORM_TOOLTIP, EXPANDED_TOOLTIP,
                           ADJUSTED_TOOLTIP, INCOME_BINS_TOOLTIP,
@@ -769,7 +769,7 @@ def behavior_results(request, pk):
 
         tables = taxcalc_results_to_tables(output, first_year)
         tables["tooltips"] = {
-            'diagnostic': DIAGNOSTIC_TOOLTIP,
+            'distribution': DISTRIBUTION_TOOLTIP,
             'difference': DIFFERENCE_TOOLTIP,
             'payroll': PAYROLL_TOOLTIP,
             'income': INCOME_TOOLTIP,
