@@ -141,6 +141,9 @@ class BTaxOutputUrl(models.Model):
     uuid = UUIDField(auto=True, default=None, null=True)
     btax_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
+    webapp_vers = models.CharField(blank=True, default=None, null=True,
+        max_length=50)
+
     def get_absolute_url(self):
         kwargs = {
             'pk': self.pk

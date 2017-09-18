@@ -11,7 +11,7 @@ from .helpers import filter_ogusa_only
 from ..constants import START_YEAR
 
 dqversion_info = taxcalc._version.get_versions()
-dropq_version = ".".join([dqversion_info['version'], dqversion_info['full'][:6]])
+dropq_version = dqversion_info['version']
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 #Hard fail on lack of dropq workers
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')
