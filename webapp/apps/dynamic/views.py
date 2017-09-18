@@ -6,7 +6,7 @@ import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['pandas']
+MOCK_MODULES = []
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
@@ -223,7 +223,8 @@ def dynamic_behavioral(request, pk):
                 reform_dict,
                 int(start_year),
                 is_file=is_file,
-                additional_data=assumptions_dict
+                additional_data=assumptions_dict,
+                package_up_user_mods=False
             )
 
             if not submitted_ids:
