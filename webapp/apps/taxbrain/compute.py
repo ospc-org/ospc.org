@@ -35,10 +35,6 @@ class DropqCompute(object):
 
     num_budget_years = NUM_BUDGET_YEARS
 
-    # Override if needed, e.g. btax
-    def package_up_vars(self, *args, **kwargs):
-        return _package_up_vars(*args, **kwargs)
-
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
@@ -51,44 +47,44 @@ class DropqCompute(object):
         job_response = requests.get(theurl, params=params)
         return job_response
 
-    def submit_json_dropq_calculation(self, mods, first_budget_year, additional_data=None):
+    def submit_json_dropq_calculation(self, user_mods, first_budget_year, additional_data=None):
         url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(mods, first_budget_year, url_template,
+        return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
                                        pack_up_user_mods=False,
                                        additional_data=additional_data)
 
-    def submit_dropq_calculation(self, mods, first_budget_year, additional_data={}, is_file=False):
+    def submit_dropq_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False):
         url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(mods, first_budget_year, url_template,
+        return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
                                        additional_data=additional_data,
                                        pack_up_user_mods=not is_file)
 
-    def submit_json_dropq_small_calculation(self, mods, first_budget_year):
+    def submit_json_dropq_small_calculation(self, user_mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(mods, first_budget_year, url_template,
+        return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
                                        increment_counter=False,
                                        pack_up_user_mods=False)
 
-    def submit_dropq_small_calculation(self, mods, first_budget_year, additional_data={}, is_file=False):
+    def submit_dropq_small_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(mods, first_budget_year, url_template,
+        return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
                                        additional_data=additional_data,
                                        increment_counter=False,
                                        pack_up_user_mods=not is_file)
 
-    def submit_elastic_calculation(self, mods, first_budget_year, is_file=False, additional_data={}):
+    def submit_elastic_calculation(self, user_mods, first_budget_year, is_file=False, additional_data={}):
         url_template = "http://{hn}/elastic_gdp_start_job"
-        return self.submit_calculation(mods, first_budget_year, url_template,
+        return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        start_budget_year=1,
                                        additional_data=additional_data,
                                        pack_up_user_mods=not is_file)
 
 
-    def submit_calculation(self, mods, first_budget_year, url_template,
+    def submit_calculation(self, user_mods, first_budget_year, url_template,
                            start_budget_year=0, num_years=NUM_BUDGET_YEARS,
                            workers=DROPQ_WORKERS,
                            increment_counter=True,
@@ -96,14 +92,6 @@ class DropqCompute(object):
                            pack_up_user_mods=True,
                            additional_data={}):
         data = {}
-        if pack_up_user_mods:
-            user_mods = self.package_up_vars(mods, first_budget_year)
-            if not bool(user_mods):
-                return False
-            user_mods = {first_budget_year:user_mods}
-        else:
-            user_mods = mods
-
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
             wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
