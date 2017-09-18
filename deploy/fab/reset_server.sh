@@ -19,8 +19,6 @@ write-latest-taxpuf && gunzip -k puf.csv.gz
 export SUPERVISORD_CONF=/home/ubuntu/deploy/fab/supervisord.conf
 echo $rs stop all
 supervisorctl -c $SUPERVISORD_CONF stop all
-# supervisord -c $SUPERVISORD_CONF
-# supervisorctl -c $SUPERVISORD_CONF stop all
 
 for repeat in 1 2 3;
     do
