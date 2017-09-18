@@ -11,7 +11,7 @@ dependencies:
   - fabric
   - boto
   - celery
-  - eventlet
+  - eventlet==0.20.0
   - retrying
   - plotly
 
