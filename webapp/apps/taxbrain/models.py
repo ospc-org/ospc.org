@@ -742,6 +742,8 @@ class OutputUrl(models.Model):
     uuid = UUIDField(auto=True, default=None, null=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
+    webapp_vers = models.CharField(blank=True, default=None, null=True,
+        max_length=50)
 
     def get_absolute_url(self):
         kwargs = {

@@ -143,6 +143,8 @@ class DynamicOutputUrl(models.Model):
     uuid = UUIDField(auto=True, default=None, null=True)
     ogusa_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
+    webapp_vers = models.CharField(blank=True, default=None, null=True,
+        max_length=50)
 
     def get_absolute_url(self):
         kwargs = {
@@ -162,6 +164,8 @@ class DynamicBehaviorOutputUrl(models.Model):
     exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
     uuid = UUIDField(auto=True, default=None, null=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
+        max_length=50)
+    webapp_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
 
     def get_absolute_url(self):
@@ -183,6 +187,9 @@ class DynamicElasticityOutputUrl(models.Model):
     uuid = UUIDField(auto=True, default=None, null=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
+    webapp_vers = models.CharField(blank=True, default=None, null=True,
+        max_length=50)
+
 
     def get_absolute_url(self):
         kwargs = {
