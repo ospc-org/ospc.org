@@ -57,12 +57,13 @@ class DropqCompute(object):
                                        pack_up_user_mods=False,
                                        additional_data=additional_data)
 
-    def submit_dropq_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False):
+    def submit_dropq_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False,
+                                 package_up_user_mods=True):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS,
                                        additional_data=additional_data,
-                                       pack_up_user_mods=not is_file)
+                                       pack_up_user_mods=package_up_user_mods)
 
     def submit_json_dropq_small_calculation(self, user_mods, first_budget_year):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
@@ -71,13 +72,14 @@ class DropqCompute(object):
                                        increment_counter=False,
                                        pack_up_user_mods=False)
 
-    def submit_dropq_small_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False):
+    def submit_dropq_small_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False,
+                                       package_up_user_mods=True):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
                                        additional_data=additional_data,
                                        increment_counter=False,
-                                       pack_up_user_mods=not is_file)
+                                       pack_up_user_mods=package_up_user_mods)
 
     def submit_elastic_calculation(self, user_mods, first_budget_year, is_file=False, additional_data={}):
         url_template = "http://{hn}/elastic_gdp_start_job"

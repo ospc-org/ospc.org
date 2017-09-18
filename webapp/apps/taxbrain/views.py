@@ -406,14 +406,16 @@ def submit_reform(request, user=None):
             reform_dict,
             int(start_year),
             is_file=is_file,
-            additional_data=assumptions_dict
+            additional_data=assumptions_dict,
+            package_up_user_mods=False
         )
     else:
         submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
             reform_dict,
             int(start_year),
             is_file=is_file,
-            additional_data=assumptions_dict
+            additional_data=assumptions_dict,
+            package_up_user_mods=False
         )
     job_ids = denormalize(submitted_ids)
     json_reform = JSONReformTaxCalculator()
