@@ -28,16 +28,16 @@ from django.contrib.auth.models import User
 from django import forms
 
 from djqscsv import render_to_csv_response
-from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm, 
+from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
                     has_field_errors, DynamicElasticityInputsModelForm)
 from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
-from ..taxbrain.views import (growth_fixup, benefit_surtax_fixup, make_bool, dropq_compute,
-                              JOB_PROC_TIME_IN_SECONDS)
+from ..taxbrain.views import (growth_fixup, benefit_switch_fixup, make_bool, dropq_compute,
+                              JOB_PROC_TIME_IN_SECONDS, get_reform_from_gui)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
-                                convert_val)
+                                convert_val, to_json_reform)
 
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
@@ -123,7 +123,7 @@ def dynamic_input(request, pk):
                 if 'tax_result' in microsim_data:
                     del microsim_data['tax_result']
 
-                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
                 # start calc job
                 submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
@@ -186,7 +186,7 @@ def dynamic_behavioral(request, pk):
     handles the calculation on the inputs.
     """
 
-    if request.method=='POST':
+    if request.method == 'POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
         strip_empty_lists(fields)
@@ -196,56 +196,35 @@ def dynamic_behavioral(request, pk):
 
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
-
-            curr_dict = dict(model.__dict__)
-            for key, value in curr_dict.items():
-                print "got this ", key, value
-
-            for key, value in curr_dict.items():
-                if type(value) == type(unicode()):
-                    curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
-
-            # get macrosim data from form
-            worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
-
-            #get microsim data 
+            #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
+            is_file = False
+             # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
-
-                taxbrain_dict = dict(taxbrain_model.__dict__)
-                growth_fixup(taxbrain_dict)
-                for key, value in taxbrain_dict.items():
-                    if type(value) == type(unicode()):
-                        taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                    else:
-                        print "missing this: ", key
-
-                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
-                behavior_params = format_dynamic_params(worker_data)
-
-                #Don't need to pass around the microsim results
-                if 'tax_result' in microsim_data:
-                    del microsim_data['tax_result']
-
-                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
-                microsim_data.update(worker_data)
-                # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(microsim_data, int(start_year), additional_data=behavior_params)
-
-            else:
-                behavior_params = format_dynamic_params(worker_data)
-                # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                    json.loads(taxbrain_model.json_text.reform_text),
-                    int(start_year),
-                    is_file=True,
-                    additional_data=behavior_params,
+                (reform_dict, assumptions_dict, _, _,
+                    errors_warnings) = get_reform_from_gui(
+                        request,
+                        taxbrain_model=taxbrain_model,
+                        behavior_model=model
                 )
-
+            else:
+                is_file = True
+                reform_dict = json.loads(taxbrain_model.json_text.reform_text)
+                (_, assumptions_dict, _, _,
+                    errors_warnings) = get_reform_from_gui(
+                        request,
+                        taxbrain_model=None,
+                        behavior_model=model
+                    )
+            # start calc job
+            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                reform_dict,
+                int(start_year),
+                is_file=is_file,
+                additional_data=assumptions_dict
+            )
 
             if not submitted_ids:
                 no_inputs = True
@@ -302,7 +281,7 @@ def dynamic_behavioral(request, pk):
 
 def dynamic_elasticities(request, pk):
     """
-    This view handles the dynamic macro elasticities input page and 
+    This view handles the dynamic macro elasticities input page and
     calls the function that handles the calculation on the inputs.
     """
 
@@ -342,7 +321,7 @@ def dynamic_elasticities(request, pk):
             # get macrosim data from form
             worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
 
-            #get microsim data 
+            #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
@@ -361,7 +340,7 @@ def dynamic_elasticities(request, pk):
                 if 'tax_result' in microsim_data:
                     del microsim_data['tax_result']
 
-                benefit_surtax_fixup(request.REQUEST, microsim_data, taxbrain_model)
+                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
                 microsim_data.update(worker_data)
                 # start calc job
                 submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
