@@ -7,7 +7,7 @@ import pytz
 from mock import Mock
 import sys
 MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d', 'pandas']
+                'mpl_toolkits.mplot3d']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import btax
@@ -52,6 +52,7 @@ from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
 
 from ..formatters import get_version
 from django.conf import settings
+from .bubble_plot.bubble_plot_tabs import bubble_plot_tabs
 
 
 dropq_compute = DropqComputeBtax()
@@ -353,6 +354,9 @@ def output_detail(request, pk):
 
     model = url.unique_inputs
     if model.tax_result:
+        exp_num_minutes = 0.25
+        JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
+
         tables = url.unique_inputs.tax_result[0]
         first_year = url.unique_inputs.first_year
         created_on = url.unique_inputs.creation_date
@@ -362,6 +366,8 @@ def output_detail(request, pk):
             "coc": COC_TOOLTIP,
             "dprc": DPRC_TOOLTIP,
         }
+        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(model.tax_result[0]['dataframes'])
+
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
         context = tables.copy()
@@ -372,6 +378,10 @@ def output_detail(request, pk):
             'created_on': created_on,
             'first_year': first_year,
             'is_btax': True,
+            'bubble_js': bubble_js,
+            'bubble_div': bubble_div,
+            'cdn_js': cdn_js,
+            'cdn_css': cdn_css,
         })
         context.update(context_vers_disp)
         return render(request, 'btax/results.html', context)
@@ -430,14 +440,13 @@ def output_detail(request, pk):
                 exp_num_minutes = round(exp_num_minutes, 2)
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
                 if exp_num_minutes > 0:
-                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                    return JsonResponse({'eta': exp_num_minutes,'wait_interval': 7000}, status=202)
                 else:
-                    return JsonResponse({'eta': exp_num_minutes}, status=200)
+                    return JsonResponse({'eta': exp_num_minutes,'wait_interval': 7000}, status=200)
 
             else:
                 print "rendering not ready yet"
-                context = {'eta': '100', 'is_btax': True}
+                context = {'eta': '100', 'is_btax': True, 'wait_interval': 7000}
                 context.update(context_vers_disp)
-                print(context)
                 return render_to_response('btax/not_ready.html', context,
                                           context_instance=RequestContext(request))

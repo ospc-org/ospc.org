@@ -178,8 +178,16 @@ def ogusa_async(user_mods, ogusa_params, guid):
 def btax_async(user_mods):
     print("user mods: ", user_mods)
     results = {}
-    results.update(runner_json_tables(**user_mods))
-    #Add taxcalc version to results
+    tables = runner_json_tables(**user_mods)
+    if tables.get("json_table"):
+        results.update(tables["json_table"])
+        if tables.get("dataframes"):
+            dataframes = json.loads(tables["dataframes"])
+            for x, y in dataframes.items():
+                dataframes[x] = json.loads(y)
+            results["dataframes"] = dataframes
+    else:
+        results.update(tables)
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version']
     results['dropq_version'] = vinfo['version']
