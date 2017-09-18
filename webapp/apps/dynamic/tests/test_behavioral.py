@@ -77,7 +77,7 @@ class DynamicBehavioralViewsTests(TestCase):
                 u'ID_BenefitSurtax_Switch_5': [u'True'],
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
                 u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'SS_Earnings_c': [u'*,*,*,*,1.0e99'],
+                u'SS_Earnings_c': [u'*,*,*,*,15000'],
                 u'has_errors': [u'False'],
                 u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
 
@@ -92,7 +92,7 @@ class DynamicBehavioralViewsTests(TestCase):
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
         reform = json.loads(post['user_mods'])
-        assert reform["2016"][u'_SS_Earnings_c'][0]  == 118500.0
+        assert reform["2020"][u'_SS_Earnings_c'][0]  == 15000.0
 
 
     def test_behavioral_reform_from_file(self):

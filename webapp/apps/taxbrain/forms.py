@@ -270,7 +270,6 @@ class PersonalExemptionForm(ModelForm):
 
             # First make sure the text parses OK
             BOOLEAN_FLAGS = (u'True', u'False')
-            found_parse_error = False
             for col, col_field in enumerate(param.col_fields):
                 if col_field.id not in self.cleaned_data:
                     continue
@@ -283,71 +282,6 @@ class PersonalExemptionForm(ModelForm):
                     except ParseException as pe:
                         # Parse Error - we don't recognize what they gave us
                         self.add_error(col_field.id, "Unrecognized value: {}".format(submitted_col_values_raw))
-                        found_parse_error = True
-
-            if found_parse_error:
-                continue
-
-            # Move on if there is no min/max validation necessary
-            if param.max is None and param.min is None:
-                continue
-
-            for col, col_field in enumerate(param.col_fields):
-                submitted_col_values_raw = self.cleaned_data[col_field.id]
-                try:
-                    submitted_col_values = string_to_float_array(submitted_col_values_raw)
-                except ValueError as ve:
-                    # Assuming wildcard notation here
-                    submitted_col_values_list = submitted_col_values_raw.split(',')
-                    param_name = parameter_name(col_field.id)
-                    submitted_col_values = expand_unless_empty(submitted_col_values_list, param_name, col_field.id, self, len(submitted_col_values_list))
-                default_col_values = col_field.values
-
-                # If we change a different field which this field relies on for
-                # validation, we must ensure this is validated even if unchanged
-                # from defaults
-                if submitted_col_values:
-                    col_values = submitted_col_values
-                else:
-                    col_values = default_col_values
-
-                if param.max is not None:
-                    comp = self.get_comp_data(param.max, param_id, col, col_values)
-                    source = comp['source']
-                    maxes = comp['comp_data']
-                    exp_col_values = comp['exp_col_values']
-
-                    for i, value in enumerate(exp_col_values):
-                        if value > maxes[i]:
-                            if len(col_values) == 1:
-                                self.add_error(col_field.id,
-                                               u"Must be \u2264 {0} of {1}".
-                                               format(source, maxes[i]))
-                            else:
-                                self.add_error(col_field.id,
-                                               u"{0} value must be \u2264 \
-                                               {1}'s {0} value of {2}".format(
-                                                   int_to_nth(i + 1),
-                                                   source, maxes[i]))
-
-                if param.min is not None:
-                    comp = self.get_comp_data(param.min, param_id, col, col_values)
-                    source = comp['source']
-                    mins = comp['comp_data']
-                    exp_col_values = comp['exp_col_values']
-
-                    for i, value in enumerate(exp_col_values):
-                        if value < mins[i]:
-                            if len(col_values) == 1:
-                                self.add_error(col_field.id,
-                                               u"Must be \u2265 {0} of {1}".
-                                               format(source, mins[i]))
-                            else:
-                                self.add_error(col_field.id,
-                                               u"{0} value must be \u2265 \
-                                               {1}'s {0} value of {2}".format(
-                                                   int_to_nth(i + 1),
-                                                   source, mins[i]))
 
     class Meta:
         model = TaxSaveInputs

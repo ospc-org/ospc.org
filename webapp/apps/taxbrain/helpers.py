@@ -26,12 +26,13 @@ SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
 # Grammar for Field inputs
 WILDCARD = pp.Word('*')
 INT_LIT = pp.Word(pp.nums)
+NEG_DASH = pp.Word('-', exact=1)
 FLOAT_LIT = pp.Word(pp.nums + '.')
 DEC_POINT = pp.Word('.', exact=1)
 FLOAT_LIT_FULL = pp.Word(pp.nums + '.' + pp.nums)
 COMMON = pp.Word(",", exact=1)
 
-VALUE = WILDCARD | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
+VALUE = WILDCARD | NEG_DASH | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
 MORE_VALUES = COMMON + VALUE
 INPUT = VALUE + pp.ZeroOrMore(MORE_VALUES)
 
@@ -50,7 +51,7 @@ def check_wildcards(x):
 
 
 def make_bool(x):
-    b = True if x == 'True' else False
+    b = 1.0 if x == 'True' else 0.0
     return b
 
 
@@ -61,6 +62,15 @@ def convert_val(x):
         return float(x)
     except ValueError:
         return make_bool(x)
+
+def parse_fields(param_dict):
+    for k, v in param_dict.copy().items():
+        if v == u'' or v is None:
+            del param_dict[k]
+            continue
+        if type(v) == type(unicode()): #TODO: isinstance(value, unicode)
+            param_dict[k] = [convert_val(x) for x in v.split(',') if x]
+    return param_dict
 
 def int_to_nth(x):
     if x < 1:
@@ -245,6 +255,88 @@ TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'payroll_tax':'Payroll Tax Liability Change',
     'combined_tax':'Combined Payroll and Individual Income Tax Liability Change',
 }
+
+
+def get_default_policy_param_name(param, default_params):
+    """
+    Map TaxBrain field name to Tax-Calculator parameter name
+    For example: STD_0 maps to _STD_single
+
+    returns: Tax-Calculator param name
+    """
+    if '_' + param in default_params:
+        return '_' + param
+    param_pieces = param.split('_')
+    end_piece = param_pieces[-1]
+    no_suffix = '_' + '_'.join(param_pieces[:-1])
+    if end_piece == 'cpi':
+        if no_suffix in default_params:
+            return '_' + param
+        else:
+            msg = "Received unexpected parameter: {}"
+            raise ValueError(msg.format(param))
+    if no_suffix in default_params:
+        try:
+            ix = int(end_piece)
+        except ValueError:
+            msg = "Parsing {}: Expected integer for index but got {}"
+            raise ValueError(msg.format(param, ix))
+        col_label = default_params[no_suffix]['col_label'][ix]
+        return no_suffix + '_' + col_label
+    msg = "Received unexpected parameter: {}"
+    raise ValueError(msg.format(param))
+
+
+def to_json_reform(fields, start_year, cls=taxcalc.Policy):
+    """
+    Convert fields style dictionary to json reform style dictionary
+    For example:
+    fields = {'_state': <django.db.models.base.ModelState object at 0x10c764950>,
+              'creation_date': datetime.datetime(2015, 1, 1, 0, 0), 'id': 64,
+              'ID_ps_cpi': True, 'quick_calc': False,
+              'FICA_ss_trt': [u'*', 0.1, u'*', 0.2], 'first_year': 2017,
+              'ID_BenefitSurtax_Switch_0': [True], 'ID_Charity_c_cpi': True,
+              'EITC_rt_2': [1.0]}
+    to
+    reform = {'_CG_nodiff': {'2017': [False]},
+              '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
+              '_ID_Charity_c_cpi': {'2017': True},
+              '_EITC_rt_2kids': {'2017': [1.0]}}
+
+    returns json style reform
+    """
+    map_back_to_tb = {}
+    default_params = cls.default_data(start_year=start_year,
+                                      metadata=True)
+    ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
+              u'full_calc', u'quick_calc', 'first_year', '_state',
+              'creation_date', 'id', 'job_ids', 'jobs_not_ready',
+              'json_text_id', 'tax_result', 'reform_style',
+              '_micro_sim_cache', 'micro_sim_id', )
+
+    reform = {}
+    for param in fields:
+        if param not in ignore:
+            param_name = get_default_policy_param_name(param, default_params)
+            map_back_to_tb[param_name] = param
+            reform[param_name] = {}
+            if not isinstance(fields[param], list):
+                assert isinstance(fields[param], bool) and param.endswith('_cpi')
+                reform[param_name][str(start_year)] = fields[param]
+                continue
+            for i in range(len(fields[param])):
+                if is_wildcard(fields[param][i]):
+                    # may need to do something here
+                    pass
+                else:
+                    assert (isinstance(fields[param][i], (int, float)) or
+                            isinstance(fields[param][i], bool))
+                    reform[param_name][str(start_year + i)] = [fields[param][i]]
+
+    return reform, map_back_to_tb
+
+
+
 
 def expand_1D(x, num_years):
     """
@@ -711,7 +803,6 @@ def parse_sub_category(field_section, budget_year):
             section_name = dict(z).get("section_2")
             new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year)}
             if section_name:
-                section_name = section_name.lower()
                 section = next((item for item in output if section_name in item), None)
                 if not section:
                     output.append({section_name: [new_param]})
@@ -728,7 +819,6 @@ def parse_top_level(ordered_dict):
     for x, y in ordered_dict.iteritems():
         section_name = dict(y).get("section_1")
         if section_name:
-            section_name = section_name.lower()
             section = next((item for item in output if section_name in item), None)
             if not section:
                 output.append({section_name: [{x: dict(y)}]})
@@ -738,11 +828,8 @@ def parse_top_level(ordered_dict):
 
 
 def nested_form_parameters(budget_year=2017):
-    defaults = default_taxcalc_data(
-        taxcalc.policy.Policy,
-        metadata=True,
-        start_year=budget_year
-    )
+    defaults = taxcalc.policy.Policy.default_data(metadata=True,
+                                                  start_year=budget_year)
     groups = parse_top_level(defaults)
     for x in groups:
         for y, z in x.iteritems():

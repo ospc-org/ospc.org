@@ -43,7 +43,7 @@ from ..taxbrain.helpers import (format_csv,
                                 is_wildcard,
                                 convert_val,
                                 make_bool)
-from ..taxbrain.views import (benefit_surtax_fixup,
+from ..taxbrain.views import (benefit_switch_fixup,
                               denormalize, normalize,taxcalc_version as TAXCALC_VERSION)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
