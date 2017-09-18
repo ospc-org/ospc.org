@@ -223,7 +223,8 @@ def dynamic_behavioral(request, pk):
                 reform_dict,
                 int(start_year),
                 is_file=is_file,
-                additional_data=assumptions_dict
+                additional_data=assumptions_dict,
+                package_up_user_mods=False
             )
 
             if not submitted_ids:

@@ -406,14 +406,16 @@ def submit_reform(request, user=None):
             reform_dict,
             int(start_year),
             is_file=is_file,
-            additional_data=assumptions_dict
+            additional_data=assumptions_dict,
+            package_up_user_mods=False
         )
     else:
         submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
             reform_dict,
             int(start_year),
             is_file=is_file,
-            additional_data=assumptions_dict
+            additional_data=assumptions_dict,
+            package_up_user_mods=False
         )
     job_ids = denormalize(submitted_ids)
     json_reform = JSONReformTaxCalculator()
@@ -650,7 +652,7 @@ def get_result_context(model, request, url):
     }
 
     if (model.json_text is not None and (model.json_text.raw_reform_text and
-       model.json_text.raw_assumptions_text)):
+       model.json_text.raw_assumption_text)):
         reform_file_contents = model.json_text.reform_text
         reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
         assump_file_contents = model.json_text.assumption_text
