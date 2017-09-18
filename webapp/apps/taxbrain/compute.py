@@ -35,6 +35,9 @@ class DropqCompute(object):
 
     num_budget_years = NUM_BUDGET_YEARS
 
+    def package_up_vars(self, *args, **kwargs):
+        return _package_up_vars(*args, **kwargs)
+
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
@@ -91,6 +94,13 @@ class DropqCompute(object):
                            use_wnc_offset=True,
                            pack_up_user_mods=True,
                            additional_data={}):
+        if pack_up_user_mods:
+            user_mods = self.package_up_vars(user_mods, first_budget_year)
+            if not bool(user_mods):
+                return False
+            user_mods = {first_budget_year: user_mods}
+        else:
+            user_mods = mods
         data = {}
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
