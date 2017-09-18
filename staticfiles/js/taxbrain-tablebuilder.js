@@ -6,6 +6,11 @@ $(function() {
 
         defaults: {
             row_labels: [
+                'Individual Income Tax Liability',
+                'Payroll Tax Liability',
+                'Combined Payroll and Individual Income Tax Liability'
+            ],
+            row_labels_change: [
                 'Individual Income Tax Liability Change',
                 'Payroll Tax Liability Change',
                 'Combined Payroll and Individual Income Tax Liability Change'
@@ -225,7 +230,7 @@ $(function() {
                             </tr>\
                             <% _.each(model.get("rows"), function(row, idx) { %>\
                             <tr>\
-                                <td class="text-center single-line"><strong><%= model.get("row_labels")[idx] %></strong></td>\
+                                <td class="text-center single-line"><strong><% if (selectedTableName == "fiscal_change") { %><%= model.get("row_labels_change")[idx] %><% } else { %><%= model.get("row_labels")[idx] %><% } %></strong></td>\
                                 <% _.each(row.cells, function(cell, idx) { %>\
                                 <td class="text-center"><% if (cell["tot_value"]) { %><%= cell["tot_value"] %><% } else { %><%= cell["year_values"][model.get("year")] %><% } %></td>\
                                 <% }) %>\
