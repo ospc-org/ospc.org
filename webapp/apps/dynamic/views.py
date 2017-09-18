@@ -6,7 +6,7 @@ import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['pandas']
+MOCK_MODULES = []
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc

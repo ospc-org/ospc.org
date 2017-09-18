@@ -33,6 +33,7 @@ $(function() {
         $('#eta').text(moment.duration(eta, 'minutes').humanize());
     }
 
+    var interval;
     function ajaxEta() {
         $.ajax(window.location.href, {
             type: 'post',
@@ -40,17 +41,20 @@ $(function() {
             success: function(data, textStatus, xhr) {
                 if (xhr.status === 202) {
                     insertEta(data.eta);
+                    clearInterval(interval);
+                    interval = setInterval(ajaxEta, data.wait_interval);
                 } else if (xhr.status === 200) {
+                    clearInterval(interval);
                     insertEta(data.eta);
                     setTimeout(function() {
                         window.location.reload(1);
                     }, 5000)
                 }
-            }
+            },
         });
     }
     ajaxEta();
-    setInterval(ajaxEta, 7000);
+    interval = setInterval(ajaxEta, 7000);
 });
 </script>
 {% endblock %}
