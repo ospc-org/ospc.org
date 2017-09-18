@@ -797,9 +797,9 @@ def output_detail(request, pk):
                 exp_num_minutes = round(exp_num_minutes, 2)
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
                 if exp_num_minutes > 0:
-                    return JsonResponse({'eta': '100'}, status=202)
+                    return JsonResponse({'eta': exp_num_minutes}, status=202)
                 else:
-                    return JsonResponse({'eta': '100'}, status=200)
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
 
             else:
                 context = {'eta': '100'}

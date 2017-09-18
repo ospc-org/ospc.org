@@ -466,7 +466,7 @@ def edit_dynamic_behavioral(request, pk):
         'form': form_personal_exemp,
         'params': behavior_default_params,
         'taxcalc_version': taxcalc_vers_disp,
-        'webapp_vers_disp': webapp_vers_disp,
+        'webapp_version': webapp_vers_disp,
         'start_year': str(start_year),
         'pk': model.micro_sim.pk
     }
@@ -501,7 +501,7 @@ def edit_dynamic_elastic(request, pk):
         'form': form_personal_exemp,
         'params': elasticity_default_params,
         'taxcalc_version': taxcalc_vers_disp,
-        'webapp_vers': webapp_vers_disp,
+        'webapp_version': webapp_vers_disp,
         'start_year': str(start_year),
         'pk': model.micro_sim.pk
     }
@@ -755,7 +755,6 @@ def behavior_results(request, pk):
                          'webapp_version': webapp_vers_disp}
 
     model = url.unique_inputs
-
     if model.tax_result:
 
         output = model.tax_result
@@ -840,7 +839,6 @@ def behavior_results(request, pk):
                 exp_num_minutes = round(exp_num_minutes, 2)
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
                 if exp_num_minutes > 0:
-                    print(context)
                     return JsonResponse({'eta': exp_num_minutes}, status=202)
                 else:
                     return JsonResponse({'eta': exp_num_minutes}, status=200)
