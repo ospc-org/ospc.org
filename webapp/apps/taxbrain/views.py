@@ -579,34 +579,6 @@ def personal_results(request):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-def submit_micro(request, pk):
-    """
-    This view handles the re-submission of a previously submitted microsim.
-    Its primary purpose is to facilitate a mechanism to submit a full microsim
-    job after one has submitted parameters for a 'quick calculation'
-    """
-    #TODO: get this function to work with submit_reform
-    try:
-        url = OutputUrl.objects.get(pk=pk)
-    except:
-        raise Http404
-
-    model = TaxSaveInputs.objects.get(pk=url.model_pk)
-    # This will be a new model instance so unset the primary key
-    model.pk = None
-    # Unset the computed results, set quick_calc to False
-    # (this new model instance will be saved in process_model)
-    model.job_ids = None
-    model.jobs_not_ready = None
-    model.quick_calc = False
-    model.tax_result = None
-
-    log_ip(request)
-    unique_url = process_model(model, start_year=str(model.first_year),
-                               do_full_calc=True, user=url.user)
-    return redirect(unique_url)
-
-
 def edit_personal_results(request, pk):
     """
     This view handles the editing of previously entered inputs
