@@ -35,7 +35,8 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
 from ..taxbrain.views import (growth_fixup, benefit_switch_fixup, make_bool, dropq_compute,
-                              JOB_PROC_TIME_IN_SECONDS, get_reform_from_gui)
+                              JOB_PROC_TIME_IN_SECONDS, get_reform_from_gui,
+                              parse_fields)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
                                 convert_val, to_json_reform)
 
@@ -188,6 +189,7 @@ def dynamic_behavioral(request, pk):
     This view handles the dynamic behavioral input page and calls the function that
     handles the calculation on the inputs.
     """
+    start_year = request.REQUEST.get('start_year')
     if request.method == 'POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
@@ -198,19 +200,8 @@ def dynamic_behavioral(request, pk):
 
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
-
             curr_dict = dict(model.__dict__)
-            for key, value in curr_dict.items():
-                print "got this ", key, value
-
-            for key, value in curr_dict.items():
-                if type(value) == type(unicode()):
-                    curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
-
-            # get macrosim data from form
-            worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
+            worker_data = parse_fields(curr_dict)
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -238,9 +229,9 @@ def dynamic_behavioral(request, pk):
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
                 reform_dict,
                 int(start_year),
-                is_file=is_file,
+                is_file=False,
                 additional_data=assumptions_dict,
-                package_up_user_mods=False
+                pack_up_user_mods=False
             )
 
             if not submitted_ids:
@@ -280,10 +271,9 @@ def dynamic_behavioral(request, pk):
             form_personal_exemp = dyn_mod_form
 
     else:
-
         # Probably a GET request, load a default form
-        start_year = request.REQUEST.get('start_year')
         form_personal_exemp = DynamicBehavioralInputsModelForm(first_year=start_year)
+
 
     behavior_default_params = default_behavior(int(start_year))
 
@@ -307,11 +297,7 @@ def dynamic_elasticities(request, pk):
     This view handles the dynamic macro elasticities input page and
     calls the function that handles the calculation on the inputs.
     """
-
-    # Probably a GET request, load a default form
     start_year = request.REQUEST.get('start_year')
-    elasticity_default_params = default_elasticity_parameters(int(start_year))
-
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.REQUEST)
@@ -323,64 +309,49 @@ def dynamic_elasticities(request, pk):
             model = dyn_mod_form.save()
 
             curr_dict = dict(model.__dict__)
-            for key, value in curr_dict.items():
-                print "got this ", key, value
+            # for key, value in curr_dict.items():
+            #     print "got this ", key, value
 
-            #Replace empty elasticity field with defaults
-            for k,v in elasticity_default_params.items():
-                if k in curr_dict and not curr_dict[k]:
-                    curr_dict[k] = elasticity_default_params[k].col_fields[0].values
+            # #Replace empty elasticity field with defaults
+            # for k,v in elasticity_default_params.items():
+            #     if k in curr_dict and not curr_dict[k]:
+            #         curr_dict[k] = elasticity_default_params[k].col_fields[0].values
 
-            for key, value in curr_dict.items():
-                if type(value) == type(unicode()):
-                    try:
-                        curr_dict[key] = [float(x) for x in value.split(',') if x]
-                    except ValueError:
-                        curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
-                else:
-                    print "missing this: ", key
+            # for key, value in curr_dict.items():
+            #     if type(value) == type(unicode()):
+            #         try:
+            #             curr_dict[key] = [float(x) for x in value.split(',') if x]
+            #         except ValueError:
+            #             curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
+            #     else:
+            #         print "missing this: ", key
 
-
-            # get macrosim data from form
-            worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
+            worker_data = parse_fields(curr_dict)
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
+             # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
-                taxbrain_dict = dict(taxbrain_model.__dict__)
-                growth_fixup(taxbrain_dict)
-                for key, value in taxbrain_dict.items():
-                    if type(value) == type(unicode()):
-                            taxbrain_dict[key] = [convert_val(x) for x in value.split(',') if x]
-                    else:
-                        print "missing this: ", key
-
-                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
-
-                #Don't need to pass around the microsim results
-                if 'tax_result' in microsim_data:
-                    del microsim_data['tax_result']
-
-                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
-                microsim_data.update(worker_data)
-                # start calc job
-                submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(microsim_data,
-                                                                        int(start_year))
-
-            else:
-                el_keys = ('first_year', 'elastic_gdp')
-                elasticity_params = { k:v for k, v in worker_data.items() if k in el_keys}
-                additional_data = {'elasticity_params': elasticity_params}
-                reform_text = json.loads(taxbrain_model.json_text.reform_text)
-                reform_text[reform_text.keys()[0]]["elastic_gdp"] = elasticity_params["elastic_gdp"]
-                submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
-                    reform_text,
-                    int(start_year),
-                    is_file=True
+                (reform_dict, _, _, _,
+                    errors_warnings) = get_reform_from_gui(
+                        request,
+                        taxbrain_model=taxbrain_model,
+                        behavior_model=None
                 )
+            else:
+                reform_dict = json.loads(taxbrain_model.json_text.reform_text)
 
+            reform_dict[reform_dict.keys()[0]]['elastic_gdp'] = {'value': worker_data['elastic_gdp']}
+
+            submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
+                reform_dict,
+                int(start_year),
+                is_file=False,
+                additional_data={},
+                pack_up_user_mods=False
+            )
 
             if not submitted_ids:
                 no_inputs = True
@@ -421,9 +392,11 @@ def dynamic_elasticities(request, pk):
             form_personal_exemp = dyn_mod_form
 
     else:
+    # Probably a GET request, load a default form
 
         form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year)
 
+    elasticity_default_params = default_elasticity_parameters(int(start_year))
 
     init_context = {
         'form': form_personal_exemp,

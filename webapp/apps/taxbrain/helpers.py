@@ -65,7 +65,7 @@ def convert_val(x):
 
 def parse_fields(param_dict):
     for k, v in param_dict.copy().items():
-        if v == u'' or v is None:
+        if v == u'' or v is None or v == []:
             del param_dict[k]
             continue
         if type(v) == type(unicode()): #TODO: isinstance(value, unicode)

@@ -405,14 +405,14 @@ def submit_reform(request, user=None):
         assert not taxcalc_errors
     # try: # TODO: is try-catch necessary here?
     log_ip(request)
-    # TODO: drop is_file and package_up_user_mods keywords
+    # TODO: drop is_file and pack_up_user_mods keywords
     if do_full_calc:
         submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
             reform_dict,
             int(start_year),
             is_file=is_file,
             additional_data=assumptions_dict,
-            package_up_user_mods=False
+            pack_up_user_mods=False
         )
     else:
         submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
@@ -420,7 +420,7 @@ def submit_reform(request, user=None):
             int(start_year),
             is_file=is_file,
             additional_data=assumptions_dict,
-            package_up_user_mods=False
+            pack_up_user_mods=False
         )
     job_ids = denormalize(submitted_ids)
     json_reform = JSONReformTaxCalculator()
