@@ -693,7 +693,7 @@ def get_result_context(model, request, url):
         'fiscal_change': FISCAL_CHANGE,
     }
 
-    if (model.json_text is not None and (model.json_text.raw_reform_text and
+    if (model.json_text is not None and (model.json_text.raw_reform_text or
        model.json_text.raw_assumption_text)):
         reform_file_contents = model.json_text.reform_text
         reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
