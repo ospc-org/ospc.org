@@ -517,9 +517,10 @@ def process_reform(request, user=None):
 
     """
     res = submit_reform(request, user=user)
-
+    has_errors = False
     if isinstance(res, HttpResponse):
-        return res, True
+        has_errors = True
+        return res, has_errors
 
     args = res
     args['request'] = request
@@ -531,7 +532,7 @@ def process_reform(request, user=None):
         del args['stop_submission']
         del args['personal_inputs']
         url = save_model(**args)
-        return url, False
+        return url, has_errors
 
 
 def file_input(request):
