@@ -309,23 +309,6 @@ def dynamic_elasticities(request, pk):
             model = dyn_mod_form.save()
 
             curr_dict = dict(model.__dict__)
-            # for key, value in curr_dict.items():
-            #     print "got this ", key, value
-
-            # #Replace empty elasticity field with defaults
-            # for k,v in elasticity_default_params.items():
-            #     if k in curr_dict and not curr_dict[k]:
-            #         curr_dict[k] = elasticity_default_params[k].col_fields[0].values
-
-            # for key, value in curr_dict.items():
-            #     if type(value) == type(unicode()):
-            #         try:
-            #             curr_dict[key] = [float(x) for x in value.split(',') if x]
-            #         except ValueError:
-            #             curr_dict[key] = [make_bool(x) for x in value.split(',') if x]
-            #     else:
-            #         print "missing this: ", key
-
             worker_data = parse_fields(curr_dict)
 
             #get microsim data
@@ -343,7 +326,7 @@ def dynamic_elasticities(request, pk):
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
 
-            reform_dict[reform_dict.keys()[0]]['elastic_gdp'] = {'value': worker_data['elastic_gdp']}
+            reform_dict[reform_dict.keys()[0]]['elastic_gdp'] = worker_data['elastic_gdp']
 
             submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
                 reform_dict,
@@ -392,8 +375,7 @@ def dynamic_elasticities(request, pk):
             form_personal_exemp = dyn_mod_form
 
     else:
-    # Probably a GET request, load a default form
-
+        # Probably a GET request, load a default form
         form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year)
 
     elasticity_default_params = default_elasticity_parameters(int(start_year))
