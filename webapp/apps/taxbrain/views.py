@@ -297,16 +297,83 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
     return (reform_dict, assumptions_dict, "", "", errors_warnings)
 
 
+def save_model(url, request, model, has_errors, start_year,
+               do_full_calc, is_file, reform_dict, assumptions_dict,
+               reform_text, assumptions_text, submitted_ids,
+               max_q_length, user):
+    """
+    Save user input data
+    returns OutputUrl object
+    """
+    job_ids = denormalize(submitted_ids)
+    json_reform = JSONReformTaxCalculator()
+    # save file_input user params
+    if is_file:
+        json_reform.reform_text = json.dumps(reform_dict)
+        json_reform.assumption_text = json.dumps(assumptions_dict)
+        json_reform.raw_reform_text = reform_text
+        json_reform.raw_assumption_text = assumptions_text
+    # save GUI user params
+    else:
+        job_ids = denormalize(submitted_ids)
+        model.job_ids = job_ids
+        model.first_year = int(start_year)
+        model.quick_calc = not do_full_calc
+        model.save()
+
+        json_reform.reform_text = json.dumps(reform_dict)
+        json_reform.assumption_text = json.dumps(assumptions_dict)
+        json_reform.raw_reform_text = ""
+        json_reform.raw_assumption_text = ""
+
+    json_reform.save()
+
+    # create model for file_input case
+    if model is None:
+        model = TaxSaveInputs()
+    model.job_ids = job_ids
+    model.json_text = json_reform
+    model.first_year = int(start_year)
+    model.quick_calc = not do_full_calc
+    model.save()
+
+    # create OutputUrl object
+    if url is None:
+        unique_url = OutputUrl()
+    else:
+        unique_url = url
+    if user:
+        unique_url.user = user
+    elif request and request.user.is_authenticated():
+        current_user = User.objects.get(pk=request.user.id)
+        unique_url.user = current_user
+
+    if unique_url.taxcalc_vers is not None:
+        pass
+    else:
+        unique_url.taxcalc_vers = TAXCALC_VERSION
+    if unique_url.webapp_vers is not None:
+        pass
+    else:
+        unique_url.webapp_vers = WEBAPP_VERSION
+
+    unique_url.unique_inputs = model
+    unique_url.model_pk = model.pk
+    cur_dt = datetime.datetime.utcnow()
+    future_offset_seconds = ((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS)
+    future_offset = datetime.timedelta(seconds=future_offset_seconds)
+    expected_completion = cur_dt + future_offset
+    unique_url.exp_comp_datetime = expected_completion
+    unique_url.save()
+
+    return unique_url
+
+
 def submit_reform(request, user=None):
     """
-    Submits TaxBrain reforms.  This handles data from the GUI interface
-    and the file input interface.  With some tweaks this model could be used
-    to submit reforms for all PolicyBrain models
+    Parses user input data and submits reform
 
-    returns OutputUrl object with parsed user input and warning/error messages
-            if necessary
-            boolean variable indicating whether this reform has errors or not
-
+    returns dictionary of arguments intended to be inputs for `save_model`
     """
     start_year = START_YEAR
     no_inputs = False
@@ -316,6 +383,16 @@ def submit_reform(request, user=None):
     taxcalc_warnings = False
     is_valid = True
     has_parse_errors = False
+    errors_warnings = {'warnings': {}, 'errors': {}}
+    reform_dict = {}
+    assumptions_dict = {}
+    reform_text = ""
+    assumptions_text = ""
+    personal_inputs = None
+    model = None
+    is_file = False
+    submitted_ids = None
+    max_q_length = None
     start_year = request.REQUEST['start_year']
     fields = dict(request.REQUEST)
     #TODO: use either first_year or start_year; validation error is thrown
@@ -327,13 +404,8 @@ def submit_reform(request, user=None):
         del fields['full_calc']
     elif 'quick_calc' in fields:
         del fields['quick_calc']
-    errors_warnings = {'warnings': {}, 'errors': {}}
-    reform_dict = {}
-    personal_inputs = None
-    is_file = False
     if 'docfile' in request.FILES:
         is_file = True
-        model = None
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings) = get_reform_from_file(request)
     else:
@@ -341,7 +413,7 @@ def submit_reform(request, user=None):
         # If an attempt is made to post data we don't accept
         # raise a 400
         if personal_inputs.non_field_errors():
-            return HttpResponse("Bad Input!", status=400), True
+            return HttpResponse("Bad Input!", status=400)
         is_valid = personal_inputs.is_valid()
         if is_valid:
             model = personal_inputs.save()
@@ -363,8 +435,8 @@ def submit_reform(request, user=None):
 
     warn_msgs = errors_warnings['warnings'] != {}
     stop_errors = no_inputs or not is_valid or errors_warnings['errors'] != {}
-
-    if stop_errors or (not has_errors and warn_msgs):
+    stop_submission = stop_errors or (not has_errors and warn_msgs)
+    if stop_submission:
         taxcalc_errors = True if errors_warnings['errors'] else False
         taxcalc_warnings = True if errors_warnings['warnings'] else False
         if personal_inputs is not None:
@@ -396,92 +468,70 @@ def submit_reform(request, user=None):
                 msg = ("Some fields have unrecognized values. Enter comma "
                        "separated values for each input.")
                 personal_inputs.add_error(None, msg)
-
-        return (personal_inputs, any([taxcalc_errors, taxcalc_warnings,
-                no_inputs, not is_valid]))
-    # case where user has been warned and has fixed errors if necassary but may
-    # or may not have fixed warnings
-    if has_errors:
-        assert not taxcalc_errors
-    # try: # TODO: is try-catch necessary here?
-    log_ip(request)
-    # TODO: drop is_file and package_up_user_mods keywords
-    if do_full_calc:
-        submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-            reform_dict,
-            int(start_year),
-            is_file=is_file,
-            additional_data=assumptions_dict,
-            package_up_user_mods=False
-        )
     else:
-        submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-            reform_dict,
-            int(start_year),
-            is_file=is_file,
-            additional_data=assumptions_dict,
-            package_up_user_mods=False
-        )
-    job_ids = denormalize(submitted_ids)
-    json_reform = JSONReformTaxCalculator()
-    # save file_input user params
-    if is_file:
-        json_reform.reform_text = json.dumps(reform_dict)
-        json_reform.assumption_text = json.dumps(assumptions_dict)
-        json_reform.raw_reform_text = reform_text
-        json_reform.raw_assumption_text = assumptions_text
-    # save GUI user params
+        # try: # TODO: is try-catch necessary here?
+        log_ip(request)
+        # TODO: drop is_file and package_up_user_mods keywords
+        if do_full_calc:
+            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                reform_dict,
+                int(start_year),
+                is_file=is_file,
+                additional_data=assumptions_dict,
+                package_up_user_mods=False
+            )
+        else:
+            submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
+                reform_dict,
+                int(start_year),
+                is_file=is_file,
+                additional_data=assumptions_dict,
+                package_up_user_mods=False
+            )
+
+    return {'personal_inputs': personal_inputs,
+            'model': model,
+            'stop_submission': stop_submission,
+            'has_errors': any([taxcalc_errors, taxcalc_warnings,
+                               no_inputs, not is_valid]),
+            'start_year': start_year,
+            'do_full_calc': do_full_calc,
+            'is_file': is_file,
+            'reform_dict': reform_dict,
+            'assumptions_dict': assumptions_dict,
+            'reform_text': reform_text,
+            'assumptions_text': assumptions_text,
+            'submitted_ids': submitted_ids,
+            'max_q_length': max_q_length}
+
+
+def process_reform(request, user=None):
+    """
+    Submits TaxBrain reforms.  This handles data from the GUI interface
+    and the file input interface.  With some tweaks this model could be used
+    to submit reforms for all PolicyBrain models
+
+    returns OutputUrl object with parsed user input and warning/error messages
+            if necessary
+            boolean variable indicating whether this reform has errors or not
+
+    """
+    res = submit_reform(request, user=user)
+
+    if isinstance(res, HttpResponse):
+        return res, True
+
+    args = res
+    args['request'] = request
+    args['user'] = user
+    args['url'] = None
+    if args['stop_submission']:
+        return args['personal_inputs'], args['has_errors']
     else:
-        job_ids = denormalize(submitted_ids)
-        model.job_ids = job_ids
-        model.first_year = int(start_year)
-        model.quick_calc = not do_full_calc
-        model.save()
-        unique_url = OutputUrl()
-
-        json_reform.reform_text = json.dumps(reform_dict)
-        json_reform.assumption_text = json.dumps(assumptions_dict)
-        json_reform.raw_reform_text = ""
-        json_reform.raw_assumption_text = ""
-
-    json_reform.save()
-
-    # create model for file_input case
-    if model is None:
-        model = TaxSaveInputs()
-    model.job_ids = job_ids
-    model.json_text = json_reform
-    model.first_year = int(start_year)
-    model.quick_calc = not do_full_calc
-    model.save()
-
-    # create OutputUrl object
-    unique_url = OutputUrl()
-    if user:
-        unique_url.user = user
-    elif request and request.user.is_authenticated():
-        current_user = User.objects.get(pk=request.user.id)
-        unique_url.user = current_user
-
-    if unique_url.taxcalc_vers is not None:
-        pass
-    else:
-        unique_url.taxcalc_vers = TAXCALC_VERSION
-    if unique_url.webapp_vers != None:
-        pass
-    else:
-        unique_url.webapp_vers = WEBAPP_VERSION
-
-    unique_url.unique_inputs = model
-    unique_url.model_pk = model.pk
-    cur_dt = datetime.datetime.utcnow()
-    future_offset_seconds = ((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS)
-    future_offset = datetime.timedelta(seconds=future_offset_seconds)
-    expected_completion = cur_dt + future_offset
-    unique_url.exp_comp_datetime = expected_completion
-    unique_url.save()
-    return (unique_url, any([taxcalc_errors, taxcalc_warnings, no_inputs,
-            not is_valid]))
+        del args['stop_submission']
+        del args['personal_inputs']
+        url = save_model(**args)
+        return url, False
 
 
 def file_input(request):
@@ -497,7 +547,7 @@ def file_input(request):
         if 'docfile' not in dict(request.FILES):
             errors = ["Please specify a tax-law change before submitting."]
         else:
-            unique_url, has_errors = submit_reform(request)
+            unique_url, has_errors = process_reform(request)
             # TODO: handle taxcalc_errors and taxcalc_warnings
             return redirect(unique_url)
     # GET request, load a default form
@@ -542,7 +592,7 @@ def personal_results(request):
         elif 'quick_calc' in fields:
             del fields['quick_calc']
 
-        obj, has_errors = submit_reform(request)
+        obj, has_errors = process_reform(request)
 
         # case where validation failed in forms.PersonalExemptionForm
         # TODO: assert HttpResponse status is 404
@@ -585,13 +635,14 @@ def submit_micro(request, pk):
     Its primary purpose is to facilitate a mechanism to submit a full microsim
     job after one has submitted parameters for a 'quick calculation'
     """
-    #TODO: get this function to work with submit_reform
+    #TODO: get this function to work with process_reform
     try:
         url = OutputUrl.objects.get(pk=pk)
     except:
         raise Http404
 
     model = TaxSaveInputs.objects.get(pk=url.model_pk)
+    start_year = dict(model.__dict__)['first_year']
     # This will be a new model instance so unset the primary key
     model.pk = None
     # Unset the computed results, set quick_calc to False
@@ -602,9 +653,49 @@ def submit_micro(request, pk):
     model.tax_result = None
 
     log_ip(request)
-    unique_url = process_model(model, start_year=str(model.first_year),
-                               do_full_calc=True, user=url.user)
-    return redirect(unique_url)
+
+    #get microsim data
+    is_file = model.json_text is not None
+     # necessary for simulations before PR 641
+    if not is_file:
+        (reform_dict, _, _,
+            errors_warnings) = get_reform_from_gui(
+                request,
+                taxbrain_model=model,
+                behavior_model=None
+        )
+    else:
+        reform_dict = json.loads(model.json_text.reform_text)
+        assumptions_dict = json.loads(model.json_text.assumption_text)
+    # start calc job
+    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+        reform_dict,
+        int(start_year),
+        is_file=is_file,
+        additional_data=assumptions_dict,
+        package_up_user_mods=False
+    )
+
+    args = {'url': url,
+            'request': request,
+            'model': model,
+            'has_errors': False,
+            'start_year': start_year,
+            'do_full_calc': True,
+            'is_file': is_file,
+            'reform_dict': reform_dict,
+            'assumptions_dict': assumptions_dict,
+            'reform_text': (model.json_text.raw_reform_text
+                            if model.json_text else ""),
+            'assumptions_text': (model.json_text.raw_assumption_text
+                                 if model.json_text else ""),
+            'submitted_ids': submitted_ids,
+            'max_q_length': max_q_length,
+            'user': None}
+
+    url = save_model(**args)
+
+    return redirect(url)
 
 
 def edit_personal_results(request, pk):
