@@ -1,11 +1,4 @@
 import os
-import versioneer
-
-versioneer.VCS = 'git'
-versioneer.versionfile_source = os.path.join('taxbrain_server', '_version.py')
-versioneer.versionfile_build = os.path.join('taxbrain_server', '_version.py')
-versioneer.tag_prefix = ''  # tags are like 1.2.0
-versioneer.parentdir_prefix = 'taxbrain_server-'  # dirname like 'taxcalc-1.2.0'
 
 try:
     from setuptools import setup
@@ -15,17 +8,12 @@ except ImportError:
 with open('README.md') as f:
     longdesc = f.read()
 
-version = versioneer.get_version()
-cmdclass = versioneer.get_cmdclass()
-
 config = {
     'description': 'TaxBrain Server - Flask and Celery Workers for OSPC Models',
     'url': 'https://github.com/OpenSourcePolicyCenter/webapp-public',
     'download_url': 'https://github.com/OpenSourcePolicyCenter/webapp-public',
     'description': 'taxbrain_server',
     'long_description': longdesc,
-    'version': version,
-    'cmdclass': cmdclass,
     'license': 'MIT',
     'packages': ['taxbrain_server',
                  'taxbrain_server.scripts'],
