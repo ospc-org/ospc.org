@@ -207,7 +207,6 @@ def dynamic_behavioral(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-            is_file = False
              # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
                 (reform_dict, assumptions_dict, _, _,
@@ -217,7 +216,6 @@ def dynamic_behavioral(request, pk):
                         behavior_model=model
                 )
             else:
-                is_file = True
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
                 (_, assumptions_dict, _, _,
                     errors_warnings) = get_reform_from_gui(
