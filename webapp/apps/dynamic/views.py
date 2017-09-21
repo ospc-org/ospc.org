@@ -324,13 +324,14 @@ def dynamic_elasticities(request, pk):
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
 
-            reform_dict[reform_dict.keys()[0]]['elastic_gdp'] = worker_data['elastic_gdp']
+            min_year = min(reform_dict.keys(), key=float)
+            reform_dict[min_year]['elastic_gdp'] = worker_data['elastic_gdp']
 
             submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
                 reform_dict,
                 int(start_year),
                 is_file=False,
-                additional_data={},
+                additional_data=None,
                 pack_up_user_mods=False
             )
 
