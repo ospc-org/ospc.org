@@ -413,7 +413,8 @@ def submit_reform(request, user=None):
         # If an attempt is made to post data we don't accept
         # raise a 400
         if personal_inputs.non_field_errors():
-            return HttpResponse("Bad Input!", status=400)
+            return {'HttpResponse': HttpResponse("Bad Input!", status=400),
+                    'has_errors': True}
         is_valid = personal_inputs.is_valid()
         if is_valid:
             model = personal_inputs.save()
@@ -516,13 +517,10 @@ def process_reform(request, user=None):
             boolean variable indicating whether this reform has errors or not
 
     """
-    res = submit_reform(request, user=user)
-    has_errors = False
-    if isinstance(res, HttpResponse):
-        has_errors = True
-        return res, has_errors
+    args = submit_reform(request, user=user)
+    if 'HttpResponse' in args:
+        return args['HttpResponse'], args['has_errors']
 
-    args = res
     args['request'] = request
     args['user'] = user
     args['url'] = None
@@ -532,7 +530,7 @@ def process_reform(request, user=None):
         del args['stop_submission']
         del args['personal_inputs']
         url = save_model(**args)
-        return url, has_errors
+        return url, args['has_errors']
 
 
 def file_input(request):
