@@ -70,7 +70,7 @@ class DropqCompute(object):
         return self.submit_calculation(user_mods, first_budget_year, url_template,
                                        num_years=NUM_BUDGET_YEARS_QUICK,
                                        increment_counter=False,
-                                       pack_up_user_mods=pack_up_user_mods)
+                                       pack_up_user_mods=False)
 
     def submit_dropq_small_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False,
                                        pack_up_user_mods=True):
