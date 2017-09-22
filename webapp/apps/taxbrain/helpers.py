@@ -51,7 +51,7 @@ def check_wildcards(x):
 
 
 def make_bool(x):
-    b = 1.0 if x == 'True' else 0.0
+    b = True if x == 'True' else False
     return b
 
 

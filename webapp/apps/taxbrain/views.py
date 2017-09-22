@@ -85,11 +85,14 @@ def benefit_switch_fixup(request, reform, model, name="ID_BenefitSurtax_Switch")
     bools. Also set the model values correctly based on incoming
     POST
     """
+    # Djengo forms needs switches to be True/False but in the interest of
+    # ensuring that reforms created from a file or the GUI interface are the
+    # same (down to the data type) the reform data are set to 1.0/0.0
     _ids = [name + '_' + str(i) for i in range(7)]
     values_from_model = [[reform[_id][0] for _id in _ids]]
-    final_values = [[1.0 if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
+    final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
     for _id, val in zip(_ids, final_values[0]):
-        reform[_id] = [val]
+        reform[_id] = [1.0 if val else 0.0]
         setattr(model, _id, unicode(val))
     return reform
 
