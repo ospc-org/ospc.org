@@ -305,33 +305,17 @@ def save_model(url, request, model, has_errors, start_year,
     Save user input data
     returns OutputUrl object
     """
-    job_ids = denormalize(submitted_ids)
     json_reform = JSONReformTaxCalculator()
-    # save file_input user params
-    if is_file:
-        json_reform.reform_text = json.dumps(reform_dict)
-        json_reform.assumption_text = json.dumps(assumptions_dict)
-        json_reform.raw_reform_text = reform_text
-        json_reform.raw_assumption_text = assumptions_text
-    # save GUI user params
-    else:
-        job_ids = denormalize(submitted_ids)
-        model.job_ids = job_ids
-        model.first_year = int(start_year)
-        model.quick_calc = not do_full_calc
-        model.save()
-
-        json_reform.reform_text = json.dumps(reform_dict)
-        json_reform.assumption_text = json.dumps(assumptions_dict)
-        json_reform.raw_reform_text = ""
-        json_reform.raw_assumption_text = ""
-
+    json_reform.reform_text = json.dumps(reform_dict)
+    json_reform.assumption_text = json.dumps(assumptions_dict)
+    json_reform.raw_reform_text = reform_text
+    json_reform.raw_assumption_text = assumptions_text
     json_reform.save()
 
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
-    model.job_ids = job_ids
+    model.job_ids = denormalize(submitted_ids)
     model.json_text = json_reform
     model.first_year = int(start_year)
     model.quick_calc = not do_full_calc
@@ -348,13 +332,9 @@ def save_model(url, request, model, has_errors, start_year,
         current_user = User.objects.get(pk=request.user.id)
         unique_url.user = current_user
 
-    if unique_url.taxcalc_vers is not None:
-        pass
-    else:
+    if unique_url.taxcalc_vers is None:
         unique_url.taxcalc_vers = TAXCALC_VERSION
-    if unique_url.webapp_vers is not None:
-        pass
-    else:
+    if unique_url.webapp_vers is None:
         unique_url.webapp_vers = WEBAPP_VERSION
 
     unique_url.unique_inputs = model
