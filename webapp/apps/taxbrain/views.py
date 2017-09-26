@@ -85,11 +85,14 @@ def benefit_switch_fixup(request, reform, model, name="ID_BenefitSurtax_Switch")
     bools. Also set the model values correctly based on incoming
     POST
     """
+    # Djengo forms needs switches to be True/False but in the interest of
+    # ensuring that reforms created from a file or the GUI interface are the
+    # same (down to the data type) the reform data are set to 1.0/0.0
     _ids = [name + '_' + str(i) for i in range(7)]
     values_from_model = [[reform[_id][0] for _id in _ids]]
-    final_values = [[1.0 if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
+    final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
     for _id, val in zip(_ids, final_values[0]):
-        reform[_id] = [val]
+        reform[_id] = [1.0 if val else 0.0]
         setattr(model, _id, unicode(val))
     return reform
 
@@ -450,16 +453,14 @@ def submit_reform(request, user=None):
                        "separated values for each input.")
                 personal_inputs.add_error(None, msg)
     else:
-        # try: # TODO: is try-catch necessary here?
         log_ip(request)
-        # TODO: drop is_file and package_up_user_mods keywords
         if do_full_calc:
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
                 reform_dict,
                 int(start_year),
                 is_file=is_file,
                 additional_data=assumptions_dict,
-                package_up_user_mods=False
+                pack_up_user_mods=False
             )
         else:
             submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
@@ -467,7 +468,7 @@ def submit_reform(request, user=None):
                 int(start_year),
                 is_file=is_file,
                 additional_data=assumptions_dict,
-                package_up_user_mods=False
+                pack_up_user_mods=False
             )
 
     return {'personal_inputs': personal_inputs,
@@ -763,7 +764,7 @@ def get_result_context(model, request, url):
         'fiscal_change': FISCAL_CHANGE,
     }
 
-    if (model.json_text is not None and (model.json_text.raw_reform_text and
+    if (model.json_text is not None and (model.json_text.raw_reform_text or
        model.json_text.raw_assumption_text)):
         reform_file_contents = model.json_text.reform_text
         reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
