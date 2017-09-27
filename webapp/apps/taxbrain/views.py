@@ -735,11 +735,6 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
-    if model.reform_style:
-        rs = [True if x=='True' else False for x in model.reform_style.split(',')]
-        allow_dyn_links = True if (len(rs) < 2 or rs[1] is False) else False
-    else:
-        allow_dyn_links = True
     if 'fiscal_tots' in output:
         # Use new key/value pairs for old data
         output['fiscal_tot_diffs'] = output['fiscal_tots']
@@ -766,9 +761,9 @@ def get_result_context(model, request, url):
 
     if (model.json_text is not None and (model.json_text.raw_reform_text or
        model.json_text.raw_assumption_text)):
-        reform_file_contents = model.json_text.reform_text
+        reform_file_contents = model.json_text.raw_reform_text
         reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
-        assump_file_contents = model.json_text.assumption_text
+        assump_file_contents = model.json_text.raw_assumption_text
         assump_file_contents = assump_file_contents.replace(" ","&nbsp;")
     else:
         reform_file_contents = False
@@ -794,7 +789,7 @@ def get_result_context(model, request, url):
         'is_micro': True,
         'reform_file_contents': reform_file_contents,
         'assump_file_contents': assump_file_contents,
-        'allow_dyn_links': allow_dyn_links,
+        'allow_dyn_links': True if not assump_file_contents else False,
         'results_type': "static"
     }
     return context
@@ -861,13 +856,8 @@ def output_detail(request, pk):
 
 
         if all([j == 'YES' for j in jobs_ready]):
-            results, reform_style = dropq_compute.dropq_get_results(normalize(job_ids))
+            results = dropq_compute.dropq_get_results(normalize(job_ids))
             model.tax_result = results
-            if reform_style:
-                rs = ','.join([str(flag) for flag in reform_style])
-            else:
-                rs = ''
-            model.reform_style = rs
             model.creation_date = datetime.datetime.now()
             model.save()
             context = get_result_context(model, request, url)
