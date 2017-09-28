@@ -488,7 +488,7 @@ class TaxBrainViewsTests(TestCase):
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
 
-    def test_taxbrain_ID_Medical_frt_add4aged(self):
+    def test_taxbrain_parse_negative_numebers(self):
         """
         Transfer over the regular tax capital gains to AMT
         """
