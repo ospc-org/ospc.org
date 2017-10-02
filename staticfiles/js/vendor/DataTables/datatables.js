@@ -27827,7 +27827,7 @@ DataTable.ext.buttons.excelHtml5 = {
         var myRegexp = /(\d+)/g;
         var regExp = /\(([^)]+)\)/;
         var run_number = myRegexp.exec(url);
-        if (data.header[2][0] !== "T") {
+        if (data.header[2][0] == 2) {
             var title = '_liabilities_change';
         }
         else {
@@ -27914,7 +27914,7 @@ DataTable.ext.buttons.excelHtml5 = {
             return '<row>'+cells.join('')+'</row>';
         };
 
-        if (data.header[2][0] !== "T") {
+        if (data.header[2][0] == 2) {
             xml += addTit( $('tr:first').text() );
         }
         else {
