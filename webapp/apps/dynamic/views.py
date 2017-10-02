@@ -772,7 +772,7 @@ def behavior_results(request, pk):
             return render_to_response('taxbrain/failed.html')
 
         if all([job == 'YES' for job in jobs_ready]):
-            results, reform_style = dropq_compute.dropq_get_results(normalize(job_ids))
+            results = dropq_compute.dropq_get_results(normalize(job_ids))
             model.tax_result = results
             model.creation_date = datetime.datetime.now()
             model.save()

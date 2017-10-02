@@ -700,9 +700,6 @@ class TaxSaveInputs(models.Model):
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
 
-    # Reform style
-    reform_style = CommaSeparatedField(default=None, blank=True, null=True)
-
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
 
