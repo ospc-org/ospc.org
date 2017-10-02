@@ -61,6 +61,7 @@ class TaxBrainViewsTests(TestCase):
 
 
     def test_taxbrain_quick_calc_post(self):
+        "Test quick calculation post and full post from quick_calc page"
         #Monkey patch to mock out running of compute jobs
         import sys
         from webapp.apps.taxbrain import views as webapp_views
@@ -84,10 +85,12 @@ class TaxBrainViewsTests(TestCase):
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
+
+        url = response.url
         # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(response.url)
+        link_idx = url[:-1].rfind('/')
+        self.failUnless(url[:link_idx+1].endswith("taxbrain/"))
+        response = self.client.get(url)
         # Check for good response
         self.assertEqual(response.status_code, 200)
         # Check that we only retrieve one year of results
@@ -95,9 +98,31 @@ class TaxBrainViewsTests(TestCase):
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         next_dropq_worker_offset = wnc.current_offset
+
         # Check that quick calc does not advance the counter
         self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
 
+        # reset worker node count without clearing MockCompute session
+        webapp_views.dropq_compute.reset_count()
+        pk = url[link_idx+1:-1]
+        response = self.client.post('/taxbrain/submit/{0}/'.format(pk),
+                                    {'csrfmiddlewaretoken':'abc123'})
+        self.assertEqual(response.status_code, 302)
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        response = self.client.get(response.url)
+        # Check for good response
+        self.assertEqual(response.status_code, 200)
+        # Check that we submit 10 jobs corresponding to 10 years of results
+        self.assertEqual(webapp_views.dropq_compute.count, 10)
+
+        # Check that data was saved properly
+        last_posted = webapp_views.dropq_compute.last_posted
+        user_mods = json.loads(last_posted["user_mods"])
+        assert last_posted["first_budget_year"] == str(START_YEAR)
+        assert (user_mods["2016"]["_ID_BenefitSurtax_Switch"] ==
+                [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]])
+        assert user_mods["2016"]["_II_em"] == [4333.0]
 
 
     def test_taxbrain_post_no_behavior_entries(self):

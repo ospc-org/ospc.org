@@ -344,6 +344,12 @@ class MockCompute(DropqCompute):
             mock.register_uri('GET', '/dropq_get_result', text=text)
             return DropqCompute.remote_retrieve_results(self, theurl, params)
 
+    def reset_count(self):
+        """
+        reset worker node count
+        """
+        self.count = 0
+
 class ElasticMockCompute(MockCompute):
 
     def remote_retrieve_results(self, theurl, params):
