@@ -490,7 +490,8 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_eitc_rt_greater_than_1(self):
         """
-        Transfer over the regular tax capital gains to AMT
+        Regression test for checking that EITC rate and similar parameters are
+        not rounded down to 1
         """
         #Monkey patch to mock out running of compute jobs
         import sys
