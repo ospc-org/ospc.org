@@ -27592,7 +27592,7 @@ DataTable.ext.buttons.copyHtml5 = {
 		var exportData = _exportData( dt, config );
         var data = dt.buttons.exportData( config.exportOptions );
         var output_ = exportData.str;
-        if (data.header[2][0] !== "T") {
+        if (data.header[2][0] == 2) {
             var str = $('tr:first').text() + '\n'
             var output = str + output_
             }
@@ -27701,7 +27701,7 @@ DataTable.ext.buttons.csvHtml5 = {
 		var newLine = _newLine( config );
 		var output_ = _exportData( dt, config ).str;
         var data = dt.buttons.exportData( config.exportOptions );
-        if (data.header[2][0] !== "T") {
+        if (data.header[2][0] == 2) {
             var str = $('tr:first').text() + '\n'
             var output = str + output_
             }
