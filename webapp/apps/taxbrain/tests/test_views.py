@@ -17,10 +17,11 @@ import taxcalc
 from taxcalc import Policy
 from .utils import *
 
-from ...test_assets import *
+from ...test_assets import test_reform, test_assumptions
 
 START_YEAR = 2016
 
+import datetime
 
 class TaxBrainViewsTests(TestCase):
     ''' Test the views of this app. '''
@@ -493,7 +494,7 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", reform_text)
+        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
         data = {u'docfile': tc_file,
                 u'has_errors': [u'False'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
@@ -511,8 +512,8 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", reform_text)
-        tc_file2 = SimpleUploadedFile("test_assumptions.json", assumptions_text)
+        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
+        tc_file2 = SimpleUploadedFile("test_assumptions.json", test_assumptions.assumptions_text)
         data = {u'docfile': tc_file,
                 u'assumpfile': tc_file2,
                 u'has_errors': [u'False'],
@@ -567,3 +568,46 @@ class TaxBrainViewsTests(TestCase):
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
+
+
+    def test_taxbrain_error_reform_file(self):
+        """
+        POST a reform file that causes errors. See PB issue #630
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+        print(test_reform.bad_reform)
+        tc_file = SimpleUploadedFile("test_reform.json", test_reform.bad_reform)
+        data = {u'docfile': tc_file,
+                u'has_errors': [u'False'],
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+        #TODO: make sure still not allowed to submit on second submission
+        response = self.client.post('/taxbrain/file/', data)
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+        msg = 'ERROR: value 9e+99 > max value 81210.81 for _II_brk2_4 for 2020'
+        assert msg in response.context['errors']
+
+
+    def test_taxbrain_warning_reform_file(self):
+        """
+        POST a reform file that causes warnings. Second submission works
+        See PB issue #630
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        webapp_views = sys.modules['webapp.apps.taxbrain.views']
+        webapp_views.dropq_compute = MockCompute()
+        tc_file = SimpleUploadedFile("test_reform1.json", test_reform.warning_reform)
+        data = {u'docfile': tc_file,
+                u'has_errors': [u'False'],
+                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        #TODO: make sure we can submit after we see warnings
+        response = self.client.post('/taxbrain/file/', data)
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+        msg = 'WARNING: value 1000.0 < min value 6794.31 for 2020'
+        assert msg in response.context['errors']
