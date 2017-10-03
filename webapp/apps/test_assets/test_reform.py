@@ -130,21 +130,23 @@ regression_sample_reform = """// Assume reform with the following provisions:
 
 bad_reform = """// bad-reform.json contains a logically incorrect attempt to completely
 // eliminate the income tax (leaving refundable credits unchanged)
-{"policy": {
-    "_II_rt1": {"2020": [0.0]},
-    "_II_brk1": {"2020": [[9e99, 9e99, 9e99, 9e99, 9e99]]},
-    "_CG_rt1": {"2020": [0.0]},
-    "_CG_rt2": {"2020": [0.0]},
-    "_CG_rt3": {"2020": [0.0]},
-    "_CG_rt4": {"2020": [0.0]},
-    "_AMT_rt1": {"2020": [0.0]},
-    "_AMT_rt2": {"2020": [0.0]},
-    "_AMT_CG_rt1": {"2020": [0.0]},
-    "_AMT_CG_rt2": {"2020": [0.0]},
-    "_AMT_CG_rt2": {"2020": [0.0]},
-    "_AMT_CG_rt3": {"2020": [0.0]},
-    "_AMT_CG_rt4": {"2020": [0.0]}
-}}
+{
+    "policy": {
+        "_II_rt1": {"2020": [0.0]},
+        "_II_brk1": {"2020": [[9e99, 9e99, 9e99, 9e99, 9e99]]},
+        "_CG_rt1": {"2020": [0.0]},
+        "_CG_rt2": {"2020": [0.0]},
+        "_CG_rt3": {"2020": [0.0]},
+        "_CG_rt4": {"2020": [0.0]},
+        "_AMT_rt1": {"2020": [0.0]},
+        "_AMT_rt2": {"2020": [0.0]},
+        "_AMT_CG_rt1": {"2020": [0.0]},
+        "_AMT_CG_rt2": {"2020": [0.0]},
+        "_AMT_CG_rt2": {"2020": [0.0]},
+        "_AMT_CG_rt3": {"2020": [0.0]},
+        "_AMT_CG_rt4": {"2020": [0.0]}
+    }
+}
 """
 
 warning_reform = """
