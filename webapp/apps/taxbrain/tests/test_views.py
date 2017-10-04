@@ -6,7 +6,8 @@ import mock
 import json
 import pytest
 import os
-os.environ["NUM_BUDGET_YEARS"] = '2'
+
+NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
 from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
 from ..models import convert_to_floats
@@ -22,7 +23,6 @@ from .utils import *
 from ...test_assets import *
 
 START_YEAR = 2016
-NUM_BUDGET_YEARS = int(os.environ["NUM_BUDGET_YEARS"])
 
 class TaxBrainViewsTests(TestCase):
     ''' Test the views of this app. '''
