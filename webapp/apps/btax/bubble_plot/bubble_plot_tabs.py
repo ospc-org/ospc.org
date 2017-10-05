@@ -237,5 +237,7 @@ def bubble_plot_tabs(dataframes):
     js, div = components(layout)
     cdn_js = CDN.js_files[0]
     cdn_css = CDN.css_files[0]
+    widget_js = CDN.js_files[1]
+    widget_css = CDN.css_files[1]
 
-    return js, div, cdn_js, cdn_css
+    return js, div, cdn_js, cdn_css, widget_js, widget_css

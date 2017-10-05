@@ -366,7 +366,7 @@ def output_detail(request, pk):
             "coc": COC_TOOLTIP,
             "dprc": DPRC_TOOLTIP,
         }
-        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(model.tax_result[0]['dataframes'])
+        bubble_js, bubble_div, cdn_js, cdn_css, widget_js, widget_css = bubble_plot_tabs(model.tax_result[0]['dataframes'])
 
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
@@ -382,6 +382,8 @@ def output_detail(request, pk):
             'bubble_div': bubble_div,
             'cdn_js': cdn_js,
             'cdn_css': cdn_css,
+            'widget_js': widget_js,
+            'widget_css': widget_css
         })
         context.update(context_vers_disp)
         return render(request, 'btax/results.html', context)
