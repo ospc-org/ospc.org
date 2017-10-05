@@ -29,9 +29,9 @@ OGUSA_RESULTS_TOTAL_ROW_KEYS  = ['GDP', 'Consumption', 'Investment', 'Hours Work
     'Wages', 'Interest Rates', 'Total Taxes']
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
-ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'Percentage Change in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
+ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
 ELASTIC_RESULTS_TABLE_LABELS = {
-        'elasticity_gdp': 'Elasticity of GDP wrt 1 - Average Marginal Tax Rate'
+        'elasticity_gdp': 'Percentage Change in GDP'
         }
 
 OGUSA_RESULTS_TABLE_LABELS = {
