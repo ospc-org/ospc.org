@@ -4,7 +4,6 @@ dependencies:
 - pandas>=0.20.1
 - flask
 - greenlet
-- bokeh>=0.12.7
 - xlrd
 - redis
 - pip:

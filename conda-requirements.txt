@@ -6,3 +6,4 @@ pandas
 gevent
 pillow
 pyparsing
+bokeh>=0.12.7
