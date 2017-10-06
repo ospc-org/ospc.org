@@ -22,3 +22,5 @@ dump.rdb
 .ipynb_checkpoints
 
 *.pem
+
+_build
