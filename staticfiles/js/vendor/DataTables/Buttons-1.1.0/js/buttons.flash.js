@@ -690,7 +690,7 @@ DataTable.ext.buttons.copyFlash = $.extend( {}, flashButton, {
 		var data = _exportData( dt, config );
 
 		flash.setAction( 'copy' );
-		_setText( flash, data.str ); 
+		_setText( flash, data.str );
 
 		dt.buttons.info(
 			dt.i18n( 'buttons.copyTitle', 'Copy to clipboard' ),
@@ -726,62 +726,6 @@ DataTable.ext.buttons.csvFlash = $.extend( {}, flashButton, {
 	},
 
 	escapeChar: '"'
-} );
-
-// Excel save file - this is really a CSV file using UTF-8 that Excel can read
-DataTable.ext.buttons.excelFlash = $.extend( {}, flashButton, {
-	className: 'buttons-excel buttons-flash',
-
-	text: function ( dt ) {
-		return dt.i18n( 'buttons.excel', 'Excel' );
-	},
-
-	action: function ( e, dt, button, config ) {
-		// Set the text
-		var xml = '';
-		var flash = config._flash;
-		var data = dt.buttons.exportData( config.exportOptions );
-		var addRow = function ( row ) {
-			var cells = [];
-
-			for ( var i=0, ien=row.length ; i<ien ; i++ ) {
-				if ( row[i] === null || row[i] === undefined ) {
-					row[i] = '';
-				}
-
-				cells.push( typeof row[i] === 'number' || (row[i].match && row[i].match(/^-?[0-9\.]+$/) && row[i].charAt(0) !== '0') ?
-					'<c t="n"><v>'+row[i]+'</v></c>' :
-					'<c t="inlineStr"><is><t>'+(
-						! row[i].replace ?
-							row[i] :
-							row[i]
-								.replace(/&(?!amp;)/g, '&amp;')
-								.replace(/[\x00-\x1F\x7F-\x9F]/g, ''))+ // remove control characters
-					'</t></is></c>'                                    // they are not valid in XML
-				);
-			}
-
-			return '<row>'+cells.join('')+'</row>';
-		};
-
-		if ( config.header ) {
-			xml += addRow( data.header );
-		}
-
-		for ( var i=0, ien=data.body.length ; i<ien ; i++ ) {
-			xml += addRow( data.body[i] );
-		}
-
-		if ( config.footer ) {
-			xml += addRow( data.footer );
-		}
-
-		flash.setAction( 'excel' );
-		flash.setFileName( _filename( config ) );
-		_setText( flash, xml );
-	},
-
-	extension: '.xlsx'
 } );
 
 // PDF export
