@@ -1,4 +1,4 @@
-Developer's Guide
-=================
+Developer Guide
+===============
 
-Developer's Guide
+Developer Guide
