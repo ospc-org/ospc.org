@@ -13,9 +13,9 @@ Release 1.0.3 on 2017-10-05
     - T.J. Alumbaugh designed a process in which TaxBrain GUI parameters could more easily be mapped to Tax-Calculator parameters.  Martin Holmer and Hank Doupe implemented this design.
 - **New warning/error messages and logic.**
     - There are now three outcomes for when a reform is submitted. 
-        1.	If the user input does not cause any warnings or errors, then the reform is submitted to the model.
-        2.	If the user input causes warnings but not errors, then the warning messages are displayed under the offending parameters.  The user has the option to either submit the reform as is or change the values.  The reform runs as usual either way.  For example, a user reduces the Standard Deduction (STD).  There is nothing illogical about this input, but the user should be aware of Tax-Calculator’s limitations.
-        3.	If the user input causes errors and/or warnings, then the user will not be able to run the reform unless they fix the parameters that cause the errors.  Note: Errors are only thrown in cases where the user input is illogical.  For example, the cap for the second personal income tax bracket is set below the cap of the first personal income tax bracket.
+        1. If the user input does not cause any warnings or errors, then the reform is submitted to the model.
+        2. If the user input causes warnings but not errors, then the warning messages are displayed under the offending parameters.  The user has the option to either submit the reform as is or change the values.  The reform runs as usual either way.  For example, a user reduces the Standard Deduction (STD).  There is nothing illogical about this input, but the user should be aware of Tax-Calculator’s limitations.
+        3. If the user input causes errors and/or warnings, then the user will not be able to run the reform unless they fix the parameters that cause the errors.  Note: Errors are only thrown in cases where the user input is illogical.  For example, the cap for the second personal income tax bracket is set below the cap of the first personal income tax bracket.
     - Martin Holmer and Hank Doupe coordinated to build this feature. 
 - **New data visualization for the Cost-of-Capital calculator.**
     - Haylee Ham built a bubble plot feature that enables the user to better visualize the change in the METTR, METR, Cost of Capital, and Depreciation for several tabulations.
@@ -24,8 +24,8 @@ Release 1.0.3 on 2017-10-05
 
 **Technical Highlights**
 - **Two broad improvements in the PolicyBrain code base** introduced by the new user-input processing logic and warning and error message logic:
-    1.	The code base is simpler which makes it easier to maintain and modify.
-    2.	The parameter validation is almost entirely done in Tax-Calculator.  This is part of an approach to push more of the model specific work such as parameter validation to the packages that host the model.
+    * The code base is simpler which makes it easier to maintain and modify.
+    * The parameter validation is almost entirely done in Tax-Calculator.  This is part of an approach to push more of the model specific work such as parameter validation to the packages that host the model.
 - **PolicyBrain now uses B-Tax 0.1.9** which includes a feature added by Jason DeBacker that enables serialized data frames to be passed to the Cost-of-Capital Calculator.  This gave Haylee Ham access to the data required to create the bubble plot visualization.
 - **The app deployment script was improved** significantly by Brittain Hard.
 
