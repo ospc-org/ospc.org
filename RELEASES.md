@@ -7,6 +7,19 @@ for a complete commit history.
 Release 1.0.3 on 2017-10-05
 ----------------------------
 
+**Pull Requests**
+- [#655](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/655) – Refactor submit_reform for quick-calc submission case – Hank Doupe
+- [#656](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/656) – Elastic submit bugfix – Hank Doupe
+- [#658](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/658) – Show reform contents when assumption file is not uploaded – Hank Doupe
+- [#665](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/665) – Revert switches from 1/0 to True/False in model – Hank Doupe
+- [#670](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/670) – Fix dynamic simulation button logic for file upload – Hank Doupe
+- [#679](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/679) – Add file input warning/error handling logic – Hank Doupe
+- [#687](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/687) – Bokeh Requirement in Correct File – Brittain Hard
+- [#689](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/689) – Pin Bokeh to 0.12.7 – Hank Doupe
+
+Release 1.0.2 on 2017-08-18
+----------------------------
+
 **User Highlights**
 - **New user-input processing logic.**
     - Eliminates several input processing bugs. 
@@ -28,19 +41,6 @@ Release 1.0.3 on 2017-10-05
     * The parameter validation is almost entirely done in Tax-Calculator.  This is part of an approach to push more of the model specific work such as parameter validation to the packages that host the model.
 - **PolicyBrain now uses B-Tax 0.1.9** which includes a feature added by Jason DeBacker that enables serialized data frames to be passed to the Cost-of-Capital Calculator.  This gave Haylee Ham access to the data required to create the bubble plot visualization.
 - **The app deployment script was improved** significantly by Brittain Hard.
-
-**Pull Requests**
-- [#655](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/655) – Refactor submit_reform for quick-calc submission case – Hank Doupe
-- [#656](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/656) – Elastic submit bugfix – Hank Doupe
-- [#658](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/658) – Show reform contents when assumption file is not uploaded – Hank Doupe
-- [#665](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/665) – Revert switches from 1/0 to True/False in model – Hank Doupe
-- [#670](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/670) – Fix dynamic simulation button logic for file upload – Hank Doupe
-- [#679](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/679) – Add file input warning/error handling logic – Hank Doupe
-- [#687](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/687) – Bokeh Requirement in Correct File – Brittain Hard
-- [#689](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/689) – Pin Bokeh to 0.12.7 – Hank Doupe
-
-Release 1.0.2 on 2017-08-18
-----------------------------
 
  **Pull Requests**
 - [#569](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/569) – Add Table Title for Excel Output – Sean Wang
