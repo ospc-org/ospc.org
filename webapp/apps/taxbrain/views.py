@@ -64,6 +64,9 @@ TAXCALC_VERSION = tcversion_info['version']
 
 JOB_PROC_TIME_IN_SECONDS = 30
 
+OUT_OF_RANGE_ERROR_MSG = ("Some fields have errors. Values outside of suggested "
+                          "ranges will be accepted if they only cause warnings "
+                          "and are submitted again from this page.")
 
 def log_ip(request):
     """
@@ -444,9 +447,7 @@ def submit_reform(request, user=None):
                     "Please specify a tax-law change before submitting."
                 )
             if taxcalc_warnings or taxcalc_errors:
-                msg = ("Some fields have errors. Values outside of suggested "
-                       "ranges will be accepted if they only cause warnings "
-                       "and are submitted again from this page.")
+                msg = OUT_OF_RANGE_ERROR_MSG
                 personal_inputs.add_error(None, msg)
             if has_parse_errors:
                 msg = ("Some fields have unrecognized values. Enter comma "
@@ -476,6 +477,7 @@ def submit_reform(request, user=None):
             'stop_submission': stop_submission,
             'has_errors': any([taxcalc_errors, taxcalc_warnings,
                                no_inputs, not is_valid]),
+            'errors_warnings': errors_warnings,
             'start_year': start_year,
             'do_full_calc': do_full_calc,
             'is_file': is_file,
@@ -500,18 +502,20 @@ def process_reform(request, user=None):
     """
     args = submit_reform(request, user=user)
     if 'HttpResponse' in args:
-        return args['HttpResponse'], args['has_errors']
+        return args['HttpResponse'], args['has_errors'], None
 
     args['request'] = request
     args['user'] = user
     args['url'] = None
+    errors_warnings = args.pop("errors_warnings")
     if args['stop_submission']:
-        return args['personal_inputs'], args['has_errors']
+        return (args['personal_inputs'], args['has_errors'],
+                errors_warnings)
     else:
         del args['stop_submission']
         del args['personal_inputs']
         url = save_model(**args)
-        return url, args['has_errors']
+        return url, args['has_errors'], errors_warnings
 
 
 def file_input(request):
@@ -520,27 +524,54 @@ def file_input(request):
     input form
     """
     start_year = START_YEAR
-    errors = None
-
+    errors = []
+    has_errors = False
     if request.method=='POST':
         # File is not submitted
         if 'docfile' not in dict(request.FILES):
             errors = ["Please specify a tax-law change before submitting."]
         else:
-            unique_url, has_errors = process_reform(request)
-            # TODO: handle taxcalc_errors and taxcalc_warnings
-            return redirect(unique_url)
-    # GET request, load a default form
-    params = parse_qs(urlparse(request.build_absolute_uri()).query)
-    if 'start_year' in params and params['start_year'][0] in START_YEARS:
-        start_year = params['start_year'][0]
+            unique_url, has_errors, errors_warnings = process_reform(request)
+            # Case 1: has_errors is True and there are warning/error messages
+            #         --> display errors
+            # Case 2: has_errors is False and there are warning messages
+            #         --> run model (user has already seen warning messages)
+            # Case 3: has_errors is False and there are no warning/error messages
+            #         --> run model
+            if (has_errors and
+               (errors_warnings['warnings'] or errors_warnings['errors'])):
+                errors.append(OUT_OF_RANGE_ERROR_MSG)
+                # group messages by parameter name
+                group_by_param = {}
+                for action in errors_warnings:
+                    for year in sorted(errors_warnings[action].keys(),
+                                       key=lambda x: float(x)):
+                        for param in errors_warnings[action][year]:
+                            if param in group_by_param:
+                                group_by_param[param].append(
+                                    errors_warnings[action][year][param]
+                                )
+                            else:
+                                group_by_param[param] = \
+                                    [errors_warnings[action][year][param]]
+                # append to errors
+                for param in group_by_param:
+                    errors += group_by_param[param]
+            else:
+                return redirect(unique_url)
+    else:
+        # GET request, load a default form
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in START_YEARS:
+            start_year = params['start_year'][0]
 
     init_context = {
         'form': None,
         'errors': errors,
+        'has_errors': has_errors,
         'taxcalc_version': TAXCALC_VERSION,
         'webapp_version': WEBAPP_VERSION,
-        'params': None, # TODO: doesn't do anything-->: taxcalc_default_params,
+        'params': None,
         'start_years': START_YEARS,
         'start_year': start_year,
         'enable_quick_calc': ENABLE_QUICK_CALC
@@ -572,7 +603,7 @@ def personal_results(request):
         elif 'quick_calc' in fields:
             del fields['quick_calc']
 
-        obj, has_errors = process_reform(request)
+        obj, has_errors, _ = process_reform(request)
 
         # case where validation failed in forms.PersonalExemptionForm
         # TODO: assert HttpResponse status is 404
@@ -593,7 +624,6 @@ def personal_results(request):
             start_year = params['start_year'][0]
 
         personal_inputs = PersonalExemptionForm(first_year=start_year)
-
 
     init_context = {
         'form': personal_inputs,
@@ -735,11 +765,6 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
-    if model.reform_style:
-        rs = [True if x=='True' else False for x in model.reform_style.split(',')]
-        allow_dyn_links = True if (len(rs) < 2 or rs[1] is False) else False
-    else:
-        allow_dyn_links = True
     if 'fiscal_tots' in output:
         # Use new key/value pairs for old data
         output['fiscal_tot_diffs'] = output['fiscal_tots']
@@ -766,9 +791,9 @@ def get_result_context(model, request, url):
 
     if (model.json_text is not None and (model.json_text.raw_reform_text or
        model.json_text.raw_assumption_text)):
-        reform_file_contents = model.json_text.reform_text
+        reform_file_contents = model.json_text.raw_reform_text
         reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
-        assump_file_contents = model.json_text.assumption_text
+        assump_file_contents = model.json_text.raw_assumption_text
         assump_file_contents = assump_file_contents.replace(" ","&nbsp;")
     else:
         reform_file_contents = False
@@ -794,7 +819,7 @@ def get_result_context(model, request, url):
         'is_micro': True,
         'reform_file_contents': reform_file_contents,
         'assump_file_contents': assump_file_contents,
-        'allow_dyn_links': allow_dyn_links,
+        'allow_dyn_links': True if not assump_file_contents else False,
         'results_type': "static"
     }
     return context
@@ -861,13 +886,8 @@ def output_detail(request, pk):
 
 
         if all([j == 'YES' for j in jobs_ready]):
-            results, reform_style = dropq_compute.dropq_get_results(normalize(job_ids))
+            results = dropq_compute.dropq_get_results(normalize(job_ids))
             model.tax_result = results
-            if reform_style:
-                rs = ','.join([str(flag) for flag in reform_style])
-            else:
-                rs = ''
-            model.reform_style = rs
             model.creation_date = datetime.datetime.now()
             model.save()
             context = get_result_context(model, request, url)
