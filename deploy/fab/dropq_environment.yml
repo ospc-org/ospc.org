@@ -6,6 +6,7 @@ dependencies:
 - greenlet
 - xlrd
 - redis
+- sphinx
 - pip:
   - fabric
   - boto
@@ -13,6 +14,8 @@ dependencies:
   - eventlet==0.20.0
   - retrying
   - plotly
+  - sphinx-rtd-theme
+  - sphinx-autobuild
 
 channels:
   - ospc

@@ -9,8 +9,18 @@ bower_components
 src/django-flatblocks
 src/dropq
 webapp_test.sh
+
 puf.csv.gz
+puf.csv
 
 logs/
 
 dump.rdb
+
+.idea
+.cache
+.ipynb_checkpoints
+
+*.pem
+
+_build
