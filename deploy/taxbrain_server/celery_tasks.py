@@ -70,7 +70,6 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
                     user_mods[reform_year].pop(key)
         user_reform = {"policy": user_mods}
     print('user_reform', user_reform, user_mods)
-    reform_style = [True if x else False for x in user_reform]
     if beh_params:
         for x, y in beh_params.items():
             for z in y.keys():
@@ -93,8 +92,7 @@ def dropq_task(year, user_mods, first_budget_year, beh_params, tax_data):
                'mX_bin': mX_bin_i, 'df_bin': df_bin_i, 'pdf_bin': pdf_bin_i,
                'cdf_bin': cdf_bin_i, 'fiscal_tot_diffs': fiscal_tot_i,
                'fiscal_tot_base': fiscal_tot_i_bl,
-               'fiscal_tot_ref': fiscal_tot_i_ref,
-               'reform_style': reform_style}
+               'fiscal_tot_ref': fiscal_tot_i_ref}
 
 
     #Add taxcalc version to results
