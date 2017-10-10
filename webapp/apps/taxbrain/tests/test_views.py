@@ -120,13 +120,12 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(webapp_views.dropq_compute.count, NUM_BUDGET_YEARS)
 
         # Check that data was saved properly
-        last_posted = webapp_views.dropq_compute.last_posted
-        user_mods = json.loads(last_posted["user_mods"])
-        assert last_posted["first_budget_year"] == str(START_YEAR)
-        assert (user_mods["2016"]["_ID_BenefitSurtax_Switch"] ==
-                [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]])
-        assert user_mods["2016"]["_II_em"] == [4333.0]
-
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(webapp_views.dropq_compute, truth_mods,
+                            str(START_YEAR))
 
     def test_taxbrain_file_post_quick_calc(self):
         """
@@ -183,10 +182,14 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(webapp_views.dropq_compute.count, NUM_BUDGET_YEARS)
 
         # Check that data was saved properly
-        last_posted = webapp_views.dropq_compute.last_posted
-        user_mods = json.loads(last_posted["user_mods"])
-        assert last_posted["first_budget_year"] == str(START_YEAR)
-        assert user_mods["2017"]["_II_rt1"] == [0.12]
+        truth_mods = taxcalc.Calculator.read_json_param_files(
+            test_reform.reform_text,
+            None,
+            False
+        )
+        truth_mods = truth_mods["policy"]
+        check_posted_params(webapp_views.dropq_compute, truth_mods,
+                            str(START_YEAR))
 
 
     def test_taxbrain_post_no_behavior_entries(self):

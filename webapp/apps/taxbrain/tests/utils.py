@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.test import Client
 import mock
 import os
+import json
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ..models import TaxSaveInputs
@@ -30,3 +31,27 @@ def do_micro_sim(client, reform):
     idx = response.url[:-1].rfind('/')
     assert response.url[:idx].endswith("taxbrain")
     return response
+
+
+def check_posted_params(mock_compute, params_to_check, start_year):
+    last_posted = mock_compute.last_posted
+    user_mods = json.loads(last_posted["user_mods"])
+    assert last_posted["first_budget_year"] == start_year
+    print('check', params_to_check)
+    print('user_mods', user_mods)
+    for year in params_to_check:
+        for param in params_to_check[year]:
+            print(year, param)
+            assert user_mods[str(year)][param] == params_to_check[year][param]
+
+
+def file_to_dict_style(reform):
+    dict_style = {}
+    for param in reform:
+        for year in reform[param]:
+            if year in dict_style:
+                dict_style[year][param] = reform[param][year]
+            else:
+                dict_style[year] = {param: reform[param][year]}
+
+    return dict_style
