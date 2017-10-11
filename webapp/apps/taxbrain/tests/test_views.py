@@ -105,6 +105,14 @@ class TaxBrainViewsTests(TestCase):
         # Check that quick calc does not advance the counter
         self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
 
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(webapp_views.dropq_compute, truth_mods,
+                            str(START_YEAR))
+
         # reset worker node count without clearing MockCompute session
         webapp_views.dropq_compute.reset_count()
         pk = url[link_idx+1:-1]
@@ -120,13 +128,10 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(webapp_views.dropq_compute.count, NUM_BUDGET_YEARS)
 
         # Check that data was saved properly
-        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
-                                   [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
-                                   "_II_em": [4333.0]}
-                      }
         check_posted_params(webapp_views.dropq_compute, truth_mods,
                             str(START_YEAR))
 
+                            
     def test_taxbrain_file_post_quick_calc(self):
         """
         Using file-upload interface, test quick calculation post and full
@@ -166,6 +171,16 @@ class TaxBrainViewsTests(TestCase):
         # Check that quick calc does not advance the counter
         self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
 
+        # Check that data was saved properly
+        truth_mods = taxcalc.Calculator.read_json_param_files(
+            test_reform.reform_text,
+            None,
+            False
+        )
+        truth_mods = truth_mods["policy"]
+        check_posted_params(webapp_views.dropq_compute, truth_mods,
+                            str(START_YEAR))
+
         # reset worker node count without clearing MockCompute session
         webapp_views.dropq_compute.reset_count()
         pk = url[link_idx+1:-1]
@@ -182,12 +197,6 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(webapp_views.dropq_compute.count, NUM_BUDGET_YEARS)
 
         # Check that data was saved properly
-        truth_mods = taxcalc.Calculator.read_json_param_files(
-            test_reform.reform_text,
-            None,
-            False
-        )
-        truth_mods = truth_mods["policy"]
         check_posted_params(webapp_views.dropq_compute, truth_mods,
                             str(START_YEAR))
 
