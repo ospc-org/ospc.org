@@ -102,7 +102,14 @@ def docspage(request):
             'title': 'Open Source Policy Center Documentation',
         },
     })
-
+    
+def gettingstartedpage(request):
+    return render(request, 'pages/gettingstarted.html', {
+        'section': {
+            'active_nav': 'getting-started',
+            'title': 'Getting Started',
+        },
+    })
 
 def _discover_widgets():
     '''stubbed out data I wish to recieve from some widget discovery mechanism'''
