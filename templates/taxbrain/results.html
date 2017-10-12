@@ -71,7 +71,7 @@
         {% endif %}
       </div>
       {% if reform_file_contents %}
-      <h2> The following reform file were uploaded for this simulation: </h2>
+      <h2> The following reform file(s) were uploaded for this simulation: </h2>
       <div class="file-contents">
           {%autoescape off %}
           {{ raw_reform_text  | nbsp | safe | linebreaks}}
