@@ -2,6 +2,7 @@
 {% load staticfiles %}
 {% load flatblocks %}
 {% block style %}
+{% load results %}
 {{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
 <link href="text/javascript" src="{% static 'js/vendor/DataTables/datatables.min.css' %}"></link>
@@ -70,10 +71,10 @@
         {% endif %}
       </div>
       {% if reform_file_contents %}
-      <h2> The following reform files were uploaded for this simulation: </h2>
+      <h2> The following reform file were uploaded for this simulation: </h2>
       <div class="file-contents">
           {%autoescape off %}
-          {{ raw_reform_text | linebreaks | safe }}
+          {{ raw_reform_text  | nbsp | safe | linebreaks}}
           {%endautoescape %}
           {%autoescape off %}
           {{ raw_assumption_text | linebreaks | safe }}
