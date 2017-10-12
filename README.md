@@ -23,7 +23,8 @@ First, if you plan on contributing to PolicyBrain, then fork PolicyBrain and wor
 
 Open a terminal window and run the following commands:
 ```
-# swap out YOURUSERNAME with OpenSourcePolicyCenter if you did not fork this project and your user name if you did
+# swap out YOURUSERNAME with OpenSourcePolicyCenter if you did not fork this project and
+# your user name if you did
 git clone https://github.com/YOURUSERNAME/PolicyBrain.git
 cd PolicyBrain
 git remote add upstream https://github.com/OpenSourcePolicyCenter/PolicyBrain
@@ -35,7 +36,7 @@ python manage.py collectstatic
 python manage.py migrate
 python manage.py runserver
 ```
-Now, the Django app should be up and running.  You can access the local version of https://www.ospc.org/ at http://localhost:8000.  Next, set up Redis, Flask, and Celery.  This step allows you to submit and run jobs.
+Now, the Django app should be up and running.  You can access the local instance of https://www.ospc.org/ at http://localhost:8000.  Next, set up Redis, Flask, and Celery.  This step allows you to submit and run jobs.
 In another terminal, run the following commands
 ```
 # Go to the PolicyBrain directory
