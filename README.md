@@ -44,7 +44,7 @@ source activate aei_dropq && source webapp_env.sh
 cd deploy/taxbrain_server
 
 # ignore the following block if you have not been given access to the taxpuf package
-conda config --add channels 'https://conda.anaconda.org/t/TOKEN_IF_YOU_HAVE_ONE/opensourcepolicycenter'
+conda config --add channels 'https://conda.anaconda.org/t/YOUR_TOKEN_HERE/opensourcepolicycenter'
 conda install taxpuf
 write-latest-taxpuf
 gunzip -c puf.csv.gz > puf.csv
