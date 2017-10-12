@@ -43,7 +43,7 @@ cd PolicyBrain/
 source activate aei_dropq && source webapp_env.sh
 cd deploy/taxbrain_server
 
-# ignore the following block if you have not been given access to the taxpuf package
+# ignore the following block if you do not have access to the taxpuf package
 conda config --add channels 'https://conda.anaconda.org/t/YOUR_TOKEN_HERE/opensourcepolicycenter'
 conda install taxpuf
 write-latest-taxpuf
