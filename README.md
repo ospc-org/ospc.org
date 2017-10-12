@@ -7,6 +7,9 @@ The apps that are currently hosted are TaxBrain and Cost-of-Capital Calculator. 
 
 PolicyBrain is a Django app which is deployed on Heroku and uses Flask, Celery, and Redis to schedule jobs.  
 
+- Website: https://www.ospc.org/
+- Mailing List: https://www.freelists.org/list/policybrains_modelers
+
 Release Process
 ---------------
 
