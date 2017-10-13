@@ -18,7 +18,7 @@ from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
 from ..views import get_result_context
 import taxcalc
 from taxcalc import Policy
-from .utils import *
+from .utils import do_micro_sim, check_posted_params
 
 from ...test_assets import test_reform, test_assumptions
 
@@ -131,7 +131,7 @@ class TaxBrainViewsTests(TestCase):
         check_posted_params(webapp_views.dropq_compute, truth_mods,
                             str(START_YEAR))
 
-                            
+
     def test_taxbrain_file_post_quick_calc(self):
         """
         Using file-upload interface, test quick calculation post and full
