@@ -20,6 +20,8 @@ from ..helpers import dynamic_params_from_model
 
 START_YEAR = 2016
 
+from ...test_assets.utils import check_posted_params, do_micro_sim
+
 
 class DynamicOGUSAViewsTests(TestCase):
     ''' Test the ogusa dynamic views of this app. '''

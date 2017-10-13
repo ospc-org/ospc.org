@@ -21,6 +21,7 @@ from taxcalc import Policy
 from .utils import do_micro_sim, check_posted_params
 
 from ...test_assets import test_reform, test_assumptions
+from ...test_assets.utils import check_posted_params, do_micro_sim
 
 
 START_YEAR = 2016
@@ -74,10 +75,10 @@ class TaxBrainViewsTests(TestCase):
         data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
                 u'ID_BenefitSurtax_Switch_0': [u'True'],
                 u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
+                u'ID_BenefitSurtax_Switch_2': [u'False'],
                 u'ID_BenefitSurtax_Switch_5': [u'True'],
                 u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
+                u'ID_BenefitSurtax_Switch_6': [u'False'],
                 u'has_errors': [u'False'], u'II_em': [u'4333'],
                 u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123',
                 u'quick_calc': 'Quick Calculation!'}
@@ -107,7 +108,7 @@ class TaxBrainViewsTests(TestCase):
 
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
-                                   [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                                   [[1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0]],
                                    "_II_em": [4333.0]}
                       }
         check_posted_params(webapp_views.dropq_compute, truth_mods,
