@@ -4,6 +4,7 @@ from django.test import Client
 import mock
 import os
 import json
+import numpy as np
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ..models import TaxSaveInputs
@@ -45,4 +46,6 @@ def check_posted_params(mock_compute, params_to_check, start_year):
     assert last_posted["first_budget_year"] == start_year
     for year in params_to_check:
         for param in params_to_check[year]:
-            assert user_mods[str(year)][param] == params_to_check[year][param]
+            np.testing.assert_equal(
+                user_mods[str(year)][param], params_to_check[year][param]
+            )
