@@ -25,26 +25,27 @@
   },
   "world_int_rate": {
     "col_label": [
-      "World interest rate if using 'small open' economy"
+      "World interest rate"
     ],
-    "description": "TODO description",
-    "long_name": "TODO long_name",
-    "notes": "TODO notes",
+    "description": "World interest rate",
+    "long_name": "World interest rate if using 'small open' economy",
+    "notes": "World interest rate if using 'small open' economy",
     "validations": {
       "max": 0.8,
       "min": -0.8
     },
-    "value": 0.4,
+    "value": 0.04,
     "irs_ref": ""
   },
   "small_open": {
     "col_label": [
       "Use 'small open' economy"
     ],
-    "description": "TODO description",
+    "description": "Small open economy assumptionx",
     "long_name": "TODO long_name",
     "notes": "TODO notes",
     "value": true,
     "irs_ref": ""
   }
 }
+
