@@ -37,11 +37,11 @@ class DynamicBehavioralViewsTests(TestCase):
         micro1 = do_micro_sim(self.client, data)
 
         # Do another microsim
-        reform[u'II_em'] += [u'4334']
+        data[u'II_em'] += [u'4334']
         micro2 = do_micro_sim(self.client, data)
 
         # Do a third microsim
-        reform[u'II_em'] += [u'4335']
+        data[u'II_em'] += [u'4335']
         micro3 = do_micro_sim(self.client, data)
 
         # Do the partial equilibrium simulation based on the third microsim
