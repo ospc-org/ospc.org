@@ -14,7 +14,8 @@ def get_dropq_compute_from_module(module_import_path, num_times_to_wait=None):
     )
     return module_views.dropq_compute
 
-def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None):
+def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
+                 compute_count=None):
     '''do the proper sequence of HTTP calls to run a microsim'''
     #Monkey patch to mock out running of compute jobs
     if tb_dropq_compute is None:
@@ -27,13 +28,15 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None):
             'webapp.apps.dynamic.views',
             num_times_to_wait=1
         )
-    # dynamic_views.dropq_compute = MockCompute(num_times_to_wait=1)
 
     response = client.post('/taxbrain/', data)
     # Check that redirect happens
     assert response.status_code == 302
     idx = response.url[:-1].rfind('/')
     assert response.url[:idx].endswith("taxbrain")
+    print('compute_count', tb_dropq_compute.count, compute_count)
+    if compute_count is not None:
+        assert tb_dropq_compute.count == compute_count
     # return response
     return {"response": response,
             "tb_dropq_compute": tb_dropq_compute,
