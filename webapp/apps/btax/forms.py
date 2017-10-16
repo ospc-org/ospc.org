@@ -15,15 +15,14 @@ from ..taxbrain.forms import (has_field_errors,
                               bool_like,
                               parameter_name)
 
-
-BTAX_DEFAULTS = get_btax_defaults()
+from ..constants import START_YEAR
 
 
 class BTaxExemptionForm(ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
         self._first_year = int(first_year)
-        self._default_params = BTAX_DEFAULTS
+        self._default_params = get_btax_defaults(self._first_year)
 
         # Defaults are set in the Meta, but we need to swap
         # those outs here in the init because the user may
@@ -146,7 +145,7 @@ class BTaxExemptionForm(ModelForm):
         widgets = {}
         labels = {}
 
-        for param in BTAX_DEFAULTS.values():
+        for param in get_btax_defaults(START_YEAR).values():
             for field in param.col_fields:
                 attrs = {
                     'class': 'form-control',

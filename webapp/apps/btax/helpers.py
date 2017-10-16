@@ -21,6 +21,8 @@ from ..taxbrain.helpers import (make_bool, convert_val,
                                 expand_2D, expand_list, leave_name_in,
                                 TaxCalcField)
 
+from ..constants import START_YEAR
+
 import btax
 from btax.util import read_from_egg
 
@@ -46,7 +48,6 @@ BTAX_VERSION = BTAX_VERSION_INFO['version']
 # Prepare user params to send to DropQ/Taxcalc
 #
 class BTaxField(TaxCalcField):
-
     pass
 
 
@@ -58,19 +59,20 @@ class BTaxParam(object):
     """
     coming_soon = False
     inflatable = False
-    def __init__(self, param_id, attributes):
-        self.__load_from_json(param_id, attributes)
+    def __init__(self, param_id, attributes, start_year):
+        self.__load_from_json(param_id, attributes, start_year)
 
-    def __load_from_json(self, param_id, attributes):
+    def __load_from_json(self, param_id, attributes, start_year):
         # TODO does /ccc need to handle
         # budget year /start year logic
         # as in /taxbrain. If so, see
         # TaxCalcParam for changes to
         # make here
-        self.start_year = first_budget_year = 2015
+        self.start_year = start_year
 
         values_by_year = attributes['value']
         col_labels = attributes['col_label']
+        row_label = attributes['row_label']
 
         self.tc_id = param_id
         self.nice_id = param_id[1:] if param_id[0] == '_' else param_id
@@ -90,12 +92,19 @@ class BTaxParam(object):
         # create col params
         self.col_fields = []
 
-        self.col_fields.append(TaxCalcField(
+        # Whatever the index of the year is in row_label, set default_value to
+        # the correspinding value in values_by_col based on that index.
+        try :
+            default_value = values_by_col[row_label.index(str(self.start_year))]
+        except IndexError:
+            default_value = values_by_col[0]
+
+        self.col_fields.append(BTaxField(
             self.nice_id,
             attributes['description'],
-            values_by_col[0],
+            default_value,
             self,
-            first_budget_year
+            self.start_year
         ))
 
         # we assume we can CPI inflate if first value isn't a ratio
@@ -127,30 +136,28 @@ class BTaxParam(object):
                         self.min = self.min[1:]
 
 
-def get_btax_defaults():
+def get_btax_defaults(start_year):
     from btax import DEFAULTS
+    start_year = int(start_year)
     defaults = dict(DEFAULTS)
     # Set Bogus default for now
     defaults['btax_betr_pass']['value'] = [0.0]
     for k,v in defaults.items():
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
-
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
-        param = BTaxParam(k,defaults[k])
+        param = BTaxParam(k,defaults[k], start_year)
         BTAX_DEFAULTS[param.nice_id] = param
     for k in BTAX_DEPREC:
         fields = ['{}_{}_Switch'.format(k, tag)
                      for tag in ('gds', 'ads',  'tax')]
         for field in fields:
-            param = BTaxParam(field, defaults[field])
+            param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
         for field in ['{}_{}'.format(k, 'exp')]:
-            param = BTaxParam(field, defaults[field])
+            param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
     return BTAX_DEFAULTS
-
-BTAX_DEFAULTS = get_btax_defaults()
 
 
 def hover_args_to_btax_depr():
