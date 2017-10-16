@@ -13,7 +13,11 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_v
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
-from .utils import *
+
+from .utils import do_behavioral_sim, START_YEAR
+from ...test_assets.utils import (check_posted_params, do_micro_sim,
+                                  do_micro_sim_from_file)
+from ...test_assets import test_reform, test_assumptions
 
 
 class DynamicBehavioralViewsTests(TestCase):
@@ -97,7 +101,8 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file
-        micro1 = do_micro_sim_from_file(self.client)
+        micro1 = do_micro_sim_from_file(self.client, START_YEAR,
+                                        test_reform.reform_text)
 
         # Do the partial equilibrium simulation based on the microsim
         be_reform = {u'BE_sub': [u'0.25']}

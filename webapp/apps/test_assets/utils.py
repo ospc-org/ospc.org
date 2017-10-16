@@ -1,4 +1,6 @@
-
+import json
+from ..taxbrain.compute import MockCompute
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 def do_micro_sim(client, reform):
     '''do the proper sequence of HTTP calls to run a microsim'''
@@ -19,7 +21,7 @@ def do_micro_sim(client, reform):
     return response
 
 
-def do_micro_sim_from_file(client, reform_text, assumptions_text):
+def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=None):
     #Monkey patch to mock out running of compute jobs
     import sys
     from webapp.apps.taxbrain import views
@@ -27,11 +29,14 @@ def do_micro_sim_from_file(client, reform_text, assumptions_text):
     webapp_views.dropq_compute = MockCompute()
 
     tc_file = SimpleUploadedFile("test_reform.json", reform_text)
-    tc_file2 = SimpleUploadedFile("test_assumptions.json", assumptions_text)
     data = {u'docfile': tc_file,
-            u'assumpfile': tc_file2,
             u'has_errors': [u'False'],
-            u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+            u'start_year': start_year, 'csrfmiddlewaretoken':'abc123'}
+
+    if assumptions_text:
+        tc_file2 = SimpleUploadedFile("test_assumptions.json",
+                                      assumptions_text)
+        data['assumpfile'] = tc_file2
 
     response = client.post('/taxbrain/file/', data)
     # Check that redirect happens

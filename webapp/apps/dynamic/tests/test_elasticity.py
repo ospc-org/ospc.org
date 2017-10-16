@@ -13,7 +13,11 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_v
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
-from .utils import *
+
+from .utils import do_elasticity_sim, START_YEAR
+from ...test_assets.utils import check_posted_params, do_micro_sim
+from ...test_assets import test_reform, test_assumptions
+
 
 import pytest
 
@@ -75,7 +79,7 @@ class DynamicElasticityViewsTests(TestCase):
         # microsim above
         idx = page.find('dynamic/macro')
         idx_ms_num_start = idx + 14
-        idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/') 
+        idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/')
         microsim_model_num = page[idx_ms_num_start:idx_ms_num_end]
         assert microsim_model_num == orig_micro_model_num
 
@@ -86,7 +90,9 @@ class DynamicElasticityViewsTests(TestCase):
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
         # Do the microsim from file
-        micro1 = do_micro_sim_from_file(self.client)
+        # Do the microsim from file
+        micro1 = do_micro_sim_from_file(self.client, START_YEAR,
+                                        test_reform.reform_text)
 
         from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']

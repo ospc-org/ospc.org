@@ -14,13 +14,16 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_v
 from ...taxbrain.compute import DropqCompute, MockCompute
 import taxcalc
 from taxcalc import Policy
-from .utils import *
+
 from ...dynamic.models import DynamicSaveInputs, OGUSAWorkerNodesCounter
 from ..helpers import dynamic_params_from_model
 
 START_YEAR = 2016
 
-from ...test_assets.utils import check_posted_params, do_micro_sim
+from .utils import do_ogusa_sim, START_YEAR
+from ...test_assets.utils import (check_posted_params, do_micro_sim,
+                                  do_micro_sim_from_file)
+from ...test_assets import test_reform, test_assumptions
 
 
 class DynamicOGUSAViewsTests(TestCase):
@@ -204,7 +207,8 @@ class DynamicOGUSAViewsTests(TestCase):
         self.client.login(username='temporary', password='temporary')
         # Do the microsim from file
         fname = "../../taxbrain/tests/test_reform.json"
-        micro1 = do_micro_sim_from_file(self.client)
+        micro1 = do_micro_sim_from_file(self.client, START_YEAR,
+                                        test_reform.reform_text)
         start_year = 2016
 
         # Do the partial equilibrium simulation based on the microsim

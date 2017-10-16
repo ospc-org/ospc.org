@@ -18,7 +18,6 @@ from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
 from ..views import get_result_context
 import taxcalc
 from taxcalc import Policy
-from .utils import do_micro_sim, check_posted_params
 
 from ...test_assets import test_reform, test_assumptions
 from ...test_assets.utils import check_posted_params, do_micro_sim
