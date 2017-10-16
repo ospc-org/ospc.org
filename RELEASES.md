@@ -47,7 +47,6 @@ Release 1.0.2 on 2017-08-18
 - **PolicyBrain now uses B-Tax 0.1.9** which includes a feature added by Jason DeBacker that enables serialized data frames to be passed to the Cost-of-Capital Calculator.  This gave Haylee Ham access to the data required to create the bubble plot visualization.
 - **The app deployment script was improved** significantly by Brittain Hard.
 
-**Pull Requests**
 **Major Changes**
 - None
 
