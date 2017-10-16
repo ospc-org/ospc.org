@@ -20,7 +20,8 @@ import taxcalc
 from taxcalc import Policy
 
 from ...test_assets import test_reform, test_assumptions
-from ...test_assets.utils import check_posted_params, do_micro_sim
+from ...test_assets.utils import (check_posted_params, do_micro_sim,
+                                  get_post_data, get_file_post_data)
 
 
 START_YEAR = 2016
@@ -45,15 +46,8 @@ class TaxBrainViewsTests(TestCase):
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
 
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -71,13 +65,11 @@ class TaxBrainViewsTests(TestCase):
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
         # switches 0, 4, 6 are False
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123',
-                u'quick_calc': 'Quick Calculation!'}
+        data = get_post_data(START_YEAR, quick_calc=True)
+        del data[u'ID_BenefitSurtax_Switch_0']
+        del data[u'ID_BenefitSurtax_Switch_4']
+        del data[u'ID_BenefitSurtax_Switch_6']
+        data[u'II_em'] = [u'4333']
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -138,12 +130,7 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR),
-                u'quick_calc': True,
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_file_post_data(START_YEAR, test_reform.reform_text, quick_calc=False)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -205,15 +192,8 @@ class TaxBrainViewsTests(TestCase):
         webapp_views.dropq_compute = MockCompute()
 
         # Provide behavioral input
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'BE_inc': [u'0.1'],
-                u'start_year': unicode(START_YEAR)}
+        data = get_post_data(START_YEAR)
+        data[u'BE_inc'] = [u'0.1']
 
         response = self.client.post('/taxbrain/', data)
         # Check that we get a 400
@@ -225,15 +205,8 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = NodeDownCompute()
 
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -251,15 +224,8 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockFailedCompute()
 
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -291,10 +257,9 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'AMT_CG_brk2_cpi':u'False',
-                u'AMT_CG_brk1_cpi':u'False'}
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
+        data[u'AMT_CG_brk2_cpi'] = u'False'
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -317,9 +282,8 @@ class TaxBrainViewsTests(TestCase):
 
         # This post has no BenefitSurtax flags, so the model
         # sets them to False
-        data = { u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        data[u'II_em'] = [u'4333']
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -344,11 +308,12 @@ class TaxBrainViewsTests(TestCase):
         # unimportant. The existence of the switch in the POST indicates
         # that the user set them to on. So, they must get switched to True
         next_csrf = str(edit_page.context['csrf_token'])
-        data2 = { u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':next_csrf,
-                'ID_BenefitSurtax_Switch_0':[u'False'],
-                'ID_BenefitSurtax_Switch_1':[u'False']}
+        data2 = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_em': [u'4333'],
+               u'ID_BenefitSurtax_Switch_0': [u'False'],
+               u'ID_BenefitSurtax_Switch_1': [u'False'],
+               'csrfmiddlewaretoken': next_csrf}
+        data2.update(mod)
 
         response = self.client.post('/taxbrain/', data2)
         # Check that redirect happens
@@ -387,9 +352,10 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 15000'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 15000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 302)
@@ -410,9 +376,10 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 38000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -430,10 +397,10 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
-                u'II_brk2_0': [u'*, *, 39500'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 38000'],
+               u'II_brk2_0': [u'*, *, 39500']}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 302)
@@ -453,10 +420,11 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, 38000'],
-                u'II_brk2_0': [u'*, *, 39500'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, 38000'],
+               u'II_brk2_0': [u'*, *, 39500'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -472,14 +440,14 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = {'CG_rt1': [0.25], 'CG_rt3': [u'0.25'], 'CG_rt2': [u'0.18'],
-                'CG_brk1_cpi': [u'True'], 'CG_brk2_cpi': [u'True'],
-                'CG_brk1_0': [u'38659'], 'CG_brk1_1': [u'76300'],
-                'CG_brk1_2': [u'38650'], 'CG_brk1_3': [u'51400'],
-                'CG_brk2_0': [u'425050'], 'CG_brk2_1': [u'476950'],
-                'CG_brk2_2': [u'243475'], 'CG_brk2_3': [u'451000'],
-                'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {'CG_rt1': [0.25], 'CG_rt3': [u'0.25'], 'CG_rt2': [u'0.18'],
+               'CG_brk1_cpi': [u'True'], 'CG_brk2_cpi': [u'True'],
+               'CG_brk1_0': [u'38659'], 'CG_brk1_1': [u'76300'],
+               'CG_brk1_2': [u'38650'], 'CG_brk1_3': [u'51400'],
+               'CG_brk2_0': [u'425050'], 'CG_brk2_1': [u'476950'],
+               'CG_brk2_2': [u'243475'], 'CG_brk2_3': [u'451000']}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -566,8 +534,7 @@ class TaxBrainViewsTests(TestCase):
                    "II_brk7_2": [u'999999.'], "II_brk7_3": [u'999999.'],
                    "II_rt7": [0.42]}
 
-        data = {'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
 
         data.update(values1)
         data.update(values2)
@@ -591,10 +558,8 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        data = get_file_post_data(START_YEAR, test_reform.reform_text)
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that redirect happens
@@ -609,12 +574,10 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
-        tc_file2 = SimpleUploadedFile("test_assumptions.json", test_assumptions.assumptions_text)
-        data = {u'docfile': tc_file,
-                u'assumpfile': tc_file2,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        data = get_file_post_data(START_YEAR,
+                                  test_reform.reform_text,
+                                  test_assumptions.assumptions_text)
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that redirect happens
@@ -657,10 +620,10 @@ class TaxBrainViewsTests(TestCase):
         from webapp.apps.taxbrain import views as webapp_views
         webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'XTOT*4500'],
-                u'II_brk2_0': [u'*, *, 39500'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'XTOT*4500'],
+               u'II_brk2_0': [u'*, *, 39500']}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 200)
@@ -675,10 +638,9 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.bad_reform)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        data = get_file_post_data(START_YEAR, test_reform.bad_reform)
+
         #TODO: make sure still not allowed to submit on second submission
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
@@ -696,10 +658,8 @@ class TaxBrainViewsTests(TestCase):
         import sys
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform1.json", test_reform.warning_reform)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+
+        data = get_file_post_data(START_YEAR, test_reform.warning_reform)
 
         #TODO: make sure we can submit after we see warnings
         response = self.client.post('/taxbrain/file/', data)
