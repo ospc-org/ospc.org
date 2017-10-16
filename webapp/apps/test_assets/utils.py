@@ -1,31 +1,43 @@
 import json
 import os
+import sys
+
 from ..taxbrain.compute import MockCompute
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
-def do_micro_sim(client, data, compute_count=NUM_BUDGET_YEARS):
+def get_dropq_compute_from_module(module_import_path, num_times_to_wait=None):
+    module_views = sys.modules[module_import_path]
+    module_views.dropq_compute = MockCompute(
+        num_times_to_wait=num_times_to_wait
+    )
+    return module_views.dropq_compute
+
+def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None):
     '''do the proper sequence of HTTP calls to run a microsim'''
     #Monkey patch to mock out running of compute jobs
-    import sys
-    from webapp.apps.taxbrain import views
-    webapp_views = sys.modules['webapp.apps.taxbrain.views']
-    webapp_views.dropq_compute = MockCompute()
-    from webapp.apps.dynamic import views
-    dynamic_views = sys.modules['webapp.apps.dynamic.views']
-    dynamic_views.dropq_compute = MockCompute(num_times_to_wait=1)
+    if tb_dropq_compute is None:
+        tb_dropq_compute = get_dropq_compute_from_module(
+            'webapp.apps.taxbrain.views',
+            num_times_to_wait=0
+        )
+    if dyn_dropq_compute is None:
+        dyn_dropq_compute = get_dropq_compute_from_module(
+            'webapp.apps.dynamic.views',
+            num_times_to_wait=1
+        )
+    # dynamic_views.dropq_compute = MockCompute(num_times_to_wait=1)
 
     response = client.post('/taxbrain/', data)
     # Check that redirect happens
     assert response.status_code == 302
     idx = response.url[:-1].rfind('/')
     assert response.url[:idx].endswith("taxbrain")
-
     # return response
     return {"response": response,
-            "dropq_compute": webapp_views.dropq_compute,
-            "dyanamic_dropq_compute": dynamic_views.dropq_compute,
+            "tb_dropq_compute": tb_dropq_compute,
+            "dyn_dropq_compute": dyn_dropq_compute,
             "pk": response.url[idx+1:-1]}
 
 def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=None):
