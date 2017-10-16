@@ -309,7 +309,7 @@ class TaxBrainViewsTests(TestCase):
         cpi_flag = edit_page.context['form']['AMT_CG_brk2_cpi'].field.widget.attrs['placeholder']
         self.assertEqual(cpi_flag, False)
 
-    def test_taxbrain_edit_benefitsurtax_switch_show_correctly(self):
+    def test_taxbrain_edit_benefit_switch_show_correctly(self):
         #Monkey patch to mock out running of compute jobs
         import sys
         from webapp.apps.taxbrain import views as webapp_views
@@ -332,6 +332,7 @@ class TaxBrainViewsTests(TestCase):
         out = OutputUrl.objects.get(pk=model_num)
         tsi = TaxSaveInputs.objects.get(pk=out.model_pk)
         _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
+        _ids += ['ID_BenefitCap_Switch_' + str(i) for i in range(7)]
         # Verify that generated model has switches all False
         assert all([(getattr(tsi, switch) == "False"
                      or getattr(tsi, switch) == u'0.0') for switch in _ids])
@@ -348,7 +349,12 @@ class TaxBrainViewsTests(TestCase):
                 u'start_year': unicode(START_YEAR),
                 'csrfmiddlewaretoken':next_csrf,
                 'ID_BenefitSurtax_Switch_0':[u'False'],
-                'ID_BenefitSurtax_Switch_1':[u'False']}
+                'ID_BenefitSurtax_Switch_1':[u'False'],
+                'ID_BenefitCap_Switch_0':[u'False'],
+                'ID_BenefitCap_Switch_1':[u'False'],
+                'ID_BenefitCap_Switch_4':[u'False'],
+                'ID_BenefitCap_Switch_6':[u'False']}
+
 
         response = self.client.post('/taxbrain/', data2)
         # Check that redirect happens
@@ -374,6 +380,22 @@ class TaxBrainViewsTests(TestCase):
                 or tsi2.ID_BenefitSurtax_Switch_5 == u'0.0')
         assert (tsi2.ID_BenefitSurtax_Switch_6 == u'False'
                 or tsi2.ID_BenefitSurtax_Switch_6 == u'0.0')
+
+        assert (tsi2.ID_BenefitCap_Switch_0 == u'True'
+                or tsi2.ID_BenefitCap_Switch_0 == u'1.0')
+        assert (tsi2.ID_BenefitCap_Switch_1 == u'True'
+                or tsi2.ID_BenefitCap_Switch_1 == u'1.0')
+        assert (tsi2.ID_BenefitCap_Switch_2 == u'False'
+                or tsi2.ID_BenefitCap_Switch_2 == u'0.0')
+        assert (tsi2.ID_BenefitCap_Switch_3 == u'False'
+                or tsi2.ID_BenefitCap_Switch_3 == u'0.0')
+        assert (tsi2.ID_BenefitCap_Switch_4 == u'True'
+                or tsi2.ID_BenefitCap_Switch_4 == u'1.0')
+        assert (tsi2.ID_BenefitCap_Switch_5 == u'False'
+                or tsi2.ID_BenefitCap_Switch_5 == u'0.0')
+        assert (tsi2.ID_BenefitCap_Switch_6 == u'True'
+                or tsi2.ID_BenefitCap_Switch_6 == u'1.0')
+
 
 
     def test_taxbrain_wildcard_params_with_validation_is_OK(self):
