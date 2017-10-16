@@ -22,7 +22,7 @@ def do_micro_sim(client, reform):
 
 
 def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=None):
-    #Monkey patch to mock out running of compute jobs
+    # Monkey patch to mock out running of compute jobs
     import sys
     from webapp.apps.taxbrain import views
     webapp_views = sys.modules['webapp.apps.taxbrain.views']

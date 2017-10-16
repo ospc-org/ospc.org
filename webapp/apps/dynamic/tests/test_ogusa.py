@@ -22,7 +22,8 @@ START_YEAR = 2016
 
 from .utils import do_ogusa_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
-                                  do_micro_sim_from_file)
+                                  do_micro_sim_from_file, get_post_data,
+                                  get_file_post_data)
 from ...test_assets import test_reform, test_assumptions
 
 
@@ -39,18 +40,10 @@ class DynamicOGUSAViewsTests(TestCase):
         self.client.login(username='temporary', password='temporary')
         # Do the microsim
         start_year = 2015
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(start_year), 'csrfmiddlewaretoken': 'abc123'}
+        data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, reform)
+        micro_2015 = do_micro_sim(self.client, data)
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42']}
@@ -58,7 +51,7 @@ class DynamicOGUSAViewsTests(TestCase):
         orig_micro_model_num = micro_2015.url[-2:-1]
 
         # Do a 2016 microsim
-        micro_2016 = do_micro_sim(self.client, reform)
+        micro_2016 = do_micro_sim(self.client, data)
         start_year = 2016
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.43']}
@@ -76,18 +69,10 @@ class DynamicOGUSAViewsTests(TestCase):
         # Do the microsim
         start_year = 2015
         self.client.logout()
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(start_year), 'csrfmiddlewaretoken': 'abc123'}
+        data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, reform)
+        micro_2015 = do_micro_sim(self.client, data)
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42']}
@@ -103,19 +88,10 @@ class DynamicOGUSAViewsTests(TestCase):
         # Do the microsim
         start_year = 2015
         self.client.logout()
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(start_year),
-                'csrfmiddlewaretoken': 'abc123'}
+        data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, reform)
+        micro_2015 = do_micro_sim(self.client, data)
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42'], u'user_email': 'test@example.com'}
@@ -127,19 +103,10 @@ class DynamicOGUSAViewsTests(TestCase):
         # Do the microsim
         start_year = 2016
         self.client.logout()
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(start_year),
-                'csrfmiddlewaretoken': 'abc123'}
+        data = get_post_data(start_year)
 
         # Do a 2016 microsim
-        micro_2016 = do_micro_sim(self.client, reform)
+        micro_2016 = do_micro_sim(self.client, data)
 
         # Do the ogusa simulation based on this microsim
         FRISCH_PARAM = u'0.49'
@@ -168,19 +135,10 @@ class DynamicOGUSAViewsTests(TestCase):
         helpers.OGUSA_WORKERS = ['host1', 'host2', 'host3']
         compute.OGUSA_WORKERS = ['host1', 'host2', 'host3']
 
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(start_year),
-                'csrfmiddlewaretoken': 'abc123'}
+        data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, reform)
+        micro_2015 = do_micro_sim(self.client, data)
 
         #Assert the the worker node index has been reset to 0
         onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
