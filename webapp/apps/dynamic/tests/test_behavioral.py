@@ -34,15 +34,15 @@ class DynamicBehavioralViewsTests(TestCase):
         data = get_post_data(start_year)
         data[u'II_em'] = [u'4333']
 
-        micro1 = do_micro_sim(self.client, data)
+        micro1 = do_micro_sim(self.client, data)["response"]
 
         # Do another microsim
         data[u'II_em'] += [u'4334']
-        micro2 = do_micro_sim(self.client, data)
+        micro2 = do_micro_sim(self.client, data)["response"]
 
         # Do a third microsim
         data[u'II_em'] += [u'4335']
-        micro3 = do_micro_sim(self.client, data)
+        micro3 = do_micro_sim(self.client, data)["response"]
 
         # Do the partial equilibrium simulation based on the third microsim
         pe_reform = {u'BE_inc': [u'-0.4']}
@@ -73,7 +73,7 @@ class DynamicBehavioralViewsTests(TestCase):
         data = get_post_data(start_year)
         data[u'SS_Earnings_c'] = [u'*,*,*,*,15000']
 
-        micro1 = do_micro_sim(self.client, data)
+        micro1 = do_micro_sim(self.client, data)["response"]
 
         # Do the partial equilibrium simulation based on the microsim
         pe_reform = {u'BE_sub': [u'0.25']}

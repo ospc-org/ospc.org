@@ -42,15 +42,15 @@ class DynamicElasticityViewsTests(TestCase):
         data = get_post_data(start_year)
         data[u'II_em'] = [u'4333']
 
-        micro1 = do_micro_sim(self.client, data)
+        micro1 = do_micro_sim(self.client, data)["response"]
 
         # Do another microsim
         data[u'II_em'] += [u'4334']
-        micro2 = do_micro_sim(self.client, data)
+        micro2 = do_micro_sim(self.client, data)["response"]
 
         # Do a third microsim
         data[u'II_em'] += [u'4335']
-        micro3 = do_micro_sim(self.client, data)
+        micro3 = do_micro_sim(self.client, data)["response"]
 
         from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']

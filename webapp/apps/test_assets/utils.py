@@ -1,8 +1,11 @@
 import json
+import os
 from ..taxbrain.compute import MockCompute
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-def do_micro_sim(client, reform):
+NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
+
+def do_micro_sim(client, data, compute_count=NUM_BUDGET_YEARS):
     '''do the proper sequence of HTTP calls to run a microsim'''
     #Monkey patch to mock out running of compute jobs
     import sys
@@ -13,13 +16,17 @@ def do_micro_sim(client, reform):
     dynamic_views = sys.modules['webapp.apps.dynamic.views']
     dynamic_views.dropq_compute = MockCompute(num_times_to_wait=1)
 
-    response = client.post('/taxbrain/', reform)
+    response = client.post('/taxbrain/', data)
     # Check that redirect happens
     assert response.status_code == 302
     idx = response.url[:-1].rfind('/')
     assert response.url[:idx].endswith("taxbrain")
-    return response
 
+    # return response
+    return {"response": response,
+            "dropq_compute": webapp_views.dropq_compute,
+            "dyanamic_dropq_compute": dynamic_views.dropq_compute,
+            "pk": response.url[idx+1:-1]}
 
 def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=None):
     # Monkey patch to mock out running of compute jobs
