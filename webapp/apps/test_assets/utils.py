@@ -15,7 +15,7 @@ def get_dropq_compute_from_module(module_import_path, num_times_to_wait=None):
     return module_views.dropq_compute
 
 def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
-                 compute_count=None):
+                 compute_count=None, post_url='/taxbrain/'):
     '''do the proper sequence of HTTP calls to run a microsim'''
     #Monkey patch to mock out running of compute jobs
     if tb_dropq_compute is None:
@@ -29,12 +29,17 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
             num_times_to_wait=1
         )
 
-    response = client.post('/taxbrain/', data)
+    response = client.post(post_url, data)
     # Check that redirect happens
     assert response.status_code == 302
     idx = response.url[:-1].rfind('/')
     assert response.url[:idx].endswith("taxbrain")
-    print('compute_count', tb_dropq_compute.count, compute_count)
+
+    # Check for good response
+    response2 = client.get(response.url)
+    # TODO: check compute count once NUM_BUDGET_YEARS env variable issue is
+    # resolved
+    assert response2.status_code == 200
     if compute_count is not None:
         assert tb_dropq_compute.count == compute_count
     # return response
@@ -43,13 +48,7 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
             "dyn_dropq_compute": dyn_dropq_compute,
             "pk": response.url[idx+1:-1]}
 
-def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=None):
-    # Monkey patch to mock out running of compute jobs
-    import sys
-    from webapp.apps.taxbrain import views
-    webapp_views = sys.modules['webapp.apps.taxbrain.views']
-    webapp_views.dropq_compute = MockCompute()
-
+def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=None, **kwargs):
     tc_file = SimpleUploadedFile("test_reform.json", reform_text)
     data = {u'docfile': tc_file,
             u'has_errors': [u'False'],
@@ -60,11 +59,9 @@ def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=Non
                                       assumptions_text)
         data['assumpfile'] = tc_file2
 
-    response = client.post('/taxbrain/file/', data)
-    # Check that redirect happens
-    assert response.status_code == 302
-    return response
+    post_url = '/taxbrain/file/'
 
+    return do_micro_sim(client, data, post_url=post_url, **kwargs)
 
 def check_posted_params(mock_compute, params_to_check, start_year):
     """
