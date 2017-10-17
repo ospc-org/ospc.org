@@ -22,8 +22,7 @@ START_YEAR = 2016
 
 from .utils import do_ogusa_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
-                                  do_micro_sim_from_file, get_post_data,
-                                  get_file_post_data)
+                                  get_post_data, get_file_post_data)
 from ...test_assets import test_reform, test_assumptions
 
 
@@ -163,12 +162,11 @@ class DynamicOGUSAViewsTests(TestCase):
 
     def test_ogusa_reform_from_file(self):
         self.client.login(username='temporary', password='temporary')
-        # Do the microsim from file
-        fname = "../../taxbrain/tests/test_reform.json"
-        micro1 = do_micro_sim_from_file(self.client, START_YEAR,
-                                        test_reform.reform_text)
-        micro1 = micro1["response"]
         start_year = 2016
+        # Do the microsim from file
+        data = get_file_post_data(start_year, test_reform.reform_text)
+        micro1 = do_micro_sim(self.client, data, post_url='/taxbrain/file/')
+        micro1 = micro1["response"]
 
         # Do the partial equilibrium simulation based on the microsim
         ogusa_reform = {u'frisch': [u'0.43']}

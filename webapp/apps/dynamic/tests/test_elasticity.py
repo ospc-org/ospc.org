@@ -16,8 +16,7 @@ from taxcalc import Policy
 
 from .utils import do_elasticity_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
-                                  do_micro_sim_from_file, get_post_data,
-                                  get_file_post_data)
+                                  get_post_data, get_file_post_data)
 from ...test_assets import test_reform, test_assumptions
 
 
@@ -81,14 +80,17 @@ class DynamicElasticityViewsTests(TestCase):
 
     @pytest.mark.xfail
     def test_elasticity_reform_from_file(self):
-        import sys
-        from webapp.apps.taxbrain import views
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
         # Do the microsim from file
-        # Do the microsim from file
-        micro1 = do_micro_sim_from_file(self.client, START_YEAR,
-                                        test_reform.reform_text)
+        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        # set dyn_dropq_compute to False so that
+        # webapp.apps.dynamic_views.dropq_compute is not Mocked
+        micro1 = do_micro_sim(
+            self.client,
+            data,
+            post_url='/taxbrain/file/',
+            dyn_dropq_compute=False
+        )
+
         micro1 = micro1["response"]
 
         from webapp.apps.dynamic import views

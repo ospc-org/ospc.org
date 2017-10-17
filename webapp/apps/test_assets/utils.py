@@ -48,20 +48,6 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
             "dyn_dropq_compute": dyn_dropq_compute,
             "pk": response.url[idx+1:-1]}
 
-def do_micro_sim_from_file(client, start_year, reform_text, assumptions_text=None, **kwargs):
-    tc_file = SimpleUploadedFile("test_reform.json", reform_text)
-    data = {u'docfile': tc_file,
-            u'has_errors': [u'False'],
-            u'start_year': start_year, 'csrfmiddlewaretoken':'abc123'}
-
-    if assumptions_text:
-        tc_file2 = SimpleUploadedFile("test_assumptions.json",
-                                      assumptions_text)
-        data['assumpfile'] = tc_file2
-
-    post_url = '/taxbrain/file/'
-
-    return do_micro_sim(client, data, post_url=post_url, **kwargs)
 
 def check_posted_params(mock_compute, params_to_check, start_year):
     """
