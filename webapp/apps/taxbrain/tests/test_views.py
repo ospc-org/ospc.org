@@ -41,29 +41,15 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_taxbrain_post(self):
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
-
+        """
+        submit simple reform
+        """
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
-
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-
+        do_micro_sim(self.client, data)
 
     def test_taxbrain_quick_calc_post(self):
         "Test quick calculation post and full post from quick_calc page"
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
         # switches 0, 4, 6 are False
         data = get_post_data(START_YEAR, quick_calc=True)
         del data[u'ID_BenefitSurtax_Switch_0']
@@ -74,20 +60,7 @@ class TaxBrainViewsTests(TestCase):
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-
-        url = response.url
-        # Go to results page
-        link_idx = url[:-1].rfind('/')
-        self.failUnless(url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(url)
-        # Check for good response
-        self.assertEqual(response.status_code, 200)
-        # Check that we only retrieve one year of results
-        self.assertEqual(webapp_views.dropq_compute.count, 1)
-
+        results = do_micro_sim(self.client, data, compute_count=1)
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         next_dropq_worker_offset = wnc.current_offset
 
@@ -99,25 +72,23 @@ class TaxBrainViewsTests(TestCase):
                                    [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
                                    "_II_em": [4333.0]}
                       }
-        check_posted_params(webapp_views.dropq_compute, truth_mods,
+        check_posted_params(results['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
         # reset worker node count without clearing MockCompute session
-        webapp_views.dropq_compute.reset_count()
-        pk = url[link_idx+1:-1]
-        response = self.client.post('/taxbrain/submit/{0}/'.format(pk),
-                                    {'csrfmiddlewaretoken':'abc123'})
-        self.assertEqual(response.status_code, 302)
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(response.url)
-        # Check for good response
-        self.assertEqual(response.status_code, 200)
-        # Check that we submit 10 jobs corresponding to 10 years of results
-        self.assertEqual(webapp_views.dropq_compute.count, NUM_BUDGET_YEARS)
+        results['tb_dropq_compute'].reset_count()
+        post_url = '/taxbrain/submit/{0}/'.format(results['pk'])
+        submit_data = {'csrfmiddlewaretoken':'abc123'}
+
+        results = do_micro_sim(
+            self.client,
+            submit_data,
+            compute_count=NUM_BUDGET_YEARS,
+            post_url=post_url
+        )
 
         # Check that data was saved properly
-        check_posted_params(webapp_views.dropq_compute, truth_mods,
+        check_posted_params(results['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
 
