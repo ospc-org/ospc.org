@@ -60,7 +60,7 @@ class TaxBrainViewsTests(TestCase):
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
-        results = do_micro_sim(self.client, data, compute_count=1)
+        result = do_micro_sim(self.client, data, compute_count=1)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         next_dropq_worker_offset = wnc.current_offset
@@ -73,15 +73,15 @@ class TaxBrainViewsTests(TestCase):
                                    [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
                                    "_II_em": [4333.0]}
                       }
-        check_posted_params(results['tb_dropq_compute'], truth_mods,
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
         # reset worker node count without clearing MockCompute session
-        results['tb_dropq_compute'].reset_count()
-        post_url = '/taxbrain/submit/{0}/'.format(results['pk'])
+        result['tb_dropq_compute'].reset_count()
+        post_url = '/taxbrain/submit/{0}/'.format(result['pk'])
         submit_data = {'csrfmiddlewaretoken':'abc123'}
 
-        results = do_micro_sim(
+        result = do_micro_sim(
             self.client,
             submit_data,
             compute_count=NUM_BUDGET_YEARS,
@@ -89,7 +89,7 @@ class TaxBrainViewsTests(TestCase):
         )
 
         # Check that data was saved properly
-        check_posted_params(results['tb_dropq_compute'], truth_mods,
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
 
@@ -105,7 +105,7 @@ class TaxBrainViewsTests(TestCase):
 
         post_url = '/taxbrain/file/'
 
-        results = do_micro_sim(
+        result = do_micro_sim(
             self.client,
             data,
             compute_count=1,
@@ -125,15 +125,15 @@ class TaxBrainViewsTests(TestCase):
             False
         )
         truth_mods = truth_mods["policy"]
-        check_posted_params(results["tb_dropq_compute"], truth_mods,
+        check_posted_params(result["tb_dropq_compute"], truth_mods,
                             str(START_YEAR))
 
         # reset worker node count without clearing MockCompute session
-        results['tb_dropq_compute'].reset_count()
-        post_url = '/taxbrain/submit/{0}/'.format(results['pk'])
+        result['tb_dropq_compute'].reset_count()
+        post_url = '/taxbrain/submit/{0}/'.format(result['pk'])
         submit_data = {'csrfmiddlewaretoken':'abc123'}
 
-        results = do_micro_sim(
+        result = do_micro_sim(
             self.client,
             submit_data,
             compute_count=NUM_BUDGET_YEARS,
@@ -141,7 +141,7 @@ class TaxBrainViewsTests(TestCase):
         )
 
         # Check that data was saved properly
-        check_posted_params(results['tb_dropq_compute'], truth_mods,
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
 
@@ -169,11 +169,19 @@ class TaxBrainViewsTests(TestCase):
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
 
-        do_micro_sim(
+        result = do_micro_sim(
             self.client,
             data,
             tb_dropq_compute=webapp_views.dropq_compute
         )
+
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
 
 
     def test_taxbrain_failed_job(self):
@@ -213,13 +221,13 @@ class TaxBrainViewsTests(TestCase):
         data[u'AMT_CG_brk2_cpi'] = u'False'
 
         result = do_micro_sim(self.client, data)
-
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
                                                                  START_YEAR)
         edit_page = self.client.get(edit_micro)
         self.assertEqual(edit_page.status_code, 200)
         cpi_flag = edit_page.context['form']['AMT_CG_brk2_cpi'].field.widget.attrs['placeholder']
         self.assertEqual(cpi_flag, False)
+
 
 
     def test_taxbrain_edit_benefitsurtax_switch_show_correctly(self):
@@ -283,7 +291,16 @@ class TaxBrainViewsTests(TestCase):
         mod = {u'II_brk1_0': [u'*, *, 15000'],
                u'II_brk2_cpi': u'False'}
         data.update(mod)
-        do_micro_sim(self.client, data)
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {'_II_brk2_cpi': False},
+                      START_YEAR + 2:
+                          {'_II_brk1': [[15000.0, 19064.03, 9532.01,
+                                         13646.37, 19064.03]]}
+                      }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
 
 
     def test_taxbrain_wildcard_params_with_validation_gives_error(self):
