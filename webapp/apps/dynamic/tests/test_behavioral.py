@@ -91,6 +91,7 @@ class DynamicBehavioralViewsTests(TestCase):
         # Do the microsim from file
         micro1 = do_micro_sim_from_file(self.client, START_YEAR,
                                         test_reform.reform_text)
+        micro1 = micro1["response"]
 
         # Do the partial equilibrium simulation based on the microsim
         be_reform = {u'BE_sub': [u'0.25']}

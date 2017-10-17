@@ -89,6 +89,7 @@ class DynamicElasticityViewsTests(TestCase):
         # Do the microsim from file
         micro1 = do_micro_sim_from_file(self.client, START_YEAR,
                                         test_reform.reform_text)
+        micro1 = micro1["response"]
 
         from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']

@@ -167,6 +167,7 @@ class DynamicOGUSAViewsTests(TestCase):
         fname = "../../taxbrain/tests/test_reform.json"
         micro1 = do_micro_sim_from_file(self.client, START_YEAR,
                                         test_reform.reform_text)
+        micro1 = micro1["response"]
         start_year = 2016
 
         # Do the partial equilibrium simulation based on the microsim
