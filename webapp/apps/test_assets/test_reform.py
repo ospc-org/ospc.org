@@ -323,7 +323,7 @@ test_coverage_json_assumptions = """
 }
 """
 
-test_coverage_map_back_to_tb = {
+map_back_to_tb = {
     u'_ID_BenefitSurtax_Switch_charity': 'ID_BenefitSurtax_Switch_6',
     '_ALD_InvInc_ec_base_RyanBrady': 'ALD_InvInc_ec_base_RyanBrady',
     u'_ID_BenefitSurtax_Switch_interest': 'ID_BenefitSurtax_Switch_5',
@@ -347,9 +347,11 @@ test_coverage_map_back_to_tb = {
     u'_ID_BenefitSurtax_Switch_medical': 'ID_BenefitSurtax_Switch_0',
     u'_ID_BenefitCap_Switch_interest': 'ID_BenefitCap_Switch_5',
     '_CTC_new_refund_limited': 'CTC_new_refund_limited',
-    u'_ID_BenefitCap_Switch_realestate': 'ID_BenefitCap_Switch_2'
+    u'_ID_BenefitCap_Switch_realestate': 'ID_BenefitCap_Switch_2',
+    u'_STD_single': 'STD_0',
+    u'_STD_headhousehold': 'STD_3',
+    u'_II_brk4_single': 'II_brk4_0'
 }
-
 
 test_coverage_exp_read_json_reform = {
     2017: {u'_EITC_rt': [[0.0765, 0.34, 1.0, 0.45]],

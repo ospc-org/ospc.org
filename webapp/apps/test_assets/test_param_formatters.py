@@ -10,10 +10,10 @@ from ..taxbrain.helpers import (get_default_policy_param_name, to_json_reform)
 from test_reform import (test_coverage_fields, test_coverage_reform,
                          test_coverage_json_reform,
                          test_coverage_json_assumptions,
-                         test_coverage_map_back_to_tb,
+                         map_back_to_tb,
                          test_coverage_exp_read_json_reform)
 
-from test_assumptions import assumptions_text
+from test_assumptions import assumptions_text, exp_assumptions_text
 
 START_YEAR = 2017
 
@@ -121,47 +121,47 @@ EXP_ERRORS_WARNINGS = {
     }
 }
 
-MAP_BACK_TO_TB = {
-    u'_STD_single': 'STD_0',
-    '_FICA_ss_trt': 'FICA_ss_trt',
-    u'_STD_headhousehold': 'STD_3',
-    u'_II_brk4_single': 'II_brk4_0',
-    u'_ID_BenefitSurtax_Switch_medical': 'ID_BenefitSurtax_Switch_0'
-}
 
 def test_parse_errors_warnings():
-    act = parse_errors_warnings(ERRORS_WARNINGS, MAP_BACK_TO_TB)
+    act = parse_errors_warnings(ERRORS_WARNINGS, map_back_to_tb)
     np.testing.assert_equal(EXP_ERRORS_WARNINGS, act)
 
 
 ###############################################################################
 # Test read_json_reform
+
+exp_reform_errors_warnings = {
+    2017:
+        {u'_II_brk4': [[500.0, 233350.0, 116675.0, 212500.0, 233350.0]],
+        u'_STD': [[7000.0, 12700.0, 6350.0, 10000.0, 12700.0]],
+        u'_ID_BenefitSurtax_Switch': [[True, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+        u'_FICA_ss_trt': [-1.0]},
+    2019: {u'_FICA_ss_trt': [0.1]},
+    2020: {u'_STD': [[7489.8, 13588.64, 6794.31, 150.0, 13588.64]]}
+}
+
 @pytest.mark.parametrize(
     ("test_reform,test_assump,map_back_to_tb,exp_reform,exp_assump,"
      "exp_errors_warnings"),
     [(test_coverage_json_reform, test_coverage_json_assumptions,
-      test_coverage_map_back_to_tb, test_coverage_exp_read_json_reform,
+      map_back_to_tb, test_coverage_exp_read_json_reform,
       json.loads(test_coverage_json_assumptions),
       {'errors': {}, 'warnings': {}}),
-      (test_coverage_json_reform, assumptions_text,
-        test_coverage_map_back_to_tb, test_coverage_exp_read_json_reform,
-        json.loads(assumptions_text),
-        {'errors': {}, 'warnings': {}}),
-     (REFORM_WARNINGS_ERRORS, test_coverage_json_assumptions, MAP_BACK_TO_TB,
-      False, json.loads(test_coverage_json_assumptions), ERRORS_WARNINGS)
+     (test_coverage_json_reform, assumptions_text,
+      map_back_to_tb, test_coverage_exp_read_json_reform,
+      exp_assumptions_text,
+      {'errors': {}, 'warnings': {}}),
+     (json.dumps(REFORM_WARNINGS_ERRORS), test_coverage_json_assumptions, map_back_to_tb,
+      exp_reform_errors_warnings, json.loads(test_coverage_json_assumptions), EXP_ERRORS_WARNINGS)
      ]
 )
 def test_read_json_reform(test_reform, test_assump, map_back_to_tb,
                           exp_reform, exp_assump, exp_errors_warnings):
-    exp_assump = json.loads(test_coverage_json_assumptions)
-    exp_errors_warnings = {'errors': {}, 'warnings': {}}
-
     act_reform, act_assump, act_errors_warnings = read_json_reform(
-        test_coverage_json_reform,
-        test_coverage_json_assumptions,
-        test_coverage_map_back_to_tb
+        test_reform,
+        test_assump,
+        map_back_to_tb
     )
-
-    np.testing.assert_equal(test_coverage_exp_read_json_reform, act_reform)
+    np.testing.assert_equal(exp_reform, act_reform)
     np.testing.assert_equal(exp_assump, act_assump)
     np.testing.assert_equal(exp_errors_warnings, act_errors_warnings)
