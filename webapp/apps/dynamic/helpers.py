@@ -257,8 +257,8 @@ def dynamic_params_from_model(model):
                                  "ogusa_parameters.json")
     with open(ogusa_params_path, "r") as f:
          OGUSA_PARAMS = json.load(f)
-
-    params = {k:inputs[k] for k in USER_MODIFIABLE_PARAMS}
+    defaults = {'world_int_rate': 0.4}
+    params = {k:inputs.get(k, defaults[k]) for k in USER_MODIFIABLE_PARAMS}
 
     for k, v in params.items():
         if v == '':

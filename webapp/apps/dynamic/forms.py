@@ -185,34 +185,40 @@ class DynamicElasticityInputsModelForm(ModelForm):
         exclude = ['creation_date']
         widgets = {}
         labels = {}
-        for param in ELASTICITY_DEFAULT_PARAMS.values():
-            for field in param.col_fields:
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': field.default_value,
-                }
+        _update_widgets(widgets, OGUSA_DEFAULT_PARAMS)
 
-                if param.coming_soon:
-                    attrs['disabled'] = True
-                    attrs['checked'] = False
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
-                else:
-                    widgets[field.id] = forms.TextInput(attrs=attrs)
 
-                labels[field.id] = field.label
+def _update_widgets(widgets, defaults):
+    boolean_fields = [
+        "world_int_rate"
+    ]
 
-            if param.inflatable:
-                field = param.cpi_field
-                attrs = {
-                    'class': 'form-control sr-only',
-                    'placeholder': bool(field.default_value),
-                }
+    for param in defaults.values():
+        for field in param.col_fields:
+            attrs = {
+                'class': 'form-control',
+                'placeholder': field.default_value,
+            }
 
-                if param.coming_soon:
-                    attrs['disabled'] = True
+            if param.tc_id in boolean_fields:
+                checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                widgets[field.id] = checkbox
+            else:
+                widgets[field.id] = forms.TextInput(attrs=attrs)
 
-                widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
+            labels[field.id] = field.label
 
+        if param.inflatable:
+            field = param.cpi_field
+            attrs = {
+                'class': 'form-control sr-only',
+                'placeholder': bool(field.default_value),
+            }
+
+            if param.coming_soon:
+                attrs['disabled'] = True
+
+            widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
 
 class DynamicBehavioralInputsModelForm(ModelForm):
 
@@ -380,33 +386,7 @@ class DynamicBehavioralInputsModelForm(ModelForm):
         exclude = ['creation_date']
         widgets = {}
         labels = {}
-        for param in BEHAVIOR_DEFAULT_PARAMS.values():
-            for field in param.col_fields:
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': field.default_value,
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-                    attrs['checked'] = False
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
-                else:
-                    widgets[field.id] = forms.TextInput(attrs=attrs)
-
-                labels[field.id] = field.label
-
-            if param.inflatable:
-                field = param.cpi_field
-                attrs = {
-                    'class': 'form-control sr-only',
-                    'placeholder': bool(field.default_value),
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
-                widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
+        _update_widgets(widgets, BEHAVIOR_DEFAULT_PARAMS)
 
 
 class DynamicInputsModelForm(ModelForm):
@@ -568,40 +548,12 @@ class DynamicInputsModelForm(ModelForm):
                                                    int_to_nth(i + 1),
                                                    source, mins[i]))
 
-
-
     class Meta:
         model = DynamicSaveInputs
         exclude = ['creation_date']
         widgets = {}
         labels = {}
-        for param in OGUSA_DEFAULT_PARAMS.values():
-            for field in param.col_fields:
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': field.default_value,
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-                    attrs['checked'] = False
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
-                else:
-                    widgets[field.id] = forms.TextInput(attrs=attrs)
-
-                labels[field.id] = field.label
-
-            if param.inflatable:
-                field = param.cpi_field
-                attrs = {
-                    'class': 'form-control sr-only',
-                    'placeholder': bool(field.default_value),
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
-                widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
+        _update_widgets(widgets, OGUSA_DEFAULT_PARAMS)
 
 
 def has_field_errors(form):
