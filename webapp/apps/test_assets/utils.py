@@ -7,9 +7,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
-def get_dropq_compute_from_module(module_import_path, num_times_to_wait=None):
+def get_dropq_compute_from_module(module_import_path, num_times_to_wait=None,
+                                  MockComputeObj=MockCompute):
     module_views = sys.modules[module_import_path]
-    module_views.dropq_compute = MockCompute(
+    module_views.dropq_compute = MockComputeObj(
         num_times_to_wait=num_times_to_wait
     )
     return module_views.dropq_compute

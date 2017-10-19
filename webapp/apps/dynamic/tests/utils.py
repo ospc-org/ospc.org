@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.test import Client
 import mock
 import os
+import sys
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -15,6 +16,7 @@ import taxcalc
 from taxcalc import Policy
 
 from ...test_assets import *
+from ...test_assets.utils import get_dropq_compute_from_module, do_micro_sim
 
 START_YEAR = u'2016'
 
@@ -79,10 +81,8 @@ def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_Y
 def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
                  increment=0, exp_status_code=302):
 
-    import sys
-    from webapp.apps.taxbrain import views
-    webapp_views = sys.modules['webapp.apps.taxbrain.views']
-    webapp_views.dropq_compute = MockCompute()
+    get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
     from webapp.apps.dynamic import views
     dynamic_views = sys.modules['webapp.apps.dynamic.views']
     dynamic_views.dynamic_compute = MockDynamicCompute(increment=increment)
