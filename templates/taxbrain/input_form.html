@@ -118,9 +118,27 @@
 
               <div class="inputs-block inputs-block-intro">
                 <div class="inputs-block-header">
-                  {% flatblock "taxbrain_above_get_started_blurb" %}
                   <h1 id="get-started">Get Started</h1>
-                  {% flatblock "taxbrain_get_started_blurb" %}
+                  <h3>User tips</h3>
+
+                  <ul>
+                  <li> By default, the policy parameter boxes contain Start Year values. You can change the Start Year of the analysis in the upper left.</li>
+                  <li>Toggle the <strong>CPI</strong> control to indicate whether a parameter should be adjusted for inflation. </li>
+                  <li>Enter comma-separated values into a field to indicate the multiple years of tax law.
+                  <strong>DO NOT</strong> use commas as thousands separators. </li>
+                  <li> Express rates as decimals. </li>
+                  <li>You can represent a value that would otherwise manifest itself in a year with the <strong>*</strong> operator. So, for example, if you enter <strong>0.1, *, 0.2</strong> in a tax rate field, the rate will be 10 percent in the Start Year, 10 percent a year after the Start Year, and 20 percent two years after the Start Year and forward. If you enter <strong>100, *, 200</strong> in a CPI-indexed field for a credit amount, the credit will be $100 in the Start Year, $100*(1+CPI) the next year, and $200 the following year.</li>
+                  <li> <a href = "//ospc.org/docs" target="_blank">Read the Docs</a> </li>
+                  <li> <a href = "//docs.google.com/forms/d/e/1FAIpQLSfvKEsQZNe9_16FhKNZcEyv3C8qXZhBfrqLxSd4VR97w92moQ/viewform" target="_blank">Leave Feedback</a> </li>
+                  </ul>
+                  <h3>Presets: key provisions from newsworthy proposals</h3>
+                  <ul>
+                  <li>Clinton 2016 Campaign (<a href = "//www.ospc.org/taxbrain/edit/11179/?start_year=2017" target="_blank">Reform</a>,  <a href = "//docs.google.com/document/d/1B3VhYhOtDRR5Q613vyiV236TOmqvnn29E9APYk-mll4/edit?usp=sharing" target="_blank">Notes</a>)</li>
+                  <li>Brady-Ryan Plan (<a href = "//www.ospc.org/taxbrain/edit/13337/?start_year=2017" target="_blank">Reform</a>,  <a href = "//docs.google.com/document/d/1ZWePr-l-KaLOf8RPt3dbfAkiK-dzztYqs711BtfeS_c/edit?usp=sharing" target="_blank">Notes</a>)</li>
+                  <li>Trump 2016 Campaign (<a href = "//www.ospc.org/taxbrain/edit/11178/?start_year=2017" target="_blank">Reform</a>,  <a href = "//docs.google.com/document/d/1QicaAeWdSgwGEWWRxIkjegyAq4lakoMklFhVHzwIukM/edit?usp=sharing" target="_blank">Notes</a>)</li>
+                  <li>2017 Trump Administration (<a href = "//www.ospc.org/taxbrain/edit/11522/?start_year=2017" target="_blank">Reform</a>,  <a href = "//docs.google.com/document/d/1Cum1NU6nP_a0v3-Ro7MKJYeNkaBeGRKKqBrTnAqi0_Q/edit?usp=sharing" target="_blank">Notes</a>)</li>
+                  </ul>
+
                   <div>
                     You are looking at default parameters for {{start_year}}.
                     <!--
