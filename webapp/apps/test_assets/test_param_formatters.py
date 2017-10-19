@@ -3,8 +3,7 @@ import pytest
 import taxcalc
 import numpy as np
 
-from ..taxbrain.views import (parse_errors_warnings, read_json_reform,
-                              get_reform_from_gui, get_reform_from_file)
+from ..taxbrain.views import get_reform_from_gui, get_reform_from_file
 from ..taxbrain.helpers import (get_default_policy_param_name, to_json_reform)
 
 from test_reform import (test_coverage_fields, test_coverage_reform,
