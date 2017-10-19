@@ -44,15 +44,17 @@ def test_get_default_policy_param_name_failing0(param, default_params_Policy):
 
 def test_get_default_policy_param_name_failing1(default_params_Policy):
     param = "ID_BenefitSurtax_Switch_idx"
-    match="Parsing {0}: Index {0} not in range".format(param, "idx")
+    match = "Parsing {}: Expected integer for index but got {}".format(param, "idx")
     with pytest.raises(ValueError, match=match):
         get_default_policy_param_name(param, default_params_Policy)
 
 
 def test_get_default_policy_param_name_failing2(default_params_Policy):
     param = "ID_BenefitSurtax_Switch_12"
-    match="Parsing {}: Expected integer for index but got {}".format(param, "12")
-    with pytest.raises(ValueError, match=match):
+    # comment out "(" since this is treated as a regexp string
+    match = "Parsing {}: Index {} not in range \({}, {}\)"
+    match = match.format(param, 12, 0, 7)
+    with pytest.raises(IndexError, match=match):
         get_default_policy_param_name(param, default_params_Policy)
 
 ###############################################################################
