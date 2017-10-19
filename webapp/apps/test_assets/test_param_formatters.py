@@ -27,6 +27,10 @@ def default_params_Policy():
 
 ###############################################################################
 # Test get_default_policy_param_name
+# 3 Cases for search success:
+#   1. "_" + param name
+#   2. "_" + param name + index name (i.e. STD_0 --> _STD_single)
+#   3. "_" + param name minus "_cpi"
 @pytest.mark.parametrize("param,exp_param",
                          [("FICA_ss_trt", "_FICA_ss_trt"),
                           ("ID_BenefitSurtax_Switch_0", "_ID_BenefitSurtax_Switch_medical"),
@@ -37,12 +41,19 @@ def test_get_default_policy_param_name_passing(param, exp_param, default_params_
 
 @pytest.mark.parametrize("param", ["CG_brk3_extra_cpi", "not_a_param"])
 def test_get_default_policy_param_name_failing0(param, default_params_Policy):
+    """
+    Check that non-recognized parameters throw a ValueError
+    """
     match="Received unexpected parameter: {0}".format(param)
     with pytest.raises(ValueError, match=match):
         get_default_policy_param_name(param, default_params_Policy)
 
 
 def test_get_default_policy_param_name_failing1(default_params_Policy):
+    """
+    Check that parameter with non-integer characters after the final '_'
+    throws ValueError
+    """
     param = "ID_BenefitSurtax_Switch_idx"
     match = "Parsing {}: Expected integer for index but got {}".format(param, "idx")
     with pytest.raises(ValueError, match=match):
@@ -50,6 +61,10 @@ def test_get_default_policy_param_name_failing1(default_params_Policy):
 
 
 def test_get_default_policy_param_name_failing2(default_params_Policy):
+    """
+    Check that parameter with correct name but out of bounds index throws
+    IndexError
+    """
     param = "ID_BenefitSurtax_Switch_12"
     # comment out "(" since this is treated as a regexp string
     match = "Parsing {}: Index {} not in range \({}, {}\)"
@@ -59,6 +74,9 @@ def test_get_default_policy_param_name_failing2(default_params_Policy):
 
 ###############################################################################
 # Test to_json_reform
+# 2 Cases:
+#   1. Fields do not cause errors
+#   2. Fields cause errors
 @pytest.mark.parametrize(
     ("fields,exp_reform"),
     [(test_coverage_fields, test_coverage_reform),
@@ -77,6 +95,10 @@ def test_parse_errors_warnings():
 
 ###############################################################################
 # Test read_json_reform
+# 3 Cases:
+#   1. Reform does not throw errors and no behavior assumptions are made
+#   2. Reform does not throw errors and behavior assumptions are made
+#   3. Reform throws errors and warnings and behavior assumptions are not made
 @pytest.mark.parametrize(
     ("test_reform,test_assump,map_back_to_tb,exp_reform,exp_assump,"
      "exp_errors_warnings"),

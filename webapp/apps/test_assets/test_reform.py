@@ -158,6 +158,24 @@ warning_reform = """
 }
 """
 
+"""
+    ********************************************************************
+    The following objects were created for test_param_formatters.py.
+
+    fields_base -- typical metadata associated with TaxBrain run
+
+    test_coverage_* objects -- these objects do not throw TC warnings or errors
+        but include a representative for each type of TC parameter in
+        current_law_policy.json
+
+    errors_warnings_* -- these objects do throw warnings and errors and include
+        a mostly representative set of TC parameters
+
+    map_back_to_tb -- required for mapping Tax-Calculator styled parameter
+        names to TaxBrain styled names
+    ********************************************************************
+"""
+
 fields_base = {
     '_state': "<django.db.models.base.ModelState object at 0x10c764950>",
     'creation_date': "datetime.datetime(2015, 1, 1, 0, 0)",
