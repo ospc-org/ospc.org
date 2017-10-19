@@ -34,7 +34,7 @@ def default_params_Policy():
                           ("CG_brk3_cpi", "_CG_brk3_cpi")])
 def test_get_default_policy_param_name_passing(param, exp_param, default_params_Policy):
     act_param = get_default_policy_param_name(param, default_params_Policy)
-    assert act_param == exp_param
+    np.testing.assert_equal(act_param, exp_param)
 
 @pytest.mark.parametrize("param", ["CG_brk3_extra_cpi", "not_a_param"])
 def test_get_default_policy_param_name_failing0(param, default_params_Policy):
@@ -65,8 +65,6 @@ def test_get_default_policy_param_name_failing2(default_params_Policy):
 )
 def test_to_json_reform(fields, exp_reform):
     act, _ = to_json_reform(fields, START_YEAR)
-    print(exp_reform)
-    print(act)
     np.testing.assert_equal(act, exp_reform)
 
 ###############################################################################
