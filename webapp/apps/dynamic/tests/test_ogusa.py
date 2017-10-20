@@ -42,16 +42,16 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
+        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42']}
         ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform, start_year)
-        orig_micro_model_num = micro_2015.url[-2:-1]
 
         # Do a 2016 microsim
-        micro_2016 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
         start_year = 2016
+        data['start_year'] = unicode(start_year)
+        micro_2016 = do_micro_sim(self.client, data, dyn_dropq_compute=False)
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.43']}
         ogusa_response2 = do_ogusa_sim(self.client, micro_2016, ogusa_reform, start_year, increment=1)
@@ -71,7 +71,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, data)["response"]
+        micro_2015 = do_micro_sim(self.client, data)
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42']}
@@ -80,7 +80,7 @@ class DynamicOGUSAViewsTests(TestCase):
                                       start_year, exp_status_code=ogusa_status_code)
 
         msg = 'Dynamic simulation must have an email address to send notification to!'
-        assert ogusa_response.content == msg
+        assert ogusa_response["response"].content == msg
 
 
     def test_ogusa_not_logged_with_email_succeeds(self):
@@ -90,7 +90,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
+        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42'], u'user_email': 'test@example.com'}
@@ -105,7 +105,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2016 microsim
-        micro_2016 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
+        micro_2016 = do_micro_sim(self.client, data, dyn_dropq_compute=False)
 
         # Do the ogusa simulation based on this microsim
         FRISCH_PARAM = u'0.49'
@@ -113,9 +113,7 @@ class DynamicOGUSAViewsTests(TestCase):
         ogusa_response = do_ogusa_sim(self.client, micro_2016, ogusa_reform,
                                       start_year)
 
-        last_slash_idx = ogusa_response.url[:-1].rfind('/')
-        model_num = int(ogusa_response.url[last_slash_idx+1:-1])
-        dsi = DynamicSaveInputs.objects.get(pk=model_num)
+        dsi = DynamicSaveInputs.objects.get(pk=ogusa_response["ogusa_pk"])
         ans = dynamic_params_from_model(dsi)
         assert ans[u'frisch'] == FRISCH_PARAM
         assert ans[u'g_y_annual'] == u'0.03'
@@ -137,7 +135,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
+        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)
 
         #Assert the the worker node index has been reset to 0
         onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
@@ -166,16 +164,13 @@ class DynamicOGUSAViewsTests(TestCase):
         # Do the microsim from file
         data = get_file_post_data(start_year, test_reform.reform_text)
         micro1 = do_micro_sim(self.client, data, post_url='/taxbrain/file/')
-        micro1 = micro1["response"]
 
         # Do the partial equilibrium simulation based on the microsim
         ogusa_reform = {u'frisch': [u'0.43']}
         ogusa_response = do_ogusa_sim(self.client, micro1, ogusa_reform,
                                       start_year)
 
-        last_slash_idx = ogusa_response.url[:-1].rfind('/')
-        model_num = int(ogusa_response.url[last_slash_idx+1:-1])
-        dsi = DynamicSaveInputs.objects.get(pk=model_num)
+        dsi = DynamicSaveInputs.objects.get(pk=ogusa_response["ogusa_pk"])
         ans = dynamic_params_from_model(dsi)
         assert ans[u'frisch'] == u'0.43'
         assert ans[u'g_y_annual'] == u'0.03'

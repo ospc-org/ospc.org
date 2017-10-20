@@ -78,11 +78,10 @@ def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_Y
     return response
 
 
-def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
+def do_ogusa_sim(client, microsim_res, ogusa_reform, start_year,
                  increment=0, exp_status_code=302):
 
-    get_dropq_compute_from_module('webapp.apps.taxbrain.views')
-    get_dropq_compute_from_module(
+    ogusa_dropq_compute = get_dropq_compute_from_module(
         'webapp.apps.dynamic.views',
         attr='dynamic_compute',
         MockComputeObj=MockDynamicCompute,
@@ -90,14 +89,14 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
     )
 
     # Go to the dynamic landing page
-    idx = microsim_response.url[:-1].rfind('/')
-    model_num = microsim_response.url[idx+1:-1]
-    dynamic_landing = '/dynamic/{0}/?start_year={1}'.format(model_num, start_year)
+    dynamic_landing = '/dynamic/{0}/?start_year={1}'.format(microsim_res["pk"],
+                                                            start_year)
     response = client.get(dynamic_landing)
     assert response.status_code == 200
 
     # Go to OGUSA input page
-    dynamic_ogusa = '/dynamic/ogusa/{0}/?start_year={1}'.format(model_num, start_year)
+    dynamic_ogusa_temp = '/dynamic/ogusa/{0}/?start_year={1}'
+    dynamic_ogusa = dynamic_ogusa_temp.format(microsim_res["pk"], start_year)
 
     response = client.get(dynamic_ogusa)
     assert response.status_code == 200
@@ -105,4 +104,13 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
     # Submit the OGUSA job submission
     response = client.post(dynamic_ogusa, ogusa_reform)
     assert response.status_code == exp_status_code
-    return response
+    ogusa_pk = None
+    idx = None
+    if exp_status_code == 302:
+        idx = response.url[:-1].rfind('/')
+        ogusa_pk = response.url[idx+1:-1]
+
+    return {"response": response,
+            "ogusa_dropq_compute": ogusa_dropq_compute,
+            "ogusa_pk": ogusa_pk,
+            "microsim_res": microsim_res}
