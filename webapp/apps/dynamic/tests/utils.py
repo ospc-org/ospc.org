@@ -82,10 +82,12 @@ def do_ogusa_sim(client, microsim_response, ogusa_reform, start_year,
                  increment=0, exp_status_code=302):
 
     get_dropq_compute_from_module('webapp.apps.taxbrain.views')
-
-    from webapp.apps.dynamic import views
-    dynamic_views = sys.modules['webapp.apps.dynamic.views']
-    dynamic_views.dynamic_compute = MockDynamicCompute(increment=increment)
+    get_dropq_compute_from_module(
+        'webapp.apps.dynamic.views',
+        attr='dynamic_compute',
+        MockComputeObj=MockDynamicCompute,
+        increment=increment
+    )
 
     # Go to the dynamic landing page
     idx = microsim_response.url[:-1].rfind('/')

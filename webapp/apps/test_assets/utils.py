@@ -7,11 +7,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
-def get_dropq_compute_from_module(module_import_path,
+def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
                                   MockComputeObj=MockCompute, **mc_args):
     module_views = sys.modules[module_import_path]
-    module_views.dropq_compute = MockComputeObj(**mc_args)
-    return module_views.dropq_compute
+    setattr(module_views, attr, MockComputeObj(**mc_args))
+    return getattr(module_views, attr)
 
 def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
                  compute_count=None, post_url='/taxbrain/'):

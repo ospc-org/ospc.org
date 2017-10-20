@@ -42,7 +42,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, data)["response"]
+        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42']}
@@ -50,7 +50,7 @@ class DynamicOGUSAViewsTests(TestCase):
         orig_micro_model_num = micro_2015.url[-2:-1]
 
         # Do a 2016 microsim
-        micro_2016 = do_micro_sim(self.client, data)["response"]
+        micro_2016 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
         start_year = 2016
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.43']}
@@ -90,7 +90,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, data)["response"]
+        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {u'frisch': [u'0.42'], u'user_email': 'test@example.com'}
@@ -105,7 +105,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2016 microsim
-        micro_2016 = do_micro_sim(self.client, data)["response"]
+        micro_2016 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
 
         # Do the ogusa simulation based on this microsim
         FRISCH_PARAM = u'0.49'
@@ -137,7 +137,7 @@ class DynamicOGUSAViewsTests(TestCase):
         data = get_post_data(start_year)
 
         # Do a 2015 microsim
-        micro_2015 = do_micro_sim(self.client, data)["response"]
+        micro_2015 = do_micro_sim(self.client, data, dyn_dropq_compute=False)["response"]
 
         #Assert the the worker node index has been reset to 0
         onc, created = OGUSAWorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
