@@ -36,8 +36,10 @@ from redeploy import cli as deploy_versions_cli, main as reset_server_main
 DEPLOYMENT_VERSIONS_ARGS = deploy_versions_cli(ip_address='skip')
 if not 'OSPC_ANACONDA_TOKEN' in os.environ:
     raise ValueError('OSPC_ANACONDA_TOKEN must be defined in env vars')
-check_unmodified()
-#based on https://github.com/ContinuumIO/wakari-deploy/blob/master/ami_creation/fabfile.py
+
+if not os.environ.get("ALLOW_UNCOMMITTED", None) == 'True':
+    check_unmodified()
+
 ssh_transport = logging.getLogger("ssh.transport")
 ssh_transport.disabled = True
 log = logging.getLogger(__name__)
@@ -322,7 +324,6 @@ if 'quitafterec2spinup' in sys.argv:
     quit()
 
 
-key_file = str(key_filename)
 fqdns = [str(instance.public_dns_name) for instance in instances]
 env.hosts = [fqdn for fqdn in fqdns]
 env.user = 'ubuntu'
