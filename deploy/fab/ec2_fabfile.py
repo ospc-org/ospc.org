@@ -81,6 +81,7 @@ env.connection_attempts = True
 env.timeout = 50
 
 KEYNAME = "{}-aei-dropq-{}".format(AMI_ID,os.environ.get('USER', 'ospc'))
+KEYFILE = "./" + KEYNAME + ".pem"
 SECURITY_GROUP = 'dropq-iam-group'
 NODE_COUNT = int(os.environ.get('WORKER_NODE_COUNT', 1))
 
@@ -310,11 +311,10 @@ else:
     instances = create_box()
     public_dns_names = []
     ip_addresses = []
-    keyfile = "./" + KEYNAME + ".pem"
     for instance in instances:
         print("trying this instance :", instance)
-        subprocess.check_output(['cp', keyfile,
-                                os.path.join(os.path.dirname(keyfile), 'ec2-{}.pem'.format(instance.ip_address))])
+        subprocess.check_output(['cp', KEYFILE,
+                                os.path.join(os.path.dirname(KEYFILE), 'ec2-{}.pem'.format(instance.ip_address))])
         public_dns_names.append(instance.public_dns_name)
         ip_addresses.append(instance.ip_address)
 
@@ -327,8 +327,8 @@ fqdns = [str(instance.public_dns_name) for instance in instances]
 env.hosts = [fqdn for fqdn in fqdns]
 env.user = 'ubuntu'
 env.password = ''
-env.key_file = key_file
-env.key_filename = key_file
+env.key_file = KEYFILE
+env.key_filename = KEYFILE
 # forward ssh agent -- equivalent of ssh -A
 env.forward_agent = True
 
