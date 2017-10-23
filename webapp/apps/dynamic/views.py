@@ -45,7 +45,8 @@ from .helpers import (default_parameters, job_submitted,
                       failure_text, normalize, denormalize, strip_empty_lists,
                       cc_text_finished, cc_text_failure, dynamic_params_from_model,
                       send_cc_email, default_behavior_parameters,
-                      elast_results_to_tables, default_elasticity_parameters)
+                      elast_results_to_tables, default_elasticity_parameters,
+                      filter_ogusa_only)
 
 from .compute import DynamicCompute
 
@@ -115,12 +116,18 @@ def dynamic_input(request, pk):
 
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
-            print(reform_dict)
-            print(worker_data)
+
+            ogusa_params = filter_ogusa_only(worker_data)
+            data = {
+                'taxio_format': True,
+                'first_budget_year': int(start_year),
+                'ogusa_params': json.dumps(ogusa_params),
+                'user_mods': json.dumps(reform_dict),
+                'first_year': int(start_year)
+            }
+
             submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(
-                worker_data,
-                int(start_year),
-                reform_dict
+                data
             )
 
             # TODO: use OutputUrl class
