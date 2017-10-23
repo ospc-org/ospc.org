@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 import mock
 import os
 import pytest
+import json
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -174,3 +175,42 @@ class DynamicOGUSAViewsTests(TestCase):
         ans = dynamic_params_from_model(dsi)
         assert ans[u'frisch'] == u'0.43'
         assert ans[u'g_y_annual'] == u'0.03'
+
+
+    def test_static_parameters_saved(self):
+        """
+        Check that static parameters are not changed
+        """
+        self.client.login(username='temporary', password='temporary')
+        start_year = 2017
+        data = get_post_data(start_year)
+        del data[u'ID_BenefitSurtax_Switch_0']
+        del data[u'ID_BenefitSurtax_Switch_4']
+        del data[u'ID_BenefitSurtax_Switch_6']
+        data[u'II_em'] = [u'4333']
+        data[u'EITC_rt_0'] = [u'1.2']
+        # data[u'ID_Charity_c_cpi'] = u'False'
+
+        micro_sim = do_micro_sim(self.client, data, dyn_dropq_compute=False)
+        ogusa_reform = {u'frisch': [u'0.42']}
+        ogusa_sim = do_ogusa_sim(self.client, micro_sim, ogusa_reform, start_year)
+
+        last_posted = ogusa_sim["ogusa_dropq_compute"].last_posted
+
+        ogusa_params = json.loads(last_posted["ogusa_params"])
+        assert ogusa_params["frisch"] == 0.42
+
+        user_mods = json.loads(last_posted["user_mods"])
+        reform = json.loads(user_mods['reform'])
+        assert (
+            reform["2017"]["_ID_BenefitSurtax_Switch"] == [[0.0, 1.0, 1.0, 1.0,
+                                                            0.0, 1.0, 0.0]]
+        )
+        assert reform["2017"]['_II_em'] == [4333.0]
+        assert reform["2017"]['_EITC_rt'][0][0] == 1.2
+
+        assump = json.loads(user_mods['assumptions'])
+        assump_keys = ["growdiff_response", "consumption", "behavior",
+                       "growdiff_baseline"]
+        for assump_key in assump_keys:
+            assert assump[assump_key] == {}
