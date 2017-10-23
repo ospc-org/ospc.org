@@ -89,17 +89,15 @@ def dynamic_input(request, pk):
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
-            #Can't proceed if there is no email address
+            # Can't proceed if there is no email address
             if not (request.user.is_authenticated() or model.user_email):
-               msg = 'Dynamic simulation must have an email address to send notification to!'
-               return HttpResponse(msg, status=403)
-
-            curr_dict = dict(model.__dict__)
-            for key, value in curr_dict.items():
-                print "got this ", key, value
+                msg = ("Dynamic simulation must have an email "
+                       "address to send notification to!")
+                return HttpResponse(msg, status=403)
 
             # get macrosim data from form
-            worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
+            curr_dict = dict(model.__dict__)
+            worker_data = parse_fields(curr_dict)
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -108,35 +106,23 @@ def dynamic_input(request, pk):
             submitted_ids = None
 
             if not taxbrain_model.json_text:
-                taxbrain_dict = dict(taxbrain_model.__dict__)
-                growth_fixup(taxbrain_dict)
-                for key, value in taxbrain_dict.items():
-                    if type(value) == type(unicode()):
-                        try:
-                            taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
-                        except ValueError:
-                            taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
-                    else:
-                        print "missing this: ", key
+                (reform_dict, _, _, _,
+                    errors_warnings) = get_reform_from_gui(
+                        request,
+                        taxbrain_model=taxbrain_model,
+                        behavior_model=None
+                )
 
-
-                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
-
-                #Don't need to pass around the microsim results
-                if 'tax_result' in microsim_data:
-                    del microsim_data['tax_result']
-
-                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
-
-                # start calc job
-                submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
             else:
-                microsim_data = {"reform": taxbrain_model.json_text.reform_text, "assumptions": taxbrain_model.json_text.assumption_text}
-                # start calc job
-                submitted_ids, guids = dynamic_compute.submit_json_ogusa_calculation(worker_data,
-                                                                         int(start_year),
-                                                                         microsim_data,
-                                                                         pack_up_user_mods=False)
+                reform_dict = json.loads(taxbrain_model.json_text.reform_text)
+            print(reform_dict)
+            print(worker_data)
+            submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(
+                worker_data,
+                int(start_year),
+                reform_dict
+            )
+
             # TODO: use OutputUrl class
             if submitted_ids:
                 model.job_ids = denormalize(submitted_ids)

@@ -33,25 +33,13 @@ class DynamicCompute(DropqCompute):
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
 
-    def submit_json_ogusa_calculation(self, ogusa_mods, first_budget_year,
-                                      microsim_data, pack_up_user_mods):
-        return self.submit_ogusa_calculation(ogusa_mods, first_budget_year,
-                                             microsim_data, pack_up_user_mods=False)
-
-    def submit_ogusa_calculation(self, ogusa_mods, first_budget_year, microsim_data,
-                                 pack_up_user_mods=True):
-
+    def submit_ogusa_calculation(self, ogusa_mods, first_budget_year, microsim_data):
         print "mods is ", ogusa_mods
         ogusa_params = filter_ogusa_only(ogusa_mods)
         data = {}
-        if pack_up_user_mods:
-            microsim_params = package_up_vars(microsim_data, first_budget_year)
-            microsim_params = {first_budget_year:microsim_params}
-            print "microsim data is", microsim_params
-        else:
-            data['taxio_format'] = True
-            data['first_budget_year'] = first_budget_year
-            microsim_params = microsim_data
+        data['taxio_format'] = True
+        data['first_budget_year'] = first_budget_year
+        microsim_params = microsim_data
 
 
         print "submit dynamic work"
