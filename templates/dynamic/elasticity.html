@@ -19,7 +19,6 @@
           <h2 class="sr-only">TaxBrain</h2>
           <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
         </div>
-        {% flatblock "elastic_dynamic_subheader" %}
         <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
         <div class="what-is">
           <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
@@ -74,7 +73,25 @@
               <div id="get-started" class="inputs-block inputs-block-intro">
                 <div class="inputs-block-header">
                   <h1>Macroeconomic Elasticities</h1>
-                 {% flatblock "dynamic_elasticity_get_started_blurb" %}
+                  <p>This approach harnesses econometric estimates of the historic relationship between tax policy and the macroeconomy to predict the effect of tax reforms on growth.</p>
+
+                 <p>In particular, this model relies on estimates of how GDP responds to changes in the average after tax rate on wage income across all taxpayers (one minus the average marginal tax rate, or 1 - AMTR). These estimates are derived from calculations of income-weighted marginal tax rates under the baseline and reform using Tax-Calculator with baseline data from TaxData. An example of the implementation is available <a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/macro_elasticity.py" target = "blank">here.</a></p>
+
+                 <p> Evidence for this parameter can be found in Barro and Redlick's <a href = //qje.oxfordjournals.org/content/126/1/51.abstract target="_blank"> "Macroeconomic Effects from Government Purchases and Taxes." </a> In particular, Barro and Redlick find that a 1 percentage point increase in the AMTR leads to a 0.54 percent increase in GDP. Evaluated at the sample mean, this translates to an elasticity of GDP with respect to the average after tax rate of 0.36. </p>
+
+                 <p>Karel Mertens' <a href = "//mertens.economics.cornell.edu/papers/MTRI_september2015.pdf" target = "_blank">"Marginal Tax Rates and Income: New Time Series Evidence" </a> contains additional evidence, focused on tax cuts affecting the upper part of the income distribution.</p>
+
+                 <p>Both Mertens and Karel tentatively conclude that the effect stems from marginal rather than average tax rates.</p>
+
+
+                 <p><strong>
+                 Core Maintainer (Macro elasticity modeling)*:
+                 <ul style = "list-style-type:none">
+                 <li>- <a href = "https://www.aei.org/scholar/matthew-h-jensen/" target = "blank" >Matt Jensen, AEI</a></li>
+                 </ul>
+                 </strong></p>
+
+                 *This member reviews open source contributions relevant to the macro elasticity modeling portions of the Tax-Calculator repository.
                   <div>
                     You are looking at default parameters for {{start_year}}.
                   </div>

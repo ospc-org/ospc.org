@@ -74,7 +74,28 @@
               <div id="get-started" class="inputs-block inputs-block-intro">
                 <div class="inputs-block-header">
                   <h1>Partial Equilibrium Simulation</h1>
-                 {% flatblock "dynamic_behavior_get_started_blurb" %}
+                  <p>The partial equilibrium (PE) model answers the question "How would taxpayer behavior (income and deductions) influence the estimate if all other prices in the economy could stay the same?"  It relies on estimates of the elasticity of taxable income with respect to tax policy and is useful for summarizing the power and direction of a reform's effect on the economy.</p>
+
+                 <p>The actual effects of a tax policy would generally differ from that predicted by the PE model in a manner that depends on other elasticities and legislative changes. In particular the elasticity of demand for labor, deductible goods, savings, investment, monetary policy, and other factors will moderate the outcome. Because the PE model does not include those effects, it is not a reliable estimate of a tax policy's full effects.</p>
+
+                 <p> John Creedy's <a href="http://www.victoria.ac.nz/sacl/centres-and-institutes/cagtr/twg/publications/5-the-elasticity-of-taxable-income-johncreedy.pdf" target="_blank"> "The Elasticity of Taxable Income: A Non-Technical Summary" </a> shows how to use the PE behavioral responses for determining the efficiency effect of a tax reform. In <a href="http://www.nber.org/papers/w15012" target="_blank"> "The Elasticity of Taxable Income with Respect to Marginal Tax Rates: A Critical Review," </a> Saez, Slemrod and Giertz review various  estimates of the critical parameters. The Joint Committee on Taxation (JCT) and Congressional Budget Office (CBO) estimate the persistent capital gains elasticity in their <a href="https://www.jct.gov/publications.html?func=startdown&id=4472" target="_blank"> "New Evidence on the Tax Elasticity of Capital Gains"</a>, although it must be converted to a semi-elasticity for use in TaxBrain</p>
+
+                 <p>The PE approach is similar to the "conventional" modeling conducted by government agencies for the budgeting process in that both approaches allow for taxpayers to change their behavior in response to policy reforms. The difference is that the PE model allows those behavioral changes to influence Gross National Product (GNP), whereas JCT and the Office of Tax Analysis (OTA) at the Treasury Department hold GNP fixed.</p>
+
+                 <p> The PE model is implemented by applying the behavioral elasticities at the individual taxpayer level. The source code for the implementation is available in the <a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/behavior.py" target="_blank"> behavior module </a> of the open source <a href = "https://github.com/open-source-economics/Tax-Calculator/" target="_blank"> Tax-Calculator model</a> .
+                 </p>
+
+
+                 <p><strong>
+                 Core Maintainers (PE modeling)*:
+                 <ul style = "list-style-type:none">
+                 <li>- <a href = "http://www.nber.org/people/daniel_feenberg" target = "blank" >Dan Feenberg, NBER</a></li>
+                 <li>- <a href = "https://www.aei.org/scholar/matthew-h-jensen/" target = "blank" >Matt Jensen, AEI</a></li>
+                 <li>- <a href = "https://github.com/Amy-Xu" target = "blank" >Amy Xu, AEI</a></li>
+                 </ul>
+                 </strong></p>
+
+                 <p>*These members review open source contributions to the sections of the Tax-Calculator repository relevant to PE modeling. </p>
                   <div>
                     You are looking at default parameters for {{start_year}}.
                   </div>

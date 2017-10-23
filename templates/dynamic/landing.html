@@ -51,7 +51,14 @@
         <div id="get-started" class="inputs-block inputs-block-intro">
           <div class="inputs-block-header">
             <h1>Choose a Dynamic Simulation Type</h1>
-           {% flatblock "dynamic_landing_blurb" %}
+            <p>In the context of policy analysis, dynamic modeling incorporates behavior that affects the aggregate output of the economy. This broad definition includes nearly every type of economic analysis except for the approach most often used in the analysis of tax and spending policy proposals by agencies in the federal government. </p>
+
+            <p> There is no single "accepted" way to estimate the dynamic effects of policy reforms, so TaxBrain is designed to encourage users to try several approaches and to grapple seriously with the limitations and tradeoffs of each approach. Please pay close attention to the descriptions of each model and send a message to the TaxBrain community mailing list if you have questions. You can join the mailing list at <a href = '//list.ospc.org/mailman/listinfo/users_list.ospc.org' target="_blank">list.ospc.org/mailman/listinfo/users_list.ospc.org</a>. </p>
+
+            <p>The open source project maintainers are working hard to expand the capabilities of these models and would appreciate a hand if there are limitations that frustrate you. </p>
+
+            <p> Finally, if you are an economist with a dynamic model that you would like to make available on TaxBrain, please write to the mailing list or leave a note at <a href = '//ospc.org/hello' target="_blank">ospc.org/hello</a>.</p>
+
           </div>
         </div>
         <div class="inputs-block-header">
@@ -69,7 +76,7 @@
                     <a href="/dynamic/behavioral/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Partial Equilibrium Simulation</a>
                     </td>
                     <td>
-                      {% flatblock "dynamic_behavioral_blurb" %}
+                     <p>This approach answers the question, "how would taxpayer behavior (income and deductions) affect revenue if all other prices in the economy could stay the same?" <p>
                     </td>
                 </tr>
                 {% if include_ogusa %}
@@ -83,7 +90,8 @@
                           <div class="progress-bar active progress-bar-custom" role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
                         </div>
                       </div>
-                      {% flatblock "dynamic_olg_blurb" %}
+                      <p> DISABLED WHILE UNDERGOING MAINTENANCE </p>
+                      <p>This approach answers the question, "how does tax policy affect macroeconomic aggregates and prices?"</p>
                     </td>
                 </tr>
                 {% endif %}
@@ -92,7 +100,7 @@
                      <a href="/dynamic/macro/{{pk}}/?start_year={{start_year}}" class="text-white btn btn-secondary">Macro Elasticities Simulation</a>
                     </td>
                     <td>
-                      {% flatblock "dynamic_macro_el_blurb" %}
+                    <p>This approach harnesses econometric estimates of the historical relationship between tax policy and the macroeconomy to predict the effect of tax reforms on growth.</p>
                     </td>
                 </tr>
                 </table>
