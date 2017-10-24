@@ -13,3 +13,4 @@ Welcome!
 
    user_guide
    developer_guide
+   jenkins
