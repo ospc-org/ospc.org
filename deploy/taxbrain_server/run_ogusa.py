@@ -19,12 +19,12 @@ def run_micro_macro(reform, user_params, guid):
 
     REFORM_DIR = "./OUTPUT_REFORM_" + guid
     BASELINE_DIR = "./OUTPUT_BASELINE_" + guid
-
     # Add start year from reform to user parameters
-    if isinstance(reform, tuple):
-        start_year = sorted(reform[0].keys())[0]
-    else:
-        start_year = sorted(reform.keys())[0]
+    # if isinstance(reform, tuple):
+    #     start_year = sorted(reform[0].keys())[0]
+    # else:
+    assert isinstance(reform, dict)
+    start_year = min(reform["policy"].keys(), key=int)
     user_params['start_year'] = start_year
 
     with open("log_{}.log".format(guid), 'w') as f:
