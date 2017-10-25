@@ -106,6 +106,7 @@ def dynamic_input(request, pk):
             taxbrain_model = outputsurl.unique_inputs
             submitted_ids = None
 
+            # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
                 (reform_dict, _, _, _,
                     errors_warnings) = get_reform_from_gui(
@@ -117,6 +118,7 @@ def dynamic_input(request, pk):
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
 
+            # package up variables
             ogusa_params = filter_ogusa_only(worker_data)
             data = {
                 'taxio_format': True,
@@ -124,7 +126,7 @@ def dynamic_input(request, pk):
                 'user_mods': json.dumps(reform_dict),
                 'start_year': int(start_year)
             }
-
+            # start model run
             submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(
                 data
             )
