@@ -120,10 +120,9 @@ def dynamic_input(request, pk):
             ogusa_params = filter_ogusa_only(worker_data)
             data = {
                 'taxio_format': True,
-                'first_budget_year': int(start_year),
                 'ogusa_params': json.dumps(ogusa_params),
                 'user_mods': json.dumps(reform_dict),
-                'first_year': int(start_year)
+                'start_year': int(start_year)
             }
 
             submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(

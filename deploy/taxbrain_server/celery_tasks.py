@@ -147,7 +147,7 @@ def elasticity_gdp_task_async(year, user_mods, first_budget_year, elast_params):
 
 
 @celery_app.task
-def ogusa_async(user_mods, ogusa_params, guid):
+def ogusa_async(start_year, user_mods, ogusa_params, guid):
     print("user mods: ", user_mods)
     user_mods = convert_int_key(user_mods)
     user_reform = {'policy': user_mods}

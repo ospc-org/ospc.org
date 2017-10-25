@@ -13,19 +13,12 @@ from ogusa.scripts import postprocess
 from ogusa.scripts.execute import runner
 
 
-def run_micro_macro(reform, user_params, guid):
+def run_micro_macro(start_year, reform, user_params, guid):
 
     start_time = time.time()
 
     REFORM_DIR = "./OUTPUT_REFORM_" + guid
     BASELINE_DIR = "./OUTPUT_BASELINE_" + guid
-    # Add start year from reform to user parameters
-    # if isinstance(reform, tuple):
-    #     start_year = sorted(reform[0].keys())[0]
-    # else:
-    assert isinstance(reform, dict)
-    start_year = min(reform["policy"].keys(), key=int)
-    user_params['start_year'] = start_year
 
     with open("log_{}.log".format(guid), 'w') as f:
         f.write("guid: {}\n".format(guid))
@@ -91,7 +84,7 @@ if __name__ == "__main__":
                 u'_CTC_new_refund_limited': [False],
                 u'_CG_nodiff': [False]
             }
-        }, 
+        },
         u'gdp_elasticity': {}
     }
     user_params = {u'g_y_annual': 0.04, u'frisch': 0.3}
