@@ -20,8 +20,10 @@ class DynamicSaveInputs(models.Model):
     """
     This model contains all the parameters for the dynamic tax model and the tax
     result.
+    """
 
-   """
+    small_open = models.NullBooleanField(default=None, blank=True, null=True)
+    world_int_rate = CommaSeparatedField(default=None, null=True, blank=True)
 
     # Parameters used for the dynamic model
     g_y_annual = CommaSeparatedField(default=None, null=True, blank=True)

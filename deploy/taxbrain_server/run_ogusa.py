@@ -13,19 +13,12 @@ from ogusa.scripts import postprocess
 from ogusa.scripts.execute import runner
 
 
-def run_micro_macro(reform, user_params, guid):
+def run_micro_macro(start_year, reform, user_params, guid):
 
     start_time = time.time()
 
     REFORM_DIR = "./OUTPUT_REFORM_" + guid
     BASELINE_DIR = "./OUTPUT_BASELINE_" + guid
-
-    # Add start year from reform to user parameters
-    if isinstance(reform, tuple):
-        start_year = sorted(reform[0].keys())[0]
-    else:
-        start_year = sorted(reform.keys())[0]
-    user_params['start_year'] = start_year
 
     with open("log_{}.log".format(guid), 'w') as f:
         f.write("guid: {}\n".format(guid))
@@ -75,13 +68,25 @@ def run_micro_macro(reform, user_params, guid):
 if __name__ == "__main__":
 
     reform = {
-    2017: {
-        '_II_rt1': [.09],
-        '_II_rt2': [.135],
-        '_II_rt3': [.225],
-        '_II_rt4': [.252],
-        '_II_rt5': [.297],
-        '_II_rt6': [.315],
-        '_II_rt7': [0.3564],
-    }, }
-    run_micro_macro(reform=reform, user_params={'frisch': 0.44}, guid='abc')
+        u'growdiff_response': {},
+        u'consumption': {},
+        u'growdiff_baseline': {},
+        u'behavior': {},
+        u'policy': {
+            2017: {
+                u'_II_no_em_nu18': [False],
+                u'_NIIT_PT_taxed': [False],
+                u'_FICA_ss_trt': [0.1],
+                u'_ID_BenefitCap_Switch': [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                u'_ALD_InvInc_ec_base_RyanBrady': [False],
+                u'_EITC_indiv': [False],
+                u'_ID_BenefitSurtax_Switch': [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                u'_CTC_new_refund_limited': [False],
+                u'_CG_nodiff': [False]
+            }
+        },
+        u'gdp_elasticity': {}
+    }
+    user_params = {u'g_y_annual': 0.04, u'frisch': 0.3}
+
+    run_micro_macro(reform=reform, user_params=user_params, guid='abc')
