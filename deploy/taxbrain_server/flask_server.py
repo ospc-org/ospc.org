@@ -179,7 +179,7 @@ def example():
 
 @app.route('/ogusa_start_job', methods=['POST'])
 def ogusa_start_job():
-    start_year int(request.form["start_year"])
+    start_year = int(request.form["start_year"])
     user_mods = json.loads(request.form['user_mods'])
     ogusa_params = json.loads(request.form['ogusa_params'])
 
