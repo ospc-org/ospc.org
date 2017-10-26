@@ -575,6 +575,9 @@ class DynamicInputsModelForm(ModelForm):
         exclude = ['creation_date']
         widgets = {}
         labels = {}
+        boolean_fields = [
+            "small_open"
+        ]
         for param in OGUSA_DEFAULT_PARAMS.values():
             for field in param.col_fields:
                 attrs = {
@@ -584,8 +587,10 @@ class DynamicInputsModelForm(ModelForm):
 
                 if param.coming_soon:
                     attrs['disabled'] = True
-                    attrs['checked'] = False
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+
+                if param.tc_id in boolean_fields:
+                    checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                    widgets[field.id] = checkbox
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
 

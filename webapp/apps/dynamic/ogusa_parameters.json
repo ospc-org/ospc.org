@@ -1,1 +1,50 @@
-{"g_y_annual": {"col_label": ["Growth rate of technology"], "description": "This parameter gives the underlying growth rate for labor augmenting technological change.  The growth rate determines long-run economic growth in OG-USA.", "irs_ref": "", "notes": "", "value": 0.03, "long_name": "Growth rate of technology"}, "frisch": {"col_label": ["Frisch elasticity"], "description": "The Frisch elasticity gives the elasticity of labor supply to changes in the net of tax wage rate, holding wealth constant.   This means that the Frisch elasticity captures the substitution effects, but not the income effects, of a change in the net of tax wage rate.  A Frisch elasticity of 0.4 would indicate that if the net of tax wage rate increases by 10% then hours worked would increase by 4%, if wealth were held constant.  Note that OG-USA uses an elliptical utility function for labor supply.  We parameterize this function to fit a constant Frisch elasticity function with a Frisch elasticity as input here.", "irs_ref": "", "notes": "", "validations": {"max": 0.8, "min": 0.1}, "value": 0.4, "long_name": "Frisch elastictiy of labor supply used to fit elliptical utility"}}
+{
+  "g_y_annual": {
+    "col_label": [
+      "Growth rate of technology"
+    ],
+    "description": "This parameter gives the underlying growth rate for labor augmenting technological change.  The growth rate determines long-run economic growth in OG-USA.",
+    "long_name": "Growth rate of technology",
+    "notes": "",
+    "value": 0.03,
+    "irs_ref": ""
+  },
+  "frisch": {
+    "col_label": [
+      "Frisch elasticity"
+    ],
+    "description": "The Frisch elasticity gives the elasticity of labor supply to changes in the net of tax wage rate, holding wealth constant.   This means that the Frisch elasticity captures the substitution effects, but not the income effects, of a change in the net of tax wage rate.  A Frisch elasticity of 0.4 would indicate that if the net of tax wage rate increases by 10% then hours worked would increase by 4%, if wealth were held constant.  Note that OG-USA uses an elliptical utility function for labor supply.  We parameterize this function to fit a constant Frisch elasticity function with a Frisch elasticity as input here.",
+    "long_name": "Frisch elastictiy of labor supply used to fit elliptical utility",
+    "notes": "",
+    "validations": {
+      "max": 0.8,
+      "min": 0.1
+    },
+    "value": 0.4,
+    "irs_ref": ""
+  },
+  "world_int_rate": {
+    "col_label": [
+      "World interest rate"
+    ],
+    "description": "World interest rate",
+    "long_name": "World interest rate if using 'small open' economy",
+    "notes": "World interest rate if using 'small open' economy",
+    "validations": {
+      "max": 0.8,
+      "min": -0.8
+    },
+    "value": 0.04,
+    "irs_ref": ""
+  },
+  "small_open": {
+    "col_label": [
+      "Use 'small open' economy"
+    ],
+    "description": "Small open economy assumptionx",
+    "long_name": "TODO long_name",
+    "notes": "TODO notes",
+    "value": true,
+    "irs_ref": ""
+  }
+}
