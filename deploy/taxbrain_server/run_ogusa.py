@@ -91,4 +91,4 @@ if __name__ == "__main__":
     }
     user_params = {u'g_y_annual': 0.04, u'frisch': 0.3}
 
-    run_micro_macro(reform=reform, user_params=user_params, guid='abc')
+    run_micro_macro(start_year=2017, reform=reform, user_params=user_params, guid='abc')
