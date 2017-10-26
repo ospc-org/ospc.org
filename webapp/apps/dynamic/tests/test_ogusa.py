@@ -179,7 +179,7 @@ class DynamicOGUSAViewsTests(TestCase):
 
     def test_static_parameters_saved(self):
         """
-        Check that static parameters are not changed
+        Check that static parameters are saved as expected
         """
         self.client.login(username='temporary', password='temporary')
         start_year = 2017
@@ -189,7 +189,7 @@ class DynamicOGUSAViewsTests(TestCase):
         del data[u'ID_BenefitSurtax_Switch_6']
         data[u'II_em'] = [u'4333']
         data[u'EITC_rt_0'] = [u'1.2']
-        # data[u'ID_Charity_c_cpi'] = u'False'
+        data[u'ID_Charity_c_cpi'] = u'False'
 
         micro_sim = do_micro_sim(self.client, data, dyn_dropq_compute=False)
         ogusa_reform = {u'frisch': [u'0.42']}
@@ -208,6 +208,7 @@ class DynamicOGUSAViewsTests(TestCase):
         )
         assert reform["2017"]['_II_em'] == [4333.0]
         assert reform["2017"]['_EITC_rt'][0][0] == 1.2
+        assert reform["2017"]['_ID_Charity_c_cpi'] is False
 
         assump = json.loads(user_mods['assumptions'])
         assump_keys = ["growdiff_response", "consumption", "behavior",
