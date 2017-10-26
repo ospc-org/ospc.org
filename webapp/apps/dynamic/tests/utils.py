@@ -80,7 +80,20 @@ def do_elasticity_sim(client, microsim_response, egdp_reform, start_year=START_Y
 
 def do_ogusa_sim(client, microsim_res, ogusa_reform, start_year,
                  increment=0, exp_status_code=302):
+    """
+    do the proper sequence of HTTP calls to run a dyanamic simulation
 
+    microsim_res: dictionary of results from do_micro_sim
+    dyn_dropq_compute: mocked dynamic dropq_compute object
+    compute_count: number of jobs submitted; only checked in quick_calc tests
+    post_url: url to post data; is also set to /taxbrain/file/ for file_input
+              tests
+
+    returns: response object, dynamic dropq compute object,
+             primary key for model run, micro_sim result dictionary
+    """
+
+    # get mocked dynamic_compute object
     ogusa_dropq_compute = get_dropq_compute_from_module(
         'webapp.apps.dynamic.views',
         attr='dynamic_compute',
