@@ -37,6 +37,20 @@
     "value": 0.04,
     "irs_ref": ""
   },
+  "debt_ratio_ss": {
+    "col_label": [
+      "Debt Ratio SS"
+    ],
+    "description": "Debt Ratio SS",
+    "long_name": "Debt Ratio SS",
+    "notes": "Debt Ratio SS",
+    "validations": {
+      "max": 0.8,
+      "min": -0.8
+    },
+    "value": 0.04,
+    "irs_ref": ""
+  },
   "small_open": {
     "col_label": [
       "Use 'small open' economy"
@@ -44,7 +58,17 @@
     "description": "Small open economy assumptionx",
     "long_name": "TODO long_name",
     "notes": "TODO notes",
-    "value": true,
+    "value": false,
+    "irs_ref": ""
+  },
+  "budget_balance": {
+    "col_label": [
+      "Budget Balance"
+    ],
+    "description": "Budget Balance",
+    "long_name": "TODO long_name",
+    "notes": "TODO notes",
+    "value": false,
     "irs_ref": ""
   }
 }

@@ -24,6 +24,8 @@ class DynamicSaveInputs(models.Model):
 
     small_open = models.NullBooleanField(default=None, blank=True, null=True)
     world_int_rate = CommaSeparatedField(default=None, null=True, blank=True)
+    budget_balance = models.NullBooleanField(default=None, blank=True, null=True)
+    debt_ratio_ss = CommaSeparatedField(default=None, null=True, blank=True)
 
     # Parameters used for the dynamic model
     g_y_annual = CommaSeparatedField(default=None, null=True, blank=True)

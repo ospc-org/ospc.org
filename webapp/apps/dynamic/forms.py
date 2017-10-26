@@ -576,7 +576,8 @@ class DynamicInputsModelForm(ModelForm):
         widgets = {}
         labels = {}
         boolean_fields = [
-            "small_open"
+            "small_open",
+            "budget_balance"
         ]
         for param in OGUSA_DEFAULT_PARAMS.values():
             for field in param.col_fields:
