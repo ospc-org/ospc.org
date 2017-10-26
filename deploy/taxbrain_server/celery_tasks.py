@@ -154,7 +154,8 @@ def ogusa_async(start_year, user_mods, ogusa_params, guid):
     for key in EXPECTED_KEYS:
         if key not in user_reform:
             user_reform[key] = {}
-    diff_data = run_ogusa.run_micro_macro(reform=user_reform,
+    diff_data = run_ogusa.run_micro_macro(start_year=start_year,
+                                          reform=user_reform,
                                           user_params=ogusa_params,
                                           guid=guid)
 

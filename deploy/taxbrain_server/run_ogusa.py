@@ -30,6 +30,8 @@ def run_micro_macro(start_year, reform, user_params, guid):
         Run baseline
     ------------------------------------------------------------------------
     '''
+
+    user_params["start_year"] = start_year
     output_base = BASELINE_DIR
     kwargs={'output_base':output_base, 'baseline_dir':BASELINE_DIR,
             'test':False, 'time_path':True, 'baseline':True,
