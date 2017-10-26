@@ -21,7 +21,8 @@ from taxcalc import Policy
 
 from ...test_assets import test_reform, test_assumptions
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
-                                  get_post_data, get_file_post_data)
+                                  get_post_data, get_file_post_data,
+                                  get_dropq_compute_from_module)
 
 
 START_YEAR = 2016
@@ -147,9 +148,7 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_post_no_behavior_entries(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         # Provide behavioral input
         data = get_post_data(START_YEAR)
@@ -162,9 +161,10 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_nodes_down(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = NodeDownCompute()
+        dropq_compute = get_dropq_compute_from_module(
+            'webapp.apps.taxbrain.views',
+            MockComputeObj=NodeDownCompute
+        )
 
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
@@ -172,7 +172,7 @@ class TaxBrainViewsTests(TestCase):
         result = do_micro_sim(
             self.client,
             data,
-            tb_dropq_compute=webapp_views.dropq_compute
+            tb_dropq_compute=dropq_compute
         )
 
         # Check that data was saved properly
@@ -186,9 +186,10 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_failed_job(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockFailedCompute()
+        dropq_compute = get_dropq_compute_from_module(
+            'webapp.apps.taxbrain.views',
+            MockComputeObj=MockFailedCompute
+        )
 
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
@@ -311,9 +312,7 @@ class TaxBrainViewsTests(TestCase):
         is false so should give an error
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {u'II_brk1_0': [u'*, *, 38000'],
@@ -347,9 +346,7 @@ class TaxBrainViewsTests(TestCase):
         so should give an error
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {u'II_brk1_0': [u'*, 38000'],
@@ -476,9 +473,7 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_view_old_data_model(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         tsi = TaxSaveInputs()
         old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -504,9 +499,7 @@ class TaxBrainViewsTests(TestCase):
         it gives an error
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {u'II_brk1_0': [u'XTOT*4500'],
@@ -523,9 +516,7 @@ class TaxBrainViewsTests(TestCase):
         POST a reform file that causes errors. See PB issue #630
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_file_post_data(START_YEAR, test_reform.bad_reform)
 
@@ -543,9 +534,7 @@ class TaxBrainViewsTests(TestCase):
         POST a reform file that causes warnings. See PB issue #630
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_file_post_data(START_YEAR, test_reform.warning_reform)
 
