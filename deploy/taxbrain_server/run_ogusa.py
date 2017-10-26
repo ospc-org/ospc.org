@@ -37,7 +37,7 @@ def run_micro_macro(start_year, reform, user_params, guid):
             'test':False, 'time_path':True, 'baseline':True,
             'analytical_mtrs':False, 'age_specific':False,
             'user_params':user_params,'guid':guid,
-            'run_micro':True, 'small_open': False, 'budget_balance':False, 'baseline_spending':False}
+            'run_micro':True, 'small_open': user_params, 'budget_balance':False, 'baseline_spending':False}
     #p2 = Process(target=runner, kwargs=kwargs)
     #p2.start()
     runner(**kwargs)
