@@ -3,6 +3,8 @@ from django.test import TestCase
 from django.test import Client
 import mock
 import os
+import json
+import numpy as np
 os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ..models import TaxSaveInputs
@@ -30,3 +32,20 @@ def do_micro_sim(client, reform):
     idx = response.url[:-1].rfind('/')
     assert response.url[:idx].endswith("taxbrain")
     return response
+
+
+def check_posted_params(mock_compute, params_to_check, start_year):
+    """
+    Make sure posted params match expected results
+    user_mods: parameters that are actually passed to taxcalc
+    params_to_check: gives truth value for parameters that we want to check
+                     (formatted as taxcalc dict style reform)
+    """
+    last_posted = mock_compute.last_posted
+    user_mods = json.loads(last_posted["user_mods"])
+    assert last_posted["first_budget_year"] == start_year
+    for year in params_to_check:
+        for param in params_to_check[year]:
+            np.testing.assert_equal(
+                user_mods[str(year)][param], params_to_check[year][param]
+            )

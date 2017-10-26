@@ -280,7 +280,11 @@ def get_default_policy_param_name(param, default_params):
             ix = int(end_piece)
         except ValueError:
             msg = "Parsing {}: Expected integer for index but got {}"
-            raise ValueError(msg.format(param, ix))
+            raise ValueError(msg.format(param, end_piece))
+        num_columns = len(default_params[no_suffix]['col_label'])
+        if ix < 0 or ix >= num_columns:
+            msg = "Parsing {}: Index {} not in range ({}, {})"
+            raise IndexError(msg.format(param, ix, 0, num_columns))
         col_label = default_params[no_suffix]['col_label'][ix]
         return no_suffix + '_' + col_label
     msg = "Received unexpected parameter: {}"

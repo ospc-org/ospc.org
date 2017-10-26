@@ -384,7 +384,7 @@ var _exportData = function ( dt, config )
  * Safari's data: support for creating and downloading files is really poor, so
  * various options need to be disabled in it. See
  * https://bugs.webkit.org/show_bug.cgi?id=102914
- * 
+ *
  * @return {Boolean} `true` if Safari
  */
 var _isSafari = function ()
@@ -589,90 +589,6 @@ DataTable.ext.buttons.csvHtml5 = {
 	escapeChar: '"',
 
 	charset: null,
-
-	header: true,
-
-	footer: false
-};
-
-//
-// Excel (xlsx) export
-//
-DataTable.ext.buttons.excelHtml5 = {
-	className: 'buttons-excel buttons-html5',
-
-	available: function () {
-		return window.FileReader !== undefined && window.JSZip !== undefined && ! _isSafari();
-	},
-
-	text: function ( dt ) {
-		return dt.i18n( 'buttons.excel', 'Excel' );
-	},
-
-	action: function ( e, dt, button, config ) {
-		// Set the text
-		var xml = '';
-		var data = dt.buttons.exportData( config.exportOptions );
-		var addRow = function ( row ) {
-			var cells = [];
-
-			for ( var i=0, ien=row.length ; i<ien ; i++ ) {
-				if ( row[i] === null || row[i] === undefined ) {
-					row[i] = '';
-				}
-
-				// Don't match numbers with leading zeros or a negative anywhere
-				// but the start
-				cells.push( typeof row[i] === 'number' || (row[i].match && row[i].match(/^-?[0-9\.]+$/) && row[i].charAt(0) !== '0') ?
-					'<c t="n"><v>'+row[i]+'</v></c>' :
-					'<c t="inlineStr"><is><t>'+(
-						! row[i].replace ?
-							row[i] :
-							row[i]
-								.replace(/&(?!amp;)/g, '&amp;')
-								.replace(/[\x00-\x1F\x7F-\x9F]/g, ''))+ // remove control characters
-					'</t></is></c>'                                    // they are not valid in XML
-				);
-			}
-
-			return '<row>'+cells.join('')+'</row>';
-		};
-
-		if ( config.header ) {
-			xml += addRow( data.header );
-		}
-
-		for ( var i=0, ien=data.body.length ; i<ien ; i++ ) {
-			xml += addRow( data.body[i] );
-		}
-
-		if ( config.footer ) {
-			xml += addRow( data.footer );
-		}
-
-		var zip           = new window.JSZip();
-		var _rels         = zip.folder("_rels");
-		var xl            = zip.folder("xl");
-		var xl_rels       = zip.folder("xl/_rels");
-		var xl_worksheets = zip.folder("xl/worksheets");
-
-		zip.file(           '[Content_Types].xml', excelStrings['[Content_Types].xml'] );
-		_rels.file(         '.rels',               excelStrings['_rels/.rels'] );
-		xl.file(            'workbook.xml',        excelStrings['xl/workbook.xml'] );
-		xl_rels.file(       'workbook.xml.rels',   excelStrings['xl/_rels/workbook.xml.rels'] );
-		xl_worksheets.file( 'sheet1.xml',          excelStrings['xl/worksheets/sheet1.xml'].replace( '__DATA__', xml ) );
-
-		_saveAs(
-			zip.generate( {type:"blob"} ),
-			_filename( config )
-		);
-	},
-
-	filename: '*',
-
-	extension: '.xlsx',
-
-	exportOptions: {},
 
 	header: true,
 
