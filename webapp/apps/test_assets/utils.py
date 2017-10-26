@@ -9,13 +9,30 @@ NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
 def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
                                   MockComputeObj=MockCompute, **mc_args):
+    """
+    mocks dropq compute object from specified module
+
+    returns: mocked dropq compute object
+    """
     module_views = sys.modules[module_import_path]
     setattr(module_views, attr, MockComputeObj(**mc_args))
     return getattr(module_views, attr)
 
 def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
                  compute_count=None, post_url='/taxbrain/'):
-    '''do the proper sequence of HTTP calls to run a microsim'''
+    """
+    do the proper sequence of HTTP calls to run a microsim
+    tb_dropq_compute: mocked taxbrain dropq_compute object; set to default
+                      config if None
+    dyn_dropq_compute: mocked dynamic dropq_compute object; set to default
+                       config if None
+    compute_count: number of jobs submitted; only checked in quick_calc tests
+    post_url: url to post data; is also set to /taxbrain/file/ for file_input
+              tests
+
+    returns: response object, taxbrain mock dropq compute object,
+             dynamic dropq compute object, primary key for model run
+    """
     #Monkey patch to mock out running of compute jobs
     if tb_dropq_compute is None:
         tb_dropq_compute = get_dropq_compute_from_module(
@@ -64,6 +81,9 @@ def check_posted_params(mock_compute, params_to_check, start_year):
 
 
 def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False):
+    """
+    Convenience function for posting GUI data
+    """
     data = {u'has_errors': [u'False'],
             u'start_year': unicode(start_year),
             'csrfmiddlewaretoken':'abc123'}
@@ -82,6 +102,9 @@ def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False)
 
 
 def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_calc=False):
+    """
+    Convenience function for posting file input data
+    """
     tc_file = SimpleUploadedFile("test_reform.json", reform_text)
     data = {u'docfile': tc_file,
             u'has_errors': [u'False'],
