@@ -10,14 +10,15 @@ Release 1.1.0 on 2017-10-27
 - None
 
 **Minor Changes**
+- [#684](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/684) - Rename macro elasticity labels and remove dropdown menu in elasticity result page - Sean Wang
 - [#693](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/693) - Create RELEASES.md - Hank Doupe
-- [#694](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/694) - Remove "Excel" button for both tables - Sean Wang
+- [#694](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/694) - Remove "Excel" output buttons - Sean Wang
 - [#698](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/698) - New content for getting started, about, and nav menu - Jessica Ciarelli
 - [#701](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/701) - Enhance file upload preview - Sean Wang
 - [#702](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/702) - Update README.md - Hank Doupe
-- [#711](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/711) - Migrate Private Django Flat Blocks to HTMLs - Sean Wang
+- [#711](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/711) - Migrate private Django Flat blocks to Github - Sean Wang
 - [#713](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/713) - Improvements to Create and Update scripts - Brittain Hard
-- [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset- Hank Doupe
+- [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset - Hank Doupe
 
 **Bug Fixes**
 - [#708](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/708) - Unit test parameter formatters (with bug-fix) - Hank Doupe
