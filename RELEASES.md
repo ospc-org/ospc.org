@@ -11,8 +11,12 @@ Release 1.1.0 on 2017-10-27
 
 **Minor Changes**
 - [#693](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/693) - Create RELEASES.md - Hank Doupe
+- [#694](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/694) - Remove "Excel" button for both tables - Sean Wang
 - [#698](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/698) - New content for getting started, about, and nav menu - Jessica Ciarelli
+- [#701](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/701) - Enhance file upload preview - Sean Wang
 - [#702](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/702) - Update README.md - Hank Doupe
+- [#711](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/711) - Migrate Private Django Flat Blocks to HTMLs - Sean Wang
+- [#713](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/713) - Improvements to Create and Update scripts - Brittain Hard
 - [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset- Hank Doupe
 
 **Bug Fixes**
