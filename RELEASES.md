@@ -4,6 +4,20 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.1.0 on 2017-10-27
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#693](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/693) - Create RELEASES.md - Hank Doupe
+- [#698](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/698) - New content for getting started, about, and nav menu - Jessica Ciarelli
+- [#702](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/702) - Update README.md - Hank Doupe
+- [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset- Hank Doupe
+
+**Bug Fixes**
+- [#708](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/708) - Unit test parameter formatters (with bug-fix) - Hank Doupe
+
 Release 1.0.3 on 2017-10-05
 ----------------------------
 **Major Changes**
