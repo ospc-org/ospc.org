@@ -2,6 +2,7 @@ from django import template
 import math
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.template.defaultfilters import floatformat
+from django.utils.safestring import mark_safe
 
 SCALES = [
     None,
@@ -56,3 +57,7 @@ def floatformat_all(values, decimals):
     for value in values:
         new_values[value] = floatformat(values[value], decimals)
     return new_values
+
+@register.filter()
+def nbsp(value):
+    return mark_safe("&nbsp;".join(value.split(' ')))

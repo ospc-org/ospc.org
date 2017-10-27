@@ -524,8 +524,7 @@ $(function() {
                         }
                     },
                     'copy',
-                    'csv',
-                    'excel'
+                    'csv'
                 ];
                 this.tableView.$el.find('table').dataTable(this.dataTableOptions);
                 this.tableView.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');
@@ -565,8 +564,7 @@ $(function() {
                     }
                 },
                 'copy',
-                'csv',
-                'excel',
+                'csv'
             ];
             fiscalTableView.$el.find('table').dataTable(this.dataTableOptions);
             fiscalTableView.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');

@@ -664,9 +664,9 @@ def submit_micro(request, pk):
 
     log_ip(request)
 
-    #get microsim data
+    # get microsim data
     is_file = model.json_text is not None
-     # necessary for simulations before PR 641
+    # necessary for simulations before PR 641
     if not is_file:
         (reform_dict, _, _,
             errors_warnings) = get_reform_from_gui(
