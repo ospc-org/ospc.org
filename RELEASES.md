@@ -17,6 +17,7 @@ Release 1.1.0 on 2017-10-27
 - [#701](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/701) - Enhance file upload preview - Sean Wang
 - [#702](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/702) - Update README.md - Hank Doupe
 - [#711](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/711) - Migrate private Django Flat blocks to Github - Sean Wang
+- [#713](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/713) - Improvements to Create and Update scripts - Brittain Hard
 - [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset - Hank Doupe
 
 **Bug Fixes**
