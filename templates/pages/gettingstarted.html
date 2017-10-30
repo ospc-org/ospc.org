@@ -1,0 +1,36 @@
+{% extends 'pages/home.html' %}
+
+{% load staticfiles %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="text-center">
+  <h1 class="docs-header">Getting Started</h1>
+</div>
+<br /><br />
+<div class="row">
+  <div class="col-xs-3">
+    <div class="inputs-sidebar docs-links">
+      <ul class="nav sidebar-nav">
+        <li><a href="#TaxBrain">TaxBrain</a></li>
+        <li><a href="#Disclaimer">Disclaimer</a></li>
+      </ul>
+    </div> <!-- sidebar -->
+  </div>
+  <div class="col-xs-9">
+    <div id="TaxBrain" class="docs-section">
+      <h1>TaxBrain</h1>
+      <div class="embed-responsive embed-responsive-16by9">
+        <iframe class="embed-responsive-item" width="420" height="315" src="https://www.youtube.com/embed/b6udoQb3aNo" frameborder="0" allowfullscreen></iframe>
+      </div>
+
+    </div>
+    <div id="Disclaimer" class="docs-section">
+    <h1>Disclaimer</h1>
+      <p>Proper use of ospc.org tools and description of that use is ultimately your responsibility. If you plan on publishing your results, it is recommended that you confirm with the community that you are using the tools properly and interpreting the results correctly before you publish them.</p>
+      <p>Results will change as the underlying models improve. A fundamental reason for adopting open source methods in this project is to let people from all backgrounds contribute to the models that our society uses to assess economic policy; when community-contributed improvements are incorporated, the models will produce different results.</p>
+      <p>Neither the Open Source Policy Center nor the American Enterprise Institute maintain institutional positions, and the results from models accessible via the ospc.org interfaces should not be attributed to OSPC or AEI.</p>
+    </div>
+
+{% endblock %}

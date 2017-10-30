@@ -235,8 +235,6 @@ class DropqCompute(object):
             fiscal_tot_base.update(result['fiscal_tot_base'])
             fiscal_tot_ref.update(result['fiscal_tot_ref'])
 
-        reform_style = ans[0].get('reform_style', None)
-
 
         if ENFORCE_REMOTE_VERSION_CHECK:
             versions = [r.get('taxcalc_version', None) for r in ans]
@@ -266,7 +264,7 @@ class DropqCompute(object):
                 'fiscal_tot_base': fiscal_tot_base,
                 'fiscal_tot_ref': fiscal_tot_ref}
 
-        return results, reform_style
+        return results
 
     def elastic_get_results(self, job_ids):
         ans = []
@@ -343,6 +341,12 @@ class MockCompute(DropqCompute):
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_get_result', text=text)
             return DropqCompute.remote_retrieve_results(self, theurl, params)
+
+    def reset_count(self):
+        """
+        reset worker node count
+        """
+        self.count = 0
 
 class ElasticMockCompute(MockCompute):
 
