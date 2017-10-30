@@ -21,7 +21,7 @@ Release 1.1.0 on 2017-10-27
 - [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset - Hank Doupe
 
 **Bug Fixes**
-= [#675](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/675) - Correct build table names for "Copy", "CSV" and "Excel" - Sean Wang
+- [#675](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/675) - Correct build table names for "Copy", "CSV" and "Excel" - Sean Wang
 - [#708](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/708) - Unit test parameter formatters (with bug-fix) - Hank Doupe
 
 Release 1.0.3 on 2017-10-05
