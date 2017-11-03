@@ -19,10 +19,12 @@ Release 1.1.0 on 2017-10-27
 - [#711](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/711) - Migrate private Django Flat blocks to Github - Sean Wang
 - [#713](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/713) - Improvements to Create and Update scripts - Brittain Hard
 - [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset - Hank Doupe
+- [#724](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/724) - Add CCC video to getting started page - Jessica Ciarelli
 
 **Bug Fixes**
 - [#675](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/675) - Correct build table names for "Copy", "CSV" and "Excel" - Sean Wang
 - [#708](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/708) - Unit test parameter formatters (with bug-fix) - Hank Doupe
+- [#722](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/722) - Fix reverted Macro page changes - Sean Wang
 
 Release 1.0.3 on 2017-10-05
 ----------------------------
