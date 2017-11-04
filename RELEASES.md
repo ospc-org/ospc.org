@@ -4,7 +4,18 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
-Release 1.1.0 on 2017-10-27
+Release 1.1.1 on 2017-11-04
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#729](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/729) - Fix "news.ospc.org" link bug - Sean Wang
+
+Release 1.1.0 on 2017-11-02
 ----------------------------
 **Major Changes**
 - None
