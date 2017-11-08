@@ -169,7 +169,7 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
 
         # Check that data was saved properly
-        truth_mods = taxcalc.Calculator.read_json_param_files(
+        truth_mods = taxcalc.Calculator.read_json_param_objects(
             test_reform.reform_text,
             None,
             False

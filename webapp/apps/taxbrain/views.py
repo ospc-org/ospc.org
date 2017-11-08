@@ -187,7 +187,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    policy_dict = taxcalc.Calculator.read_json_param_files(
+    policy_dict = taxcalc.Calculator.read_json_param_objects(
         reform,
         assumptions,
         arrays_not_lists=False
