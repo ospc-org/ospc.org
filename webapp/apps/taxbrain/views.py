@@ -192,7 +192,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
         assumptions,
     )
     # get errors and warnings on parameters that do not cause ValueErrors
-    errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
+    errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
     errors_warnings = parse_errors_warnings(errors_warnings,
                                             map_back_to_tb)
     # separate reform and assumptions
@@ -612,7 +612,7 @@ def personal_results(request):
         # No errors--submit to model
         if not has_errors:
             return redirect(obj)
-        # Errors from taxcalc.dropq.reform_warnings_errors
+        # Errors from taxcalc.tbi.reform_warnings_errors
         else:
             personal_inputs = obj
 
