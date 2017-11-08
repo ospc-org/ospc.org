@@ -425,6 +425,12 @@ class TaxSaveInputs(models.Model):
     II_credit_nr_2 = CommaSeparatedField(default=None, blank=True, null=True)
     II_credit_nr_3 = CommaSeparatedField(default=None, blank=True, null=True)
     II_credit_nr_prt = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameters used for the AMT.
     AMT_em_0 = CommaSeparatedField(default=None, blank=True, null=True)
