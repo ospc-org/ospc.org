@@ -586,6 +586,37 @@ class TaxBrainViewsTests(TestCase):
         self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
 
 
+    def test_taxbrain_eitc_rt_greater_than_1(self):
+        """
+        Regression test for checking that EITC rate and similar parameters are
+        not rounded down to 1
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = {u'EITC_rt_0': [u'1.2'],
+                u'EITC_rt_1': [u'0.2'],
+                'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num = response.url[link_idx+1:-1]
+
+        out2 = OutputUrl.objects.get(pk=model_num)
+        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
+
+        assert tsi2.EITC_rt_0 == u'1.2'
+        assert tsi2.EITC_rt_1 == u'0.2'
+
+
     def test_taxbrain_file_post_only_reform(self):
         #Monkey patch to mock out running of compute jobs
         import sys
