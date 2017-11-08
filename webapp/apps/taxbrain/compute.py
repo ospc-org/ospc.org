@@ -23,8 +23,8 @@ DROPQ_SMALL_URL = "/dropq_small_start_job"
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
-ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
+AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
+GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
 
 
 class JobFailError(Exception):
@@ -249,13 +249,13 @@ class DropqCompute(object):
                 raise IOError(msg)
 
         fiscal_tot_diffs = arrange_totals_by_row(fiscal_tot_diffs,
-                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
+                                            AGG_ROW_NAMES)
 
         fiscal_tot_base = arrange_totals_by_row(fiscal_tot_base,
-                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
+                                            AGG_ROW_NAMES)
 
         fiscal_tot_ref = arrange_totals_by_row(fiscal_tot_ref,
-                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
+                                            AGG_ROW_NAMES)
 
         results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
                 'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
@@ -294,7 +294,7 @@ class DropqCompute(object):
 
         elasticity_gdp[u'gdp_elasticity_0'] = u'NA'
         elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
-                                            ELASTIC_RESULTS_TOTAL_ROW_KEYS)
+                                            GDP_ELAST_ROW_NAMES)
 
         results = {'elasticity_gdp': elasticity_gdp}
 

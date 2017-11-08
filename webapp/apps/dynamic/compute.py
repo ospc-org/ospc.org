@@ -19,7 +19,7 @@ DROPQ_WORKERS = dropq_workers.split(",")
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
+AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")

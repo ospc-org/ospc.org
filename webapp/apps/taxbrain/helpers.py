@@ -205,7 +205,7 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [         1,   '%', 1],  # "%age Tax Decrease",
     [         1,   '%', 1],  # "Share of Overall Change"
 ]
-TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.WEBBIN_ROW_NAMES
+TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.WEBBIN_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     '<$10K':'Less than 10',
     '$10-20K':'10-20',
@@ -220,7 +220,7 @@ TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     '>$1000K':'1000+',
     'all':'All'
 }
-TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.DECILE_ROW_NAMES
+TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'perc0-10':'0-10%',
     'perc10-20':'10-20%',
@@ -249,7 +249,7 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'fiscal_tot_base': 'Total Liabilities Baseline by Calendar Year',
     'fiscal_tot_ref': 'Total Liabilities Reform by Calendar Year',
 }
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.tbi_utils.AGGR_ROW_NAMES
+AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
@@ -943,7 +943,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
-    total_row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+    total_row_keys = AGG_ROW_NAMES
     num_years = len(results['fiscal_tot_diffs'][total_row_keys[0]])
     years = list(range(first_budget_year,
                        first_budget_year + num_years))
@@ -995,7 +995,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
 
         elif table_id == 'fiscal_tot_diffs':
             # todo - move these into the above TC result param constants
-            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
@@ -1004,7 +1004,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
 
         elif table_id == 'fiscal_tot_base':
             # todo - move these into the above TC result param constants
-            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
@@ -1013,7 +1013,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
 
         elif table_id == 'fiscal_tot_ref':
             # todo - move these into the above TC result param constants
-            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
