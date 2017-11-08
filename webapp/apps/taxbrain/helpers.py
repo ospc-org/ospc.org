@@ -207,17 +207,17 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
 ]
 TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.BIN_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
-    'less_than_10':'Less than 10',
-    'ten_twenty':'10-20',
-    'twenty_thirty':'20-30',
-    'thirty_forty':'30-40',
-    'forty_fifty':'40-50',
-    'fifty_seventyfive':'50-75',
-    'seventyfive_hundred':'75-100',
-    'hundred_twohundred':'100-200',
-    'twohundred_fivehundred':'200-500',
-    'fivehundred_thousand':'500-1000',
-    'thousand_up':'1000+',
+    '<$10K':'Less than 10',
+    '$10-20K':'10-20',
+    '$20-30K':'20-30',
+    '$30-40K':'30-40',
+    '$40-50K':'40-50',
+    '$50-75K':'50-75',
+    '$75-100K':'75-100',
+    '$100-200K':'100-200',
+    '$200-500K':'200-500',
+    '$500-1000K':'500-1000',
+    '>$1000K':'1000+',
     'all':'All'
 }
 TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.DECILE_ROW_NAMES
