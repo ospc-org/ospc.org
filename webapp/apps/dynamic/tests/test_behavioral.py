@@ -13,7 +13,11 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_v
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
-from .utils import *
+
+from .utils import do_behavioral_sim, START_YEAR
+from ...test_assets.utils import (check_posted_params, do_micro_sim,
+                                  get_post_data, get_file_post_data)
+from ...test_assets import test_reform, test_assumptions
 
 
 class DynamicBehavioralViewsTests(TestCase):
@@ -25,25 +29,19 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_edit(self):
         # Do the microsim
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
+        start_year = u'2016'
+        data = get_post_data(start_year)
+        data[u'II_em'] = [u'4333']
 
-        micro1 = do_micro_sim(self.client, reform)
+        micro1 = do_micro_sim(self.client, data)["response"]
 
         # Do another microsim
-        reform[u'II_em'] += [u'4334']
-        micro2 = do_micro_sim(self.client, reform)
+        data[u'II_em'] += [u'4334']
+        micro2 = do_micro_sim(self.client, data)["response"]
 
         # Do a third microsim
-        reform[u'II_em'] += [u'4335']
-        micro3 = do_micro_sim(self.client, reform)
+        data[u'II_em'] += [u'4335']
+        micro3 = do_micro_sim(self.client, data)["response"]
 
         # Do the partial equilibrium simulation based on the third microsim
         pe_reform = {u'BE_inc': [u'-0.4']}
@@ -70,18 +68,11 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_reform_with_wildcard(self):
         # Do the microsim
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'SS_Earnings_c': [u'*,*,*,*,15000'],
-                u'has_errors': [u'False'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
+        start_year = u'2016'
+        data = get_post_data(start_year)
+        data[u'SS_Earnings_c'] = [u'*,*,*,*,15000']
 
-        micro1 = do_micro_sim(self.client, reform)
+        micro1 = do_micro_sim(self.client, data)["response"]
 
         # Do the partial equilibrium simulation based on the microsim
         pe_reform = {u'BE_sub': [u'0.25']}
@@ -97,7 +88,9 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file
-        micro1 = do_micro_sim_from_file(self.client)
+        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        micro1 = do_micro_sim(self.client, data, post_url='/taxbrain/file/')
+        micro1 = micro1["response"]
 
         # Do the partial equilibrium simulation based on the microsim
         be_reform = {u'BE_sub': [u'0.25']}
@@ -108,4 +101,4 @@ class DynamicBehavioralViewsTests(TestCase):
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
         beh_params = json.loads(post["behavior_params"])["behavior"]["2016"]
-        assert beh_params["_BE_sub"][0]  == 0.25
+        assert beh_params["_BE_sub"][0] == 0.25

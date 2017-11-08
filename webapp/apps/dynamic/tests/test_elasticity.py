@@ -13,7 +13,12 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_v
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
-from .utils import *
+
+from .utils import do_elasticity_sim, START_YEAR
+from ...test_assets.utils import (check_posted_params, do_micro_sim,
+                                  get_post_data, get_file_post_data)
+from ...test_assets import test_reform, test_assumptions
+
 
 import pytest
 
@@ -32,25 +37,19 @@ class DynamicElasticityViewsTests(TestCase):
         webapp_views.dropq_compute = MockCompute()
 
         # Do the microsim
-        reform = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
+        start_year = u'2016'
+        data = get_post_data(start_year)
+        data[u'II_em'] = [u'4333']
 
-        micro1 = do_micro_sim(self.client, reform)
+        micro1 = do_micro_sim(self.client, data)["response"]
 
         # Do another microsim
-        reform[u'II_em'] += [u'4334']
-        micro2 = do_micro_sim(self.client, reform)
+        data[u'II_em'] += [u'4334']
+        micro2 = do_micro_sim(self.client, data)["response"]
 
         # Do a third microsim
-        reform[u'II_em'] += [u'4335']
-        micro3 = do_micro_sim(self.client, reform)
+        data[u'II_em'] += [u'4335']
+        micro3 = do_micro_sim(self.client, data)["response"]
 
         from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
@@ -75,18 +74,24 @@ class DynamicElasticityViewsTests(TestCase):
         # microsim above
         idx = page.find('dynamic/macro')
         idx_ms_num_start = idx + 14
-        idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/') 
+        idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/')
         microsim_model_num = page[idx_ms_num_start:idx_ms_num_end]
         assert microsim_model_num == orig_micro_model_num
 
     @pytest.mark.xfail
     def test_elasticity_reform_from_file(self):
-        import sys
-        from webapp.apps.taxbrain import views
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
         # Do the microsim from file
-        micro1 = do_micro_sim_from_file(self.client)
+        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        # set dyn_dropq_compute to False so that
+        # webapp.apps.dynamic_views.dropq_compute is not Mocked
+        micro1 = do_micro_sim(
+            self.client,
+            data,
+            post_url='/taxbrain/file/',
+            dyn_dropq_compute=False
+        )
+
+        micro1 = micro1["response"]
 
         from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
