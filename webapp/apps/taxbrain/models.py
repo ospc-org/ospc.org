@@ -538,6 +538,7 @@ class TaxSaveInputs(models.Model):
     CTC_new_prt = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_c = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_c_under5_bonus = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_for_all = models.CharField(default="False", blank=True, null=True, max_length=50)
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_rt_bonus_under5family = CommaSeparatedField(default=None, blank=True, null=True)
