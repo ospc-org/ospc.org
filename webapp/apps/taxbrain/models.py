@@ -164,6 +164,15 @@ class TaxSaveInputs(models.Model):
     ALD_DomesticProduction_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Tuition_hc = CommaSeparatedField(default=None, blank=True, null=True)
 
+    DependentCredit_Child_c = CommaSeparatedField(default=None, blank=True, null=True)
+    DependentCredit_Nonchild_c = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+
     FEI_ec_c = CommaSeparatedField(default=None, blank=True, null=True)
     FEI_ec_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
