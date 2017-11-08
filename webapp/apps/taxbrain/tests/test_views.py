@@ -172,7 +172,6 @@ class TaxBrainViewsTests(TestCase):
         truth_mods = taxcalc.Calculator.read_json_param_objects(
             test_reform.reform_text,
             None,
-            False
         )
         truth_mods = truth_mods["policy"]
         check_posted_params(webapp_views.dropq_compute, truth_mods,
