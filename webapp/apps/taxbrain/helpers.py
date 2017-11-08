@@ -205,7 +205,7 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [         1,   '%', 1],  # "%age Tax Decrease",
     [         1,   '%', 1],  # "Share of Overall Change"
 ]
-TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.BIN_ROW_NAMES
+TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.WEBBIN_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     '<$10K':'Less than 10',
     '$10-20K':'10-20',
@@ -249,7 +249,7 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'fiscal_tot_base': 'Total Liabilities Baseline by Calendar Year',
     'fiscal_tot_ref': 'Total Liabilities Reform by Calendar Year',
 }
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
+TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.tbi_utils.AGGR_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
