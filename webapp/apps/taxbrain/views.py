@@ -190,7 +190,6 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
     policy_dict = taxcalc.Calculator.read_json_param_objects(
         reform,
         assumptions,
-        arrays_not_lists=False
     )
     # get errors and warnings on parameters that do not cause ValueErrors
     errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
