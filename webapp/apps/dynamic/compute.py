@@ -198,6 +198,7 @@ class MockDynamicCompute(DynamicCompute):
             resp = {'job_id': job_id, 'guid': 'guia123456789'}
             resp = json.dumps(resp)
             mock.register_uri('POST', '/ogusa_start_job', text=resp)
+            self.last_posted = data
             return DynamicCompute.remote_submit_job(self, theurl, data, timeout)
 
     def remote_register_job(self, theurl, data, timeout):
