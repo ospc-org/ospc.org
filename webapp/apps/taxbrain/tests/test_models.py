@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.test import Client
 import json
 import os
+import numpy as np
 from datetime import datetime
 
 from ..models import TaxSaveInputs, JSONReformTaxCalculator, OutputUrl
@@ -33,13 +34,14 @@ class TaxBrainResultsTest(TestCase):
         pass
 
     def get_taxbrain_model(self):
-        del fields['_state']
-        del fields['creation_date']
-        del fields['id']
-        for key in fields:
-            if isinstance(fields[key], list):
-                fields[key] = ','.join(map(str, fields[key]))
-        personal_inputs = PersonalExemptionForm(2017, fields)
+        self.fields = fields.copy()
+        del self.fields['_state']
+        del self.fields['creation_date']
+        del self.fields['id']
+        for key in self.fields:
+            if isinstance(self.fields[key], list):
+                self.fields[key] = ','.join(map(str, self.fields[key]))
+        personal_inputs = PersonalExemptionForm(2017, self.fields)
         print(personal_inputs.errors)
         model = personal_inputs.save()
         model.job_ids = '1,2,3'
@@ -59,13 +61,13 @@ class TaxBrainResultsTest(TestCase):
         return unique_url
 
     def test_tc_lt_0130(self):
-        old_path = os.path.join(CURDIR, "skelaton_tc_lt_0130.json")
+        old_path = os.path.join(CURDIR, "skelaton_res_lt_0130.json")
         with open(old_path) as js:
-            old_labels = js.read()
+            old_labels = json.loads(js.read())
 
-        new_path = os.path.join(CURDIR, "skelaton_tc_gt_0130.json")
+        new_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
         with open(new_path) as js:
-            new_labels = js.read()
+            new_labels = json.loads(js.read())
 
         unique_url = self.get_taxbrain_model()
 
@@ -73,4 +75,22 @@ class TaxBrainResultsTest(TestCase):
         model.tax_result = old_labels
         model.creation_date = datetime.now()
 
-        assert model.tax_result == new_labels
+        np.testing.assert_equal(model.tax_result, new_labels)
+
+
+    def test_tc_gt_0130(self):
+        old_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
+        with open(old_path) as js:
+            old_labels = json.loads(js.read())
+
+        new_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
+        with open(new_path) as js:
+            new_labels = json.loads(js.read())
+
+        unique_url = self.get_taxbrain_model()
+
+        model = unique_url.unique_inputs
+        model.tax_result = old_labels
+        model.creation_date = datetime.now()
+
+        np.testing.assert_equal(model.tax_result, new_labels)
