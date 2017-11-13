@@ -737,7 +737,7 @@ class TaxSaveInputs(models.Model):
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        outputurl = OutputUrl.objects.get(pk=self.pk)
+        outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
         taxcalc_vers = outputurl.taxcalc_vers
         taxcalc_vers = tuple(map(int, taxcalc_vers.split('.')))
         if taxcalc_vers >= (0, 13, 0):
