@@ -34,7 +34,7 @@ class TaxBrainResultsTest(TestCase):
         pass
 
     def get_taxbrain_model(self, first_year=2017, quick_calc=False,
-                           taxcalc_version="0.13.0", webapp_vers="1.2.0",
+                           taxcalc_vers="0.13.0", webapp_vers="1.2.0",
                            exp_comp_datetime = "2017-10-10"):
         self.fields = fields.copy()
         del self.fields['_state']
@@ -53,7 +53,7 @@ class TaxBrainResultsTest(TestCase):
         model.save()
 
         unique_url = OutputUrl()
-        unique_url.taxcalc_version = taxcalc_version
+        unique_url.taxcalc_vers = taxcalc_vers
         unique_url.webapp_vers = webapp_vers
         unique_url.unique_inputs = model
         unique_url.model_pk = model.pk
@@ -71,7 +71,7 @@ class TaxBrainResultsTest(TestCase):
         with open(new_path) as js:
             new_labels = json.loads(js.read())
 
-        unique_url = self.get_taxbrain_model(taxcalc_version="0.10.2",
+        unique_url = self.get_taxbrain_model(taxcalc_vers="0.10.2",
                                              webapp_vers="1.1.1")
 
         model = unique_url.unique_inputs
@@ -90,7 +90,7 @@ class TaxBrainResultsTest(TestCase):
         with open(new_path) as js:
             new_labels = json.loads(js.read())
 
-        unique_url = self.get_taxbrain_model(taxcalc_version="0.13.0",
+        unique_url = self.get_taxbrain_model(taxcalc_vers="0.13.0",
                                              webapp_vers="1.2.0")
 
         model = unique_url.unique_inputs
