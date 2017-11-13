@@ -22,7 +22,8 @@ from taxcalc import Policy
 from ...test_assets import test_reform, test_assumptions
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data,
-                                  get_dropq_compute_from_module)
+                                  get_dropq_compute_from_module,
+                                  get_taxbrain_model)
 
 
 START_YEAR = 2016
@@ -474,7 +475,10 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        tsi = TaxSaveInputs()
+        unique_url = get_taxbrain_model(taxcalc_vers="0.10.0",
+                                        webapp_vers="1.1.0")
+
+        tsi = unique_url.unique_inputs
         old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   "example_old_result.json")
 
@@ -482,7 +486,6 @@ class TaxBrainViewsTests(TestCase):
             tsi.tax_result = json.loads(f.read())
         tsi.first_year = 2016
         tsi.save()
-
         factory = RequestFactory()
         req = factory.get('/taxbrain/')
         url = '/taxbrain/42'
