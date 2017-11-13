@@ -238,29 +238,30 @@ TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES
 # +                 '$100-200K', '$200-500K',
 # +                 '$500-1000K', '>$1000K', 'all']
 
-TC_0130_PLUS_DEC = {'0-10': 'perc0-10',
-                    '10-20': 'perc10-20',
-                    '20-30': 'perc20-30',
-                    '30-40': 'perc30-40',
-                    '40-50': 'perc40-50',
-                    '50-60': 'perc50-60',
-                    '60-70': 'perc60-70',
-                    '70-80': 'perc70-80',
-                    '80-90': 'perc80-90',
-                    '90-100': 'perc90-100',
-                    'all': 'all'}
-TC_O130_PLUS_BIN = {'$10-20K': 'ten_twenty',
-                    '$100-200K': 'hundred_twohundred',
-                    '$20-30K': 'twenty_thirty',
-                    '$200-500K': 'twohundred_fivehundred',
-                    '$30-40K': 'thirty_forty',
-                    '$40-50K': 'forty_fifty',
-                    '$50-75K': 'fifty_seventyfive',
-                    '$500-1000K': 'fivehundred_thousand',
-                    '$75-100K': 'seventyfive_hundred',
-                    '<$10K': 'less_than_10',
-                    '>$1000K': 'thousand_up',
-                    'all': 'all'}
+PRE_TC_0130_RES_MAP = {
+    'all': 'all',
+    'fifty_seventyfive': '$50-75K',
+    'fivehundred_thousand': '$500-1000K',
+    'forty_fifty': '$40-50K',
+    'hundred_twohundred': '$100-200K',
+    'less_than_10': '<$10K',
+    'perc0-10': '0-10',
+    'perc10-20': '10-20',
+    'perc20-30': '20-30',
+    'perc30-40': '30-40',
+    'perc40-50': '40-50',
+    'perc50-60': '50-60',
+    'perc60-70': '60-70',
+    'perc70-80': '70-80',
+    'perc80-90': '80-90',
+    'perc90-100': '90-100',
+    'seventyfive_hundred': '$75-100K',
+    'ten_twenty': '$10-20K',
+    'thirty_forty': '$30-40K',
+    'thousand_up': '>$1000K',
+    'twenty_thirty': '$20-30K',
+    'twohundred_fivehundred': '$200-500K'
+}
 
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'perc0-10':'0-10%',
@@ -977,6 +978,25 @@ for k, param in TAXCALC_DEFAULT_PARAMS.iteritems():
 
     print('\n')
 """
+
+
+def rename_keys(rename_dict, map_dict):
+    """
+    Recursively rename keys in `rename_dict` according to mapping specified
+    in `map_dict`
+
+    returns: dict with new keys
+    """
+    if isinstance(rename_dict, dict):
+        for k in rename_dict:
+            label = k[:-2]
+            year = k[-2:]
+            if label in map_dict:
+                new_label = map_dict[label] + year
+            else:
+                new_label = k
+            rename_dict[new_label] = rename_keys(rename_dict.pop(k), map_dict)
+    return rename_dict
 
 
 def taxcalc_results_to_tables(results, first_budget_year):

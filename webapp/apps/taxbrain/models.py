@@ -11,6 +11,7 @@ from uuidfield import UUIDField
 from jsonfield import JSONField
 import datetime
 
+from helpers import rename_keys, PRE_TC_0130_RES_MAP
 
 def convert_to_floats(tsi):
     """
@@ -731,7 +732,18 @@ class TaxSaveInputs(models.Model):
 
     @property
     def tax_result(self):
-        return self._tax_result
+        """
+        If taxcalc version is greater than or equal to 0.13.0, return table
+        If taxcalc version is less than 0.13.0, then rename keys to new names
+        and then return table
+        """
+        outputurl = OutputUrl.objects.get(pk=self.pk)
+        taxcalc_vers = outputurl.taxcalc_vers
+        taxcalc_vers = tuple(map(int, taxcalc_vers.split('.')))
+        if taxcalc_vers >= (0, 13, 0):
+            return self._tax_result
+        else:
+            return rename_keys(self._tax_result, PRE_TC_0130_RES_MAP)
 
     @tax_result.setter
     def tax_result(self, result):
