@@ -48,6 +48,7 @@ class TaxBrainResultsTest(TestCase):
         model = unique_url.unique_inputs
         model.tax_result = old_labels
         model.creation_date = datetime.now()
+        model.save()
 
         np.testing.assert_equal(model.tax_result, new_labels)
 
@@ -67,5 +68,6 @@ class TaxBrainResultsTest(TestCase):
         model = unique_url.unique_inputs
         model.tax_result = old_labels
         model.creation_date = datetime.now()
+        model.save()
 
         np.testing.assert_equal(model.tax_result, new_labels)
