@@ -717,7 +717,7 @@ class TaxSaveInputs(models.Model):
     """
 
     # Result
-    tax_result = JSONField(default=None, blank=True, null=True)
+    _tax_result = JSONField(default=None, blank=True, null=True, db_column='tax_result')
 
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
@@ -728,6 +728,14 @@ class TaxSaveInputs(models.Model):
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
+
+    @property
+    def tax_result(self):
+        return self._tax_result
+
+    @tax_result.setter
+    def tax_result(self, result):
+        self._tax_result = result
 
     class Meta:
         permissions = (
