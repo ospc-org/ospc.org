@@ -33,7 +33,9 @@ class TaxBrainResultsTest(TestCase):
     def setUp(self):
         pass
 
-    def get_taxbrain_model(self):
+    def get_taxbrain_model(self, first_year=2017, quick_calc=False,
+                           taxcalc_version="0.13.0", webapp_vers="1.2.0",
+                           exp_comp_datetime = "2017-10-10"):
         self.fields = fields.copy()
         del self.fields['_state']
         del self.fields['creation_date']
@@ -41,21 +43,21 @@ class TaxBrainResultsTest(TestCase):
         for key in self.fields:
             if isinstance(self.fields[key], list):
                 self.fields[key] = ','.join(map(str, self.fields[key]))
-        personal_inputs = PersonalExemptionForm(2017, self.fields)
+        personal_inputs = PersonalExemptionForm(first_year, self.fields)
         print(personal_inputs.errors)
         model = personal_inputs.save()
         model.job_ids = '1,2,3'
         model.json_text = None
-        model.first_year = 2017
-        model.quick_calc = False
+        model.first_year = first_year
+        model.quick_calc = quick_calc
         model.save()
 
         unique_url = OutputUrl()
-        unique_url.taxcalc_version = "0.10.2"
-        unique_url.webapp_vers = "1.1.0"
+        unique_url.taxcalc_version = taxcalc_version
+        unique_url.webapp_vers = webapp_vers
         unique_url.unique_inputs = model
         unique_url.model_pk = model.pk
-        unique_url.exp_comp_datetime = "2017-10-10"
+        unique_url.exp_comp_datetime = exp_comp_datetime
         unique_url.save()
 
         return unique_url
@@ -69,7 +71,8 @@ class TaxBrainResultsTest(TestCase):
         with open(new_path) as js:
             new_labels = json.loads(js.read())
 
-        unique_url = self.get_taxbrain_model()
+        unique_url = self.get_taxbrain_model(taxcalc_version="0.10.2",
+                                             webapp_vers="1.1.1")
 
         model = unique_url.unique_inputs
         model.tax_result = old_labels
@@ -87,7 +90,8 @@ class TaxBrainResultsTest(TestCase):
         with open(new_path) as js:
             new_labels = json.loads(js.read())
 
-        unique_url = self.get_taxbrain_model()
+        unique_url = self.get_taxbrain_model(taxcalc_version="0.13.0",
+                                             webapp_vers="1.2.0")
 
         model = unique_url.unique_inputs
         model.tax_result = old_labels
