@@ -860,9 +860,14 @@ def parse_sub_category(field_section, budget_year):
     return output + free_fields
 
 
-def parse_top_level(ordered_dict):
+def parse_top_level(ordered_dict, use_puf_not_cps=True):
     output = []
     for x, y in ordered_dict.iteritems():
+        # check that only parameters that are compatible with the current
+        # data set are used
+        if not ((y["compatible_data"]["cps"] and not use_puf_not_cps) or
+           (y["compatible_data"]["puf"] and use_puf_not_cps)):
+            continue
         section_name = dict(y).get("section_1")
         if section_name:
             section = next((item for item in output if section_name in item), None)
@@ -873,10 +878,12 @@ def parse_top_level(ordered_dict):
     return output
 
 
-def nested_form_parameters(budget_year=2017):
-    defaults = taxcalc.policy.Policy.default_data(metadata=True,
-                                                  start_year=budget_year)
-    groups = parse_top_level(defaults)
+def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
+                           defaults=None):
+    if defaults is None:
+        defaults = taxcalc.Policy.default_data(metadata=True,
+                                               start_year=budget_year)
+    groups = parse_top_level(defaults, use_puf_not_cps=use_puf_not_cps)
     for x in groups:
         for y, z in x.iteritems():
             x[y] = parse_sub_category(z, budget_year)
