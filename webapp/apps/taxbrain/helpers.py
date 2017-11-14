@@ -1115,7 +1115,6 @@ def taxcalc_results_to_tables(results, first_budget_year):
 
                 if multi_year_cells:
                     for yi, year in enumerate(years):
-                        print("table_data", table_data.keys())
                         value = table_data["{0}_{1}".format(row_key, yi)][col_key]
                         if value[-1] == "%":
                             value = value[:-1]
