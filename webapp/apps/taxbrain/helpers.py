@@ -260,7 +260,20 @@ PRE_TC_0130_RES_MAP = {
     'thirty_forty': '$30-40K',
     'thousand_up': '>$1000K',
     'twenty_thirty': '$20-30K',
-    'twohundred_fivehundred': '$200-500K'
+    'twohundred_fivehundred': '$200-500K',
+    'mY_dec': 'dist2_xdec',
+    'mX_dec': 'dist1_xdec',
+    'df_dec': 'diff_itax_xdec',
+    'pdf_dec': 'diff_ptax_xdec',
+    'cdf_dec': 'diff_comb_xdec',
+    'mY_bin': 'dist2_xbin',
+    'mX_bin': 'dist1_xbin',
+    'df_bin': 'diff_itax_xbin',
+    'pdf_bin': 'diff_ptax_xbin',
+    'cdf_bin': 'diff_comb_xbin',
+    'fiscal_tot_diffs': 'aggr_d',
+    'fiscal_tot_base': 'aggr_1',
+    'fiscal_tot_ref': 'aggr_2'
 }
 
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
@@ -277,20 +290,21 @@ TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
     'all':'All'
 }
 TAXCALC_RESULTS_TABLE_LABELS = {
-    'mX_dec': 'Base plan tax vars, weighted total by expanded income decile',
-    'mY_dec': 'User plan tax vars, weighted total by expanded income decile',
-    'df_dec': 'Individual Income Tax: Difference between Base and User plans by expanded income decile',
-    'pdf_dec': 'Payroll Tax: Difference between Base and User plans by expanded income decile',
-    'cdf_dec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',
-    'mX_bin': 'Base plan tax vars, weighted total by expanded income bin',
-    'mY_bin': 'User plan tax vars, weighted total by expanded income bin',
-    'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
-    'pdf_bin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
-    'cdf_bin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
-    'fiscal_tot_diffs': 'Total Liabilities Change by Calendar Year',
-    'fiscal_tot_base': 'Total Liabilities Baseline by Calendar Year',
-    'fiscal_tot_ref': 'Total Liabilities Reform by Calendar Year',
+    'diff_comb_xbin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
+    'diff_comb_xdec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',
+    'diff_itax_xbin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
+    'diff_itax_xdec': 'Individual Income Tax: Difference between Base and User plans by expanded income decile',
+    'diff_ptax_xbin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
+    'diff_ptax_xdec': 'Payroll Tax: Difference between Base and User plans by expanded income decile',
+    'dist1_xbin': 'Base plan tax vars, weighted total by expanded income bin',
+    'dist1_xdec': 'Base plan tax vars, weighted total by expanded income decile',
+    'dist2_xbin': 'User plan tax vars, weighted total by expanded income bin',
+    'dist2_xdec': 'User plan tax vars, weighted total by expanded income decile',
+    'aggr_1': 'Total Liabilities Baseline by Calendar Year',
+    'aggr_d': 'Total Liabilities Change by Calendar Year',
+    'aggr_2': 'Total Liabilities Reform by Calendar Year'
 }
+
 AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
@@ -741,10 +755,11 @@ class TaxCalcParam(object):
 
         # check that only parameters that are compatible with the current
         # data set are used
-        self.gray_out = not (
-            (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or
-            (attributes["compatible_data"]["puf"] and use_puf_not_cps)
-        )
+        if "compatible_data" in attributes:
+            self.gray_out = not (
+                (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or
+                (attributes["compatible_data"]["puf"] and use_puf_not_cps)
+            )
 
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
@@ -1003,9 +1018,11 @@ def rename_keys(rename_dict, map_dict):
     """
     if isinstance(rename_dict, dict):
         for k in rename_dict:
-            label = k[:-2]
-            year = k[-2:]
-            if label in map_dict:
+            if k in map_dict:
+                new_label = map_dict[k]
+            elif k[:-2] in map_dict:
+                label = k[:-2]
+                year = k[-2:]
                 new_label = map_dict[label] + year
             else:
                 new_label = k
@@ -1019,7 +1036,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
     Return organized and labeled table results for display
     """
     total_row_keys = AGG_ROW_NAMES
-    num_years = len(results['fiscal_tot_diffs'][total_row_keys[0]])
+    num_years = len(results['aggr_d'][total_row_keys[0]])
     years = list(range(first_budget_year,
                        first_budget_year + num_years))
 
@@ -1036,7 +1053,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
         print(' ----- inputs ------- \n')
         """
 
-        if table_id in ['mX_dec', 'mY_dec']:
+        if table_id in ['dist1_xdec', 'dist2_xdec']:
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -1044,7 +1061,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['mX_bin', 'mY_bin']:
+        elif table_id in ['dist1_xbin', 'dist2_xbin']:
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -1052,7 +1069,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['df_dec', 'pdf_dec', 'cdf_dec']:
+        elif table_id in ['diff_itax_xdec', 'diff_ptax_xdec', 'diff_comb_xdec']:
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -1060,7 +1077,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['df_bin', 'pdf_bin', 'cdf_bin']:
+        elif table_id in ['diff_itax_xbin', 'diff_ptax_xbin', 'diff_comb_xbin']:
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -1068,7 +1085,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id == 'fiscal_tot_diffs':
+        elif table_id == 'aggr_d':
             # todo - move these into the above TC result param constants
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
@@ -1077,7 +1094,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = False
 
-        elif table_id == 'fiscal_tot_base':
+        elif table_id == 'aggr1':
             # todo - move these into the above TC result param constants
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
@@ -1086,7 +1103,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = False
 
-        elif table_id == 'fiscal_tot_ref':
+        elif table_id == 'aggr2':
             # todo - move these into the above TC result param constants
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
@@ -1094,7 +1111,6 @@ def taxcalc_results_to_tables(results, first_budget_year):
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
-
         table = {
             'col_labels': col_labels,
             'cols': [],
