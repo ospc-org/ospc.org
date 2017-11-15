@@ -720,10 +720,13 @@ class TaxCalcParam(object):
     """
     FORM_HIDDEN_PARAMS = ["widow", "separate", "dependent"]
 
-    def __init__(self, param_id, attributes, first_budget_year):
-        self.__load_from_json(param_id, attributes, first_budget_year)
+    def __init__(self, param_id, attributes, first_budget_year,
+                 use_puf_not_cps=True):
+        self.__load_from_json(param_id, attributes, first_budget_year,
+                              use_puf_not_cps)
 
-    def __load_from_json(self, param_id, attributes, first_budget_year):
+    def __load_from_json(self, param_id, attributes, first_budget_year,
+                         use_puf_not_cps):
         values_by_year = attributes['value']
         col_labels = attributes.get('col_label', '')
 
@@ -735,6 +738,13 @@ class TaxCalcParam(object):
             attributes.get('irs_ref') or "",  # sometimes this is blank
             attributes.get('notes') or ""     # sometimes this is blank
             ]).strip()
+
+        # check that only parameters that are compatible with the current
+        # data set are used
+        self.gray_out = not (
+            (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or
+            (attributes["compatible_data"]["puf"] and use_puf_not_cps)
+        )
 
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
@@ -841,13 +851,14 @@ class TaxCalcParam(object):
                         self.min = self.min[1:]
 
 
-def parse_sub_category(field_section, budget_year):
+def parse_sub_category(field_section, budget_year, use_puf_not_cps=True):
     output = []
     free_fields = []
     for x in field_section:
         for y, z in x.iteritems():
             section_name = dict(z).get("section_2")
-            new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year)}
+            new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year,
+                                                            use_puf_not_cps)}
             if section_name:
                 section = next((item for item in output if section_name in item), None)
                 if not section:
@@ -860,14 +871,9 @@ def parse_sub_category(field_section, budget_year):
     return output + free_fields
 
 
-def parse_top_level(ordered_dict, use_puf_not_cps=True):
+def parse_top_level(ordered_dict):
     output = []
     for x, y in ordered_dict.iteritems():
-        # check that only parameters that are compatible with the current
-        # data set are used
-        if not ((y["compatible_data"]["cps"] and not use_puf_not_cps) or
-           (y["compatible_data"]["puf"] and use_puf_not_cps)):
-            continue
         section_name = dict(y).get("section_1")
         if section_name:
             section = next((item for item in output if section_name in item), None)
@@ -880,13 +886,14 @@ def parse_top_level(ordered_dict, use_puf_not_cps=True):
 
 def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
                            defaults=None):
+    # defaults are None unless we are testing
     if defaults is None:
         defaults = taxcalc.Policy.default_data(metadata=True,
                                                start_year=budget_year)
-    groups = parse_top_level(defaults, use_puf_not_cps=use_puf_not_cps)
+    groups = parse_top_level(defaults)
     for x in groups:
         for y, z in x.iteritems():
-            x[y] = parse_sub_category(z, budget_year)
+            x[y] = parse_sub_category(z, budget_year, use_puf_not_cps)
     return groups
 
 # Create a list of default Behavior parameters
