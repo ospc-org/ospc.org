@@ -1,7 +1,8 @@
 import pytest
 import json
+import numpy as np
 import taxcalc
-from ..helpers import nested_form_parameters
+from ..helpers import nested_form_parameters, rename_keys
 
 CURRENT_LAW_POLICY = """
 {
@@ -75,3 +76,53 @@ def test_nested_form_parameters(monkeypatch, mock_current_law_policy):
     res = {k: v for r in res for k, v in r.iteritems()}
     assert (res["ALD_EarlyWithdraw_hc"].gray_out and
             not res["ALD_IRAContributions_hc"].gray_out)
+
+
+def test_rename_keys(monkeypatch):
+    a = {
+        'a': {
+            'b': {
+                'c': []
+            }
+        },
+        'd': {
+            'e': []
+        },
+        'f_1': [],
+        'g': {
+            'h': [],
+            'i_0': [],
+            'j': []
+        }
+    }
+    exp = {
+        'A': {
+            'B': {
+                'C': []
+            }
+        },
+        'D': {
+            'E': []
+        },
+        'F_1': [],
+        'G': {
+            'H': [],
+            'I_0': [],
+            'J': []
+        }
+    }
+
+    map_dict = {
+        'a': 'A',
+        'b': 'B',
+        'c': 'C',
+        'd': 'D',
+        'e': 'E',
+        'f': 'F',
+        'g': 'G',
+        'h': 'H',
+        'i': 'I',
+        'j': 'J'
+    }
+    act = rename_keys(a, map_dict)
+    np.testing.assert_equal(act, exp)
