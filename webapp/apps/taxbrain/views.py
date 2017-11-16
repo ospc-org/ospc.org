@@ -42,7 +42,8 @@ from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMess
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       is_wildcard, convert_val, make_bool, nested_form_parameters,
                       to_json_reform, parse_fields)
-from .compute import DropqCompute, MockCompute, JobFailError
+from .compute import (DropqCompute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
+                      NUM_BUDGET_YEARS_QUICK)
 
 dropq_compute = DropqCompute()
 
@@ -454,21 +455,19 @@ def submit_reform(request, user=None):
                 personal_inputs.add_error(None, msg)
     else:
         log_ip(request)
+        user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+        data = {'user_mods': json.dumps(user_mods),
+                'first_budget_year': int(start_year),
+                'start_budget_year': 0}
         if do_full_calc:
+            data['num_budget_years'] = NUM_BUDGET_YEARS
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=is_file,
-                additional_data=assumptions_dict,
-                pack_up_user_mods=False
+                data
             )
         else:
+            data['num_budget_years'] = NUM_BUDGET_YEARS_QUICK
             submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=is_file,
-                additional_data=assumptions_dict,
-                pack_up_user_mods=False
+                data
             )
 
     return {'personal_inputs': personal_inputs,
@@ -677,13 +676,16 @@ def submit_micro(request, pk):
     else:
         reform_dict = json.loads(model.json_text.reform_text)
         assumptions_dict = json.loads(model.json_text.assumption_text)
+
+    user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+    data = {'user_mods': json.dumps(user_mods),
+            'first_budget_year': int(start_year),
+            'start_budget_year': 0,
+            'num_budget_years': NUM_BUDGET_YEARS}
+
     # start calc job
     submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-        reform_dict,
-        int(start_year),
-        is_file=is_file,
-        additional_data=assumptions_dict,
-        pack_up_user_mods=False
+        data
     )
 
     args = {'url': url,
