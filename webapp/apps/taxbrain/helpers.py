@@ -104,7 +104,6 @@ def same_version(v1, v2):
     return v1[:idx] == v2[:idx]
 
 def arrange_totals_by_row(tots, keys):
-
     out = {}
     for key in keys:
         order_map = {}
@@ -204,6 +203,8 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [         1,   '%', 1],  # "%age Tax Increase",
     [         1,   '%', 1],  # "%age Tax Decrease",
     [         1,   '%', 1],  # "Share of Overall Change"
+    [         1,   '%', 1],  # Change as % of After-Tax Income
+    [         1,   '%', 1],  # Share of Overall Change
 ]
 TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.WEBBIN_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
@@ -1094,7 +1095,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = False
 
-        elif table_id == 'aggr1':
+        elif table_id == 'aggr_1':
             # todo - move these into the above TC result param constants
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
@@ -1103,7 +1104,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = False
 
-        elif table_id == 'aggr2':
+        elif table_id == 'aggr_2':
             # todo - move these into the above TC result param constants
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
@@ -1111,6 +1112,15 @@ def taxcalc_results_to_tables(results, first_budget_year):
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
+        else:
+            raise(ValueError("{} not in expected list of names {}".
+                  format(table_id, ','.join(["dist2_xdec", "dist1_xdec",
+                                             "diff_itax_xdec", "diff_ptax_xdec",
+                                             "diff_comb_xdec", "dist2_xbin",
+                                             "dist1_xbin", "diff_itax_xbin",
+                                             "diff_itax_xbin", "diff_ptax_xbin",
+                                             "diff_comb_xbin", "aggr_d",
+                                             "aggr_1", "aggr_2"]))))
         table = {
             'col_labels': col_labels,
             'cols': [],
