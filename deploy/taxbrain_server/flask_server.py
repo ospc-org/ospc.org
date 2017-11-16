@@ -65,16 +65,16 @@ def dropq_endpoint(dropq_task):
     if request.method == 'POST':
         year_n = request.form['year']
         user_mods = json.loads(request.form['user_mods'])
-        beh_params = None if 'behavior_params' not in request.form else json.loads(request.form['behavior_params'])
         first_budget_year = None if 'first_budget_year' not in request.form else request.form['first_budget_year']
     else:
         year_n = request.args.get('year', '')
         first_budget_year = None
-        beh_params = None
 
     year_n = int(year_n)
-    print("beh params", beh_params, " user_mods: ", user_mods)
-    raw_results = dropq_task.delay(year_n, user_mods, first_budget_year, beh_params)
+    print("year_n", year_n)
+    print("user_mods", user_mods)
+    print("first_budget_year", first_budget_year)
+    raw_results = dropq_task.delay(year_n, user_mods, first_budget_year)
     RUNNING_JOBS[raw_results.id] = raw_results
     length = client.llen(queue_name) + 1
     results = {'job_id':str(raw_results), 'qlength':length}
