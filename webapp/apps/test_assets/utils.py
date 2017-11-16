@@ -80,10 +80,10 @@ def check_posted_params(mock_compute, params_to_check, start_year):
     """
     last_posted = mock_compute.last_posted
     user_mods = json.loads(last_posted["user_mods"])
-    assert last_posted["first_budget_year"] == start_year
+    assert last_posted["first_budget_year"] == int(start_year)
     for year in params_to_check:
         for param in params_to_check[year]:
-            assert user_mods[str(year)][param] == params_to_check[year][param]
+            assert user_mods["policy"][str(year)][param] == params_to_check[year][param]
 
 
 def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False):
