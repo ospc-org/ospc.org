@@ -527,7 +527,7 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'ERROR: value 9e+99 > max value 81210.81 for _II_brk2_4 for 2020'
+        msg = 'ERROR: value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
         assert msg in response.context['errors']
 
 
@@ -545,5 +545,5 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: value 1000.0 < min value 6794.31 for 2020'
+        msg = 'WARNING: value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
