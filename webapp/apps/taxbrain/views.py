@@ -768,9 +768,9 @@ def get_result_context(model, request, url):
     created_on = model.creation_date
     if 'fiscal_tots' in output:
         # Use new key/value pairs for old data
-        output['fiscal_tot_diffs'] = output['fiscal_tots']
-        output['fiscal_tot_base'] = output['fiscal_tots']
-        output['fiscal_tot_ref'] = output['fiscal_tots']
+        output['aggr_d'] = output['fiscal_tots']
+        output['aggr_1'] = output['fiscal_tots']
+        output['aggr_2'] = output['fiscal_tots']
         del output['fiscal_tots']
 
     tables = taxcalc_results_to_tables(output, first_year)
@@ -804,9 +804,9 @@ def get_result_context(model, request, url):
         is_registered = True if request.user.is_authenticated() else False
     else:
         is_registered = False
-    tables['fiscal_change'] = add_summary_column(tables['fiscal_tot_diffs'])
-    tables['fiscal_currentlaw'] = add_summary_column(tables['fiscal_tot_base'])
-    tables['fiscal_reform'] = add_summary_column(tables['fiscal_tot_ref'])
+    tables['fiscal_change'] = add_summary_column(tables['aggr_d'])
+    tables['fiscal_currentlaw'] = add_summary_column(tables['aggr_1'])
+    tables['fiscal_reform'] = add_summary_column(tables['aggr_2'])
     json_table = json.dumps(tables)
 
     context = {
