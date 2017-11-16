@@ -95,7 +95,7 @@ def benefit_switch_fixup(request, reform, model, name="ID_BenefitSurtax_Switch")
     values_from_model = [[reform[_id][0] for _id in _ids]]
     final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
     for _id, val in zip(_ids, final_values[0]):
-        reform[_id] = [1.0 if val else 0.0]
+        reform[_id] = [1 if val else 0]
         setattr(model, _id, unicode(val))
     return reform
 
@@ -625,7 +625,6 @@ def personal_results(request):
             start_year = params['start_year'][0]
 
         personal_inputs = PersonalExemptionForm(first_year=start_year)
-
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
