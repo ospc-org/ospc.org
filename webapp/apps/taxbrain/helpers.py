@@ -1192,10 +1192,10 @@ def format_csv(tax_results, url_id, first_budget_year):
     And then returns a list of list of strings for CSV output. The format
     of the lines is as follows:
     #URL: http://www.ospc.org/taxbrain/ID/csv/
-    #fiscal tots data
+    #aggr_d
     YEAR_0, ... YEAR_K
     val, val, ... val
-    #mX_dec
+    #dist1_xdec
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1203,7 +1203,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #mY_dec
+    #dist2_xdec
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1211,7 +1211,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #df_dec
+    #diff_itax_xdec
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1219,7 +1219,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #mX_bin
+    #dist1_xbin
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1227,7 +1227,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #mY_bin
+    #dist2_xbin
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1235,7 +1235,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #df_bin
+    #diff_itax_xbin
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1249,9 +1249,9 @@ def format_csv(tax_results, url_id, first_budget_year):
     #URL
     res.append(["#URL: http://www.ospc.org/taxbrain/" + str(url_id) + "/"])
 
-    #FISCAL TOTS
-    res.append(["#fiscal totals data"])
-    ft = tax_results.get('fiscal_change', {})
+    #aggr2
+    res.append(["#aggr_2"])
+    ft = tax_results.get('aggr_d', {})
     yrs = [first_budget_year + i for i in range(0, len(ft['ind_tax']))]
     if yrs:
         res.append(yrs)
@@ -1263,9 +1263,9 @@ def format_csv(tax_results, url_id, first_budget_year):
         res.append(['ind_tax'])
         res.append(ft['ind_tax'])
 
-    #MX_DEC
-    res.append(["#mX_dec"])
-    mxd = tax_results.get('mX_dec', {})
+    #dist1_xdec
+    res.append(["#dist1_xdec"])
+    mxd = tax_results.get('dist1_xdec', {})
     if mxd:
         for count, yr in enumerate(yrs):
             res.append([yr])
@@ -1273,9 +1273,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
                 res.append(mxd[row+"_" + str(count)])
 
-    #MY_DEC
-    res.append(["#mY_dec"])
-    myd = tax_results.get('mY_dec', {})
+    #dist2_xdec
+    res.append(["#dist2_xdec"])
+    myd = tax_results.get('dist2_xdec', {})
     if myd:
         for count, yr in enumerate(yrs):
             res.append([yr])
@@ -1283,9 +1283,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
                 res.append(myd[row+"_" + str(count)])
 
-    #DF_DEC
-    res.append(["#df_dec"])
-    dfd = tax_results.get('df_dec', {})
+    #diff_itax_xdec
+    res.append(["#diff_itax_xdec"])
+    dfd = tax_results.get('diff_itax_xdec', {})
     if dfd:
         for count, yr in enumerate(yrs):
             res.append([yr])
@@ -1293,8 +1293,8 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
                 res.append(dfd[row+"_" + str(count)])
 
-    #MX_BIN
-    res.append(["#mX_bin"])
+    #dist1_xbin
+    res.append(["#dist1_xbin"])
     mxb = tax_results.get('mX_bin', {})
     if mxb:
         for count, yr in enumerate(yrs):
@@ -1303,8 +1303,8 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_BIN_ROW_KEYS:
                 res.append(mxb[row+"_" + str(count)])
 
-    #MY_BIN
-    res.append(["#mY_bin"])
+    #dist2_xbin
+    res.append(["#dist2_xbin"])
     myb = tax_results.get('mY_bin', {})
     if myb:
         for count, yr in enumerate(yrs):
@@ -1313,9 +1313,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_BIN_ROW_KEYS:
                 res.append(myb[row+"_" + str(count)])
 
-    #DF_BIN
-    res.append(["#df_bin"])
-    dfb = tax_results.get('df_bin', {})
+    #diff_itax_xbin
+    res.append(["#diff_itax_xbin"])
+    dfb = tax_results.get('diff_itax_xbin', {})
     if dfb:
         for count, yr in enumerate(yrs):
             res.append([yr])
