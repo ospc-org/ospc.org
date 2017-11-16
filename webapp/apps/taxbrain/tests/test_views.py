@@ -295,11 +295,12 @@ class TaxBrainViewsTests(TestCase):
         result = do_micro_sim(self.client, data)
 
         # Check that data was saved properly
-        truth_mods = {START_YEAR: {'_II_brk2_cpi': False},
-                      START_YEAR + 2:
-                          {'_II_brk1': [[15000.0, 19064.03, 9532.01,
-                                         13646.37, 19064.03]]}
-                      }
+        truth_mods = {
+            START_YEAR: {'_II_brk2_cpi': False},
+            START_YEAR + 2: {
+                '_II_brk1': [[15000.0, 19069.63, 9534.81, 13650.38, 19069.63]]
+            }
+        }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
