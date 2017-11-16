@@ -38,48 +38,33 @@ class DropqCompute(object):
     def package_up_vars(self, *args, **kwargs):
         return _package_up_vars(*args, **kwargs)
 
+
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
+
 
     def remote_results_ready(self, theurl, params):
         job_response = requests.get(theurl, params=params)
         return job_response
 
+
     def remote_retrieve_results(self, theurl, params):
         job_response = requests.get(theurl, params=params)
         return job_response
 
-    def submit_json_dropq_calculation(self, user_mods, first_budget_year, additional_data=None):
+
+    def submit_dropq_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS,
-                                       pack_up_user_mods=False,
-                                       additional_data=additional_data)
+        return self.submit_calculation(data, url_template)
 
-    def submit_dropq_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False,
-                                 pack_up_user_mods=True):
-        url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS,
-                                       additional_data=additional_data,
-                                       pack_up_user_mods=pack_up_user_mods)
 
-    def submit_json_dropq_small_calculation(self, user_mods, first_budget_year):
+    def submit_dropq_small_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS_QUICK,
-                                       increment_counter=False,
-                                       pack_up_user_mods=False)
+        return self.submit_calculation(data, url_template,
+                                       increment_counter=False
+                                       )
 
-    def submit_dropq_small_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False,
-                                       pack_up_user_mods=True):
-        url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS_QUICK,
-                                       additional_data=additional_data,
-                                       increment_counter=False,
-                                       pack_up_user_mods=pack_up_user_mods)
 
     def submit_elastic_calculation(self, user_mods, first_budget_year, is_file=False, additional_data={},
                                    pack_up_user_mods=True):
@@ -90,19 +75,17 @@ class DropqCompute(object):
                                        pack_up_user_mods=pack_up_user_mods)
 
 
-    def submit_calculation(self, user_mods, first_budget_year, url_template,
-                           start_budget_year=0, num_years=NUM_BUDGET_YEARS,
+    def submit_calculation(self,
+                           data,
+                           url_template,
                            workers=DROPQ_WORKERS,
                            increment_counter=True,
-                           use_wnc_offset=True,
-                           pack_up_user_mods=True,
-                           additional_data={}):
-        if pack_up_user_mods:
-            user_mods = self.package_up_vars(user_mods, first_budget_year)
-            if not bool(user_mods):
-                return False
-            user_mods = {first_budget_year: user_mods}
-        data = {}
+                           use_wnc_offset=True):
+
+        first_budget_year = int(data['first_budget_year'])
+        start_budget_year = int(data['start_budget_year'])
+        num_years = int(data['num_budget_years'])
+
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
             wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
@@ -114,16 +97,10 @@ class DropqCompute(object):
                 wnc.save()
         else:
             dropq_worker_offset = 0
+
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
         num_hosts = len(hostnames)
-        data["user_mods"] = json.dumps(user_mods)
-        data["first_budget_year"] = str(first_budget_year)
-        if additional_data:
-            if "behavior" in additional_data.keys():
-                data["behavior_params"] = json.dumps(additional_data)
-            else:
-                data[additional_data.keys()[0]] = json.dumps(additional_data)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
@@ -213,37 +190,9 @@ class DropqCompute(object):
                  "aggr_1", "aggr_2"]
         results = {name: {} for name in names}
 
-        # mY_dec = {}
-        # mX_dec = {}
-        # df_dec = {}
-        # pdf_dec = {}
-        # cdf_dec = {}
-        # mY_bin = {}
-        # mX_bin = {}
-        # df_bin = {}
-        # pdf_bin = {}
-        # cdf_bin = {}
-        # fiscal_tot_diffs = {}
-        # fiscal_tot_base = {}
-        # fiscal_tot_ref = {}
         for result in ans:
             for name in results:
                 results[name].update(result[name])
-
-            # mY_dec.update(result['dist2_xdec'])
-            # mX_dec.update(result['dist1_xdec'])
-            # df_dec.update(result['diff_itax_xdec'])
-            # pdf_dec.update(result['diff_ptax_xdec'])
-            # cdf_dec.update(result['diff_comb_xdec'])
-            # mY_bin.update(result['dist2_xbin'])
-            # mX_bin.update(result['dist1_xbin'])
-            # df_bin.update(result['diff_itax_xbin'])
-            # pdf_bin.update(result['diff_ptax_xbin'])
-            # cdf_bin.update(result['diff_comb_xbin'])
-            # fiscal_tot_diffs.update(result['aggr_d'])
-            # fiscal_tot_base.update(result['aggr_1'])
-            # fiscal_tot_ref.update(result['aggr_2'])
-
 
         if ENFORCE_REMOTE_VERSION_CHECK:
             versions = [r.get('taxcalc_version', None) for r in ans]
@@ -265,13 +214,6 @@ class DropqCompute(object):
 
         results['aggr_2'] = arrange_totals_by_row(results['aggr_2'],
                                                   AGG_ROW_NAMES)
-
-        # results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
-        #         'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
-        #         'mX_bin': mX_bin, 'df_bin': df_bin, 'pdf_bin': pdf_bin,
-        #         'cdf_bin': cdf_bin, 'fiscal_tot_diffs': fiscal_tot_diffs,
-        #         'fiscal_tot_base': fiscal_tot_base,
-        #         'fiscal_tot_ref': fiscal_tot_ref}
 
         return results
 
