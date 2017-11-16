@@ -207,33 +207,42 @@ class DropqCompute(object):
 
         ans = self._get_results_base(job_ids, job_failure=job_failure)
 
-        mY_dec = {}
-        mX_dec = {}
-        df_dec = {}
-        pdf_dec = {}
-        cdf_dec = {}
-        mY_bin = {}
-        mX_bin = {}
-        df_bin = {}
-        pdf_bin = {}
-        cdf_bin = {}
-        fiscal_tot_diffs = {}
-        fiscal_tot_base = {}
-        fiscal_tot_ref = {}
+        names = ["dist2_xdec", "dist1_xdec", "diff_itax_xdec", "diff_ptax_xdec",
+                 "diff_comb_xdec", "dist2_xbin", "dist1_xbin", "diff_itax_xbin",
+                 "diff_itax_xbin", "diff_ptax_xbin", "diff_comb_xbin", "aggr_d",
+                 "aggr_1", "aggr_2"]
+        results = {name: {} for name in names}
+
+        # mY_dec = {}
+        # mX_dec = {}
+        # df_dec = {}
+        # pdf_dec = {}
+        # cdf_dec = {}
+        # mY_bin = {}
+        # mX_bin = {}
+        # df_bin = {}
+        # pdf_bin = {}
+        # cdf_bin = {}
+        # fiscal_tot_diffs = {}
+        # fiscal_tot_base = {}
+        # fiscal_tot_ref = {}
         for result in ans:
-            mY_dec.update(result['mY_dec'])
-            mX_dec.update(result['mX_dec'])
-            df_dec.update(result['df_dec'])
-            pdf_dec.update(result['pdf_dec'])
-            cdf_dec.update(result['cdf_dec'])
-            mY_bin.update(result['mY_bin'])
-            mX_bin.update(result['mX_bin'])
-            df_bin.update(result['df_bin'])
-            pdf_bin.update(result['pdf_bin'])
-            cdf_bin.update(result['cdf_bin'])
-            fiscal_tot_diffs.update(result['fiscal_tot_diffs'])
-            fiscal_tot_base.update(result['fiscal_tot_base'])
-            fiscal_tot_ref.update(result['fiscal_tot_ref'])
+            for name in results:
+                results[name].update(result[name])
+
+            # mY_dec.update(result['dist2_xdec'])
+            # mX_dec.update(result['dist1_xdec'])
+            # df_dec.update(result['diff_itax_xdec'])
+            # pdf_dec.update(result['diff_ptax_xdec'])
+            # cdf_dec.update(result['diff_comb_xdec'])
+            # mY_bin.update(result['dist2_xbin'])
+            # mX_bin.update(result['dist1_xbin'])
+            # df_bin.update(result['diff_itax_xbin'])
+            # pdf_bin.update(result['diff_ptax_xbin'])
+            # cdf_bin.update(result['diff_comb_xbin'])
+            # fiscal_tot_diffs.update(result['aggr_d'])
+            # fiscal_tot_base.update(result['aggr_1'])
+            # fiscal_tot_ref.update(result['aggr_2'])
 
 
         if ENFORCE_REMOTE_VERSION_CHECK:
@@ -248,21 +257,21 @@ class DropqCompute(object):
                 print msg
                 raise IOError(msg)
 
-        fiscal_tot_diffs = arrange_totals_by_row(fiscal_tot_diffs,
-                                            AGG_ROW_NAMES)
+        results['aggr_d'] = arrange_totals_by_row(results['aggr_d'],
+                                                  AGG_ROW_NAMES)
 
-        fiscal_tot_base = arrange_totals_by_row(fiscal_tot_base,
-                                            AGG_ROW_NAMES)
+        results['aggr_1'] = arrange_totals_by_row(results['aggr_1'],
+                                                  AGG_ROW_NAMES)
 
-        fiscal_tot_ref = arrange_totals_by_row(fiscal_tot_ref,
-                                            AGG_ROW_NAMES)
+        results['aggr_2'] = arrange_totals_by_row(results['aggr_2'],
+                                                  AGG_ROW_NAMES)
 
-        results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
-                'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
-                'mX_bin': mX_bin, 'df_bin': df_bin, 'pdf_bin': pdf_bin,
-                'cdf_bin': cdf_bin, 'fiscal_tot_diffs': fiscal_tot_diffs,
-                'fiscal_tot_base': fiscal_tot_base,
-                'fiscal_tot_ref': fiscal_tot_ref}
+        # results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
+        #         'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
+        #         'mX_bin': mX_bin, 'df_bin': df_bin, 'pdf_bin': pdf_bin,
+        #         'cdf_bin': cdf_bin, 'fiscal_tot_diffs': fiscal_tot_diffs,
+        #         'fiscal_tot_base': fiscal_tot_base,
+        #         'fiscal_tot_ref': fiscal_tot_ref}
 
         return results
 
