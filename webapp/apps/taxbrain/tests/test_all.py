@@ -89,47 +89,96 @@ class TaxInputTests(TestCase):
 
     def test_format_csv(self):
         c = cycler(40)
-        tab_types = [u'mY_bin', u'mX_bin', u'mY_dec', u'mX_dec', u'df_dec',
-                    u'df_bin', u'fiscal_change', u'fiscal_currentlaw',
-                    u'fiscal_reform', ]
+        tab_types = ["dist2_xdec", "dist1_xdec", "diff_itax_xdec", "diff_ptax_xdec",
+                     "diff_comb_xdec", "dist2_xbin", "dist1_xbin", "diff_itax_xbin",
+                     "diff_itax_xbin", "diff_ptax_xbin", "diff_comb_xbin", "aggr_d",
+                     "aggr_1", "aggr_2"]
 
-        bin_keys = [u'thirty_forty_2', u'thirty_forty_0', u'thirty_forty_1',
-                    u'seventyfive_hundred_2',
-                    u'forty_fifty_2', u'forty_fifty_1', u'forty_fifty_0',
-                    u'ten_twenty_2',
-                    u'ten_twenty_0', u'ten_twenty_1', u'hundred_twohundred_0',
-                    u'hundred_twohundred_1',
-                    u'seventyfive_hundred_1', u'seventyfive_hundred_0',
-                    u'twenty_thirty_0', u'twenty_thirty_1', u'twenty_thirty_2',
-                    u'fifty_seventyfive_2', u'fifty_seventyfive_1',
-                    u'fifty_seventyfive_0', u'twohundred_fivehundred_2',
-                    u'twohundred_fivehundred_0', u'twohundred_fivehundred_1',
-                    u'thousand_up_2', u'thousand_up_0', u'thousand_up_1',
-                    u'less_than_10_2', u'fivehundred_thousand_2',
-                    u'fivehundred_thousand_0', u'fivehundred_thousand_1',
-                    u'hundred_twohundred_2', u'less_than_10_1', u'less_than_10_0',
-                    u'all_1', u'all_0', u'all_2']
+        bin_keys = [
+            '$10-20K_0',
+            '$10-20K_1',
+            '$10-20K_2',
+            '$100-200K_0',
+            '$100-200K_1',
+            '$100-200K_2',
+            '$20-30K_0',
+            '$20-30K_1',
+            '$20-30K_2',
+            '$200-500K_0',
+            '$200-500K_1',
+            '$200-500K_2',
+            '$30-40K_0',
+            '$30-40K_1',
+            '$30-40K_2',
+            '$40-50K_0',
+            '$40-50K_1',
+            '$40-50K_2',
+            '$50-75K_0',
+            '$50-75K_1',
+            '$50-75K_2',
+            '$500-1000K_0',
+            '$500-1000K_1',
+            '$500-1000K_2',
+            '$75-100K_0',
+            '$75-100K_1',
+            '$75-100K_2',
+            '<$10K_0',
+            '<$10K_1',
+            '<$10K_2',
+            '>$1000K_0',
+            '>$1000K_1',
+            '>$1000K_2',
+            'all_0',
+            'all_1',
+            'all_2'
+        ]
 
-        dec_keys = [u'perc20-30_0', u'perc20-30_1', u'perc20-30_2', u'perc50-60_0',
-                    u'perc50-60_1', u'perc50-60_2', u'perc40-50_0', u'perc40-50_1',
-                    u'perc40-50_2', u'perc90-100_0', u'perc90-100_1',
-                    u'perc90-100_2', u'perc30-40_0', u'perc30-40_1',
-                    u'perc30-40_2', u'perc0-10_1', u'perc0-10_0', u'perc0-10_2',
-                    u'perc70-80_0', u'perc70-80_1', u'perc70-80_2', u'all_1',
-                    u'all_0', u'all_2', u'perc80-90_0', u'perc80-90_1',
-                    u'perc80-90_2', u'perc10-20_0', u'perc10-20_1', u'perc10-20_2',
-                    u'perc60-70_0', u'perc60-70_1', u'perc60-70_2']
+        dec_keys = [
+            '0-10_0',
+            '0-10_1',
+            '0-10_2',
+            '10-20_0',
+            '10-20_1',
+            '10-20_2',
+            '20-30_0',
+            '20-30_1',
+            '20-30_2',
+            '30-40_0',
+            '30-40_1',
+            '30-40_2',
+            '40-50_0',
+            '40-50_1',
+            '40-50_2',
+            '50-60_0',
+            '50-60_1',
+            '50-60_2',
+            '60-70_0',
+            '60-70_1',
+            '60-70_2',
+            '70-80_0',
+            '70-80_1',
+            '70-80_2',
+            '80-90_0',
+            '80-90_1',
+            '80-90_2',
+            '90-100_0',
+            '90-100_1',
+            '90-100_2',
+            'all_0',
+            'all_1',
+            'all_2'
+        ]
 
         tot_keys = [u'combined_tax', u'ind_tax', u'payroll_tax']
 
         tax_results = {}
-        tax_results[u'fiscal_change'] = {k:[1,2,3] for k in tot_keys}
-        tax_results[u'mY_bin'] = { k:[next(c)] for k in bin_keys}
-        tax_results[u'mX_bin'] = { k:[next(c)] for k in bin_keys}
-        tax_results[u'df_bin'] = { k:[next(c)] for k in bin_keys}
-        tax_results[u'mY_dec'] = { k:[next(c)] for k in dec_keys}
-        tax_results[u'mX_dec'] = { k:[next(c)] for k in dec_keys}
-        tax_results[u'df_dec'] = { k:[next(c)] for k in dec_keys}
+        tax_results[u'aggr_d'] = {k:[1,2,3] for k in tot_keys}
+        tax_results[u'dist2_xbin'] = { k:[next(c)] for k in bin_keys}
+        tax_results[u'dist1_xbin'] = { k:[next(c)] for k in bin_keys}
+        tax_results[u'diff_itax_bin'] = { k:[next(c)] for k in bin_keys}
+        tax_results[u'dist2_xdec'] = { k:[next(c)] for k in dec_keys}
+        tax_results[u'dist1_xdec'] = { k:[next(c)] for k in dec_keys}
+        tax_results[u'diff_itax_xdec'] = { k:[next(c)] for k in dec_keys}
 
         ans = format_csv(tax_results, u'42', first_budget_year=FBY)
         assert ans[0] == ['#URL: http://www.ospc.org/taxbrain/42/']
