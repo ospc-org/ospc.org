@@ -598,7 +598,7 @@ def personal_results(request):
         # Assume we do the full calculation unless we find out otherwise
         do_full_calc = False if fields.get('quick_calc') else True
         fields['first_year'] = fields['start_year']
-        use_puf_not_cps = fields['use_puf_not_cps']
+        use_puf_not_cps = fields.get('use_puf_not_cps', True)
         if do_full_calc and 'full_calc' in fields:
             del fields['full_calc']
         elif 'quick_calc' in fields:
