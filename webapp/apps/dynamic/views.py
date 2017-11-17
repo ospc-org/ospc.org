@@ -47,7 +47,7 @@ from .helpers import (default_parameters, job_submitted,
                       send_cc_email, default_behavior_parameters,
                       elast_results_to_tables, default_elasticity_parameters)
 
-from .compute import DynamicCompute
+from .compute import DynamicCompute, NUM_BUDGET_YEARS
 
 dynamic_compute = DynamicCompute()
 
@@ -224,12 +224,14 @@ def dynamic_behavioral(request, pk):
                         behavior_model=model
                     )
             # start calc job
+            user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+            data = {'user_mods': json.dumps(user_mods),
+                    'first_budget_year': int(start_year),
+                    'start_budget_year': 0,
+                    'num_budget_years': NUM_BUDGET_YEARS}
+
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=False,
-                additional_data=assumptions_dict,
-                pack_up_user_mods=False
+                data
             )
 
             if not submitted_ids:
@@ -323,16 +325,22 @@ def dynamic_elasticities(request, pk):
                 )
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
+            # empty assumptions dictionary
+            assumptions_dict = {"behavior": {},
+                                "growdiff_response": {},
+                                "consumption": {},
+                                "growdiff_baseline": {}}
 
-            min_year = min(reform_dict.keys(), key=float)
-            reform_dict[min_year]['elastic_gdp'] = worker_data['elastic_gdp']
+            user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+            data = {'user_mods': json.dumps(user_mods),
+                    'gdp_elasticity': worker_data['elastic_gdp'],
+                    'first_budget_year': int(start_year),
+                    'start_budget_year': 0,
+                    'num_budget_years': NUM_BUDGET_YEARS}
 
+            # start calc job
             submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=False,
-                additional_data=None,
-                pack_up_user_mods=False
+                data
             )
 
             if not submitted_ids:
