@@ -36,12 +36,6 @@ if MOCK_CELERY:
         return celery_app_like
     celery_app = Namespace(task=task)
 
-#Create a Public Use File object
-# rn_seed = 80
-# if not MOCK_CELERY:
-#     tax_dta_full = pd.read_csv("puf.csv.gz", compression='gzip')
-#     tax_dta = tax_dta_full.sample(frac=0.02, random_state=rn_seed)
-# else:
 tax_dta_full = tax_dta = pd.DataFrame({})
 
 
@@ -52,13 +46,13 @@ def convert_int_key(user_mods):
     return user_mods
 
 
-def dropq_task(year, user_mods, first_budget_year, use_puf_not_cps=True, use_full_sample=True):
+def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True, use_full_sample=True):
     user_mods["policy"] = convert_int_key(user_mods["policy"])
 
     print(
         'keywords to dropq',
         dict(
-            year_n=year,
+            year_n=year_n,
             start_year=int(first_budget_year),
             use_puf_not_cps=use_puf_not_cps,
             use_full_sample=use_full_sample,
@@ -67,7 +61,7 @@ def dropq_task(year, user_mods, first_budget_year, use_puf_not_cps=True, use_ful
     )
 
     results = taxcalc.tbi.run_nth_year_tax_calc_model(
-        year_n=year,
+        year_n=year_n,
         start_year=int(first_budget_year),
         use_puf_not_cps=use_puf_not_cps,
         use_full_sample=use_full_sample,
@@ -97,28 +91,27 @@ def dropq_task_small_async(year, user_mods, first_budget_year):
 
 
 @celery_app.task
-def elasticity_gdp_task_async(year, user_mods, first_budget_year, gdp_elasticity):
+def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
+                              gdp_elasticity, use_puf_not_cps=True):
 
-    if first_budget_year:
-        first_year = int(first_budget_year)
-    else:
-        first_year = int(user_mods.keys()[0])
-    user_mods = convert_int_key(user_mods)
-    user_reform = {'policy': user_mods}
-    # combine elast_params with user_mods
-    for key in EXPECTED_KEYS:
-        if key not in user_reform:
-            user_reform[key] = {}
-    # combine elast_params with user_mods
-    print("user mods: ", user_reform)
-    print("gdp elasticity", gdp_elasticity)
+    user_mods["policy"] = convert_int_key(user_mods["policy"])
+    print("kw to dropq", dict(
+        year_n=year_n,
+        start_year=int(first_budget_year),
+        use_puf_not_cps=use_puf_not_cps,
+        use_full_sample=True,
+        user_mods=user_mods,
+        gdp_elasticity=gdp_elasticity
+    ))
 
-    gdp_elast_i = taxcalc.tbi.run_nth_year_gdp_elast_model(year_n=year,
-                                                             start_year=first_year,
-                                                             use_puf_not_cps=use_puf_not_cps,
-                                                             use_full_sample=use_full_sample,
-                                                             user_mods=user_reform,
-                                                             elasticity=gdp_elasticity)
+    gdp_elast_i = taxcalc.tbi.run_nth_year_gdp_elast_model(
+        year_n=year_n,
+        start_year=int(first_budget_year),
+        use_puf_not_cps=use_puf_not_cps,
+        use_full_sample=True,
+        user_mods=user_mods,
+        gdp_elasticity=gdp_elasticity
+    )
 
     results = {'elasticity_gdp': gdp_elast_i}
     #Add taxcalc version to results
