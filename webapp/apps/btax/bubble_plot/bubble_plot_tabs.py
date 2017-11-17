@@ -95,13 +95,13 @@ def bubble_plot_tabs(dataframes):
         if list_string[i] == 'base':
             equipment_copy = equipment_df.copy()
             equipment_copy['rate'] = equipment_copy['mettr_c']
-            equipment_copy['hover'] = equipment_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
+            equipment_copy['hover'] = equipment_copy.apply(lambda x: "{0:.1f}%".format(x['mettr_c'] * 100), axis=1)
             simple_equipment_copy = equipment_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
             data_sources['equip_source'] = ColumnDataSource(simple_equipment_copy)
 
             structure_copy = structure_df.copy()
             structure_copy['rate'] = structure_copy['mettr_c']
-            structure_copy['hover'] = structure_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
+            structure_copy['hover'] = structure_copy.apply(lambda x: "{0:.1f}%".format(x['mettr_c'] * 100), axis=1)
             simple_structure_copy = structure_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
             data_sources['struc_source'] = ColumnDataSource(simple_structure_copy)
 
@@ -125,14 +125,15 @@ def bubble_plot_tabs(dataframes):
                plot_width=990,
                y_range=list(reversed(equipment_assets)),
                tools='hover',
-               background_fill_alpha=0
-               )
-    p.add_layout(Title(text='Marginal Effective Tax Rates on Corporate Investments in Equipment', **TITLE_FORMATS), "above")
+               background_fill_alpha=0,
+               title='Marginal Effective Total Tax Rates on Corporate Investments in Equipment')
+    p.title.align = 'center'
+    p.title.text_color = '#6B6B73'
 
     hover = p.select(dict(type=HoverTool))
     hover.tooltips = [('Asset', ' @Asset (@hover)')]
 
-    p.xaxis.axis_label = "Marginal Effective Tax Rate"
+    p.xaxis.axis_label = "Marginal effective total tax rate"
     p.xaxis[0].formatter = NumeralTickFormatter(format="0.1%")
 
     p.toolbar_location = None
@@ -162,18 +163,21 @@ def bubble_plot_tabs(dataframes):
     p.add_tools(WheelZoomTool(), ResetTool(), SaveTool())
     p.toolbar_location = "right"
     p.toolbar.logo = None
+    data_sources['equip_plot'] = p
 
     # Structures plot
     p2 = figure(plot_height=540,
                 plot_width=990,
                 y_range=list(reversed(structure_assets)),
                 tools='hover',
-                background_fill_alpha=0)
-    p2.add_layout(Title(text='Marginal Effective Tax Rates on Corporate Investments in Structures', **TITLE_FORMATS),"above")
+                background_fill_alpha=0,
+                title='Marginal Effective Total Tax Rates on Corporate Investments in Structures')
+    p2.title.align = 'center'
+    p2.title.text_color = '#6B6B73'
 
     hover = p2.select(dict(type=HoverTool))
     hover.tooltips = [('Asset', ' @Asset (@hover)')]
-    p2.xaxis.axis_label = "Marginal Effective Tax Rate"
+    p2.xaxis.axis_label = "Marginal effective total tax rate"
     p2.xaxis[0].formatter = NumeralTickFormatter(format="0.1%")
     p2.toolbar_location = None
     p2.min_border_right = 5
@@ -202,6 +206,7 @@ def bubble_plot_tabs(dataframes):
     p2.add_tools(WheelZoomTool(), ResetTool(), SaveTool())
     p2.toolbar_location = "right"
     p2.toolbar.logo = None
+    data_sources['struc_plot'] = p2
 
     # add buttons
     controls_callback = CustomJS(args=data_sources,
