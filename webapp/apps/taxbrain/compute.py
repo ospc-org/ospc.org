@@ -66,13 +66,9 @@ class DropqCompute(object):
                                        )
 
 
-    def submit_elastic_calculation(self, user_mods, first_budget_year, is_file=False, additional_data={},
-                                   pack_up_user_mods=True):
+    def submit_elastic_calculation(self, data):
         url_template = "http://{hn}/elastic_gdp_start_job"
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       start_budget_year=1,
-                                       additional_data=additional_data,
-                                       pack_up_user_mods=pack_up_user_mods)
+        return self.submit_calculation(data, url_template)
 
 
     def submit_calculation(self,
