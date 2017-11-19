@@ -546,6 +546,7 @@ class TaxSaveInputs(models.Model):
     CTC_new_c = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_c_under5_bonus = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_for_all = models.CharField(default="False", blank=True, null=True, max_length=50)
+    DependentCredit_before_CTC = models.CharField(default="False", blank=True, null=True, max_length=50)
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_rt_bonus_under5family = CommaSeparatedField(default=None, blank=True, null=True)
@@ -625,6 +626,9 @@ class TaxSaveInputs(models.Model):
     PT_EligibleRate_passive = CommaSeparatedField(default=None, blank=True, null=True)
     PT_wages_active_income = models.CharField(default="False", blank=True, null=True, max_length=50)
     PT_top_stacking = models.CharField(default="True", blank=True, null=True, max_length=50)
+    PT_exclusion_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_exclusion_wage_limit = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_exclusion_wage_limit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Fair Share Tax Parameters
     FST_AGI_trt = CommaSeparatedField(default=None, blank=True, null=True)
@@ -684,6 +688,8 @@ class TaxSaveInputs(models.Model):
         validators=[MinValueValidator(0.000), MaxValueValidator(1.000)])
     medical_years = models.FloatField(default=None, blank=True, null=True,
         validators=[MinValueValidator(0), MaxValueValidator(10)])
+
+    cpi_offset = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Growth Assumptions
     factor_adjustment = CommaSeparatedField(default=None, blank=True, null=True)
