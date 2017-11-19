@@ -805,9 +805,25 @@ def get_result_context(model, request, url):
         is_registered = True if request.user.is_authenticated() else False
     else:
         is_registered = False
-    tables['fiscal_change'] = add_summary_column(tables['aggr_d'])
-    tables['fiscal_currentlaw'] = add_summary_column(tables['aggr_1'])
-    tables['fiscal_reform'] = add_summary_column(tables['aggr_2'])
+
+    # TODO: Fix the java script mapping problem.  There exists somewhere in
+    # the taxbrain javascript code a mapping to the old table names.  As
+    # soon as this is changed to accept the new table names, this code NEEDS
+    # to be removed.
+    tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
+    tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
+    tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
+    tables['mY_dec'] = tables.pop('dist2_xdec')
+    tables['mX_dec'] = tables.pop('dist1_xdec')
+    tables['df_dec'] = tables.pop('diff_itax_xdec')
+    tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
+    tables['cdf_dec'] = tables.pop('diff_comb_xdec')
+    tables['mY_bin'] = tables.pop('dist2_xbin')
+    tables['mX_bin'] = tables.pop('dist1_xbin')
+    tables['df_bin'] = tables.pop('diff_itax_xbin')
+    tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
+    tables['cdf_bin'] = tables.pop('diff_comb_xbin')
+
     json_table = json.dumps(tables)
 
     context = {
