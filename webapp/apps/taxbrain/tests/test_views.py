@@ -22,7 +22,8 @@ from taxcalc import Policy
 from ...test_assets import test_reform, test_assumptions
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data,
-                                  get_dropq_compute_from_module)
+                                  get_dropq_compute_from_module,
+                                  get_taxbrain_model)
 
 
 START_YEAR = 2016
@@ -120,10 +121,9 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
 
         # Check that data was saved properly
-        truth_mods = taxcalc.Calculator.read_json_param_files(
+        truth_mods = taxcalc.Calculator.read_json_param_objects(
             test_reform.reform_text,
             None,
-            False
         )
         truth_mods = truth_mods["policy"]
         check_posted_params(result["tb_dropq_compute"], truth_mods,
@@ -295,11 +295,12 @@ class TaxBrainViewsTests(TestCase):
         result = do_micro_sim(self.client, data)
 
         # Check that data was saved properly
-        truth_mods = {START_YEAR: {'_II_brk2_cpi': False},
-                      START_YEAR + 2:
-                          {'_II_brk1': [[15000.0, 19064.03, 9532.01,
-                                         13646.37, 19064.03]]}
-                      }
+        truth_mods = {
+            START_YEAR: {'_II_brk2_cpi': False},
+            START_YEAR + 2: {
+                '_II_brk1': [[15000.0, 19069.63, 9534.81, 13650.38, 19069.63]]
+            }
+        }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
@@ -475,7 +476,10 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        tsi = TaxSaveInputs()
+        unique_url = get_taxbrain_model(taxcalc_vers="0.10.0",
+                                        webapp_vers="1.1.0")
+
+        tsi = unique_url.unique_inputs
         old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   "example_old_result.json")
 
@@ -483,7 +487,6 @@ class TaxBrainViewsTests(TestCase):
             tsi.tax_result = json.loads(f.read())
         tsi.first_year = 2016
         tsi.save()
-
         factory = RequestFactory()
         req = factory.get('/taxbrain/')
         url = '/taxbrain/42'
@@ -525,7 +528,7 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'ERROR: value 9e+99 > max value 81210.81 for _II_brk2_4 for 2020'
+        msg = 'ERROR: value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
         assert msg in response.context['errors']
 
 
@@ -543,5 +546,20 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: value 1000.0 < min value 6794.31 for 2020'
+        msg = 'WARNING: value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
+
+    def test_taxbrain_up_to_2018(self):
+        start_year = 2018
+        data = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 15000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {
+            start_year: {'_II_brk2_cpi': False},
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(start_year))

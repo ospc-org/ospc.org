@@ -4,7 +4,7 @@ from django.test import Client
 import mock
 import os
 import json
-os.environ["NUM_BUDGET_YEARS"] = '2'
+# os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
 from ...taxbrain.models import convert_to_floats
@@ -82,8 +82,9 @@ class DynamicBehavioralViewsTests(TestCase):
         post = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        reform = json.loads(post['user_mods'])
-        assert reform["2020"][u'_SS_Earnings_c'][0]  == 15000.0
+        user_mods = json.loads(post['user_mods'])
+        assert user_mods["policy"]["2020"][u'_SS_Earnings_c'][0]  == 15000.0
+        assert user_mods["behavior"]["2016"]["_BE_sub"][0] == 0.25
 
 
     def test_behavioral_reform_from_file(self):
@@ -100,5 +101,5 @@ class DynamicBehavioralViewsTests(TestCase):
         post = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        beh_params = json.loads(post["behavior_params"])["behavior"]["2016"]
-        assert beh_params["_BE_sub"][0] == 0.25
+        user_mods = json.loads(post["user_mods"])
+        assert user_mods["behavior"][str(START_YEAR)]["_BE_sub"][0] == 0.25

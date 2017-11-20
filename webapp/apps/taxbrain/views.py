@@ -42,7 +42,8 @@ from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMess
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       is_wildcard, convert_val, make_bool, nested_form_parameters,
                       to_json_reform, parse_fields)
-from .compute import DropqCompute, MockCompute, JobFailError
+from .compute import (DropqCompute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
+                      NUM_BUDGET_YEARS_QUICK)
 
 dropq_compute = DropqCompute()
 
@@ -95,7 +96,7 @@ def benefit_switch_fixup(request, reform, model, name="ID_BenefitSurtax_Switch")
     values_from_model = [[reform[_id][0] for _id in _ids]]
     final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
     for _id, val in zip(_ids, final_values[0]):
-        reform[_id] = [1.0 if val else 0.0]
+        reform[_id] = [1 if val else 0]
         setattr(model, _id, unicode(val))
     return reform
 
@@ -187,13 +188,12 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    policy_dict = taxcalc.Calculator.read_json_param_files(
+    policy_dict = taxcalc.Calculator.read_json_param_objects(
         reform,
         assumptions,
-        arrays_not_lists=False
     )
     # get errors and warnings on parameters that do not cause ValueErrors
-    errors_warnings = taxcalc.dropq.reform_warnings_errors(policy_dict)
+    errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
     errors_warnings = parse_errors_warnings(errors_warnings,
                                             map_back_to_tb)
     # separate reform and assumptions
@@ -455,21 +455,19 @@ def submit_reform(request, user=None):
                 personal_inputs.add_error(None, msg)
     else:
         log_ip(request)
+        user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+        data = {'user_mods': json.dumps(user_mods),
+                'first_budget_year': int(start_year),
+                'start_budget_year': 0}
         if do_full_calc:
+            data['num_budget_years'] = NUM_BUDGET_YEARS
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=is_file,
-                additional_data=assumptions_dict,
-                pack_up_user_mods=False
+                data
             )
         else:
+            data['num_budget_years'] = NUM_BUDGET_YEARS_QUICK
             submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                reform_dict,
-                int(start_year),
-                is_file=is_file,
-                additional_data=assumptions_dict,
-                pack_up_user_mods=False
+                data
             )
 
     return {'personal_inputs': personal_inputs,
@@ -587,6 +585,7 @@ def personal_results(request):
     """
     start_year = START_YEAR
     has_errors = False
+    use_puf_not_cps = True
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
@@ -598,6 +597,7 @@ def personal_results(request):
         # Assume we do the full calculation unless we find out otherwise
         do_full_calc = False if fields.get('quick_calc') else True
         fields['first_year'] = fields['start_year']
+        use_puf_not_cps = fields.get('use_puf_not_cps', True)
         if do_full_calc and 'full_calc' in fields:
             del fields['full_calc']
         elif 'quick_calc' in fields:
@@ -613,7 +613,7 @@ def personal_results(request):
         # No errors--submit to model
         if not has_errors:
             return redirect(obj)
-        # Errors from taxcalc.dropq.reform_warnings_errors
+        # Errors from taxcalc.tbi.reform_warnings_errors
         else:
             personal_inputs = obj
 
@@ -624,10 +624,9 @@ def personal_results(request):
             start_year = params['start_year'][0]
 
         personal_inputs = PersonalExemptionForm(first_year=start_year)
-
     init_context = {
         'form': personal_inputs,
-        'params': nested_form_parameters(int(start_year)),
+        'params': nested_form_parameters(int(start_year), use_puf_not_cps),
         'taxcalc_version': TAXCALC_VERSION,
         'webapp_version': WEBAPP_VERSION,
         'start_years': START_YEARS,
@@ -677,13 +676,16 @@ def submit_micro(request, pk):
     else:
         reform_dict = json.loads(model.json_text.reform_text)
         assumptions_dict = json.loads(model.json_text.assumption_text)
+
+    user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+    data = {'user_mods': json.dumps(user_mods),
+            'first_budget_year': int(start_year),
+            'start_budget_year': 0,
+            'num_budget_years': NUM_BUDGET_YEARS}
+
     # start calc job
     submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-        reform_dict,
-        int(start_year),
-        is_file=is_file,
-        additional_data=assumptions_dict,
-        pack_up_user_mods=False
+        data
     )
 
     args = {'url': url,
@@ -767,9 +769,9 @@ def get_result_context(model, request, url):
     created_on = model.creation_date
     if 'fiscal_tots' in output:
         # Use new key/value pairs for old data
-        output['fiscal_tot_diffs'] = output['fiscal_tots']
-        output['fiscal_tot_base'] = output['fiscal_tots']
-        output['fiscal_tot_ref'] = output['fiscal_tots']
+        output['aggr_d'] = output['fiscal_tots']
+        output['aggr_1'] = output['fiscal_tots']
+        output['aggr_2'] = output['fiscal_tots']
         del output['fiscal_tots']
 
     tables = taxcalc_results_to_tables(output, first_year)
@@ -803,9 +805,25 @@ def get_result_context(model, request, url):
         is_registered = True if request.user.is_authenticated() else False
     else:
         is_registered = False
-    tables['fiscal_change'] = add_summary_column(tables['fiscal_tot_diffs'])
-    tables['fiscal_currentlaw'] = add_summary_column(tables['fiscal_tot_base'])
-    tables['fiscal_reform'] = add_summary_column(tables['fiscal_tot_ref'])
+
+    # TODO: Fix the java script mapping problem.  There exists somewhere in
+    # the taxbrain javascript code a mapping to the old table names.  As
+    # soon as this is changed to accept the new table names, this code NEEDS
+    # to be removed.
+    tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
+    tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
+    tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
+    tables['mY_dec'] = tables.pop('dist2_xdec')
+    tables['mX_dec'] = tables.pop('dist1_xdec')
+    tables['df_dec'] = tables.pop('diff_itax_xdec')
+    tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
+    tables['cdf_dec'] = tables.pop('diff_comb_xdec')
+    tables['mY_bin'] = tables.pop('dist2_xbin')
+    tables['mX_bin'] = tables.pop('dist1_xbin')
+    tables['df_bin'] = tables.pop('diff_itax_xbin')
+    tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
+    tables['cdf_bin'] = tables.pop('diff_comb_xbin')
+
     json_table = json.dumps(tables)
 
     context = {

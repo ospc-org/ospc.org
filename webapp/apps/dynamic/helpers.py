@@ -13,7 +13,7 @@ MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 from ..taxbrain.helpers import TaxCalcParam, package_up_vars, default_taxcalc_data
-from ..taxbrain.compute import ELASTIC_RESULTS_TOTAL_ROW_KEYS
+from ..taxbrain.compute import GDP_ELAST_ROW_NAMES
 from django.core.mail import send_mail
 import requests
 from requests.exceptions import Timeout, RequestException
@@ -29,8 +29,8 @@ OGUSA_RESULTS_TOTAL_ROW_KEYS  = ['GDP', 'Consumption', 'Investment', 'Hours Work
     'Wages', 'Interest Rates', 'Total Taxes']
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
-ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
-ELASTIC_RESULTS_TABLE_LABELS = {
+GDP_ELAST_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in GDP_ELAST_ROW_NAMES}
+GDP_ELAST_RESULTS_TABLE_LABELS = {
         'elasticity_gdp': 'Percentage Change in GDP'
         }
 
@@ -162,9 +162,9 @@ def default_elasticity_parameters(first_budget_year):
                          'description': adj_descr,
                          'irs_ref':'', 'notes':''}
 
-    ELASTICITY_DEFAULT_PARAMS_JSON = {'elastic_gdp': elasticity_of_gdp}
+    GDP_ELAST_DEFAULT_PARAMS_JSON = {'elastic_gdp': elasticity_of_gdp}
 
-    for k,v in ELASTICITY_DEFAULT_PARAMS_JSON.iteritems():
+    for k,v in GDP_ELAST_DEFAULT_PARAMS_JSON.iteritems():
         param = TaxCalcParam(k,v, first_budget_year)
         default_elasticity_params[param.nice_id] = param
 
@@ -327,8 +327,8 @@ def elast_results_to_tables(results, first_budget_year):
     for table_id in results:
 
         if table_id == 'elasticity_gdp':
-            row_keys = ELASTIC_RESULTS_TOTAL_ROW_KEYS
-            row_labels = ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS
+            row_keys = GDP_ELAST_ROW_NAMES
+            row_labels = GDP_ELAST_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1, '%', 1] for y in col_labels]
 
@@ -344,7 +344,7 @@ def elast_results_to_tables(results, first_budget_year):
         table = {
             'col_labels': col_labels,
             'cols': [],
-            'label': ELASTIC_RESULTS_TABLE_LABELS[table_id],
+            'label': GDP_ELAST_RESULTS_TABLE_LABELS[table_id],
             'rows': [],
             'multi_valued': multi_year_cells
         }

@@ -39,7 +39,7 @@ TEMPLATE_DIRS = (
 
 from django.conf import global_settings
 
-WEBAPP_VERSION = "1.1.1"
+WEBAPP_VERSION = "1.2.0"
 
 TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
     'webapp.apps.pages.views.settings_context_processor',
