@@ -548,3 +548,18 @@ class TaxBrainViewsTests(TestCase):
         assert response.context['has_errors'] is True
         msg = 'WARNING: value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
+
+    def test_taxbrain_up_to_2018(self):
+        start_year = 2018
+        data = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 15000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {
+            start_year: {'_II_brk2_cpi': False},
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(start_year))
