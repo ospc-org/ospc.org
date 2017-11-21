@@ -47,7 +47,9 @@ def convert_int_key(user_mods):
 
 
 def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True, use_full_sample=True):
-    user_mods["policy"] = convert_int_key(user_mods["policy"])
+    # convert all year values from string to int
+    for k in user_mods:
+        user_mods[k] = convert_int_key(user_mods[k])
 
     print(
         'keywords to dropq',
@@ -93,7 +95,8 @@ def dropq_task_small_async(year, user_mods, first_budget_year):
 @celery_app.task
 def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
                               gdp_elasticity, use_puf_not_cps=True):
-
+    # convert all string year values to int
+    # all dictionaries in user_mods are empty
     user_mods["policy"] = convert_int_key(user_mods["policy"])
     print("kw to dropq", dict(
         year_n=year_n,
