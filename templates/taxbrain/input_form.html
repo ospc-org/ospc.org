@@ -152,9 +152,7 @@
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                   {% for param in params %}
                     {% for key, value in param.items %}
-                      {% if key != "ubi" %}
-                        <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
-                      {% endif %}
+                      <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
                     {% endfor %}
                   {% endfor %}
               </ul>
