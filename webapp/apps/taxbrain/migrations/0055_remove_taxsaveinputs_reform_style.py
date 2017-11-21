@@ -7,13 +7,12 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('taxbrain', '0060_auto_20171119_1534'),
+        ('taxbrain', '0054_outputurl_webapp_vers'),
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.RemoveField(
             model_name='taxsaveinputs',
-            name='PT_exclusion_wage_limit_cpi',
-            field=models.NullBooleanField(default=None),
+            name='reform_style',
         ),
     ]
