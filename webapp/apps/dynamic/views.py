@@ -36,7 +36,7 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
 from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
 from ..taxbrain.views import (growth_fixup, benefit_switch_fixup, make_bool, dropq_compute,
                               JOB_PROC_TIME_IN_SECONDS, get_reform_from_gui,
-                              parse_fields)
+                              parse_fields, add_summary_column)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
                                 convert_val, to_json_reform)
 
@@ -724,9 +724,9 @@ def behavior_results(request, pk):
         created_on = model.creation_date
         if 'fiscal_tots' in output:
             # Use new key/value pairs for old data
-            output['fiscal_tot_diffs'] = output['fiscal_tots']
-            output['fiscal_tot_base'] = output['fiscal_tots']
-            output['fiscal_tot_ref'] = output['fiscal_tots']
+            output['aggr_d'] = output['fiscal_tots']
+            output['aggr_1'] = output['fiscal_tots']
+            output['aggr_2'] = output['fiscal_tots']
             del output['fiscal_tots']
 
         tables = taxcalc_results_to_tables(output, first_year)
@@ -745,9 +745,24 @@ def behavior_results(request, pk):
         is_registered = True if request.user.is_authenticated() else False
         hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
         microsim_url = hostname + "/taxbrain/" + str(model.micro_sim.pk)
-        tables['fiscal_change'] = tables['fiscal_tot_diffs']
-        tables['fiscal_currentlaw'] = tables['fiscal_tot_base']
-        tables['fiscal_reform'] = tables['fiscal_tot_ref']
+
+        # TODO: Fix the java script mapping problem.  There exists somewhere in
+        # the taxbrain javascript code a mapping to the old table names.  As
+        # soon as this is changed to accept the new table names, this code NEEDS
+        # to be removed.
+        tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
+        tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
+        tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
+        tables['mY_dec'] = tables.pop('dist2_xdec')
+        tables['mX_dec'] = tables.pop('dist1_xdec')
+        tables['df_dec'] = tables.pop('diff_itax_xdec')
+        tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
+        tables['cdf_dec'] = tables.pop('diff_comb_xdec')
+        tables['mY_bin'] = tables.pop('dist2_xbin')
+        tables['mX_bin'] = tables.pop('dist1_xbin')
+        tables['df_bin'] = tables.pop('diff_itax_xbin')
+        tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
+        tables['cdf_bin'] = tables.pop('diff_comb_xbin')
         json_table = json.dumps(tables)
 
         context = {
