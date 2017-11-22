@@ -195,16 +195,14 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
 
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
-    [      1000,      None, 0],    # "Inds. w/ Tax Cut",
-    [      1000,      None, 0],    # "Inds. w/ Tax Increase",
-    [      1000,      None, 0],    # "Count",
-    [         1, 'Dollars', 0],  # "Mean Tax Difference",
-    [1000000000, 'Dollars', 1],  # "Total Tax Difference",
-    [         1,   '%', 1],  # "%age Tax Increase",
-    [         1,   '%', 1],  # "%age Tax Decrease",
-    [         1,   '%', 1],  # "Share of Overall Change"
-    [         1,   '%', 1],  # Change as % of After-Tax Income
-    [         1,   '%', 1],  # Share of Overall Change
+    [      1000,      None, 0],    # "Count", --> All Tax Units
+    [      1000,      None, 0],    # "Tax Units with Tax Cut",
+    [         1,        '%',1],    # "Percent Tax Decrease" --> "Percent with Tax Cut"
+    [      1000,      None, 0],    # "Tax Units with Tax Cut",
+    [         1,       '%', 1],    # "Percent Tax Increase" --> "Percent with Tax Increase"
+    [         1, 'Dollars', 0],    # "Average Tax Change"
+    [1000000000, 'Dollars', 1],    # "Total Tax Difference",
+    [         1,   '%', 1],       # "Share of Overall Change"
 ]
 TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.WEBBIN_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
