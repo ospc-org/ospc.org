@@ -20,6 +20,7 @@ Release 1.2.0 on 2017-11-??
 - [#748](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/748) - Remove UBI exclude statement - Hank Doupe
 - [#751](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/751) - Change job processing time from 30 to 50 seconds - Hank Doupe
 - [#752](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/752) - Post 738 dynamic sim cleanup - Hank Doupe
+- [#755](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/755) - Fix table label order - Hank Doupe
 
 Release 1.1.1 on 2017-11-04
 ----------------------------
