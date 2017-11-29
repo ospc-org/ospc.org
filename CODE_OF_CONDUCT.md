@@ -48,9 +48,9 @@ that is deemed necessary and appropriate to the circumstances. Maintainers are
 obligated to maintain confidentiality with regard to the reporter of an
 incident.
 
-This Code of Conduct was created by [pandas][pandascoc] developers, who
-adapted it from the [Contributor Covenant][homepage], version 1.3.0, available
-at [http://contributor-covenant.org/version/1/3/0/][version],
+This Code of Conduct was copied from the [pandas Code of Conduct][pandas_coc]
+which was adapted from the [Contributor Covenant][homepage], version 1.3.0,
+available at [http://contributor-covenant.org/version/1/3/0/][version],
 and the [Swift Code of Conduct][swift].
 
 [homepage]: http://contributor-covenant.org
