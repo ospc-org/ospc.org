@@ -563,3 +563,25 @@ class TaxBrainViewsTests(TestCase):
         }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(start_year))
+
+
+    def test_taxbrain_file_up_to_2018(self):
+        start_year = 2018
+        data = get_file_post_data(start_year, test_reform.reform_text)
+
+        post_url = '/taxbrain/file/'
+
+        result = do_micro_sim(
+            self.client,
+            data,
+            post_url=post_url
+        )
+
+        # Check that data was saved properly
+        truth_mods = taxcalc.Calculator.read_json_param_objects(
+            test_reform.reform_text,
+            None,
+        )
+        truth_mods = truth_mods["policy"]
+        check_posted_params(result["tb_dropq_compute"], truth_mods,
+                            str(start_year))
