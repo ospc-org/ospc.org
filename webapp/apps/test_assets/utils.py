@@ -8,6 +8,8 @@ from test_reform import test_coverage_fields
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.forms import PersonalExemptionForm
 
+from ..dynamic import views
+from ..taxbrain import views
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 
