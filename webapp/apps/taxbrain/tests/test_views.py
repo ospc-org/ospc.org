@@ -58,6 +58,7 @@ class TaxBrainViewsTests(TestCase):
         del data[u'ID_BenefitSurtax_Switch_4']
         del data[u'ID_BenefitSurtax_Switch_6']
         data[u'II_em'] = [u'4333']
+        data[u'ID_AmountCap_Switch_0'] = [u'True']
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -73,6 +74,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
                                    [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_ID_AmountCap_Switch":
+                                   [[1, 0, 0, 0, 0, 0, 0]],
                                    "_II_em": [4333.0]}
                       }
         check_posted_params(result['tb_dropq_compute'], truth_mods,

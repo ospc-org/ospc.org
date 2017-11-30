@@ -270,6 +270,10 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
                                              taxbrain_data,
                                              taxbrain_model,
                                              name="ID_BenefitCap_Switch")
+        taxbrain_data = benefit_switch_fixup(request.REQUEST,
+                                             taxbrain_data,
+                                             taxbrain_model,
+                                             name="ID_AmountCap_Switch")
         taxbrain_data = amt_fixup(request.REQUEST,
                                   taxbrain_data,
                                   taxbrain_model)
