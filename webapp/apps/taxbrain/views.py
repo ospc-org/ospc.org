@@ -303,7 +303,7 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
     return (reform_dict, assumptions_dict, "", "", errors_warnings)
 
 
-def save_model(url, request, model, has_errors, start_year,
+def save_model(url, request, model, json_reform, has_errors, start_year,
                do_full_calc, is_file, reform_dict, assumptions_dict,
                reform_text, assumptions_text, submitted_ids,
                max_q_length, user):
@@ -311,13 +311,6 @@ def save_model(url, request, model, has_errors, start_year,
     Save user input data
     returns OutputUrl object
     """
-    json_reform = JSONReformTaxCalculator()
-    json_reform.reform_text = json.dumps(reform_dict)
-    json_reform.assumption_text = json.dumps(assumptions_dict)
-    json_reform.raw_reform_text = reform_text
-    json_reform.raw_assumption_text = assumptions_text
-    json_reform.save()
-
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
@@ -408,6 +401,13 @@ def submit_reform(request, user=None):
                 errors_warnings) = get_reform_from_gui(request,
                                                        taxbrain_model=model)
 
+    json_reform = JSONReformTaxCalculator(
+        reform_text=json.dumps(reform_dict),
+        assumption_text=json.dumps(assumptions_dict),
+        raw_reform_text=reform_text,
+        raw_assumption_text=assumptions_text
+    )
+    json_reform.save()
     if reform_dict == {}:
         no_inputs = True
     # TODO: account for errors
@@ -471,6 +471,7 @@ def submit_reform(request, user=None):
             )
 
     return {'personal_inputs': personal_inputs,
+            'json_reform': json_reform,
             'model': model,
             'stop_submission': stop_submission,
             'has_errors': any([taxcalc_errors, taxcalc_warnings,
@@ -524,7 +525,8 @@ def file_input(request):
     start_year = START_YEAR
     errors = []
     has_errors = False
-    if request.method=='POST':
+    json_reform = None
+    if request.method == 'POST':
         # File is not submitted
         if 'docfile' not in dict(request.FILES):
             errors = ["Please specify a tax-law change before submitting."]
@@ -563,8 +565,10 @@ def file_input(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
+        json_reform = JSONReformTaxCalculator()
+
     init_context = {
-        'form': None,
+        'form': json_reform,
         'errors': errors,
         'has_errors': has_errors,
         'taxcalc_version': TAXCALC_VERSION,
@@ -665,14 +669,22 @@ def submit_micro(request, pk):
 
     # get microsim data
     is_file = model.json_text is not None
+    json_reform = model.json_text
     # necessary for simulations before PR 641
     if not is_file:
-        (reform_dict, _, _,
+        (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings) = get_reform_from_gui(
                 request,
                 taxbrain_model=model,
                 behavior_model=None
         )
+        json_reform = JSONReformTaxCalculator(
+            reform_text=json.dumps(reform_dict),
+            assumption_text=json.dumps(assumptions_dict),
+            raw_reform_text=reform_text,
+            raw_assumption_text=assumptions_text
+        )
+        json_reform.save()
     else:
         reform_dict = json.loads(model.json_text.reform_text)
         assumptions_dict = json.loads(model.json_text.assumption_text)
@@ -691,6 +703,7 @@ def submit_micro(request, pk):
     args = {'url': url,
             'request': request,
             'model': model,
+            'json_reform': json_reform,
             'has_errors': False,
             'start_year': start_year,
             'do_full_calc': True,
