@@ -24,6 +24,8 @@ class DynamicSaveInputs(models.Model):
    """
 
     # Parameters used for the dynamic model
+    small_open = models.NullBooleanField(default=None, blank=True, null=True)
+    world_int_rate = CommaSeparatedField(default=None, null=True, blank=True)
     g_y_annual = CommaSeparatedField(default=None, null=True, blank=True)
     g_y_annual_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     upsilon = CommaSeparatedField(default=None, null=True, blank=True)
@@ -62,6 +64,8 @@ class DynamicBehaviorSaveInputs(models.Model):
    """
 
     # Behavioral Effects
+    small_open = models.NullBooleanField(default=None, blank=True, null=True)
+    world_int_rate = CommaSeparatedField(default=None, null=True, blank=True)
     BE_inc = CommaSeparatedField(default=None, blank=True, null=True)
     BE_sub = CommaSeparatedField(default=None, blank=True, null=True)
     BE_cg = CommaSeparatedField(default=None, blank=True, null=True)
@@ -100,6 +104,9 @@ class DynamicElasticitySaveInputs(models.Model):
     """
 
     # Elasticity of GDP w.r.t. average marginal tax rates
+    small_open = models.NullBooleanField(default=None, blank=True, null=True)
+    world_int_rate = CommaSeparatedField(default=None, null=True, blank=True)
+
     elastic_gdp = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Job IDs when running a job
