@@ -534,20 +534,38 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_warning_reform_file(self):
         """
-        POST a reform file that causes warnings. See PB issue #630
+        POST a reform file that causes warnings and check that re-submission
+        is allowed. See PB issue #630 and #761
         """
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_file_post_data(START_YEAR, test_reform.warning_reform)
 
-        #TODO: make sure we can submit after we see warnings
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
         msg = 'WARNING: value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': START_YEAR
+        }
+
+        do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+
 
     def test_taxbrain_up_to_2018(self):
         start_year = 2018
