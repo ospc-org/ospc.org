@@ -518,6 +518,8 @@ class TaxBrainViewsTests(TestCase):
         """
         POST a reform file that causes errors. See PB issue #630
         """
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
+
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
@@ -530,6 +532,23 @@ class TaxBrainViewsTests(TestCase):
         assert response.context['has_errors'] is True
         msg = 'ERROR: value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
         assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': START_YEAR
+        }
+
+        response = self.client.post('/taxbrain/file/', data2)
+        assert response.status_code == 200
 
 
     def test_taxbrain_warning_reform_file(self):
