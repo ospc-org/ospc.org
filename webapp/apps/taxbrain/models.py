@@ -83,6 +83,7 @@ class JSONReformTaxCalculator(models.Model):
     raw_reform_text = models.TextField(blank=True, null=False)
     assumption_text = models.TextField(blank=True, null=False)
     raw_assumption_text = models.TextField(blank=True, null=False)
+    errors_warnings_text = models.TextField(blank=True, null=False)
 
 class ErrorMessageTaxCalculator(models.Model):
     '''
