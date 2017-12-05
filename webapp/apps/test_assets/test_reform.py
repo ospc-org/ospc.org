@@ -111,7 +111,7 @@ reform_text = """// Title: 2016 Trump Campaign Tax Plan
 // -  Estate tax provisions"""
 
 
-r1 = """"// r1.json assumes reform with the following provisions:
+r1 = """// r1.json assumes reform with the following provisions:
 // - adhoc raises in OASDI maximum taxable earnings in 2018, 2019 and 2020,
 //     with _SS_Earnings_c wage indexed in subsequent years
 // - raise personal exemption amount _II_em in 2018, keep it unchanged for

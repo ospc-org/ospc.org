@@ -202,7 +202,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
 
     return reform_dict, assumptions_dict, errors_warnings
 
-def get_reform_from_file(request):
+def get_reform_from_file(request, reform_text=None, assumptions_text=None):
     """
     Parse files from request object and collect errors_warnings
 
@@ -212,25 +212,18 @@ def get_reform_from_file(request):
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    inmemfile_reform = request.FILES['docfile']
-    reform_text = inmemfile_reform.read()
-    reform_file = tempfile.NamedTemporaryFile(delete=False)
-    reform_file.write(reform_text)
-    reform_file.close()
+    if "docfile" in request.FILES:
+        inmemfile_reform = request.FILES['docfile']
+        reform_text = inmemfile_reform.read()
     if 'assumpfile' in request.FILES:
         inmemfile_assumption = request.FILES['assumpfile']
         assumptions_text = inmemfile_assumption.read()
-        assumptions_file = tempfile.NamedTemporaryFile(delete=False)
-        assumptions_file.write(assumptions_text)
-        assumptions_file.close()
-        assumptions_file_name = assumptions_file.name
-    else:
-        assumptions_text = ""
-        assumptions_file_name = None
 
     (reform_dict, assumptions_dict,
-        errors_warnings) = read_json_reform(reform_file.name,
-                                            assumptions_file_name)
+        errors_warnings) = read_json_reform(reform_text,
+                                            assumptions_text)
+
+    assumptions_text = assumptions_text or ""
 
     return (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings)
@@ -398,6 +391,26 @@ def submit_reform(request, user=None, json_reform_id=None):
         reform_text = json_reform.raw_reform_text
         assumptions_text = json_reform.raw_assumption_text
         errors_warnings = json.loads(json_reform.errors_warnings_text)
+
+        if "docfile" in request.FILES or "assumpfile" in request.FILES:
+            if "docfile" in request.FILES:
+                reform_text = None
+            if "assumpfile" in request.FILES:
+                assumptions_text = None
+
+            (reform_dict, assumptions_dict, reform_text, assumptions_text,
+                errors_warnings) = get_reform_from_file(request,
+                                                        reform_text,
+                                                        assumptions_text)
+            json_reform.reform_text = json.dumps(reform_dict),
+            json_reform.assumption_text = json.dumps(assumptions_dict),
+            json_reform.raw_reform_text = reform_text,
+            json_reform.raw_assumption_text = assumptions_text,
+            json_reform.errors_warnings_text = json.dumps(errors_warnings)
+            json_reform.save()
+
+            has_errors = False
+
     else: # fresh file upload or GUI run
         if 'docfile' in request.FILES:
             is_file = True
@@ -416,6 +429,7 @@ def submit_reform(request, user=None, json_reform_id=None):
                 (reform_dict, assumptions_dict, reform_text, assumptions_text,
                     errors_warnings) = get_reform_from_gui(request,
                                                            taxbrain_model=model)
+
         json_reform = JSONReformTaxCalculator(
             reform_text=json.dumps(reform_dict),
             assumption_text=json.dumps(assumptions_dict),
