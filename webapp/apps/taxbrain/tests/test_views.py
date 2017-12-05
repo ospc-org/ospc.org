@@ -639,7 +639,6 @@ class TaxBrainViewsTests(TestCase):
         check_posted_params(dropq_compute, truth_mods, start_year)
 
 
-
     def test_taxbrain_up_to_2018(self):
         start_year = 2018
         data = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
