@@ -393,9 +393,9 @@ def submit_reform(request, user=None, json_reform_id=None):
         errors_warnings = json.loads(json_reform.errors_warnings_text)
 
         if "docfile" in request.FILES or "assumpfile" in request.FILES:
-            if "docfile" in request.FILES:
+            if "docfile" in request.FILES or len(reform_text) == 0:
                 reform_text = None
-            if "assumpfile" in request.FILES:
+            if "assumpfile" in request.FILES or len(assumptions_text) == 0:
                 assumptions_text = None
 
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
