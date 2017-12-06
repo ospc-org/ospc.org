@@ -402,10 +402,11 @@ def submit_reform(request, user=None, json_reform_id=None):
                 errors_warnings) = get_reform_from_file(request,
                                                         reform_text,
                                                         assumptions_text)
-            json_reform.reform_text = json.dumps(reform_dict),
-            json_reform.assumption_text = json.dumps(assumptions_dict),
-            json_reform.raw_reform_text = reform_text,
-            json_reform.raw_assumption_text = assumptions_text,
+
+            json_reform.reform_text = json.dumps(reform_dict)
+            json_reform.assumption_text = json.dumps(assumptions_dict)
+            json_reform.raw_reform_text = reform_text
+            json_reform.raw_assumption_text = assumptions_text
             json_reform.errors_warnings_text = json.dumps(errors_warnings)
             json_reform.save()
 
