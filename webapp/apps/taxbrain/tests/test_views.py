@@ -58,6 +58,7 @@ class TaxBrainViewsTests(TestCase):
         del data[u'ID_BenefitSurtax_Switch_4']
         del data[u'ID_BenefitSurtax_Switch_6']
         data[u'II_em'] = [u'4333']
+        data[u'ID_AmountCap_Switch_0'] = [u'True']
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -73,6 +74,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
                                    [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_ID_AmountCap_Switch":
+                                   [[1, 0, 0, 0, 0, 0, 0]],
                                    "_II_em": [4333.0]}
                       }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
@@ -143,6 +146,38 @@ class TaxBrainViewsTests(TestCase):
 
         # Check that data was saved properly
         check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
+
+
+    def test_back_to_back_quickcalc(self):
+        "Test back to back quick calc posts"
+        # switches 0, 4, 6 are False
+        data = get_post_data(START_YEAR, quick_calc=True)
+        del data[u'ID_BenefitSurtax_Switch_0']
+        del data[u'ID_BenefitSurtax_Switch_4']
+        del data[u'ID_BenefitSurtax_Switch_6']
+        data[u'II_em'] = [u'4333']
+
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
+
+        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
+                                                                 START_YEAR)
+        edit_page = self.client.get(edit_micro)
+        self.assertEqual(edit_page.status_code, 200)
+
+        next_csrf = str(edit_page.context['csrf_token'])
+        data['csrfmiddlewaretoken'] = next_csrf
+        result2 = do_micro_sim(self.client, data)
+
+        check_posted_params(result2['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
 
