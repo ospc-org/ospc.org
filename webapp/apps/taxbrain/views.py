@@ -576,7 +576,8 @@ def file_input(request):
         'params': None,
         'start_years': START_YEARS,
         'start_year': start_year,
-        'enable_quick_calc': ENABLE_QUICK_CALC
+        'enable_quick_calc': ENABLE_QUICK_CALC,
+        'input_type': "file"
     }
 
     return render(request, 'taxbrain/input_file.html', init_context)
