@@ -678,6 +678,7 @@ class TaxSaveInputs(models.Model):
     CG_nodiff = models.CharField(default="False", blank=True, null=True, max_length=50)
     EITC_indiv = models.CharField(default="False", blank=True, null=True, max_length=50)
     CTC_new_refund_limited = models.CharField(default="False", blank=True, null=True, max_length=50)
+    CTC_new_refund_limited_all_payroll = models.CharField(default="False", blank=True, null=True, max_length=50)
     II_no_em_nu18 = models.CharField(default="False", blank=True, null=True, max_length=50)
 
     # Inflation adjustments
