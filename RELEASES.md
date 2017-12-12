@@ -17,6 +17,7 @@ Release 1.2.1 on 2017-12-12
 - [#757](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#757) - Make sure ID_AmountCap_Switch param is submitted as 1/0 - Hank Doupe
 - [#759](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#759) - Quick-calc clean up - Hank Doupe
 - [#767](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Add input_type back to context - Hank Doupe and Sean Wang
+- [#776](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Short-term fix for package pinning - Hank Doupe
 
 Release 1.2.0 on 2017-11-21
 ----------------------------
