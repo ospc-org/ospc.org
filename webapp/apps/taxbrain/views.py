@@ -171,7 +171,7 @@ def parse_errors_warnings(errors_warnings, map_back_to_tb):
             msg_action = msg_spl[0]
             year = msg_spl[1]
             curr_id = msg_spl[2]
-            msg_parse = msg_spl[3:]
+            msg_parse = msg_spl[2:]
             if year not in parsed[action]:
                 parsed[action][year] = {}
             parsed[action][year][curr_id[1:]] = ' '.join([msg_action] + msg_parse +
