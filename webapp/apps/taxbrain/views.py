@@ -65,9 +65,11 @@ TAXCALC_VERSION = tcversion_info['version']
 
 JOB_PROC_TIME_IN_SECONDS = 30
 
-OUT_OF_RANGE_ERROR_MSG = ("Some fields have errors. Values outside of suggested "
-                          "ranges will be accepted if they only cause warnings "
-                          "and are submitted again from this page.")
+OUT_OF_RANGE_ERROR_MSG = ("Some fields have warnings or errors. Values "
+                          "outside of suggested ranges will be accepted if "
+                          "they only cause warnings and are submitted again "
+                          "from this page. Warning messages begin with "
+                          "'WARNING', and error messages begin with 'ERROR'.")
 
 def log_ip(request):
     """
@@ -171,7 +173,7 @@ def parse_errors_warnings(errors_warnings, map_back_to_tb):
             msg_action = msg_spl[0]
             year = msg_spl[1]
             curr_id = msg_spl[2]
-            msg_parse = msg_spl[3:]
+            msg_parse = msg_spl[2:]
             if year not in parsed[action]:
                 parsed[action][year] = {}
             parsed[action][year][curr_id[1:]] = ' '.join([msg_action] + msg_parse +

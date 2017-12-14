@@ -565,7 +565,7 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'ERROR: value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
+        msg = 'ERROR: _II_brk1_4 value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
         assert msg in response.context['errors']
 
         # get most recent object
@@ -601,7 +601,7 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: value 1073.53 < min value 7191.08 for 2023'
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
 
         # get most recent object
@@ -644,7 +644,7 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: value 1073.53 < min value 7191.08 for 2023'
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
 
         # get most recent object
@@ -691,7 +691,7 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: value 1073.53 < min value 7191.08 for 2023'
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
 
         # get most recent object
