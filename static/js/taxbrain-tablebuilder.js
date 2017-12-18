@@ -262,7 +262,6 @@ $(function() {
                 e.preventDefault();
                 var $el = $(e.currentTarget);
                 var el_tablename = $el.data('tablename');
-
                 if (this.selectedTableName === el_tablename) {
                   return;
                 }
@@ -270,7 +269,15 @@ $(function() {
                 this.selectedTableName = el_tablename;
                 this.render();
                 this.dataTableOptions.buttons = [
-                    'print',
+                    {
+                        extend: 'print',
+                        customize: function ( win ) {
+                            if (el_tablename == 'fiscal_reform'){var title = 'TOTAL LIABILITIES BY CALENDAR YEAR (REFORM)';}
+                            if (el_tablename == 'fiscal_change'){var title = 'TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)';}
+                            if (el_tablename == 'fiscal_currentlaw'){var title = 'TOTAL LIABILITIES BY CALENDAR YEAR (CURRENT LAW)';}
+                            $(win.document.body).find('h1').html('<center>' + title + '</center>');
+                        }
+                    },
                     'copy',
                     'csv'
                 ];
@@ -577,7 +584,7 @@ $(function() {
                 {
                     extend: 'print',
                     customize: function ( win ) {
-                        $(win.document.body).find('h1').html('<center>' + fiscalTableModel.get('label').toUpperCase() + '</center>');
+                        $(win.document.body).find('h1').html('<center>' + 'TOTAL LIABILITIES BY CALENDAR YEAR (REFORM)' + '</center>');
                     }
                 },
                 'copy',
