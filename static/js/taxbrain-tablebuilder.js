@@ -248,7 +248,16 @@ $(function() {
             </div>\
         '),
 
+        dataTableOptions: {
+            "paging":   false,
+            "ordering": false,
+            "searching": false,
+            "bInfo" : false,
+            "dom": 'tB'
+        },
+
         events: {
+
             'click [data-tablename]': function(e) {
                 e.preventDefault();
                 var $el = $(e.currentTarget);
@@ -260,7 +269,15 @@ $(function() {
 
                 this.selectedTableName = el_tablename;
                 this.render();
-        }},
+                this.dataTableOptions.buttons = [
+                    'print',
+                    'copy',
+                    'csv'
+                ];
+                this.$el.find('table').dataTable(this.dataTableOptions);
+                this.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');
+        }
+    },
 
 
         render: function() {
