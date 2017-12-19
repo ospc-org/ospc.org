@@ -314,6 +314,12 @@ class TaxSaveInputs(models.Model):
     ID_AmountCap_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_AmountCap_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
     ID_AmountCap_Switch_6 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AllTaxes_c_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_AllTaxes_c_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_AllTaxes_c_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_AllTaxes_c_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_AllTaxes_c_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_AllTaxes_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)

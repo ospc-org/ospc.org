@@ -33,12 +33,12 @@
       <li><strong>Step 6.</strong> Share your results! The link to every results page is static and will never change. Send them around.</li>
       </ul>
 
-      <p> Throughout this process, if you have a question about how to use TaxBrain or interpret the results, if you want to make a suggestion for making the interface or underlying models better, or if you discover a bug, please <a href = '//list.ospc.org/mailman/listinfo/users_list.ospc.org' target="_blank">join our mailing list</a> and send a message or <a href = '//ospc.org/hello' target="_blank">leave a note for the OSPC team</a>.</p>
+      <p> Throughout this process, if you have a question about how to use TaxBrain or interpret the results, if you want to make a suggestion for making the interface or underlying models better, or if you discover a bug, please <a href = '//list.ospc.org/mailman/listinfo/users_list.ospc.org' target="_blank">join our mailing list</a> and send a message or <a href = '//www.ospc.org/hello' target="_blank">leave a note for the OSPC team</a>.</p>
 
     <h2>Static Modeling</h2>
-    <p> Static tax analysis entails computing individuals' tax changes under the assumption that behavior does not change in response to tax policy. Static analyses are useful for understanding the mechanistic effects of tax policy changes, and they form the basis to which behavior is applied for dynamic analyses. 
+    <p> Static tax analysis entails computing individuals' tax changes under the assumption that behavior does not change in response to tax policy. Static analyses are useful for understanding the mechanistic effects of tax policy changes, and they form the basis to which behavior is applied for dynamic analyses.
 
-    <p>TaxBrain's static modeling capabilities rely on several open source economic models and other packages:</p> 
+    <p>TaxBrain's static modeling capabilities rely on several open source economic models and other packages:</p>
     <ul>
     <li> <a href = "//www.github.com/open-source-economics/tax-calculator" target="_blank">Tax-Calculator</a> computes federal individual income taxes and Federal Insurance Contribution Act(FICA) taxes for a sample of tax filing units in years beginning with 2013 .</li>
     <li><a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> creates a microdataset that closely reproduces the multivariate distribution of income, deduction and credit items in 2009, extrapolated through 2026 levels in accordance with Congressional Budget Office forecasts available in spring 2016. It is intended to match similar but confidential data used by the Congressional Joint Committee on Taxation. The underlying dataset must be purchased from the Statistics of Income division of the Internal Revenue Service. Additional information on non-filers is taken from the March 2013 Current Population Survey. </li>
@@ -54,12 +54,12 @@
 
     <ul>
     <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/reform_results.txt" target = "_blank">Federal income tax and FICA liability deltas for example reforms</a></li>
-    <li>Dummy datasets and associated Tax-Calculator results (Coming soon)</li> 
+    <li>Dummy datasets and associated Tax-Calculator results (Coming soon)</li>
     <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/variable_stats_summary.csv">Basic summary statistics for variables used in Tax-Calculator and major intermediate results (2013-2026) </a></li>Currently only weighted mean is available, more statistics will be  added shortly.
     <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/correlation.csv" target= "_blank">Correlation matrix for the same set of variables</a> 2016 available now, other years coming soon.</li>
     <li>Extrapolation related: <br>
     <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_I_factors.csv" target= "_blank">Blow-up factors</a><br>
-    <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_II_targets.csv" target= "_blank">Aggregate and distributional targets</a></li> 
+    <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_II_targets.csv" target= "_blank">Aggregate and distributional targets</a></li>
     <li>Equations and coefficients for imputations (Coming soon)</li>
     </ul>
 
@@ -75,17 +75,17 @@
 
     <p> Bugs aside, the static modelingresults from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
 
-    <p><strong> 
+    <p><strong>
     Core Maintainers (static modeling)*:
     <ul style = "list-style-type:none">
-    <li>- <a href = "http://www.nber.org/people/daniel_feenberg" target = "blank" >Dan Feenberg</a></li> 
-    <li>- <a href = "https://github.com/andersonfrailey" target = "blank" >Anderson Frailey</a></li> 
-    <li>- <a href = "http://www.polsim.com/MRH_vita.pdf" target = "blank" >Martin Holmer</a></li> 
-    <li>- <a href = "https://www.aei.org/scholar/matthew-h-jensen/" target = "blank" >Matt Jensen</a></li> 
-    <li>- <a href = "http://quantria.com/#team" target = "blank" >John O'Hare</a></li> 
-    <li>- <a href = "https://github.com/Amy-Xu" target = "blank" >Amy Xu</a></li> 
+    <li>- <a href = "http://www.nber.org/people/daniel_feenberg" target = "blank" >Dan Feenberg</a></li>
+    <li>- <a href = "https://github.com/andersonfrailey" target = "blank" >Anderson Frailey</a></li>
+    <li>- <a href = "http://www.polsim.com/MRH_vita.pdf" target = "blank" >Martin Holmer</a></li>
+    <li>- <a href = "https://www.aei.org/scholar/matthew-h-jensen/" target = "blank" >Matt Jensen</a></li>
+    <li>- <a href = "http://quantria.com/#team" target = "blank" >John O'Hare</a></li>
+    <li>- <a href = "https://github.com/Amy-Xu" target = "blank" >Amy Xu</a></li>
     </ul>
-    </strong></p> 
+    </strong></p>
     <p> *These members have "write access" to one or both of the core static modeling repositories, Tax-Calculator and TaxData, and work as a team to determine which open source contributions are accepted.</p>
 
     </div>
@@ -95,5 +95,5 @@
       <p>Results will change as the underlying models improve. A fundamental reason for adopting open source methods in this project is to let people from all backgrounds contribute to the models that our society uses to assess economic policy; when community-contributed improvements are incorporated, the models will produce different results.</p>
       <p>Neither the Open Source Policy Center nor the American Enterprise Institute maintain institutional positions, and the results from models accessible via the ospc.org interfaces should not be attributed to OSPC or AEI.</p>
     </div>
-    
+
 {% endblock %}
