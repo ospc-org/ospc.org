@@ -110,6 +110,25 @@ reform_text = """// Title: 2016 Trump Campaign Tax Plan
 // -  Corporate tax provisions
 // -  Estate tax provisions"""
 
+
+r1 = """// r1.json assumes reform with the following provisions:
+// - adhoc raises in OASDI maximum taxable earnings in 2018, 2019 and 2020,
+//     with _SS_Earnings_c wage indexed in subsequent years
+// - raise personal exemption amount _II_em in 2018, keep it unchanged for
+//     two years and then resume its price indexing in subsequent years
+// - implement a 20% investment income AGI exclusion beginning in 2019
+{
+    "policy": {
+        "_SS_Earnings_c": {"2018": [400000],
+                           "2019": [500000],
+                           "2020": [600000]},
+        "_II_em": {"2018": [8000]},
+        "_II_em_cpi": {"2018": false,
+                       "2020": true},
+        "_ALD_InvInc_ec_rt": {"2019": [0.20]}
+    }
+}"""
+
 regression_sample_reform = """// Assume reform with the following provisions:
 // - adhoc raises in OASDI maximum taxable earnings in 2018, 2019 and 2020,
 //     with _SS_Earnings_c wage indexed in subsequent years
@@ -349,29 +368,29 @@ errors_warnings = {'errors': errors, 'warnings': warnings}
 exp_errors_warnings = {
     'errors': {
         '2017': {
-             'FICA_ss_trt': 'ERROR: value -1.0 < min value 0 for 2017',
-             'II_brk4_0': 'ERROR: value 500.0 < min value 91900.0 for _II_brk3_0 for 2017'},
+             'FICA_ss_trt': 'ERROR: _FICA_ss_trt value -1.0 < min value 0 for 2017',
+             'II_brk4_0': 'ERROR: _II_brk4_0 value 500.0 < min value 91900.0 for _II_brk3_0 for 2017'},
         '2018': {
-            'FICA_ss_trt': 'ERROR: value -1.0 < min value 0 for 2018',
-            'II_brk4_0': 'ERROR: value 511.25 < min value 93967.75 for _II_brk3_0 for 2018'},
-        '2019': {'II_brk4_0': 'ERROR: value 522.7 < min value 96072.63 for _II_brk3_0 for 2019'},
-        '2020': {'II_brk4_0': 'ERROR: value 534.77 < min value 98291.91 for _II_brk3_0 for 2020'},
-        '2021': {'II_brk4_0': 'ERROR: value 547.5 < min value 100631.26 for _II_brk3_0 for 2021'},
-        '2022': {'II_brk4_0': 'ERROR: value 560.8 < min value 103076.6 for _II_brk3_0 for 2022'},
-        '2023': {'II_brk4_0': 'ERROR: value 574.09 < min value 105519.52 for _II_brk3_0 for 2023'},
-        '2024': {'II_brk4_0': 'ERROR: value 587.87 < min value 108051.99 for _II_brk3_0 for 2024'},
-        '2025': {'II_brk4_0': 'ERROR: value 601.86 < min value 110623.63 for _II_brk3_0 for 2025'},
-        '2026': {'II_brk4_0': 'ERROR: value 616.18 < min value 113256.47 for _II_brk3_0 for 2026'},
-        '2027': {'II_brk4_0': 'ERROR: value 630.97 < min value 115974.63 for _II_brk3_0 for 2027'}
+            'FICA_ss_trt': 'ERROR: _FICA_ss_trt value -1.0 < min value 0 for 2018',
+            'II_brk4_0': 'ERROR: _II_brk4_0 value 511.25 < min value 93967.75 for _II_brk3_0 for 2018'},
+        '2019': {'II_brk4_0': 'ERROR: _II_brk4_0 value 522.7 < min value 96072.63 for _II_brk3_0 for 2019'},
+        '2020': {'II_brk4_0': 'ERROR: _II_brk4_0 value 534.77 < min value 98291.91 for _II_brk3_0 for 2020'},
+        '2021': {'II_brk4_0': 'ERROR: _II_brk4_0 value 547.5 < min value 100631.26 for _II_brk3_0 for 2021'},
+        '2022': {'II_brk4_0': 'ERROR: _II_brk4_0 value 560.8 < min value 103076.6 for _II_brk3_0 for 2022'},
+        '2023': {'II_brk4_0': 'ERROR: _II_brk4_0 value 574.09 < min value 105519.52 for _II_brk3_0 for 2023'},
+        '2024': {'II_brk4_0': 'ERROR: _II_brk4_0 value 587.87 < min value 108051.99 for _II_brk3_0 for 2024'},
+        '2025': {'II_brk4_0': 'ERROR: _II_brk4_0 value 601.86 < min value 110623.63 for _II_brk3_0 for 2025'},
+        '2026': {'II_brk4_0': 'ERROR: _II_brk4_0 value 616.18 < min value 113256.47 for _II_brk3_0 for 2026'},
+        '2027': {'II_brk4_0': 'ERROR: _II_brk4_0 value 630.97 < min value 115974.63 for _II_brk3_0 for 2027'}
     },
     'warnings': {
-        '2020': {'STD_3': 'WARNING: value 150.0 < min value 9900.32 for 2020'},
-        '2021': {'STD_3': 'WARNING: value 153.57 < min value 10138.33 for 2021'},
-        '2022': {'STD_3': 'WARNING: value 157.3 < min value 10387.12 for 2022'},
-        '2023': {'STD_3': 'WARNING: value 161.03 < min value 10635.66 for 2023'},
-        '2024': {'STD_3': 'WARNING: value 164.89 < min value 10893.32 for 2024'},
-        '2025': {'STD_3': 'WARNING: value 168.81 < min value 11154.96 for 2025'},
-        '2026': {'STD_3': 'WARNING: value 172.83 < min value 11422.83 for 2026'},
-        '2027': {'STD_3': 'WARNING: value 176.98 < min value 11699.38 for 2027'}
+        '2020': {'STD_3': 'WARNING: _STD_3 value 150.0 < min value 9900.32 for 2020'},
+        '2021': {'STD_3': 'WARNING: _STD_3 value 153.57 < min value 10138.33 for 2021'},
+        '2022': {'STD_3': 'WARNING: _STD_3 value 157.3 < min value 10387.12 for 2022'},
+        '2023': {'STD_3': 'WARNING: _STD_3 value 161.03 < min value 10635.66 for 2023'},
+        '2024': {'STD_3': 'WARNING: _STD_3 value 164.89 < min value 10893.32 for 2024'},
+        '2025': {'STD_3': 'WARNING: _STD_3 value 168.81 < min value 11154.96 for 2025'},
+        '2026': {'STD_3': 'WARNING: _STD_3 value 172.83 < min value 11422.83 for 2026'},
+        '2027': {'STD_3': 'WARNING: _STD_3 value 176.98 < min value 11699.38 for 2027'}
     }
 }

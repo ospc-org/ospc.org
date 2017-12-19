@@ -299,6 +299,7 @@ class PersonalExemptionForm(ModelForm):
             "_II_no_em_nu18",
             "_ID_AmountCap_Switch",
             "_CTC_new_for_all",
+            "_CTC_new_refund_limited_all_payroll",
             "_PT_wages_active_income",
             "_PT_top_stacking",
             "_DependentCredit_before_CTC"
