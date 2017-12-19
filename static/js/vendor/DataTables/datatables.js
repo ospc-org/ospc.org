@@ -27705,7 +27705,16 @@ DataTable.ext.buttons.csvHtml5 = {
         var regExp = /\(([^)]+)\)/;
         var run_number = myRegexp.exec(url);
         if (output_.substring(6,7) == 1) {
-            var title = '_liabilities_change';
+            var lable = $('tr:first').text()
+            if (lable[37] == 'H'){
+                title = '_liabilities_change'
+            }
+            else if (lable[37] == 'E'){
+                title = '_liabilities_reform'
+            }
+            else{
+                title = '_liabilities_current_law'
+            }
         }
         else {
             var titles = $('h1:last').text().split(" ",20);
