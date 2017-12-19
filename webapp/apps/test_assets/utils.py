@@ -3,6 +3,14 @@ import os
 import sys
 
 from ..taxbrain.compute import MockCompute
+from test_reform import test_coverage_fields
+
+from ..taxbrain.models import TaxSaveInputs, OutputUrl
+from ..taxbrain.forms import PersonalExemptionForm
+
+from ..dynamic import views
+from ..taxbrain import views
+
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
@@ -74,10 +82,10 @@ def check_posted_params(mock_compute, params_to_check, start_year):
     """
     last_posted = mock_compute.last_posted
     user_mods = json.loads(last_posted["user_mods"])
-    assert last_posted["first_budget_year"] == start_year
+    assert last_posted["first_budget_year"] == int(start_year)
     for year in params_to_check:
         for param in params_to_check[year]:
-            assert user_mods[str(year)][param] == params_to_check[year][param]
+            assert user_mods["policy"][str(year)][param] == params_to_check[year][param]
 
 
 def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False):
@@ -118,3 +126,34 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
         data['assumpfile'] = tc_file2
 
     return data
+
+
+def get_taxbrain_model(fields=test_coverage_fields, first_year=2017,
+                       quick_calc=False, taxcalc_vers="0.13.0",
+                       webapp_vers="1.2.0", exp_comp_datetime = "2017-10-10"):
+    fields = fields.copy()
+    del fields['_state']
+    del fields['creation_date']
+    del fields['id']
+    for key in fields:
+        if isinstance(fields[key], list):
+            fields[key] = ','.join(map(str, fields[key]))
+
+    personal_inputs = PersonalExemptionForm(first_year, fields)
+
+    model = personal_inputs.save()
+    model.job_ids = '1,2,3'
+    model.json_text = None
+    model.first_year = first_year
+    model.quick_calc = quick_calc
+    model.save()
+
+    unique_url = OutputUrl()
+    unique_url.taxcalc_vers = taxcalc_vers
+    unique_url.webapp_vers = webapp_vers
+    unique_url.unique_inputs = model
+    unique_url.model_pk = model.pk
+    unique_url.exp_comp_datetime = exp_comp_datetime
+    unique_url.save()
+
+    return unique_url

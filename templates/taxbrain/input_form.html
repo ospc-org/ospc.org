@@ -152,9 +152,7 @@
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                   {% for param in params %}
                     {% for key, value in param.items %}
-                      {% if key != "ubi" %}
-                        <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
-                      {% endif %}
+                      <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
                     {% endfor %}
                   {% endfor %}
               </ul>
@@ -162,23 +160,12 @@
                 <a href="#" ></a>
                 <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" name="full_calc" value="Show me the results!">
             </div>
-              {% if enable_quick_calc %}
               <div class="sidebar-button">
                 <a href="#" ></a>
                 <button id="tax-submit-quick" class="btn btn-tertiary btn-block" type="submit" value="quick_calc" name="quick_calc">
-                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; 2% sample)</span>
+                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; small sample)</span>
                 </button>
               </div>
-              {% endif %}
-              <!--
-              <div class="sidebar-note">
-                <div class="sidebar-count">
-                  <span>11</span> / 24
-                </div>
-                <h3>Changes made to the Current Tax Policy</h3>
-                <p>Data is pre-populated with current tax policy parameters. The amount listed above tracks the number of parameters changed, that different from the current tax policy parameters.</p>
-              </div>
-              -->
             </div> <!-- sidebar -->
           </div>
           <div class="col-xs-9">

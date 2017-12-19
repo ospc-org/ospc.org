@@ -71,6 +71,7 @@ class DynamicBehaviorSaveInputs(models.Model):
     BE_charity_0 = CommaSeparatedField(default=None, blank=True, null=True)
     BE_charity_1 = CommaSeparatedField(default=None, blank=True, null=True)
     BE_charity_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_subinc_wrt_earnings = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)

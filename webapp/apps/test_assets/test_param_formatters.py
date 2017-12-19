@@ -90,7 +90,7 @@ def test_to_json_reform(fields, exp_reform):
 # Test parse_errors_warnings
 def test_parse_errors_warnings():
     act = parse_errors_warnings(errors_warnings, map_back_to_tb)
-    np.testing.assert_equal(exp_errors_warnings, act)
+    np.testing.assert_equal(act, exp_errors_warnings)
 
 
 ###############################################################################
@@ -122,6 +122,6 @@ def test_read_json_reform(test_reform, test_assump, map_back_to_tb,
         test_assump,
         map_back_to_tb
     )
-    np.testing.assert_equal(exp_reform, act_reform)
-    np.testing.assert_equal(exp_assump, act_assump)
-    np.testing.assert_equal(exp_errors_warnings, act_errors_warnings)
+    np.testing.assert_equal(act_reform, exp_reform)
+    np.testing.assert_equal(act_assump, exp_assump)
+    np.testing.assert_equal(act_errors_warnings, exp_errors_warnings)

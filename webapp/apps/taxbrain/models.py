@@ -11,6 +11,7 @@ from uuidfield import UUIDField
 from jsonfield import JSONField
 import datetime
 
+from helpers import rename_keys, PRE_TC_0130_RES_MAP
 
 def convert_to_floats(tsi):
     """
@@ -82,6 +83,7 @@ class JSONReformTaxCalculator(models.Model):
     raw_reform_text = models.TextField(blank=True, null=False)
     assumption_text = models.TextField(blank=True, null=False)
     raw_assumption_text = models.TextField(blank=True, null=False)
+    errors_warnings_text = models.TextField(blank=True, null=False)
 
 class ErrorMessageTaxCalculator(models.Model):
     '''
@@ -163,6 +165,15 @@ class TaxSaveInputs(models.Model):
     ALD_IRAContributions_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_DomesticProduction_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Tuition_hc = CommaSeparatedField(default=None, blank=True, null=True)
+
+    DependentCredit_Child_c = CommaSeparatedField(default=None, blank=True, null=True)
+    DependentCredit_Nonchild_c = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    FilerCredit_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     FEI_ec_c = CommaSeparatedField(default=None, blank=True, null=True)
     FEI_ec_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
@@ -294,16 +305,15 @@ class TaxSaveInputs(models.Model):
     ID_c_3 = CommaSeparatedField(default=None, blank=True, null=True)
     ID_c_4 = CommaSeparatedField(default=None, blank=True, null=True)
     ID_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    # uncomment once we incorporate new variables
-    # ID_AmountCap_rt = CommaSeparatedField(default=None, blank=True, null=True)
-    # ID_AmountCap_rt_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    # ID_AmountCap_Switch_0 = models.CharField(default="True", blank=True, null=True, max_length=50)
-    # ID_AmountCap_Switch_1 = models.CharField(default="True", blank=True, null=True, max_length=50)
-    # ID_AmountCap_Switch_2 = models.CharField(default="True", blank=True, null=True, max_length=50)
-    # ID_AmountCap_Switch_3 = models.CharField(default="True", blank=True, null=True, max_length=50)
-    # ID_AmountCap_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
-    # ID_AmountCap_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
-    # ID_AmountCap_Switch_6 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AmountCap_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    ID_AmountCap_rt_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    ID_AmountCap_Switch_0 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AmountCap_Switch_1 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AmountCap_Switch_2 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AmountCap_Switch_3 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AmountCap_Switch_4 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AmountCap_Switch_5 = models.CharField(default="True", blank=True, null=True, max_length=50)
+    ID_AmountCap_Switch_6 = models.CharField(default="True", blank=True, null=True, max_length=50)
 
     # Parameters used for Investment Tax Rates.
     CG_rt1    = CommaSeparatedField(default=None, blank=True, null=True)
@@ -417,6 +427,12 @@ class TaxSaveInputs(models.Model):
     II_credit_nr_2 = CommaSeparatedField(default=None, blank=True, null=True)
     II_credit_nr_3 = CommaSeparatedField(default=None, blank=True, null=True)
     II_credit_nr_prt = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    II_credit_nr_ps_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Parameters used for the AMT.
     AMT_em_0 = CommaSeparatedField(default=None, blank=True, null=True)
@@ -530,6 +546,8 @@ class TaxSaveInputs(models.Model):
     CTC_new_prt = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_c = CommaSeparatedField(default=None, blank=True, null=True)
     CTC_new_c_under5_bonus = CommaSeparatedField(default=None, blank=True, null=True)
+    CTC_new_for_all = models.CharField(default="False", blank=True, null=True, max_length=50)
+    DependentCredit_before_CTC = models.CharField(default="False", blank=True, null=True, max_length=50)
     ACTC_rt = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_ChildNum = CommaSeparatedField(default=None, blank=True, null=True)
     ACTC_rt_bonus_under5family = CommaSeparatedField(default=None, blank=True, null=True)
@@ -605,6 +623,13 @@ class TaxSaveInputs(models.Model):
     PT_brk7_4 = CommaSeparatedField(default=None, blank=True, null=True)
     PT_brk7_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     PT_rt8 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_EligibleRate_active = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_EligibleRate_passive = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_wages_active_income = models.CharField(default="False", blank=True, null=True, max_length=50)
+    PT_top_stacking = models.CharField(default="True", blank=True, null=True, max_length=50)
+    PT_exclusion_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_exclusion_wage_limit = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_exclusion_wage_limit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Fair Share Tax Parameters
     FST_AGI_trt = CommaSeparatedField(default=None, blank=True, null=True)
@@ -653,6 +678,7 @@ class TaxSaveInputs(models.Model):
     CG_nodiff = models.CharField(default="False", blank=True, null=True, max_length=50)
     EITC_indiv = models.CharField(default="False", blank=True, null=True, max_length=50)
     CTC_new_refund_limited = models.CharField(default="False", blank=True, null=True, max_length=50)
+    CTC_new_refund_limited_all_payroll = models.CharField(default="False", blank=True, null=True, max_length=50)
     II_no_em_nu18 = models.CharField(default="False", blank=True, null=True, max_length=50)
 
     # Inflation adjustments
@@ -664,6 +690,8 @@ class TaxSaveInputs(models.Model):
         validators=[MinValueValidator(0.000), MaxValueValidator(1.000)])
     medical_years = models.FloatField(default=None, blank=True, null=True,
         validators=[MinValueValidator(0), MaxValueValidator(10)])
+
+    cpi_offset = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Growth Assumptions
     factor_adjustment = CommaSeparatedField(default=None, blank=True, null=True)
@@ -698,7 +726,7 @@ class TaxSaveInputs(models.Model):
     """
 
     # Result
-    tax_result = JSONField(default=None, blank=True, null=True)
+    _tax_result = JSONField(default=None, blank=True, null=True, db_column='tax_result')
 
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
@@ -709,6 +737,25 @@ class TaxSaveInputs(models.Model):
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
+
+    @property
+    def tax_result(self):
+        """
+        If taxcalc version is greater than or equal to 0.13.0, return table
+        If taxcalc version is less than 0.13.0, then rename keys to new names
+        and then return table
+        """
+        outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
+        taxcalc_vers = outputurl.taxcalc_vers
+        taxcalc_vers = tuple(map(int, taxcalc_vers.split('.')))
+        if taxcalc_vers >= (0, 13, 0):
+            return self._tax_result
+        else:
+            return rename_keys(self._tax_result, PRE_TC_0130_RES_MAP)
+
+    @tax_result.setter
+    def tax_result(self, result):
+        self._tax_result = result
 
     class Meta:
         permissions = (

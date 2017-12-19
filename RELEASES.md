@@ -4,6 +4,40 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.2.1 on 2017-12-12
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#762](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#762) - Save submitted JSON files in case of warning messages - Hank Doupe
+- [#774](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#774) - Update to taxcalc 0.14.0+ - Hank Doupe
+
+**Bug Fixes**
+- [#757](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#757) - Make sure ID_AmountCap_Switch param is submitted as 1/0 - Hank Doupe
+- [#759](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#759) - Quick-calc clean up - Hank Doupe
+- [#767](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Add input_type back to context - Hank Doupe and Sean Wang
+- [#776](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Short-term fix for package pinning - Hank Doupe
+- [#777](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#777) - Update warning/error messages and description - Hank Doupe
+
+Release 1.2.0 on 2017-11-21
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#738](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/738) - Update to taxcalc 0.13.0+ - Hank Doupe
+- [#739](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/739) - Remove media coverage links and add more medias - Sean Wang
+
+**Bug Fixes**
+- [#742](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/742) - Labels and titles dynamically update and initial loading bug fixed - Haylee Ham
+- [#744](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/744) - Cleanup reform_style removal and 738 migrations - Hank Doupe
+- [#745](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/745) - Collapse in all fields temporarily -- Sean Wang
+- [#748](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/748) - Remove UBI exclude statement - Hank Doupe
+- [#751](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/751) - Change job processing time from 30 to 50 seconds - Hank Doupe
+- [#752](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/752) - Post 738 dynamic sim cleanup - Hank Doupe
+- [#755](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/755) - Fix table label order - Hank Doupe
+
 Release 1.1.1 on 2017-11-04
 ----------------------------
 **Major Changes**

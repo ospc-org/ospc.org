@@ -22,7 +22,8 @@ from taxcalc import Policy
 from ...test_assets import test_reform, test_assumptions
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data,
-                                  get_dropq_compute_from_module)
+                                  get_dropq_compute_from_module,
+                                  get_taxbrain_model)
 
 
 START_YEAR = 2016
@@ -57,6 +58,7 @@ class TaxBrainViewsTests(TestCase):
         del data[u'ID_BenefitSurtax_Switch_4']
         del data[u'ID_BenefitSurtax_Switch_6']
         data[u'II_em'] = [u'4333']
+        data[u'ID_AmountCap_Switch_0'] = [u'True']
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -72,6 +74,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
                                    [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_ID_AmountCap_Switch":
+                                   [[1, 0, 0, 0, 0, 0, 0]],
                                    "_II_em": [4333.0]}
                       }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
@@ -120,10 +124,9 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
 
         # Check that data was saved properly
-        truth_mods = taxcalc.Calculator.read_json_param_files(
+        truth_mods = taxcalc.Calculator.read_json_param_objects(
             test_reform.reform_text,
             None,
-            False
         )
         truth_mods = truth_mods["policy"]
         check_posted_params(result["tb_dropq_compute"], truth_mods,
@@ -143,6 +146,38 @@ class TaxBrainViewsTests(TestCase):
 
         # Check that data was saved properly
         check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
+
+
+    def test_back_to_back_quickcalc(self):
+        "Test back to back quick calc posts"
+        # switches 0, 4, 6 are False
+        data = get_post_data(START_YEAR, quick_calc=True)
+        del data[u'ID_BenefitSurtax_Switch_0']
+        del data[u'ID_BenefitSurtax_Switch_4']
+        del data[u'ID_BenefitSurtax_Switch_6']
+        data[u'II_em'] = [u'4333']
+
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
+
+        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
+                                                                 START_YEAR)
+        edit_page = self.client.get(edit_micro)
+        self.assertEqual(edit_page.status_code, 200)
+
+        next_csrf = str(edit_page.context['csrf_token'])
+        data['csrfmiddlewaretoken'] = next_csrf
+        result2 = do_micro_sim(self.client, data)
+
+        check_posted_params(result2['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
 
@@ -295,11 +330,12 @@ class TaxBrainViewsTests(TestCase):
         result = do_micro_sim(self.client, data)
 
         # Check that data was saved properly
-        truth_mods = {START_YEAR: {'_II_brk2_cpi': False},
-                      START_YEAR + 2:
-                          {'_II_brk1': [[15000.0, 19064.03, 9532.01,
-                                         13646.37, 19064.03]]}
-                      }
+        truth_mods = {
+            START_YEAR: {'_II_brk2_cpi': False},
+            START_YEAR + 2: {
+                '_II_brk1': [[15000.0, 19069.63, 9534.81, 13650.38, 19069.63]]
+            }
+        }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
@@ -475,7 +511,10 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        tsi = TaxSaveInputs()
+        unique_url = get_taxbrain_model(taxcalc_vers="0.10.0",
+                                        webapp_vers="1.1.0")
+
+        tsi = unique_url.unique_inputs
         old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   "example_old_result.json")
 
@@ -483,7 +522,6 @@ class TaxBrainViewsTests(TestCase):
             tsi.tax_result = json.loads(f.read())
         tsi.first_year = 2016
         tsi.save()
-
         factory = RequestFactory()
         req = factory.get('/taxbrain/')
         url = '/taxbrain/42'
@@ -515,6 +553,8 @@ class TaxBrainViewsTests(TestCase):
         """
         POST a reform file that causes errors. See PB issue #630
         """
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
+
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
@@ -525,23 +565,192 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'ERROR: value 9e+99 > max value 81210.81 for _II_brk2_4 for 2020'
+        msg = 'ERROR: _II_brk1_4 value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
         assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': START_YEAR
+        }
+
+        response = self.client.post('/taxbrain/file/', data2)
+        assert response.status_code == 200
 
 
     def test_taxbrain_warning_reform_file(self):
         """
-        POST a reform file that causes warnings. See PB issue #630
+        POST a reform file that causes warnings and check that re-submission
+        is allowed. See PB issue #630 and #761
         """
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_file_post_data(START_YEAR, test_reform.warning_reform)
 
-        #TODO: make sure we can submit after we see warnings
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: value 1000.0 < min value 6794.31 for 2020'
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': START_YEAR
+        }
+
+        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+
+        truth_mods = {
+            2020: {
+                "_STD":  [[1000, 13583.32, 6791.67, 10000.32, 13583.32]]
+            }
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
+
+
+    def test_taxbrain_reform_file_file_swap(self):
+        """
+        POST a reform file that causes warnings, swap files, and make sure
+        swapped files are used. See PB issue #630 and #761
+        """
+        start_year = 2017
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_file_post_data(start_year, test_reform.warning_reform)
+
+        response = self.client.post('/taxbrain/file/', data)
+        # Check that no redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
+        assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': start_year
+        }
+        data_file = get_file_post_data(START_YEAR,
+                                       test_reform.r1,
+                                       test_assumptions.assumptions_text)
+        data2['docfile'] = data_file['docfile']
+        data2['assumpfile'] = data_file['assumpfile']
+
+        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+
+        dropq_compute = result['tb_dropq_compute']
+        user_mods = json.loads(dropq_compute.last_posted["user_mods"])
+        assert user_mods["behavior"][str(start_year)]["_BE_sub"][0] == 1.0
+        truth_mods = {2018: {'_II_em': [8000.0]}}
+        check_posted_params(dropq_compute, truth_mods, start_year)
+
+
+    def test_taxbrain_reform_file_file_swap_no_assump(self):
+        """
+        POST a reform file that causes warnings, swap files, and make sure
+        swapped files are used. See PB issue #630 and #761
+        """
+        start_year = 2017
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_file_post_data(start_year, test_reform.warning_reform)
+
+        response = self.client.post('/taxbrain/file/', data)
+        # Check that no redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
+        assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': start_year
+        }
+        data_file = get_file_post_data(START_YEAR, test_reform.r1)
+        data2['docfile'] = data_file['docfile']
+
+        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+
+        dropq_compute = result['tb_dropq_compute']
+        user_mods = json.loads(dropq_compute.last_posted["user_mods"])
+        truth_mods = {2018: {'_II_em': [8000.0]}}
+        check_posted_params(dropq_compute, truth_mods, start_year)
+
+
+    def test_taxbrain_up_to_2018(self):
+        start_year = 2018
+        data = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 15000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {
+            start_year: {'_II_brk2_cpi': False},
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(start_year))
+
+
+    def test_taxbrain_file_up_to_2018(self):
+        start_year = 2018
+        data = get_file_post_data(start_year, test_reform.reform_text)
+
+        post_url = '/taxbrain/file/'
+
+        result = do_micro_sim(
+            self.client,
+            data,
+            post_url=post_url
+        )
+
+        # Check that data was saved properly
+        truth_mods = taxcalc.Calculator.read_json_param_objects(
+            test_reform.reform_text,
+            None,
+        )
+        truth_mods = truth_mods["policy"]
+        check_posted_params(result["tb_dropq_compute"], truth_mods,
+                            str(start_year))
