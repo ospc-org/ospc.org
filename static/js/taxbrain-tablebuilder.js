@@ -260,6 +260,9 @@ $(function() {
 
                 this.selectedTableName = el_tablename;
                 this.render();
+                this.$el.find('table').dataTable(this.dataTableOptions);
+                this.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');
+
         }},
 
 
