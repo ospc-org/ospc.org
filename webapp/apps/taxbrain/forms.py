@@ -302,7 +302,6 @@ class PersonalExemptionForm(ModelForm):
             "_CTC_new_refund_limited_all_payroll",
             "_PT_wages_active_income",
             "_PT_top_stacking",
-            "_DependentCredit_before_CTC"
         ]
 
         for param in TAXCALC_DEFAULTS_2016.values():
