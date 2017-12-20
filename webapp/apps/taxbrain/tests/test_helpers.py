@@ -150,16 +150,16 @@ def test_parsing_fail():
 @pytest.mark.parametrize(
     'item,exp',
     [('True', True), ('true', True), ('TRUE', True), (True, True),
-     ('tRue', True), (1.0, True),
+     ('tRue', True), (1.0, True), (1, True), ('1.0', True), ('1', True),
      ('False', False), ('false', False), ('FALSE', False), (False, False),
-     ('faLSe', False), (0, False)]
+     ('faLSe', False), (0.0, False), (0, False), ('0.0', False), ('0', False)]
 )
 def test_make_bool(item, exp):
     assert make_bool(item) is exp
 
 @pytest.mark.parametrize(
     'item',
-    ['abc', '0', '1', 10]
+    ['abc', 10, '10', '00', 2]
 )
 def test_make_bool_fail(item):
     with pytest.raises((ValueError, TypeError)):

@@ -65,22 +65,9 @@ def make_bool(x):
     Returns True for True or 1
     Returns False for False or 0
     """
-    if not isinstance(x, (bool, six.string_types, unicode)):
-        try:
-            if np.allclose(float(x), 0.0):
-                return False
-            elif np.allclose(float(x), 1.0):
-                return True
-            else:
-                pass
-        except Exception as e:
-            pass #raises type error below
-        raise TypeError(
-            "Expected string but got {}".format(type(x))
-        )
-    if x is True:
+    if x in (True, '1', '1.0', 1, 1.0):
         return True
-    elif x is False:
+    elif x in (False, '0', '0.0', 0, 0.0):
         return False
     elif TRUE_REGEX.match(x, endpos=4):
         return True
