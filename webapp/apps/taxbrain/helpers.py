@@ -2,6 +2,7 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
+import numpy as np
 import pyparsing as pp
 import sys
 import time
@@ -61,8 +62,19 @@ def check_wildcards(x):
 def make_bool(x):
     """
     Find exact match for case insensitive true or false
+    Returns True for True or 1
+    Returns False for False or 0
     """
-    if not isinstance(x, (bool, six.string_types, unicode)):# or not isinstance(x, six.string_types):
+    if not isinstance(x, (bool, six.string_types, unicode)):
+        try:
+            if np.allclose(float(x), 0.0):
+                return False
+            elif np.allclose(float(x), 1.0):
+                return True
+            else:
+                pass
+        except Exception as e:
+            pass #raises type error below
         raise TypeError(
             "Expected string but got {}".format(type(x))
         )
