@@ -408,7 +408,7 @@ class TaxBrainViewsTests(TestCase):
         # Check that data was submitted properly
         truth_mods = {
             2018: {'_DependentCredit_before_CTC': [True]},
-            2020: {'_DependentCredit_before_CTC': [False],
+            2020: {'_DependentCredit_before_CTC': [False]},
             2021: {'_DependentCredit_before_CTC': [True]}
         }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
