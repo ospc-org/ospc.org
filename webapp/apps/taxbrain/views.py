@@ -809,7 +809,6 @@ def add_summary_column(table):
     summary = copy.deepcopy(table["cols"][-1])
     summary["label"] = "Total"
     table["cols"].append(summary)
-    table["col_labels"].append("Total")
     for x in table["rows"]:
         row_total = 0
         for y in x["cells"]:
