@@ -4,6 +4,21 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.2.2 on 2017-12-20
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#778](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/778) - Upgrade to Tax-Calculator 0.14.1 - Hank Doupe
+- [#781](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/781) - Add CNN to media coverage - Sean Wang
+- [#782](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/782) - Convert DependentCredit_before_CTC from bool to int - Hank Doupe
+- [#784](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/784) - Update to Tax-Calculator 0.14.2 - Hank Doupe
+**Bug Fixes**
+- [#741](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/741) - Web page clean ups and bug fixes - Sean Wang
+- [#780](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/780) - Fix buttons disappear after fiscal tables being re-rendered - Sean Wang
+- [#783](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/783) - Removes extra "Total" lables - Hank Doupe
+
 Release 1.2.1 on 2017-12-12
 ----------------------------
 **Major Changes**
