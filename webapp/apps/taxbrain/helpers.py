@@ -6,6 +6,7 @@ import pyparsing as pp
 import sys
 import time
 import six
+import re
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -24,6 +25,8 @@ SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
 
 # Grammar for Field inputs
+TRUE = pp.CaselessKeyword('true')
+FALSE = pp.CaselessKeyword('false')
 WILDCARD = pp.Word('*')
 INT_LIT = pp.Word(pp.nums)
 NEG_DASH = pp.Word('-', exact=1)
@@ -34,8 +37,13 @@ COMMON = pp.Word(",", exact=1)
 
 VALUE = WILDCARD | NEG_DASH | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
 MORE_VALUES = COMMON + VALUE
-INPUT = VALUE + pp.ZeroOrMore(MORE_VALUES)
 
+BOOL = WILDCARD | TRUE | FALSE
+MORE_BOOLS = COMMON + BOOL
+INPUT = BOOL + pp.ZeroOrMore(MORE_BOOLS) | VALUE + pp.ZeroOrMore(MORE_VALUES)
+
+TRUE_REGEX = re.compile('(?i)true')
+FALSE_REGEX = re.compile('(?i)false')
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
@@ -51,9 +59,27 @@ def check_wildcards(x):
 
 
 def make_bool(x):
-    b = True if x == 'True' else False
-    return b
-
+    """
+    Find exact match for case insensitive true or false
+    """
+    if not isinstance(x, (bool, six.string_types, unicode)):# or not isinstance(x, six.string_types):
+        raise TypeError(
+            "Expected string but got {}".format(type(x))
+        )
+    if x is True:
+        return True
+    elif x is False:
+        return False
+    elif TRUE_REGEX.match(x, endpos=4):
+        return True
+    elif FALSE_REGEX.match(x, endpos=5):
+        return False
+    else:
+        # this should be caught much earlier either in model validation or in
+        # form validation
+        raise ValueError(
+            "Expected case insensitive 'true' or 'false' but got {}".format(x)
+        )
 
 def convert_val(x):
     if is_wildcard(x):

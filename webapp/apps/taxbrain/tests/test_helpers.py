@@ -2,7 +2,8 @@ import pytest
 import json
 import numpy as np
 import taxcalc
-from ..helpers import nested_form_parameters, rename_keys
+import pyparsing as pp
+from ..helpers import nested_form_parameters, rename_keys, INPUT, make_bool
 
 CURRENT_LAW_POLICY = """
 {
@@ -126,3 +127,40 @@ def test_rename_keys(monkeypatch):
     }
     act = rename_keys(a, map_dict)
     np.testing.assert_equal(act, exp)
+
+@pytest.mark.parametrize(
+    'item',
+    ['1', '2.0', '8.01', '23',
+     '-4', '-3.0', '-2.02', '-46',
+     '*', '1,*', '1,*,1,1,*',
+     '-2,*', '-7,*,*,2,*',
+     'True', 'true', 'TRUE', 'tRue',
+     'False', 'false', 'FALSE','faLSe',
+     'true,*', '*, true', '*,*,false',
+     'true,*,false,*,*,true',
+     '1,*,False', '0.0,True', '1.0,False']
+)
+def test_parsing_pass(item):
+    INPUT.parseString(item)
+
+def test_parsing_fail():
+    with pytest.raises(pp.ParseException):
+        INPUT.parseString('abc')
+
+@pytest.mark.parametrize(
+    'item,exp',
+    [('True', True), ('true', True), ('TRUE', True), (True, True),
+     ('tRue', True),
+     ('False', False), ('false', False), ('FALSE', False), (False, False),
+     ('faLSe', False)]
+)
+def test_make_bool(item, exp):
+    assert make_bool(item) is exp
+
+@pytest.mark.parametrize(
+    'item',
+    ['abc', '0', '1', 1, 10]
+)
+def test_make_bool_fail(item):
+    with pytest.raises((ValueError, TypeError)):
+        make_bool(item)
