@@ -14,6 +14,7 @@ Release 1.2.2 on 2017-12-20
 - [#781](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/781) - Add CNN to media coverage - Sean Wang
 - [#782](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/782) - Convert DependentCredit_before_CTC from bool to int - Hank Doupe
 - [#784](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/784) - Update to Tax-Calculator 0.14.2 - Hank Doupe
+
 **Bug Fixes**
 - [#741](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/741) - Web page clean ups and bug fixes - Sean Wang
 - [#780](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/780) - Fix buttons disappear after fiscal tables being re-rendered - Sean Wang
