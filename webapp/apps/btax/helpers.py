@@ -210,3 +210,17 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
 
             )
     return depr_argument_groups
+
+
+def make_bool(x):
+    b = True if x == 'True' else False
+    return b
+
+
+def convert_val(x):
+    if is_wildcard(x):
+        return x
+    try:
+        return float(x)
+    except ValueError:
+        return make_bool(x)

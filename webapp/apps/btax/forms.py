@@ -3,12 +3,12 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from .models import BTaxSaveInputs
-from .helpers import (BTaxField, BTaxParam, get_btax_defaults)
+from .helpers import (BTaxField, BTaxParam, get_btax_defaults,
+                      convert_val, make_bool)
 from ..taxbrain.helpers import (is_number, int_to_nth,
                                 is_string, string_to_float_array,
                                 check_wildcards, expand_list,
-                                propagate_user_list, convert_val,
-                                make_bool)
+                                propagate_user_list)
 import taxcalc
 
 from ..taxbrain.forms import (has_field_errors,
