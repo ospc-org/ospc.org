@@ -401,7 +401,7 @@ class TaxBrainViewsTests(TestCase):
         string
         """
         data = get_post_data(2018, _ID_BenefitSurtax_Switches=False)
-        data['DependentCredit_before_CTC'] = [u'True,*,FALSE,tRUe']
+        data['DependentCredit_before_CTC'] = [u'True,*,FALSE,tRUe,*,0']
 
         result = do_micro_sim(self.client, data)
 
@@ -409,7 +409,8 @@ class TaxBrainViewsTests(TestCase):
         truth_mods = {
             2018: {'_DependentCredit_before_CTC': [True]},
             2020: {'_DependentCredit_before_CTC': [False]},
-            2021: {'_DependentCredit_before_CTC': [True]}
+            2021: {'_DependentCredit_before_CTC': [True]},
+            2023: {'_DependentCredit_before_CTC': [False]}
         }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(2018))

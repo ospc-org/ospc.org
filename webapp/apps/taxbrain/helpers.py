@@ -25,6 +25,8 @@ SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
 SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
 
+BOOL_PARAMS = ['DependentCredit_before_CTC']
+
 # Grammar for Field inputs
 TRUE = pp.CaselessKeyword('true')
 FALSE = pp.CaselessKeyword('false')
@@ -64,8 +66,11 @@ def make_bool(x):
     Find exact match for case insensitive true or false
     Returns True for True or 1
     Returns False for False or 0
+    If x is wildcard then simply return x
     """
-    if x in (True, '1', '1.0', 1, 1.0):
+    if is_wildcard(x):
+        return x
+    elif x in (True, '1', '1.0', 1, 1.0):
         return True
     elif x in (False, '0', '0.0', 0, 0.0):
         return False
@@ -94,7 +99,11 @@ def parse_fields(param_dict):
             del param_dict[k]
             continue
         if isinstance(v, six.string_types):
-            param_dict[k] = [convert_val(x) for x in v.split(',') if x]
+            if k in BOOL_PARAMS:
+                converter = make_bool
+            else:
+                converter = convert_val
+            param_dict[k] = [converter(x) for x in v.split(',') if x]
     return param_dict
 
 def int_to_nth(x):
