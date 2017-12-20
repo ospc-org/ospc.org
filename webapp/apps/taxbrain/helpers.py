@@ -93,7 +93,7 @@ def parse_fields(param_dict):
         if v == u'' or v is None or v == []:
             del param_dict[k]
             continue
-        if type(v) == type(unicode()): #TODO: isinstance(value, unicode)
+        if isinstance(v, six.string_types):
             param_dict[k] = [convert_val(x) for x in v.split(',') if x]
     return param_dict
 
