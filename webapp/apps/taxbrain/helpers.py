@@ -2,10 +2,12 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
+import numpy as np
 import pyparsing as pp
 import sys
 import time
 import six
+import re
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -23,7 +25,11 @@ SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
 SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
 
+BOOL_PARAMS = ['DependentCredit_before_CTC']
+
 # Grammar for Field inputs
+TRUE = pp.CaselessKeyword('true')
+FALSE = pp.CaselessKeyword('false')
 WILDCARD = pp.Word('*')
 INT_LIT = pp.Word(pp.nums)
 NEG_DASH = pp.Word('-', exact=1)
@@ -34,8 +40,13 @@ COMMON = pp.Word(",", exact=1)
 
 VALUE = WILDCARD | NEG_DASH | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
 MORE_VALUES = COMMON + VALUE
-INPUT = VALUE + pp.ZeroOrMore(MORE_VALUES)
 
+BOOL = WILDCARD | TRUE | FALSE
+MORE_BOOLS = COMMON + BOOL
+INPUT = BOOL + pp.ZeroOrMore(MORE_BOOLS) | VALUE + pp.ZeroOrMore(MORE_VALUES)
+
+TRUE_REGEX = re.compile('(?i)true')
+FALSE_REGEX = re.compile('(?i)false')
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
@@ -51,9 +62,28 @@ def check_wildcards(x):
 
 
 def make_bool(x):
-    b = True if x == 'True' else False
-    return b
-
+    """
+    Find exact match for case insensitive true or false
+    Returns True for True or 1
+    Returns False for False or 0
+    If x is wildcard then simply return x
+    """
+    if is_wildcard(x):
+        return x
+    elif x in (True, '1', '1.0', 1, 1.0):
+        return True
+    elif x in (False, '0', '0.0', 0, 0.0):
+        return False
+    elif TRUE_REGEX.match(x, endpos=4):
+        return True
+    elif FALSE_REGEX.match(x, endpos=5):
+        return False
+    else:
+        # this should be caught much earlier either in model validation or in
+        # form validation
+        raise ValueError(
+            "Expected case insensitive 'true' or 'false' but got {}".format(x)
+        )
 
 def convert_val(x):
     if is_wildcard(x):
@@ -68,8 +98,12 @@ def parse_fields(param_dict):
         if v == u'' or v is None or v == []:
             del param_dict[k]
             continue
-        if type(v) == type(unicode()): #TODO: isinstance(value, unicode)
-            param_dict[k] = [convert_val(x) for x in v.split(',') if x]
+        if isinstance(v, six.string_types):
+            if k in BOOL_PARAMS:
+                converter = make_bool
+            else:
+                converter = convert_val
+            param_dict[k] = [converter(x) for x in v.split(',') if x]
     return param_dict
 
 def int_to_nth(x):
