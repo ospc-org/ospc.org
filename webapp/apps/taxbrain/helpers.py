@@ -809,6 +809,18 @@ class TaxCalcParam(object):
         # organize defaults by column [[A1,B1],[A2,B2]] to [[A1,A2],[B1,B2]]
         values_by_col = [list(x) for x in zip(*values_by_year)]
 
+        # Tax-Calculator converts boolean values to 1/0 via
+        # np.array(bool_val, np.int8)
+        # here we convert that value back to a boolean type and serialize it
+        if self.nice_id in BOOL_PARAMS:
+            if isinstance(values_by_col, list) and isinstance(values_by_col[0], list):
+                for i in range(len(values_by_col[0])):
+                    values_by_col[0][i] = str(make_bool(values_by_col[0][i]))
+            elif isinstance(values_by_col, list):
+                for i in range(len(values_by_col[0])):
+                    values_by_col[i] = str(make_bool(values_by_col[i]))
+            else:
+                values_by_col = str(make_bool(values_by_col[i]))
         #
         # normalize and format column labels
         #
@@ -861,11 +873,11 @@ class TaxCalcParam(object):
             self.inflatable = attributes['inflatable']
         elif self.tc_id in inflatable_params:
             self.inflatable = True
-        elif self.tc_id in non_inflatable_params:
+        elif (self.tc_id in non_inflatable_params or
+              self.nice_id in BOOL_PARAMS):
             self.inflatable = False
         else:
             self.inflatable = first_value > 1
-
 
         if self.inflatable:
             cpi_flag = attributes['cpi_inflated']
