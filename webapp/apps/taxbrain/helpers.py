@@ -813,14 +813,10 @@ class TaxCalcParam(object):
         # np.array(bool_val, np.int8)
         # here we convert that value back to a boolean type and serialize it
         if self.nice_id in BOOL_PARAMS:
-            if isinstance(values_by_col, list) and isinstance(values_by_col[0], list):
-                for i in range(len(values_by_col[0])):
-                    values_by_col[0][i] = str(make_bool(values_by_col[0][i]))
-            elif isinstance(values_by_col, list):
-                for i in range(len(values_by_col[0])):
-                    values_by_col[i] = str(make_bool(values_by_col[i]))
-            else:
-                values_by_col = str(make_bool(values_by_col[i]))
+            assert (isinstance(values_by_col, list) and
+                    isinstance(values_by_col[0], list))
+            for i in range(len(values_by_col[0])):
+                values_by_col[0][i] = str(make_bool(values_by_col[0][i]))
         #
         # normalize and format column labels
         #
