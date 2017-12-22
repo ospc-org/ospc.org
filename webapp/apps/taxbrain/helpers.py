@@ -103,7 +103,7 @@ def parse_fields(param_dict):
                 converter = make_bool
             else:
                 converter = convert_val
-            param_dict[k] = [converter(x) for x in v.split(',') if x]
+            param_dict[k] = [converter(x.strip()) for x in v.split(',') if x]
     return param_dict
 
 def int_to_nth(x):
