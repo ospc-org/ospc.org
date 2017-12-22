@@ -410,6 +410,7 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
     returns json style reform
     """
     map_back_to_tb = {}
+    number_reverse_operators = 1
     default_params = cls.default_data(start_year=start_year,
                                       metadata=True)
     ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
@@ -436,18 +437,22 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
                 elif is_reverse(fields[param][i]):
                     # only the first character can be a reverse char
                     # and there must be a following character
-                    assert i == 0 and len(fields[param]) > 1
+                    assert len(fields[param]) > 1
                     # set value for parameter in start_year - 1
                     assert (isinstance(fields[param][i + 1], (int, float)) or
                             isinstance(fields[param][i + 1], bool))
-                    reform[param_name][str(start_year - 1)] = [fields[param][i + 1]]
-                    # skip next year
-                    i += 2
+                    reform[param_name][str(start_year - 1)] = \
+                        [fields[param][i + 1]]
+
+                    # realign year and parameter indices
+                    for op in (0, number_reverse_operators + 1):
+                        fields[param].pop(0)
                     continue
                 else:
                     assert (isinstance(fields[param][i], (int, float)) or
                             isinstance(fields[param][i], bool))
-                    reform[param_name][str(start_year + i)] = [fields[param][i]]
+                    reform[param_name][str(start_year + i)] = \
+                        [fields[param][i]]
 
                 i += 1
 
