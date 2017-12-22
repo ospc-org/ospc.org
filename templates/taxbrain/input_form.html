@@ -132,13 +132,20 @@
         <div class="row">
           <div class="col-xs-3">
             <div class="inputs-sidebar" data-spy="affix" data-offset-top="435" data-offset-bottom="245">
-              <label class="">Start Year:
+              <label class="">Parameter Start Year:
                 <select id="start-year-select" class="form-control pull-right">
                   {% for year in start_years %}
                     <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
                   {% endfor %}
                 </select>
-            </label>
+              </label>
+              <label class="">Output Start Year:
+                <select id="output-year-select" class="form-control pull-right">
+                  {% for year in start_years %}
+                    <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
+                  {% endfor %}
+                </select>
+              </label>
               <div class="reset-button">
                 {% if is_edit_page %}
                   <a href="/taxbrain" class="btn btn-tertiary btn-block" style="background-color:#96000b">Reset Parameters</a>
@@ -251,6 +258,23 @@
         <div class="modal-footer">
           <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
           <a type="button" class="btn btn-primary" id="current-year-link">OK, go for it.</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="output-year-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Change Output Start Year</h4>
+        </div>
+        <div class="modal-body">
+          Warning: This will clear your current inputs.
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
+          <a type="button" class="btn btn-primary" id="output-year-link">OK, go for it.</a>
         </div>
       </div>
     </div>

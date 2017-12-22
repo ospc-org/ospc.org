@@ -142,3 +142,14 @@ $('#current-year-modal').on('hide.bs.modal', function (e) {
   $('#start-year-select option').removeAttr("selected");
   $('#start-year-select option[value="' + currentYear + '"]').attr("selected", "selected");
 });
+
+var outputYear = $('#output-year-select').val();
+$('#output-year-select').change(function(e) {
+  $('#output-year-link').attr('href', '/taxbrain/?output_start_year=' + $(this).val());
+  $('#output-year-modal').modal('show');
+});
+
+$('#output-year-modal').on('hide.bs.modal', function (e) {
+  $('#output-year-select option').removeAttr("selected");
+  $('#output-year-select option[value="' + outputYear + '"]').attr("selected", "selected");
+});
