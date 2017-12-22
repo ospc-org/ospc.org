@@ -3,7 +3,8 @@ import json
 import numpy as np
 import taxcalc
 import pyparsing as pp
-from ..helpers import nested_form_parameters, rename_keys, INPUT, make_bool
+from ..helpers import (nested_form_parameters, rename_keys, INPUT, make_bool,
+                       is_reverse)
 
 CURRENT_LAW_POLICY = """
 {
@@ -138,12 +139,14 @@ def test_rename_keys(monkeypatch):
      'False', 'false', 'FALSE','faLSe',
      'true,*', '*, true', '*,*,false',
      'true,*,false,*,*,true',
-     '1,*,False', '0.0,True', '1.0,False']
+     '1,*,False', '0.0,True', '1.0,False',
+     '<,True', '<,1']
 )
 def test_parsing_pass(item):
     INPUT.parseString(item)
 
-def test_parsing_fail():
+@pytest.mark.parametrize('item', ['abc', '<,', '<', '1,<', '0,<,1', 'True,<', '-0.002,<,-0.001'])
+def test_parsing_fail(item):
     with pytest.raises(pp.ParseException):
         INPUT.parseString('abc')
 
@@ -164,3 +167,9 @@ def test_make_bool(item, exp):
 def test_make_bool_fail(item):
     with pytest.raises((ValueError, TypeError)):
         make_bool(item)
+
+@pytest.mark.parametrize(
+    'item,exp',
+    [('<', True), ('a', False), ('1', False), (1, False), (False, False)])
+def test_is_reverse(item, exp):
+    assert is_reverse(item) is exp

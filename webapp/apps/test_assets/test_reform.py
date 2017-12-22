@@ -204,8 +204,10 @@ fields_base = {
 }
 
 test_coverage_fields = dict(
+    cpi_offset = ['<', -0.0025],
     CG_nodiff = [False],
-    FICA_ss_trt = [u'*', 0.1, u'*', 0.2],
+    FICA_ss_trt = ['<',0.1,'*',0.15,0.2],
+    FICA_mc_trt = ['<',0.1,0.15],
     STD_0 = [8000.0, '*', 10000.0],
     ID_BenefitSurtax_Switch_0 = [True],
     ID_Charity_c_cpi = True,
@@ -214,8 +216,10 @@ test_coverage_fields = dict(
 )
 
 test_coverage_reform = {
+    '_cpi_offset': {'2016': [-0.0025]},
     '_CG_nodiff': {'2017': [False]},
-    '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
+    '_FICA_ss_trt': {'2016': [0.1], '2018': [0.15], '2019': [0.2]},
+    '_FICA_mc_trt': {'2016': [0.1], '2017': [0.15]},
     '_STD_single': {'2017': [8000.0], '2019': [10000.0]},
     '_ID_Charity_c_cpi': {'2017': True},
     '_ID_BenefitSurtax_Switch_medical': {'2017': [True]},
@@ -267,7 +271,8 @@ map_back_to_tb = {
     u'_ID_BenefitCap_Switch_realestate': 'ID_BenefitCap_Switch_2',
     u'_STD_single': 'STD_0',
     u'_STD_headhousehold': 'STD_3',
-    u'_II_brk4_single': 'II_brk4_0'
+    u'_II_brk4_single': 'II_brk4_0',
+    u'_cpi_offset': 'cpi_offset'
 }
 
 test_coverage_json_reform = """

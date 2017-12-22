@@ -361,7 +361,7 @@ class TaxBrainViewsTests(TestCase):
         assert response.context['has_errors'] is True
 
 
-    def test_taxbrain_wildcard_in_validation_params_OK(self):
+    def test_taxbrain_spec_operators_in_validation_params_OK(self):
         """
         Set upper threshold for income tax bracket 1 to *, 38000
         Set upper threshold for income tax bracket 2 to *, *, 39500
@@ -369,9 +369,27 @@ class TaxBrainViewsTests(TestCase):
         """
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {u'II_brk1_0': [u'*, *, 38000'],
-               u'II_brk2_0': [u'*, *, 39500']}
+               u'II_brk2_0': [u'*, *, 39500'],
+               u'cpi_offset': [u'<,-0.0025'],
+               u'FICA_ss_trt': [u'< ,0.1,*,0.15,0.2']}
         data.update(mod)
-        do_micro_sim(self.client, data)
+        result = do_micro_sim(self.client, data)
+
+        truth_mods = {
+            START_YEAR - 1: {
+                '_cpi_offset': [-0.0025],
+                '_FICA_ss_trt': [0.1]
+            },
+            START_YEAR + 1: {
+                '_FICA_ss_trt': [0.15]
+            },
+            START_YEAR + 2: {
+                '_FICA_ss_trt': [0.2]
+            }
+        }
+
+        check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
+
 
 
     def test_taxbrain_wildcard_in_validation_params_gives_error(self):
@@ -388,6 +406,39 @@ class TaxBrainViewsTests(TestCase):
         mod = {u'II_brk1_0': [u'*, 38000'],
                u'II_brk2_0': [u'*, *, 39500'],
                u'II_brk2_cpi': u'False'}
+        data.update(mod)
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+
+
+    def test_taxbrain_improper_reverse_gives_error1(self):
+        """
+        Check reverse operator post without other numbers throws error
+        """
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'cpi_offset': [u'<,']}
+        data.update(mod)
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+
+    def test_taxbrain_improper_reverse_gives_error2(self):
+        """
+        Check reverse operator not in first position throws error
+        """
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'cpi_offset': [u'-0.002,<,-0.001']}
         data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
