@@ -401,7 +401,7 @@ class TaxBrainViewsTests(TestCase):
         string
         """
         data = get_post_data(2018, _ID_BenefitSurtax_Switches=False)
-        data['DependentCredit_before_CTC'] = [u'True,*,FALSE,tRUe,*,0']
+        data['DependentCredit_before_CTC'] = [u'True,*, FALSE,tRUe,*,0']
 
         result = do_micro_sim(self.client, data)
 
