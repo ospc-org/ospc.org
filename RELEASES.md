@@ -4,7 +4,7 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
-Release 1.2.2 on 2017-12-20
+Release 1.3.0 on 2017-12-23
 ----------------------------
 **Major Changes**
 - None
@@ -14,11 +14,15 @@ Release 1.2.2 on 2017-12-20
 - [#781](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/781) - Add CNN to media coverage - Sean Wang
 - [#782](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/782) - Convert DependentCredit_before_CTC from bool to int - Hank Doupe
 - [#784](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/784) - Update to Tax-Calculator 0.14.2 - Hank Doupe
+- [#788](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/788) - Convert default values for boolean parameters from 1/0 to "True"/"False" - Hank Doupe
+- [#790](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/790) - Add reverse operator - Hank Doupe
+- [#792](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/792) - Add TCJA preset - Hank Doupe
 
 **Bug Fixes**
 - [#741](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/741) - Web page clean ups and bug fixes - Sean Wang
 - [#780](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/780) - Fix buttons disappear after fiscal tables being re-rendered - Sean Wang
-- [#783](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/783) - Removes extra "Total" lables - Hank Doupe
+- [#783](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/783) - Removes extra "Total" labels - Hank Doupe
+- [#791](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/791) - Saves start year after warnings are shown for file upload - Hank Doupe
 
 Release 1.2.1 on 2017-12-12
 ----------------------------
