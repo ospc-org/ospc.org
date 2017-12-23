@@ -567,8 +567,9 @@ def file_input(request):
     errors = []
     has_errors = False
     if request.method == 'POST':
-        # File is not submitted
+        # save start_year
         start_year = request.REQUEST['start_year']
+        # File is not submitted
         if 'docfile' not in dict(request.FILES) and form_id is None:
             errors = ["Please specify a tax-law change before submitting."]
             json_reform = None
