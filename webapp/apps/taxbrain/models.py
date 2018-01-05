@@ -37,7 +37,7 @@ def convert_to_floats(tsi):
 COMMASEP_REGEX = "(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
 
 class CommaSeparatedField(models.CharField):
-    default_validators = [validators.RegexValidator(regex="(\\d*\\.\\d+|\\d+)|((?i)(true|false))")]
+    default_validators = [validators.RegexValidator(regex="(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))")]
     description = "A comma separated field that allows multiple floats."
 
     def __init__(self, verbose_name=None, name=None, **kwargs):

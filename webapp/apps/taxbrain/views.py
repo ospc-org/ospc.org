@@ -798,7 +798,8 @@ def edit_personal_results(request, pk):
         'webapp_version': webapp_vers_disp,
         'start_years': START_YEARS,
         'start_year': str(start_year),
-        'is_edit_page': True
+        'is_edit_page': True,
+        'has_errors': False
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)
