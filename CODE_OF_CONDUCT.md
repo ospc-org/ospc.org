@@ -31,25 +31,21 @@ fairly and consistently applying these principles to every aspect of managing
 this project. Project maintainers who do not follow or enforce the Code of
 Conduct may be permanently removed from the project team.
 
+The project maintainers share authority for dealing with code of conduct
+violations and share responsibility for creating an environment where
+these problems do not happen.  If anyone feels that a code of conduct
+violation has been ignored or has not been adequately addressed, then they
+should contact a project maintainer or some other community member in order
+to more adequately address the violation.  If a central authority is required to
+resolve such a situation, then that central authority consists of the project
+maintainers.
+
 This Code of Conduct applies both within project spaces and in public spaces
 when an individual is representing the project or its community.
 
-A working group of community members is committed to promptly addressing any
-reported issues. The working group is made up of pandas contributors and users.
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the working group by e-mail (email@email.com).
-Messages sent to this e-mail address will not be publicly visible but only to
-the working group members. The working group currently includes
-
-- ...
-
-All complaints will be reviewed and investigated and will result in a response
-that is deemed necessary and appropriate to the circumstances. Maintainers are
-obligated to maintain confidentiality with regard to the reporter of an
-incident.
-
-This Code of Conduct was copied from the [pandas Code of Conduct][pandas_coc]
-which was adapted from the [Contributor Covenant][homepage], version 1.3.0,
+This Code of Conduct was adapted from the [pandas Code of Conduct][pandas_coc]
+which was adapted from the [Contributor Covenant][homepage],
+version 1.3.0,
 available at [http://contributor-covenant.org/version/1/3/0/][version],
 and the [Swift Code of Conduct][swift].
 
