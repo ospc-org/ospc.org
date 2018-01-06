@@ -275,11 +275,12 @@ class PersonalExemptionForm(ModelForm):
                     continue
 
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
-
                 if len(submitted_col_values_raw) > 0 and submitted_col_values_raw not in BOOLEAN_FLAGS:
                     try:
                         INPUT.parseString(submitted_col_values_raw)
-                    except ParseException as pe:
+                        # reverse character is not at the beginning
+                        assert submitted_col_values_raw.find('<') <= 0
+                    except (ParseException, AssertionError):
                         # Parse Error - we don't recognize what they gave us
                         self.add_error(col_field.id, "Unrecognized value: {}".format(submitted_col_values_raw))
 

@@ -37,13 +37,14 @@ FLOAT_LIT = pp.Word(pp.nums + '.')
 DEC_POINT = pp.Word('.', exact=1)
 FLOAT_LIT_FULL = pp.Word(pp.nums + '.' + pp.nums)
 COMMON = pp.Word(",", exact=1)
+REVERSE = pp.Word("<") + COMMON
 
 VALUE = WILDCARD | NEG_DASH | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
 MORE_VALUES = COMMON + VALUE
 
 BOOL = WILDCARD | TRUE | FALSE
 MORE_BOOLS = COMMON + BOOL
-INPUT = BOOL + pp.ZeroOrMore(MORE_BOOLS) | VALUE + pp.ZeroOrMore(MORE_VALUES)
+INPUT = pp.Optional(REVERSE) + BOOL + pp.ZeroOrMore(MORE_BOOLS) | pp.Optional(REVERSE) + VALUE + pp.ZeroOrMore(MORE_VALUES)
 
 TRUE_REGEX = re.compile('(?i)true')
 FALSE_REGEX = re.compile('(?i)false')
@@ -53,6 +54,14 @@ def is_wildcard(x):
         return x in ['*', u'*'] or x.strip() in ['*', u'*']
     else:
         return False
+
+
+def is_reverse(x):
+    if isinstance(x, six.string_types):
+        return x in ['<', u'<'] or x.strip() in ['<', u'<']
+    else:
+        return False
+
 
 def check_wildcards(x):
     if isinstance(x, list):
@@ -87,6 +96,8 @@ def make_bool(x):
 
 def convert_val(x):
     if is_wildcard(x):
+        return x
+    if is_reverse(x):
         return x
     try:
         return float(x)
@@ -399,6 +410,7 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
     returns json style reform
     """
     map_back_to_tb = {}
+    number_reverse_operators = 1
     default_params = cls.default_data(start_year=start_year,
                                       metadata=True)
     ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
@@ -417,14 +429,32 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
                 assert isinstance(fields[param], bool) and param.endswith('_cpi')
                 reform[param_name][str(start_year)] = fields[param]
                 continue
-            for i in range(len(fields[param])):
+            i = 0
+            while i < len(fields[param]):
                 if is_wildcard(fields[param][i]):
                     # may need to do something here
                     pass
+                elif is_reverse(fields[param][i]):
+                    # only the first character can be a reverse char
+                    # and there must be a following character
+                    assert len(fields[param]) > 1
+                    # set value for parameter in start_year - 1
+                    assert (isinstance(fields[param][i + 1], (int, float)) or
+                            isinstance(fields[param][i + 1], bool))
+                    reform[param_name][str(start_year - 1)] = \
+                        [fields[param][i + 1]]
+
+                    # realign year and parameter indices
+                    for op in (0, number_reverse_operators + 1):
+                        fields[param].pop(0)
+                    continue
                 else:
                     assert (isinstance(fields[param][i], (int, float)) or
                             isinstance(fields[param][i], bool))
-                    reform[param_name][str(start_year + i)] = [fields[param][i]]
+                    reform[param_name][str(start_year + i)] = \
+                        [fields[param][i]]
+
+                i += 1
 
     return reform, map_back_to_tb
 
