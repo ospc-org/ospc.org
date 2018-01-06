@@ -136,11 +136,36 @@ def test_tcja_construction():
         "ID_AllTaxes_c_3": ["10000,*,*,*,*,*,*,*,9e99"],
 
         "ID_Miscellaneous_hc": ["1,*,*,*,*,*,*,*,0"],
-        "ID_Medical_frt": ["0.075,0.1"],
+        "ID_Medical_frt": ["<,0.075,*,0.1"],
         "cpi_offset": ["<,-0.0025"]
     }
 
     tcja_json = """
+    // Title: Tax Cuts and Jobs Act, Reconciliation version
+    // Reform_File_Author: Cody Kallen
+    // Reform_Reference: http://docs.house.gov/billsthisweek/20171218/CRPT-115HRPT-466.pdf
+    // Reform_Baseline: 2017_law.json
+    // Reform_Description:
+    // -  New personal income tax schedule (regular/non-AMT/non-pass-through) (1)
+    // -  New pass-through income tax schedule (2)
+    // -  New standard deductions (3)
+    // -  Repeal personal exemption (4)
+    // -  Modification to child tax credit, nonrefundable dependent credits (5)
+    // -  Modification of Alternative Minimum Tax exemption (6)
+    // -  Repeal of certain above the line deductions (7)
+    // -  Changes to itemized deductions (8)
+    // -  Switch to chained CPI from CPI-U for tax parameter adjustment (9)
+    // Reform_Parameter_Map:
+    // - 1: _II_*
+    // - 2: _PT_*
+    // - 3: _STD (can safely ignore WARNINGs about 2026+ values)
+    // - 4: _II_em
+    // - 5: _DependentCredit_*, _CTC_c, _CTC_ps, _ACTC_Income_thd
+    // - 6: _AMT_rt*
+    // - 7: _ALD_*
+    // - 8: _ID_* (can safely ignore WARNINGs about values for several parameters)
+    // - 9: _cpi_offset
+    // Note: _II_rt*, _PT_rt*, _STD and _II_em are rounded to the nearest integer value.
     {
         "policy": {
             "_II_rt1":
@@ -285,7 +310,7 @@ def test_tcja_construction():
                 {"2018": [1],
                  "2026": [0]},
             "_ID_Medical_frt":
-                {"2018": [0.075],
+                {"2017": [0.075],
                  "2019": [0.1]},
             "_cpi_offset":
                 {"2017": [-0.0025]}
