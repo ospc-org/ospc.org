@@ -338,10 +338,6 @@ def test_tcja_construction():
         errors_warnings) = read_json_reform(fields_json,
                                             assumptions_dict_json,
                                             map_back_to_tb)
-    with open('/Users/henrydoupe/Documents/Tax-Calculator/taxcalc/reforms/TCJA_Reconciliation_fields.json', 'w') as js:
-        js.write(json.dumps(json.loads(fields_json), indent=4))
-    with open('/Users/henrydoupe/Documents/Tax-Calculator/taxcalc/reforms/TCJA_Reconciliation_fields_dict.json', 'w') as js:
-        js.write(json.dumps(fields_dict, indent=4))
 
     meta_pol = taxcalc.Policy.default_data(start_year=2018, metadata=True)
     fam_cols = [u'single', u'joint', u'separate', u'headhousehold', u'widow']
