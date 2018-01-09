@@ -89,7 +89,6 @@ $(function() {
             plan:'X',
             payroll_tax: true,
             income_tax: true,
-            income: 'expanded',
             grouping: 'bin'
         },
 
@@ -348,12 +347,6 @@ $(function() {
                   <li class="active" data-payrolltax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll Tax</a></li>\
                   <li><h1 class="text-center" style="margin:0">+</h1></li>\
                   <li class="active" data-incometax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income Tax</a></li>\
-                </ul>\
-                <br>\
-                <br>\
-                <ul class="nav nav-pills nav-justified">\
-                  <li class="active" data-income="expanded"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.expanded %>" href="#">Expanded Income</a></li>\
-                  <li class="disabled" data-income="adjusted"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.adjusted %>" href="#" disabled>Adjusted Income</a></li>\
                 </ul>\
                 <br>\
                 <br>\
