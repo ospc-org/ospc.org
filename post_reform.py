@@ -4,6 +4,7 @@ import time
 
 LOCAL_BASE_URL = "http://127.0.0.1:8000/taxbrain/"
 TEST_BASE_URL = "http://ospc-taxes7.herokuapp.com/taxbrain/"
+PROD_BASE_URL = "http://www.ospc.org/taxbrain/"
 MINI_REFORM = {u'EITC_rt_0': 0.4,
                u'EITC_rt_1': 0.7,
                u'EITC_rt_2': 0.8,

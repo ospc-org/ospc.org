@@ -1,4 +1,4 @@
-from post_reform import (LOCAL_BASE_URL, TEST_BASE_URL,
+from post_reform import (LOCAL_BASE_URL, TEST_BASE_URL, PROD_BASE_URL,
                          get_session, post_reform)
 
 
@@ -133,13 +133,13 @@ tcja_fields = {
     "ID_AllTaxes_c_3": ["10000,*,*,*,*,*,*,*,9e99"],
 
     "ID_Miscellaneous_hc": ["1,*,*,*,*,*,*,*,0"],
-    "ID_Medical_frt": ["0.075,0.1"],
+    "ID_Medical_frt": ["<,0.075,*,0.1"],
     "cpi_offset": ["<,-0.0025"]
 }
 
 data.update(tcja_fields)
 
-post_url = TEST_BASE_URL
+post_url = PROD_BASE_URL
 
 # do first post
 session, csrftoken = get_session(url=post_url)
