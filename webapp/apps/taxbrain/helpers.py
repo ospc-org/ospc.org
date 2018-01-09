@@ -364,18 +364,18 @@ def get_default_policy_param_name(param, default_params):
 
     returns: Tax-Calculator param name
     """
-    if '_' + param in default_params:
+    if '_' + param in default_params: # ex. EITC_indiv --> _EITC_indiv
         return '_' + param
     param_pieces = param.split('_')
     end_piece = param_pieces[-1]
     no_suffix = '_' + '_'.join(param_pieces[:-1])
-    if end_piece == 'cpi':
+    if end_piece == 'cpi': # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
         if no_suffix in default_params:
             return '_' + param
         else:
             msg = "Received unexpected parameter: {}"
             raise ValueError(msg.format(param))
-    if no_suffix in default_params:
+    if no_suffix in default_params: # ex. STD_0 --> _STD_single
         try:
             ix = int(end_piece)
         except ValueError:
