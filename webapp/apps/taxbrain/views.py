@@ -49,10 +49,9 @@ dropq_compute = DropqCompute()
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
-                         REFORM_TOOLTIP, EXPANDED_TOOLTIP, ADJUSTED_TOOLTIP,
-                         FISCAL_CURRENT_LAW, FISCAL_REFORM, FISCAL_CHANGE,
-                         INCOME_BINS_TOOLTIP, INCOME_DECILES_TOOLTIP, START_YEAR,
-                         START_YEARS)
+                         REFORM_TOOLTIP, FISCAL_CURRENT_LAW, FISCAL_REFORM,
+                         FISCAL_CHANGE, INCOME_BINS_TOOLTIP,
+                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
 from ..formatters import get_version
 
@@ -848,8 +847,6 @@ def get_result_context(model, request, url):
         'income': INCOME_TOOLTIP,
         'base': BASE_TOOLTIP,
         'reform': REFORM_TOOLTIP,
-        'expanded': EXPANDED_TOOLTIP,
-        'adjusted': ADJUSTED_TOOLTIP,
         'bins': INCOME_BINS_TOOLTIP,
         'deciles': INCOME_DECILES_TOOLTIP,
         'fiscal_current_law': FISCAL_CURRENT_LAW,
