@@ -6,6 +6,7 @@ import pytz
 import os
 import tempfile
 import re
+from collections import defaultdict
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -175,7 +176,7 @@ def parse_errors_warnings(errors_warnings, map_back_to_tb):
     returns: dictionary 'parsed' with keys: 'errors' and 'warnings'
         parsed['errors/warnings'] = {year: {tb_param_name: 'error message'}}
     """
-    parsed = {'errors': {}, 'warnings': {}}
+    parsed = {'errors': defaultdict(dict), 'warnings': defaultdict(dict)}
     for action in errors_warnings:
         msgs = errors_warnings[action]
         if len(msgs) == 0:
@@ -188,8 +189,6 @@ def parse_errors_warnings(errors_warnings, map_back_to_tb):
             year = msg_spl[1]
             curr_id = msg_spl[2][1:]
             msg_parse = msg_spl[2:]
-            if curr_id not in parsed[action]:
-                parsed[action][curr_id] = {}
             parsed[action][curr_id][year] = ' '.join([msg_action] + msg_parse +
                                                          ['for', year])
 
