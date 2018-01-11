@@ -4,8 +4,7 @@ import taxcalc
 import numpy as np
 
 from ..taxbrain.views import (read_json_reform, parse_errors_warnings,
-                              append_errors_warnings, append_ew_file_input,
-                              append_ew_personal_inputs)
+                              append_errors_warnings)
 
 from ..taxbrain.helpers import (get_default_policy_param_name, to_json_reform)
 
@@ -104,12 +103,15 @@ def test_append_ew_file_input():
     errors_warnings = {"warnings": {"param1": {"2017": "msg2", "2016": "msg1"}},
                        "errors": {"param2": {"2018": "msg3", "2019": "msg4"}}
                        }
-    error_list = []
+    errors = []
     exp = ["msg1", "msg2", "msg3", "msg4"]
 
-    append_errors_warnings(errors_warnings, error_list, append_ew_file_input)
+    append_errors_warnings(
+        errors_warnings,
+        lambda _, msg: errors.append(msg)
+    )
 
-    assert error_list == exp
+    assert errors == exp
 
 def test_append_ew_personal_inputs():
     """
@@ -133,12 +135,14 @@ def test_append_ew_personal_inputs():
     exp = {"param1": ["msg1", "msg2"],
            "param2": ["msg3", "msg4"]}
 
-    fake_form = FakeForm()
-    append_errors_warnings(errors_warnings, fake_form,
-                           append_ew_personal_inputs)
+    personal_inputs = FakeForm()
+    append_errors_warnings(
+        errors_warnings,
+        lambda param, msg: personal_inputs.add_error(param, msg)
+    )
 
-    assert (exp["param1"] == fake_form.errors["param1"] and
-            exp["param2"] == fake_form.errors["param2"])
+    assert (exp["param1"] == personal_inputs.errors["param1"] and
+            exp["param2"] == personal_inputs.errors["param2"])
 
 
 ###############################################################################
