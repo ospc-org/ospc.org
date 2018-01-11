@@ -151,6 +151,36 @@ def normalize(x):
     return ans
 
 
+def append_ew_file_input(error_list, msg, *args):
+    """
+    Append errors to list for file input interface
+    """
+    error_list.append(msg)
+
+
+def append_ew_personal_inputs(personal_inputs, msg, param_name):
+    """
+    Use PersonalExemptionForm.add_error to append errors for GUI input
+    interface
+    """
+    personal_inputs.add_error(param_name, msg)
+
+
+def append_errors_warnings(errors_warnings, append_obj, append_func):
+    """
+    Appends warning/error messages to some object, append_obj, according to
+    the provided function, append_func
+    """
+    for action in ['warnings', 'errors']:
+        for param in errors_warnings[action]:
+            for year in sorted(
+                errors_warnings[action][param].keys(),
+                key=lambda x: int(x)
+            ):
+                msg = errors_warnings[action][param][year]
+                append_func(append_obj, msg, param)
+
+
 def parse_errors_warnings(errors_warnings, map_back_to_tb):
     """
     Parse error messages so that they can be mapped to Taxbrain param ID. This
@@ -467,16 +497,8 @@ def submit_reform(request, user=None, json_reform_id=None):
             # only handle GUI errors for now
             if ((taxcalc_errors or taxcalc_warnings)
                     and personal_inputs is not None):
-                for action in errors_warnings:
-                    for param in errors_warnings[action]:
-                        for year in sorted(
-                            errors_warnings[action][param].keys(),
-                            key=lambda x: int(x)
-                        ):
-                            personal_inputs.add_error(
-                                param,
-                                errors_warnings[action][param][year]
-                            )
+                append_errors_warnings(errors_warnings, personal_inputs,
+                                       append_ew_personal_inputs)
             has_parse_errors = any(['Unrecognize value' in e[0]
                                     for e in personal_inputs.errors.values()])
             if no_inputs:
@@ -594,14 +616,8 @@ def file_input(request):
             if (has_errors and
                (errors_warnings['warnings'] or errors_warnings['errors'])):
                 errors.append(OUT_OF_RANGE_ERROR_MSG)
-                # group messages by action and then parameter name
-                for action in ['warnings', 'errors']:
-                    for param in errors_warnings[action]:
-                        for year in sorted(
-                            errors_warnings[action][param].keys(),
-                            key=lambda x: int(x)
-                        ):
-                            errors.append(errors_warnings[action][param][year])
+                append_errors_warnings(errors_warnings, errors,
+                                       append_ew_file_input)
             else:
                 return redirect(unique_url)
     else:

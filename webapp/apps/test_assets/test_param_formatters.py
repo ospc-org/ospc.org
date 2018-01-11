@@ -3,7 +3,10 @@ import pytest
 import taxcalc
 import numpy as np
 
-from ..taxbrain.views import read_json_reform, parse_errors_warnings
+from ..taxbrain.views import (read_json_reform, parse_errors_warnings,
+                              append_errors_warnings, append_ew_file_input,
+                              append_ew_personal_inputs)
+
 from ..taxbrain.helpers import (get_default_policy_param_name, to_json_reform)
 
 from test_reform import (test_coverage_fields, test_coverage_reform,
@@ -91,6 +94,51 @@ def test_to_json_reform(fields, exp_reform):
 def test_parse_errors_warnings():
     act = parse_errors_warnings(errors_warnings, map_back_to_tb)
     np.testing.assert_equal(act, exp_errors_warnings)
+
+
+def test_append_ew_file_input():
+    """
+    Tests append_errors_warnings when add warning/error messages from the
+    file input interface
+    """
+    errors_warnings = {"warnings": {"param1": {"2017": "msg2", "2016": "msg1"}},
+                       "errors": {"param2": {"2018": "msg3", "2019": "msg4"}}
+                       }
+    error_list = []
+    exp = ["msg1", "msg2", "msg3", "msg4"]
+
+    append_errors_warnings(errors_warnings, error_list, append_ew_file_input)
+
+    assert error_list == exp
+
+def test_append_ew_personal_inputs():
+    """
+    Tests append_errors_warnings when adding warning/error messages from the
+    GUI input interface
+    """
+    errors_warnings = {"warnings": {"param1": {"2017": "msg2", "2016": "msg1"}},
+                       "errors": {"param2": {"2018": "msg3", "2019": "msg4"}}
+                       }
+    # fake PersonalExemptionForm object to simulate add_error method
+    class FakeForm:
+        def __init__(self):
+            self.errors = {}
+
+        def add_error(self, param_name, msg):
+            if param_name in self.errors:
+                self.errors[param_name].append(msg)
+            else:
+                self.errors[param_name] = [msg]
+
+    exp = {"param1": ["msg1", "msg2"],
+           "param2": ["msg3", "msg4"]}
+
+    fake_form = FakeForm()
+    append_errors_warnings(errors_warnings, fake_form,
+                           append_ew_personal_inputs)
+
+    assert (exp["param1"] == fake_form.errors["param1"] and
+            exp["param2"] == fake_form.errors["param2"])
 
 
 ###############################################################################
