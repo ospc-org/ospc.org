@@ -468,12 +468,14 @@ def submit_reform(request, user=None, json_reform_id=None):
             if ((taxcalc_errors or taxcalc_warnings)
                     and personal_inputs is not None):
                 for action in errors_warnings:
-                    for year in sorted(errors_warnings[action].keys(),
-                                       key=lambda x: float(x)):
-                        for param in errors_warnings[action][year]:
+                    for param in errors_warnings[action]:
+                        for year in sorted(
+                            errors_warnings[action][param].keys(),
+                            key=lambda x: int(x)
+                        ):
                             personal_inputs.add_error(
                                 param,
-                                errors_warnings[action][year][param]
+                                errors_warnings[action][param][year]
                             )
             has_parse_errors = any(['Unrecognize value' in e[0]
                                     for e in personal_inputs.errors.values()])
@@ -592,22 +594,14 @@ def file_input(request):
             if (has_errors and
                (errors_warnings['warnings'] or errors_warnings['errors'])):
                 errors.append(OUT_OF_RANGE_ERROR_MSG)
-                # group messages by parameter name
-                group_by_param = {}
-                for action in errors_warnings:
-                    for year in sorted(errors_warnings[action].keys(),
-                                       key=lambda x: float(x)):
-                        for param in errors_warnings[action][year]:
-                            if param in group_by_param:
-                                group_by_param[param].append(
-                                    errors_warnings[action][year][param]
-                                )
-                            else:
-                                group_by_param[param] = \
-                                    [errors_warnings[action][year][param]]
-                # append to errors
-                for param in group_by_param:
-                    errors += group_by_param[param]
+                # group messages by action and then parameter name
+                for action in ['warnings', 'errors']:
+                    for param in errors_warnings[action]:
+                        for year in sorted(
+                            errors_warnings[action][param].keys(),
+                            key=lambda x: int(x)
+                        ):
+                            errors.append(errors_warnings[action][param][year])
             else:
                 return redirect(unique_url)
     else:
