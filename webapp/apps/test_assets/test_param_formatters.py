@@ -2,6 +2,7 @@ import json
 import pytest
 import taxcalc
 import numpy as np
+from collections import defaultdict
 
 from ..taxbrain.views import (read_json_reform, parse_errors_warnings,
                               append_errors_warnings)
@@ -124,13 +125,10 @@ def test_append_ew_personal_inputs():
     # fake PersonalExemptionForm object to simulate add_error method
     class FakeForm:
         def __init__(self):
-            self.errors = {}
+            self.errors = defaultdict(list)
 
         def add_error(self, param_name, msg):
-            if param_name in self.errors:
-                self.errors[param_name].append(msg)
-            else:
-                self.errors[param_name] = [msg]
+            self.errors[param_name].append(msg)
 
     exp = {"param1": ["msg1", "msg2"],
            "param2": ["msg3", "msg4"]}
