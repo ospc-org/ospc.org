@@ -640,8 +640,8 @@ class TaxSaveInputs(models.Model):
     PT_wages_active_income = models.CharField(default="False", blank=True, null=True, max_length=50)
     PT_top_stacking = models.CharField(default="True", blank=True, null=True, max_length=50)
     PT_excl_rt = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_exclusion_wage_limit = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_exclusion_wage_limit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_excl_wagelim_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_rt_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Fair Share Tax Parameters
     FST_AGI_trt = CommaSeparatedField(default=None, blank=True, null=True)
