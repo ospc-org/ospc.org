@@ -275,11 +275,12 @@ class PersonalExemptionForm(ModelForm):
                     continue
 
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
-
                 if len(submitted_col_values_raw) > 0 and submitted_col_values_raw not in BOOLEAN_FLAGS:
                     try:
                         INPUT.parseString(submitted_col_values_raw)
-                    except ParseException as pe:
+                        # reverse character is not at the beginning
+                        assert submitted_col_values_raw.find('<') <= 0
+                    except (ParseException, AssertionError):
                         # Parse Error - we don't recognize what they gave us
                         self.add_error(col_field.id, "Unrecognized value: {}".format(submitted_col_values_raw))
 
@@ -297,6 +298,11 @@ class PersonalExemptionForm(ModelForm):
             "_EITC_indiv",
             "_CTC_new_refund_limited",
             "_II_no_em_nu18",
+            "_ID_AmountCap_Switch",
+            "_CTC_new_for_all",
+            "_CTC_new_refund_limited_all_payroll",
+            "_PT_wages_active_income",
+            "_PT_top_stacking",
         ]
 
         for param in TAXCALC_DEFAULTS_2016.values():

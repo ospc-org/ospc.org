@@ -2,8 +2,11 @@ import json
 import pytest
 import taxcalc
 import numpy as np
+from collections import defaultdict
 
-from ..taxbrain.views import read_json_reform, parse_errors_warnings
+from ..taxbrain.views import (read_json_reform, parse_errors_warnings,
+                              append_errors_warnings)
+
 from ..taxbrain.helpers import (get_default_policy_param_name, to_json_reform)
 
 from test_reform import (test_coverage_fields, test_coverage_reform,
@@ -90,7 +93,54 @@ def test_to_json_reform(fields, exp_reform):
 # Test parse_errors_warnings
 def test_parse_errors_warnings():
     act = parse_errors_warnings(errors_warnings, map_back_to_tb)
-    np.testing.assert_equal(exp_errors_warnings, act)
+    np.testing.assert_equal(act, exp_errors_warnings)
+
+
+def test_append_ew_file_input():
+    """
+    Tests append_errors_warnings when add warning/error messages from the
+    file input interface
+    """
+    errors_warnings = {"warnings": {"param1": {"2017": "msg2", "2016": "msg1"}},
+                       "errors": {"param2": {"2018": "msg3", "2019": "msg4"}}
+                       }
+    errors = []
+    exp = ["msg1", "msg2", "msg3", "msg4"]
+
+    append_errors_warnings(
+        errors_warnings,
+        lambda _, msg: errors.append(msg)
+    )
+
+    assert errors == exp
+
+def test_append_ew_personal_inputs():
+    """
+    Tests append_errors_warnings when adding warning/error messages from the
+    GUI input interface
+    """
+    errors_warnings = {"warnings": {"param1": {"2017": "msg2", "2016": "msg1"}},
+                       "errors": {"param2": {"2018": "msg3", "2019": "msg4"}}
+                       }
+    # fake PersonalExemptionForm object to simulate add_error method
+    class FakeForm:
+        def __init__(self):
+            self.errors = defaultdict(list)
+
+        def add_error(self, param_name, msg):
+            self.errors[param_name].append(msg)
+
+    exp = {"param1": ["msg1", "msg2"],
+           "param2": ["msg3", "msg4"]}
+
+    personal_inputs = FakeForm()
+    append_errors_warnings(
+        errors_warnings,
+        lambda param, msg: personal_inputs.add_error(param, msg)
+    )
+
+    assert (exp["param1"] == personal_inputs.errors["param1"] and
+            exp["param2"] == personal_inputs.errors["param2"])
 
 
 ###############################################################################
@@ -122,6 +172,6 @@ def test_read_json_reform(test_reform, test_assump, map_back_to_tb,
         test_assump,
         map_back_to_tb
     )
-    np.testing.assert_equal(exp_reform, act_reform)
-    np.testing.assert_equal(exp_assump, act_assump)
-    np.testing.assert_equal(exp_errors_warnings, act_errors_warnings)
+    np.testing.assert_equal(act_reform, exp_reform)
+    np.testing.assert_equal(act_assump, exp_assump)
+    np.testing.assert_equal(act_errors_warnings, exp_errors_warnings)

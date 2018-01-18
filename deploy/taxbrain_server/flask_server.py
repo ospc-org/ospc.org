@@ -65,16 +65,16 @@ def dropq_endpoint(dropq_task):
     if request.method == 'POST':
         year_n = request.form['year']
         user_mods = json.loads(request.form['user_mods'])
-        beh_params = None if 'behavior_params' not in request.form else json.loads(request.form['behavior_params'])
         first_budget_year = None if 'first_budget_year' not in request.form else request.form['first_budget_year']
     else:
         year_n = request.args.get('year', '')
         first_budget_year = None
-        beh_params = None
 
     year_n = int(year_n)
-    print("beh params", beh_params, " user_mods: ", user_mods)
-    raw_results = dropq_task.delay(year_n, user_mods, first_budget_year, beh_params)
+    print("year_n", year_n)
+    print("user_mods", user_mods)
+    print("first_budget_year", first_budget_year)
+    raw_results = dropq_task.delay(year_n, user_mods, first_budget_year)
     RUNNING_JOBS[raw_results.id] = raw_results
     length = client.llen(queue_name) + 1
     results = {'job_id':str(raw_results), 'qlength':length}
@@ -108,19 +108,11 @@ def btax_endpoint():
 
 @app.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
-
-    # TODO: this assumes a single year is the key at highest
-    # level.
-    user_mods = tuple(json.loads(request.form['user_mods']).values())[0]
+    user_mods = json.loads(request.form['user_mods'])
     year_n = int(request.form['year'])
     print('user_mods', user_mods, 'year_n', year_n)
-    user_mods = json.loads(request.form['user_mods'])
-    elast_params = None if 'elasticity_params' not in request.form else json.loads(request.form['elasticity_params'])
-    first_budget_year = None if 'first_budget_year' not in request.form else request.form['first_budget_year']
-    user_mods = {int(k): v for k, v in user_mods.iteritems()}
-    elast_params = elast_params or user_mods.values()[0].pop('elastic_gdp', elast_params)
-    if not isinstance(elast_params, (float, int)):
-        elast_params = float(elast_params[0])
+    elast_params = json.loads(request.form['gdp_elasticity'])
+    first_budget_year = request.form['first_budget_year']
     print("elast params", elast_params, " user_mods: ", user_mods)
     raw_results = elasticity_gdp_task_async.delay(year_n, user_mods, first_budget_year, elast_params)
     RUNNING_JOBS[raw_results.id] = raw_results

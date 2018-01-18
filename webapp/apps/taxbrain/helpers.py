@@ -2,10 +2,12 @@ from collections import namedtuple
 import numbers
 import os
 import pandas as pd
+import numpy as np
 import pyparsing as pp
 import sys
 import time
 import six
+import re
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -23,7 +25,11 @@ SPECIAL_INFLATABLE_PARAMS = {'_II_credit', '_II_credit_ps'}
 SPECIAL_NON_INFLATABLE_PARAMS = {'_ACTC_ChildNum', '_EITC_MinEligAge',
                                  '_EITC_MaxEligAge'}
 
+BOOL_PARAMS = ['DependentCredit_before_CTC']
+
 # Grammar for Field inputs
+TRUE = pp.CaselessKeyword('true')
+FALSE = pp.CaselessKeyword('false')
 WILDCARD = pp.Word('*')
 INT_LIT = pp.Word(pp.nums)
 NEG_DASH = pp.Word('-', exact=1)
@@ -31,17 +37,31 @@ FLOAT_LIT = pp.Word(pp.nums + '.')
 DEC_POINT = pp.Word('.', exact=1)
 FLOAT_LIT_FULL = pp.Word(pp.nums + '.' + pp.nums)
 COMMON = pp.Word(",", exact=1)
+REVERSE = pp.Word("<") + COMMON
 
 VALUE = WILDCARD | NEG_DASH | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
 MORE_VALUES = COMMON + VALUE
-INPUT = VALUE + pp.ZeroOrMore(MORE_VALUES)
 
+BOOL = WILDCARD | TRUE | FALSE
+MORE_BOOLS = COMMON + BOOL
+INPUT = pp.Optional(REVERSE) + BOOL + pp.ZeroOrMore(MORE_BOOLS) | pp.Optional(REVERSE) + VALUE + pp.ZeroOrMore(MORE_VALUES)
+
+TRUE_REGEX = re.compile('(?i)true')
+FALSE_REGEX = re.compile('(?i)false')
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
         return x in ['*', u'*'] or x.strip() in ['*', u'*']
     else:
         return False
+
+
+def is_reverse(x):
+    if isinstance(x, six.string_types):
+        return x in ['<', u'<'] or x.strip() in ['<', u'<']
+    else:
+        return False
+
 
 def check_wildcards(x):
     if isinstance(x, list):
@@ -51,12 +71,33 @@ def check_wildcards(x):
 
 
 def make_bool(x):
-    b = True if x == 'True' else False
-    return b
-
+    """
+    Find exact match for case insensitive true or false
+    Returns True for True or 1
+    Returns False for False or 0
+    If x is wildcard then simply return x
+    """
+    if is_wildcard(x):
+        return x
+    elif x in (True, '1', '1.0', 1, 1.0):
+        return True
+    elif x in (False, '0', '0.0', 0, 0.0):
+        return False
+    elif TRUE_REGEX.match(x, endpos=4):
+        return True
+    elif FALSE_REGEX.match(x, endpos=5):
+        return False
+    else:
+        # this should be caught much earlier either in model validation or in
+        # form validation
+        raise ValueError(
+            "Expected case insensitive 'true' or 'false' but got {}".format(x)
+        )
 
 def convert_val(x):
     if is_wildcard(x):
+        return x
+    if is_reverse(x):
         return x
     try:
         return float(x)
@@ -68,8 +109,12 @@ def parse_fields(param_dict):
         if v == u'' or v is None or v == []:
             del param_dict[k]
             continue
-        if type(v) == type(unicode()): #TODO: isinstance(value, unicode)
-            param_dict[k] = [convert_val(x) for x in v.split(',') if x]
+        if isinstance(v, six.string_types):
+            if k in BOOL_PARAMS:
+                converter = make_bool
+            else:
+                converter = convert_val
+            param_dict[k] = [converter(x.strip()) for x in v.split(',') if x]
     return param_dict
 
 def int_to_nth(x):
@@ -104,7 +149,6 @@ def same_version(v1, v2):
     return v1[:idx] == v2[:idx]
 
 def arrange_totals_by_row(tots, keys):
-
     out = {}
     for key in keys:
         order_map = {}
@@ -170,8 +214,8 @@ TAXCALC_HIDDEN_FIELDS = [
 # Display TaxCalc result data
 #
 TAXCALC_RESULTS_START_YEAR = START_YEAR
-TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.TABLE_LABELS
-TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS
+TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.DIST_TABLE_LABELS[:-2]
+TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS[:-2]
 TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     #   divisor,   unit,   decimals
     [      1000,      None, 0], # 'Returns',
@@ -196,60 +240,116 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
 
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
-    [      1000,      None, 0],    # "Inds. w/ Tax Cut",
-    [      1000,      None, 0],    # "Inds. w/ Tax Increase",
-    [      1000,      None, 0],    # "Count",
-    [         1, 'Dollars', 0],  # "Mean Tax Difference",
-    [1000000000, 'Dollars', 1],  # "Total Tax Difference",
-    [         1,   '%', 1],  # "%age Tax Increase",
-    [         1,   '%', 1],  # "%age Tax Decrease",
-    [         1,   '%', 1],  # "Share of Overall Change"
+    [      1000,      None, 0],    # "Count", --> All Tax Units
+    [      1000,      None, 0],    # "Tax Units with Tax Cut",
+    [         1,        '%',1],    # "Percent Tax Decrease" --> "Percent with Tax Cut"
+    [      1000,      None, 0],    # "Tax Units with Tax Cut",
+    [         1,       '%', 1],    # "Percent Tax Increase" --> "Percent with Tax Increase"
+    [         1, 'Dollars', 0],    # "Average Tax Change"
+    [1000000000, 'Dollars', 1],    # "Total Tax Difference",
+    [         1,   '%', 1],       # "Share of Overall Change"
 ]
-TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.dropq.BIN_ROW_NAMES
+TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.WEBBIN_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
-    'less_than_10':'Less than 10',
-    'ten_twenty':'10-20',
-    'twenty_thirty':'20-30',
-    'thirty_forty':'30-40',
-    'forty_fifty':'40-50',
-    'fifty_seventyfive':'50-75',
-    'seventyfive_hundred':'75-100',
-    'hundred_twohundred':'100-200',
-    'twohundred_fivehundred':'200-500',
-    'fivehundred_thousand':'500-1000',
-    'thousand_up':'1000+',
+    '<$10K':'Less than 10',
+    '$10-20K':'10-20',
+    '$20-30K':'20-30',
+    '$30-40K':'30-40',
+    '$40-50K':'40-50',
+    '$50-75K':'50-75',
+    '$75-100K':'75-100',
+    '$100-200K':'100-200',
+    '$200-500K':'200-500',
+    '$500-1000K':'500-1000',
+    '>$1000K':'1000+',
     'all':'All'
 }
-TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.dropq.DECILE_ROW_NAMES
+TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES[:-3]
+# -DEC_ROW_NAMES = ['perc0-10', 'perc10-20', 'perc20-30', 'perc30-40',
+# -                 'perc40-50', 'perc50-60', 'perc60-70', 'perc70-80',
+# -                 'perc80-90', 'perc90-100', 'all']
+# -
+# -BIN_ROW_NAMES = ['less_than_10', 'ten_twenty', 'twenty_thirty', 'thirty_forty',
+# -                 'forty_fifty', 'fifty_seventyfive', 'seventyfive_hundred',
+# -                 'hundred_twohundred', 'twohundred_fivehundred',
+# -                 'fivehundred_thousand', 'thousand_up', 'all']
+# +DEC_ROW_NAMES = ['0-10', '10-20', '20-30', '30-40',
+# +                 '40-50', '50-60', '60-70', '70-80',
+# +                 '80-90', '90-100', 'all']
+# +
+# +BIN_ROW_NAMES = ['<$10K', '$10-20K', '$20-30K', '$30-40K',
+# +                 '$40-50K', '$50-75K', '$75-100K',
+# +                 '$100-200K', '$200-500K',
+# +                 '$500-1000K', '>$1000K', 'all']
+
+PRE_TC_0130_RES_MAP = {
+    'all': 'all',
+    'fifty_seventyfive': '$50-75K',
+    'fivehundred_thousand': '$500-1000K',
+    'forty_fifty': '$40-50K',
+    'hundred_twohundred': '$100-200K',
+    'less_than_10': '<$10K',
+    'perc0-10': '0-10',
+    'perc10-20': '10-20',
+    'perc20-30': '20-30',
+    'perc30-40': '30-40',
+    'perc40-50': '40-50',
+    'perc50-60': '50-60',
+    'perc60-70': '60-70',
+    'perc70-80': '70-80',
+    'perc80-90': '80-90',
+    'perc90-100': '90-100',
+    'seventyfive_hundred': '$75-100K',
+    'ten_twenty': '$10-20K',
+    'thirty_forty': '$30-40K',
+    'thousand_up': '>$1000K',
+    'twenty_thirty': '$20-30K',
+    'twohundred_fivehundred': '$200-500K',
+    'mY_dec': 'dist2_xdec',
+    'mX_dec': 'dist1_xdec',
+    'df_dec': 'diff_itax_xdec',
+    'pdf_dec': 'diff_ptax_xdec',
+    'cdf_dec': 'diff_comb_xdec',
+    'mY_bin': 'dist2_xbin',
+    'mX_bin': 'dist1_xbin',
+    'df_bin': 'diff_itax_xbin',
+    'pdf_bin': 'diff_ptax_xbin',
+    'cdf_bin': 'diff_comb_xbin',
+    'fiscal_tot_diffs': 'aggr_d',
+    'fiscal_tot_base': 'aggr_1',
+    'fiscal_tot_ref': 'aggr_2'
+}
+
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
-    'perc0-10':'0-10%',
-    'perc10-20':'10-20%',
-    'perc20-30':'20-30%',
-    'perc30-40':'30-40%',
-    'perc40-50':'40-50%',
-    'perc50-60':'50-60%',
-    'perc60-70':'60-70%',
-    'perc70-80':'70-80%',
-    'perc80-90':'80-90%',
-    'perc90-100':'90-100%',
+    '0-10':'0-10%',
+    '10-20':'10-20%',
+    '20-30':'20-30%',
+    '30-40':'30-40%',
+    '40-50':'40-50%',
+    '50-60':'50-60%',
+    '60-70':'60-70%',
+    '70-80':'70-80%',
+    '80-90':'80-90%',
+    '90-100':'90-100%',
     'all':'All'
 }
 TAXCALC_RESULTS_TABLE_LABELS = {
-    'mX_dec': 'Base plan tax vars, weighted total by expanded income decile',
-    'mY_dec': 'User plan tax vars, weighted total by expanded income decile',
-    'df_dec': 'Individual Income Tax: Difference between Base and User plans by expanded income decile',
-    'pdf_dec': 'Payroll Tax: Difference between Base and User plans by expanded income decile',
-    'cdf_dec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',
-    'mX_bin': 'Base plan tax vars, weighted total by expanded income bin',
-    'mY_bin': 'User plan tax vars, weighted total by expanded income bin',
-    'df_bin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
-    'pdf_bin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
-    'cdf_bin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
-    'fiscal_tot_diffs': 'Total Liabilities Change by Calendar Year',
-    'fiscal_tot_base': 'Total Liabilities Baseline by Calendar Year',
-    'fiscal_tot_ref': 'Total Liabilities Reform by Calendar Year',
+    'diff_comb_xbin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
+    'diff_comb_xdec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',
+    'diff_itax_xbin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
+    'diff_itax_xdec': 'Individual Income Tax: Difference between Base and User plans by expanded income decile',
+    'diff_ptax_xbin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
+    'diff_ptax_xdec': 'Payroll Tax: Difference between Base and User plans by expanded income decile',
+    'dist1_xbin': 'Base plan tax vars, weighted total by expanded income bin',
+    'dist1_xdec': 'Base plan tax vars, weighted total by expanded income decile',
+    'dist2_xbin': 'User plan tax vars, weighted total by expanded income bin',
+    'dist2_xdec': 'User plan tax vars, weighted total by expanded income decile',
+    'aggr_1': 'Total Liabilities Baseline by Calendar Year',
+    'aggr_d': 'Total Liabilities Change by Calendar Year',
+    'aggr_2': 'Total Liabilities Reform by Calendar Year'
 }
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
+
+AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
@@ -264,18 +364,18 @@ def get_default_policy_param_name(param, default_params):
 
     returns: Tax-Calculator param name
     """
-    if '_' + param in default_params:
+    if '_' + param in default_params: # ex. EITC_indiv --> _EITC_indiv
         return '_' + param
     param_pieces = param.split('_')
     end_piece = param_pieces[-1]
     no_suffix = '_' + '_'.join(param_pieces[:-1])
-    if end_piece == 'cpi':
+    if end_piece == 'cpi': # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
         if no_suffix in default_params:
             return '_' + param
         else:
             msg = "Received unexpected parameter: {}"
             raise ValueError(msg.format(param))
-    if no_suffix in default_params:
+    if no_suffix in default_params: # ex. STD_0 --> _STD_single
         try:
             ix = int(end_piece)
         except ValueError:
@@ -310,6 +410,7 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
     returns json style reform
     """
     map_back_to_tb = {}
+    number_reverse_operators = 1
     default_params = cls.default_data(start_year=start_year,
                                       metadata=True)
     ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
@@ -328,14 +429,32 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
                 assert isinstance(fields[param], bool) and param.endswith('_cpi')
                 reform[param_name][str(start_year)] = fields[param]
                 continue
-            for i in range(len(fields[param])):
+            i = 0
+            while i < len(fields[param]):
                 if is_wildcard(fields[param][i]):
                     # may need to do something here
                     pass
+                elif is_reverse(fields[param][i]):
+                    # only the first character can be a reverse char
+                    # and there must be a following character
+                    assert len(fields[param]) > 1
+                    # set value for parameter in start_year - 1
+                    assert (isinstance(fields[param][i + 1], (int, float)) or
+                            isinstance(fields[param][i + 1], bool))
+                    reform[param_name][str(start_year - 1)] = \
+                        [fields[param][i + 1]]
+
+                    # realign year and parameter indices
+                    for op in (0, number_reverse_operators + 1):
+                        fields[param].pop(0)
+                    continue
                 else:
                     assert (isinstance(fields[param][i], (int, float)) or
                             isinstance(fields[param][i], bool))
-                    reform[param_name][str(start_year + i)] = [fields[param][i]]
+                    reform[param_name][str(start_year + i)] = \
+                        [fields[param][i]]
+
+                i += 1
 
     return reform, map_back_to_tb
 
@@ -678,10 +797,13 @@ class TaxCalcParam(object):
     """
     FORM_HIDDEN_PARAMS = ["widow", "separate", "dependent"]
 
-    def __init__(self, param_id, attributes, first_budget_year):
-        self.__load_from_json(param_id, attributes, first_budget_year)
+    def __init__(self, param_id, attributes, first_budget_year,
+                 use_puf_not_cps=True):
+        self.__load_from_json(param_id, attributes, first_budget_year,
+                              use_puf_not_cps)
 
-    def __load_from_json(self, param_id, attributes, first_budget_year):
+    def __load_from_json(self, param_id, attributes, first_budget_year,
+                         use_puf_not_cps):
         values_by_year = attributes['value']
         col_labels = attributes.get('col_label', '')
 
@@ -693,6 +815,14 @@ class TaxCalcParam(object):
             attributes.get('irs_ref') or "",  # sometimes this is blank
             attributes.get('notes') or ""     # sometimes this is blank
             ]).strip()
+
+        # check that only parameters that are compatible with the current
+        # data set are used
+        if "compatible_data" in attributes:
+            self.gray_out = not (
+                (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or
+                (attributes["compatible_data"]["puf"] and use_puf_not_cps)
+            )
 
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
@@ -709,6 +839,14 @@ class TaxCalcParam(object):
         # organize defaults by column [[A1,B1],[A2,B2]] to [[A1,A2],[B1,B2]]
         values_by_col = [list(x) for x in zip(*values_by_year)]
 
+        # Tax-Calculator converts boolean values to 1/0 via
+        # np.array(bool_val, np.int8)
+        # here we convert that value back to a boolean type and serialize it
+        if self.nice_id in BOOL_PARAMS:
+            assert (isinstance(values_by_col, list) and
+                    isinstance(values_by_col[0], list))
+            for i in range(len(values_by_col[0])):
+                values_by_col[0][i] = str(make_bool(values_by_col[0][i]))
         #
         # normalize and format column labels
         #
@@ -761,11 +899,11 @@ class TaxCalcParam(object):
             self.inflatable = attributes['inflatable']
         elif self.tc_id in inflatable_params:
             self.inflatable = True
-        elif self.tc_id in non_inflatable_params:
+        elif (self.tc_id in non_inflatable_params or
+              self.nice_id in BOOL_PARAMS):
             self.inflatable = False
         else:
             self.inflatable = first_value > 1
-
 
         if self.inflatable:
             cpi_flag = attributes['cpi_inflated']
@@ -799,13 +937,14 @@ class TaxCalcParam(object):
                         self.min = self.min[1:]
 
 
-def parse_sub_category(field_section, budget_year):
+def parse_sub_category(field_section, budget_year, use_puf_not_cps=True):
     output = []
     free_fields = []
     for x in field_section:
         for y, z in x.iteritems():
             section_name = dict(z).get("section_2")
-            new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year)}
+            new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year,
+                                                            use_puf_not_cps)}
             if section_name:
                 section = next((item for item in output if section_name in item), None)
                 if not section:
@@ -831,13 +970,16 @@ def parse_top_level(ordered_dict):
     return output
 
 
-def nested_form_parameters(budget_year=2017):
-    defaults = taxcalc.policy.Policy.default_data(metadata=True,
-                                                  start_year=budget_year)
+def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
+                           defaults=None):
+    # defaults are None unless we are testing
+    if defaults is None:
+        defaults = taxcalc.Policy.default_data(metadata=True,
+                                               start_year=budget_year)
     groups = parse_top_level(defaults)
     for x in groups:
         for y, z in x.iteritems():
-            x[y] = parse_sub_category(z, budget_year)
+            x[y] = parse_sub_category(z, budget_year, use_puf_not_cps)
     return groups
 
 # Create a list of default Behavior parameters
@@ -938,13 +1080,34 @@ for k, param in TAXCALC_DEFAULT_PARAMS.iteritems():
 """
 
 
+def rename_keys(rename_dict, map_dict):
+    """
+    Recursively rename keys in `rename_dict` according to mapping specified
+    in `map_dict`
+
+    returns: dict with new keys
+    """
+    if isinstance(rename_dict, dict):
+        for k in rename_dict:
+            if k in map_dict:
+                new_label = map_dict[k]
+            elif k[:-2] in map_dict:
+                label = k[:-2]
+                year = k[-2:]
+                new_label = map_dict[label] + year
+            else:
+                new_label = k
+            rename_dict[new_label] = rename_keys(rename_dict.pop(k), map_dict)
+    return rename_dict
+
+
 def taxcalc_results_to_tables(results, first_budget_year):
     """
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
     Return organized and labeled table results for display
     """
-    total_row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
-    num_years = len(results['fiscal_tot_diffs'][total_row_keys[0]])
+    total_row_keys = AGG_ROW_NAMES
+    num_years = len(results['aggr_d'][total_row_keys[0]])
     years = list(range(first_budget_year,
                        first_budget_year + num_years))
 
@@ -961,7 +1124,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
         print(' ----- inputs ------- \n')
         """
 
-        if table_id in ['mX_dec', 'mY_dec']:
+        if table_id in ['dist1_xdec', 'dist2_xdec']:
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -969,7 +1132,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['mX_bin', 'mY_bin']:
+        elif table_id in ['dist1_xbin', 'dist2_xbin']:
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_MTABLE_COL_LABELS
@@ -977,7 +1140,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['df_dec', 'pdf_dec', 'cdf_dec']:
+        elif table_id in ['diff_itax_xdec', 'diff_ptax_xdec', 'diff_comb_xdec']:
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -985,7 +1148,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['df_bin', 'pdf_bin', 'cdf_bin']:
+        elif table_id in ['diff_itax_xbin', 'diff_ptax_xbin', 'diff_comb_xbin']:
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -993,33 +1156,41 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id == 'fiscal_tot_diffs':
+        elif table_id == 'aggr_d':
             # todo - move these into the above TC result param constants
-            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
 
-        elif table_id == 'fiscal_tot_base':
+        elif table_id == 'aggr_1':
             # todo - move these into the above TC result param constants
-            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
 
-        elif table_id == 'fiscal_tot_ref':
+        elif table_id == 'aggr_2':
             # todo - move these into the above TC result param constants
-            row_keys = TAXCALC_RESULTS_TOTAL_ROW_KEYS
+            row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
-
+        else:
+            raise(ValueError("{} not in expected list of names {}".
+                  format(table_id, ','.join(["dist2_xdec", "dist1_xdec",
+                                             "diff_itax_xdec", "diff_ptax_xdec",
+                                             "diff_comb_xdec", "dist2_xbin",
+                                             "dist1_xbin", "diff_itax_xbin",
+                                             "diff_itax_xbin", "diff_ptax_xbin",
+                                             "diff_comb_xbin", "aggr_d",
+                                             "aggr_1", "aggr_2"]))))
         table = {
             'col_labels': col_labels,
             'cols': [],
@@ -1091,10 +1262,10 @@ def format_csv(tax_results, url_id, first_budget_year):
     And then returns a list of list of strings for CSV output. The format
     of the lines is as follows:
     #URL: http://www.ospc.org/taxbrain/ID/csv/
-    #fiscal tots data
+    #aggr_d
     YEAR_0, ... YEAR_K
     val, val, ... val
-    #mX_dec
+    #dist1_xdec
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1102,7 +1273,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #mY_dec
+    #dist2_xdec
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1110,7 +1281,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #df_dec
+    #diff_itax_xdec
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1118,7 +1289,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #mX_bin
+    #dist1_xbin
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1126,7 +1297,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #mY_bin
+    #dist2_xbin
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1134,7 +1305,7 @@ def format_csv(tax_results, url_id, first_budget_year):
     col_0, col_1, ..., col_n
     val, val, ..., val
     ...
-    #df_bin
+    #diff_itax_xbin
     YEAR_0
     col_0, col_1, ..., col_n
     val, val, ..., val
@@ -1148,9 +1319,9 @@ def format_csv(tax_results, url_id, first_budget_year):
     #URL
     res.append(["#URL: http://www.ospc.org/taxbrain/" + str(url_id) + "/"])
 
-    #FISCAL TOTS
-    res.append(["#fiscal totals data"])
-    ft = tax_results.get('fiscal_change', {})
+    #aggr2
+    res.append(["#aggr_2"])
+    ft = tax_results.get('aggr_d', {})
     yrs = [first_budget_year + i for i in range(0, len(ft['ind_tax']))]
     if yrs:
         res.append(yrs)
@@ -1162,9 +1333,9 @@ def format_csv(tax_results, url_id, first_budget_year):
         res.append(['ind_tax'])
         res.append(ft['ind_tax'])
 
-    #MX_DEC
-    res.append(["#mX_dec"])
-    mxd = tax_results.get('mX_dec', {})
+    #dist1_xdec
+    res.append(["#dist1_xdec"])
+    mxd = tax_results.get('dist1_xdec', {})
     if mxd:
         for count, yr in enumerate(yrs):
             res.append([yr])
@@ -1172,9 +1343,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
                 res.append(mxd[row+"_" + str(count)])
 
-    #MY_DEC
-    res.append(["#mY_dec"])
-    myd = tax_results.get('mY_dec', {})
+    #dist2_xdec
+    res.append(["#dist2_xdec"])
+    myd = tax_results.get('dist2_xdec', {})
     if myd:
         for count, yr in enumerate(yrs):
             res.append([yr])
@@ -1182,9 +1353,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
                 res.append(myd[row+"_" + str(count)])
 
-    #DF_DEC
-    res.append(["#df_dec"])
-    dfd = tax_results.get('df_dec', {})
+    #diff_itax_xdec
+    res.append(["#diff_itax_xdec"])
+    dfd = tax_results.get('diff_itax_xdec', {})
     if dfd:
         for count, yr in enumerate(yrs):
             res.append([yr])
@@ -1192,8 +1363,8 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
                 res.append(dfd[row+"_" + str(count)])
 
-    #MX_BIN
-    res.append(["#mX_bin"])
+    #dist1_xbin
+    res.append(["#dist1_xbin"])
     mxb = tax_results.get('mX_bin', {})
     if mxb:
         for count, yr in enumerate(yrs):
@@ -1202,8 +1373,8 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_BIN_ROW_KEYS:
                 res.append(mxb[row+"_" + str(count)])
 
-    #MY_BIN
-    res.append(["#mY_bin"])
+    #dist2_xbin
+    res.append(["#dist2_xbin"])
     myb = tax_results.get('mY_bin', {})
     if myb:
         for count, yr in enumerate(yrs):
@@ -1212,9 +1383,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             for row in TAXCALC_RESULTS_BIN_ROW_KEYS:
                 res.append(myb[row+"_" + str(count)])
 
-    #DF_BIN
-    res.append(["#df_bin"])
-    dfb = tax_results.get('df_bin', {})
+    #diff_itax_xbin
+    res.append(["#diff_itax_xbin"])
+    dfb = tax_results.get('diff_itax_xbin', {})
     if dfb:
         for count, yr in enumerate(yrs):
             res.append([yr])

@@ -4,6 +4,93 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.3.0 on 2017-12-23
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#778](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/778) - Upgrade to Tax-Calculator 0.14.1 - Hank Doupe
+- [#781](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/781) - Add CNN to media coverage - Sean Wang
+- [#782](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/782) - Convert DependentCredit_before_CTC from bool to int - Hank Doupe
+- [#784](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/784) - Update to Tax-Calculator 0.14.2 - Hank Doupe
+- [#788](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/788) - Convert default values for boolean parameters from 1/0 to "True"/"False" - Hank Doupe
+- [#790](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/790) - Add reverse operator - Hank Doupe
+- [#792](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/792) - Add TCJA preset - Hank Doupe
+
+**Bug Fixes**
+- [#741](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/741) - Web page clean ups and bug fixes - Sean Wang
+- [#780](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/780) - Fix buttons disappear after fiscal tables being re-rendered - Sean Wang
+- [#783](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/783) - Removes extra "Total" labels - Hank Doupe
+- [#791](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/791) - Saves start year after warnings are shown for file upload - Hank Doupe
+
+Release 1.2.1 on 2017-12-12
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#762](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#762) - Save submitted JSON files in case of warning messages - Hank Doupe
+- [#774](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#774) - Update to taxcalc 0.14.0+ - Hank Doupe
+
+**Bug Fixes**
+- [#757](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#757) - Make sure ID_AmountCap_Switch param is submitted as 1/0 - Hank Doupe
+- [#759](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#759) - Quick-calc clean up - Hank Doupe
+- [#767](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Add input_type back to context - Hank Doupe and Sean Wang
+- [#776](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Short-term fix for package pinning - Hank Doupe
+- [#777](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#777) - Update warning/error messages and description - Hank Doupe
+
+Release 1.2.0 on 2017-11-21
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#738](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/738) - Update to taxcalc 0.13.0+ - Hank Doupe
+- [#739](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/739) - Remove media coverage links and add more medias - Sean Wang
+
+**Bug Fixes**
+- [#742](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/742) - Labels and titles dynamically update and initial loading bug fixed - Haylee Ham
+- [#744](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/744) - Cleanup reform_style removal and 738 migrations - Hank Doupe
+- [#745](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/745) - Collapse in all fields temporarily -- Sean Wang
+- [#748](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/748) - Remove UBI exclude statement - Hank Doupe
+- [#751](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/751) - Change job processing time from 30 to 50 seconds - Hank Doupe
+- [#752](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/752) - Post 738 dynamic sim cleanup - Hank Doupe
+- [#755](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/755) - Fix table label order - Hank Doupe
+
+Release 1.1.1 on 2017-11-04
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#729](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/729) - Fix "news.ospc.org" link bug - Sean Wang
+
+Release 1.1.0 on 2017-11-02
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#684](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/684) - Rename macro elasticity labels and remove dropdown menu in elasticity result page - Sean Wang
+- [#693](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/693) - Create RELEASES.md - Hank Doupe
+- [#694](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/694) - Remove "Excel" output buttons - Sean Wang
+- [#698](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/698) - New content for getting started, about, and nav menu - Jessica Ciarelli
+- [#701](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/701) - Enhance file upload preview - Sean Wang
+- [#702](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/702) - Update README.md - Hank Doupe
+- [#711](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/711) - Migrate private Django Flat blocks to Github - Sean Wang
+- [#713](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/713) - Improvements to Create and Update scripts - Brittain Hard
+- [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset - Hank Doupe
+- [#724](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/724) - Add CCC video to getting started page - Jessica Ciarelli
+
+**Bug Fixes**
+- [#675](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/675) - Correct build table names for "Copy", "CSV" and "Excel" - Sean Wang
+- [#708](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/708) - Unit test parameter formatters (with bug-fix) - Hank Doupe
+- [#722](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/722) - Fix reverted Macro page changes - Sean Wang
+
 Release 1.0.3 on 2017-10-05
 ----------------------------
 **Major Changes**

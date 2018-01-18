@@ -38,11 +38,10 @@ from .models import BTaxSaveInputs, BTaxOutputUrl
 from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC,
                       BTAX_OTHER, BTAX_ECON,
-                      group_args_to_btax_depr, hover_args_to_btax_depr)
+                      group_args_to_btax_depr, hover_args_to_btax_depr,
+                      make_bool, convert_val)
 from ..taxbrain.helpers import (format_csv,
-                                is_wildcard,
-                                convert_val,
-                                make_bool)
+                                is_wildcard)
 from ..taxbrain.views import (benefit_switch_fixup,
                               denormalize, normalize)
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError

@@ -12,15 +12,6 @@ from ...test_assets import *
 import requests_mock
 
 
-SUBMIT_DROPQ_DATA = {
-    "mods": {2018: {u'_SS_Earnings_c': [400000], u'_II_em_cpi': False, u'_II_em': [8000]}, 2019: {u'_SS_Earnings_c': [500000], u'_ALD_InvInc_ec_rt': [0.2]}, 2020: {u'_SS_Earnings_c': [600000], u'_II_em_cpi': True}},
-    "first_budget_year": 2013,
-    "url_template": 'http://{hn}/dropq_start_job',
-    "additional_data": {'growdiff_response': {}, 'consumption': {}, 'behavior': {}, 'growdiff_baseline': {}},
-    "is_file": True
-}
-
-
 class MockComputeTests(MockCompute):
 
     def remote_submit_job(self, theurl, data, timeout):
@@ -38,11 +29,31 @@ class ComputeTests(TestCase):
         self.client = Client()
 
     def test_submit_calculation(self):
+        reform_dict = {
+            2018: {
+                u'_SS_Earnings_c': [400000],
+                u'_II_em_cpi': False,
+                u'_II_em': [8000]
+            },
+            2019: {
+                u'_SS_Earnings_c': [500000],
+                u'_ALD_InvInc_ec_rt': [0.2]},
+            2020: {
+                u'_SS_Earnings_c': [600000],
+                u'_II_em_cpi': True
+            }
+        }
+        assumptions_dict = {
+            'growdiff_response': {},
+            'consumption': {},
+            'behavior': {},
+            'growdiff_baseline': {}
+        }
+        user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+        data = {'user_mods': json.dumps(user_mods),
+                'first_budget_year': 2016,
+                'start_budget_year': 0,
+                'num_budget_years': 9}
         self.dropq_compute.submit_calculation(
-            SUBMIT_DROPQ_DATA["mods"],
-            SUBMIT_DROPQ_DATA["first_budget_year"],
-            SUBMIT_DROPQ_DATA["url_template"],
-            num_years=1,
-            additional_data=SUBMIT_DROPQ_DATA["additional_data"],
-            pack_up_user_mods=False
+            data, 'http://{hn}/dropq_start_job'
         )

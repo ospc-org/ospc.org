@@ -60,10 +60,18 @@ class DropqComputeBtax(DropqCompute):
     num_budget_years = 1
     package_up_vars = package_up_vars
 
-    def submit_btax_calculation(self, mods, first_budget_year=2015):
+    def submit_btax_calculation(self, user_mods, first_budget_year=2015):
         url_template = "http://{hn}/btax_start_job"
-        return self.submit_calculation(mods, first_budget_year, url_template,
-                                       start_budget_year=None, num_years=1,
+        data = {}
+        user_mods = self.package_up_vars(user_mods, first_budget_year)
+        if not bool(user_mods):
+            return False
+        user_mods = {first_budget_year: user_mods}
+        data['user_mods'] = json.dumps(user_mods)
+        data['first_budget_year'] = str(first_budget_year)
+        data['start_budget_year'] = '0'
+        data['num_budget_years'] = 1
+        return self.submit_calculation(data, url_template,
                                        workers=BTAX_WORKERS,
                                        increment_counter=False,
                                        use_wnc_offset=False)
@@ -97,6 +105,3 @@ class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):
     dropq_get_results = partial(mock_dropq_get_results, 'Failure message')
     submit_calculation = mock_submit_calculation
     dropq_results_ready = partial(mock_dropq_results_ready, "FAIL")
-
-
-

@@ -3,7 +3,7 @@ from django.test import TestCase
 from django.test import Client
 import mock
 import os
-os.environ["NUM_BUDGET_YEARS"] = '2'
+# os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
 from ...taxbrain.models import convert_to_floats
@@ -14,6 +14,7 @@ import taxcalc
 from taxcalc import Policy
 
 START_YEAR = u'2016'
+
 
 class DynamicViewsTests(TestCase):
     ''' Test the views of this app. '''
@@ -80,7 +81,7 @@ class DynamicViewsTests(TestCase):
         link_idx = response.url[:-1].rfind('/')
         self.failUnless(response.url[:link_idx+1].endswith("behavior_results/"))
 
- 
+
     def test_elastic_post(self):
         #Monkey patch to mock out running of compute jobs
         import sys
@@ -184,5 +185,3 @@ class DynamicViewsTests(TestCase):
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
         self.failUnless("Your calculation failed" in str(response))
-
-

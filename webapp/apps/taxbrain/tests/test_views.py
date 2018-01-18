@@ -18,9 +18,12 @@ from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
 from ..views import get_result_context
 import taxcalc
 from taxcalc import Policy
-from .utils import do_micro_sim, check_posted_params
 
 from ...test_assets import test_reform, test_assumptions
+from ...test_assets.utils import (check_posted_params, do_micro_sim,
+                                  get_post_data, get_file_post_data,
+                                  get_dropq_compute_from_module,
+                                  get_taxbrain_model)
 
 
 START_YEAR = 2016
@@ -40,61 +43,27 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_taxbrain_post(self):
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
-
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
-
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-
+        """
+        submit simple reform
+        """
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
+        do_micro_sim(self.client, data)
 
     def test_taxbrain_quick_calc_post(self):
         "Test quick calculation post and full post from quick_calc page"
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
         # switches 0, 4, 6 are False
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123',
-                u'quick_calc': 'Quick Calculation!'}
+        data = get_post_data(START_YEAR, quick_calc=True)
+        del data[u'ID_BenefitSurtax_Switch_0']
+        del data[u'ID_BenefitSurtax_Switch_4']
+        del data[u'ID_BenefitSurtax_Switch_6']
+        data[u'II_em'] = [u'4333']
+        data[u'ID_AmountCap_Switch_0'] = [u'True']
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-
-        url = response.url
-        # Go to results page
-        link_idx = url[:-1].rfind('/')
-        self.failUnless(url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(url)
-        # Check for good response
-        self.assertEqual(response.status_code, 200)
-        # Check that we only retrieve one year of results
-        self.assertEqual(webapp_views.dropq_compute.count, 1)
+        result = do_micro_sim(self.client, data, compute_count=1)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         next_dropq_worker_offset = wnc.current_offset
@@ -105,27 +74,27 @@ class TaxBrainViewsTests(TestCase):
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
                                    [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_ID_AmountCap_Switch":
+                                   [[1, 0, 0, 0, 0, 0, 0]],
                                    "_II_em": [4333.0]}
                       }
-        check_posted_params(webapp_views.dropq_compute, truth_mods,
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
         # reset worker node count without clearing MockCompute session
-        webapp_views.dropq_compute.reset_count()
-        pk = url[link_idx+1:-1]
-        response = self.client.post('/taxbrain/submit/{0}/'.format(pk),
-                                    {'csrfmiddlewaretoken':'abc123'})
-        self.assertEqual(response.status_code, 302)
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(response.url)
-        # Check for good response
-        self.assertEqual(response.status_code, 200)
-        # Check that we submit 10 jobs corresponding to 10 years of results
-        self.assertEqual(webapp_views.dropq_compute.count, NUM_BUDGET_YEARS)
+        result['tb_dropq_compute'].reset_count()
+        post_url = '/taxbrain/submit/{0}/'.format(result['pk'])
+        submit_data = {'csrfmiddlewaretoken':'abc123'}
+
+        result = do_micro_sim(
+            self.client,
+            submit_data,
+            compute_count=NUM_BUDGET_YEARS,
+            post_url=post_url
+        )
 
         # Check that data was saved properly
-        check_posted_params(webapp_views.dropq_compute, truth_mods,
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
 
@@ -134,33 +103,19 @@ class TaxBrainViewsTests(TestCase):
         Using file-upload interface, test quick calculation post and full
         post from quick_calc page
         """
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR),
-                u'quick_calc': True,
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_file_post_data(START_YEAR, test_reform.reform_text, quick_calc=False)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
-        response = self.client.post('/taxbrain/file/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
+        post_url = '/taxbrain/file/'
 
-        url = response.url
-        # Go to results page
-        link_idx = url[:-1].rfind('/')
-        self.failUnless(url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(url)
-        # Check for good response
-        self.assertEqual(response.status_code, 200)
-        # Check that we only retrieve one year of results
-        self.assertEqual(webapp_views.dropq_compute.count, 1)
+        result = do_micro_sim(
+            self.client,
+            data,
+            compute_count=1,
+            post_url=post_url
+        )
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         next_dropq_worker_offset = wnc.current_offset
@@ -169,97 +124,110 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
 
         # Check that data was saved properly
-        truth_mods = taxcalc.Calculator.read_json_param_files(
+        truth_mods = taxcalc.Calculator.read_json_param_objects(
             test_reform.reform_text,
             None,
-            False
         )
         truth_mods = truth_mods["policy"]
-        check_posted_params(webapp_views.dropq_compute, truth_mods,
+        check_posted_params(result["tb_dropq_compute"], truth_mods,
                             str(START_YEAR))
 
         # reset worker node count without clearing MockCompute session
-        webapp_views.dropq_compute.reset_count()
-        pk = url[link_idx+1:-1]
-        response = self.client.post('/taxbrain/submit/{0}/'.format(pk),
-                                    {'csrfmiddlewaretoken':'abc123'})
-        self.assertEqual(response.status_code, 302)
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(response.url)
-        # Check for good response
-        self.assertEqual(response.status_code, 200)
-        # Check that the number of submitted jobs corresponds to the number of
-        # budget years
-        self.assertEqual(webapp_views.dropq_compute.count, NUM_BUDGET_YEARS)
+        result['tb_dropq_compute'].reset_count()
+        post_url = '/taxbrain/submit/{0}/'.format(result['pk'])
+        submit_data = {'csrfmiddlewaretoken':'abc123'}
+
+        result = do_micro_sim(
+            self.client,
+            submit_data,
+            compute_count=NUM_BUDGET_YEARS,
+            post_url=post_url
+        )
 
         # Check that data was saved properly
-        check_posted_params(webapp_views.dropq_compute, truth_mods,
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
+
+
+    def test_back_to_back_quickcalc(self):
+        "Test back to back quick calc posts"
+        # switches 0, 4, 6 are False
+        data = get_post_data(START_YEAR, quick_calc=True)
+        del data[u'ID_BenefitSurtax_Switch_0']
+        del data[u'ID_BenefitSurtax_Switch_4']
+        del data[u'ID_BenefitSurtax_Switch_6']
+        data[u'II_em'] = [u'4333']
+
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
+
+        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
+                                                                 START_YEAR)
+        edit_page = self.client.get(edit_micro)
+        self.assertEqual(edit_page.status_code, 200)
+
+        next_csrf = str(edit_page.context['csrf_token'])
+        data['csrfmiddlewaretoken'] = next_csrf
+        result2 = do_micro_sim(self.client, data)
+
+        check_posted_params(result2['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
 
     def test_taxbrain_post_no_behavior_entries(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         # Provide behavioral input
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'BE_inc': [u'0.1'],
-                u'start_year': unicode(START_YEAR)}
+        data = get_post_data(START_YEAR)
+        data[u'BE_inc'] = [u'0.1']
 
         response = self.client.post('/taxbrain/', data)
         # Check that we get a 400
         self.assertEqual(response.status_code, 400)
 
+
     def test_taxbrain_nodes_down(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = NodeDownCompute()
+        dropq_compute = get_dropq_compute_from_module(
+            'webapp.apps.taxbrain.views',
+            MockComputeObj=NodeDownCompute
+        )
 
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
 
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        # One more redirect
-        response = self.client.get(response.url)
-        # Check that we successfully load the page
-        self.assertEqual(response.status_code, 200)
+        result = do_micro_sim(
+            self.client,
+            data,
+            tb_dropq_compute=dropq_compute
+        )
+
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
+
 
     def test_taxbrain_failed_job(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockFailedCompute()
+        dropq_compute = get_dropq_compute_from_module(
+            'webapp.apps.taxbrain.views',
+            MockComputeObj=MockFailedCompute
+        )
 
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
@@ -272,10 +240,6 @@ class TaxBrainViewsTests(TestCase):
 
     @pytest.mark.xfail
     def test_taxbrain_has_growth_params(self):
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
 
         reform = {'factor_adjustment': [u'0.03'],
                   'FICA_ss_trt': [u'0.11'],
@@ -283,60 +247,42 @@ class TaxBrainViewsTests(TestCase):
                   'has_errors': [u'False'],
                   'growth_choice': u'factor_adjustment'
                   }
-        micro = do_micro_sim(self.client, reform)
+        do_micro_sim(self.client, reform)
+
 
     def test_taxbrain_edit_cpi_flags_show_correctly(self):
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
 
-        data = { u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'AMT_CG_brk2_cpi':u'False',
-                u'AMT_CG_brk1_cpi':u'False'}
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
+        data[u'AMT_CG_brk2_cpi'] = u'False'
 
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        model_num = response.url[link_idx+1:-1]
-        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(model_num, START_YEAR)
+        result = do_micro_sim(self.client, data)
+        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
+                                                                 START_YEAR)
         edit_page = self.client.get(edit_micro)
         self.assertEqual(edit_page.status_code, 200)
         cpi_flag = edit_page.context['form']['AMT_CG_brk2_cpi'].field.widget.attrs['placeholder']
         self.assertEqual(cpi_flag, False)
 
-    def test_taxbrain_edit_benefitsurtax_switch_show_correctly(self):
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
 
+
+    def test_taxbrain_edit_benefitsurtax_switch_show_correctly(self):
         # This post has no BenefitSurtax flags, so the model
         # sets them to False
-        data = { u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        data[u'II_em'] = [u'4333']
 
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        model_num = response.url[link_idx+1:-1]
+        result = do_micro_sim(self.client, data)
 
-        out = OutputUrl.objects.get(pk=model_num)
+        out = OutputUrl.objects.get(pk=result["pk"])
         tsi = TaxSaveInputs.objects.get(pk=out.model_pk)
         _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
         # Verify that generated model has switches all False
         assert all([(getattr(tsi, switch) == "False"
                      or getattr(tsi, switch) == u'0.0') for switch in _ids])
         # Now edit this page
-        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(model_num, START_YEAR)
+        edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
+                                                                 START_YEAR)
         edit_page = self.client.get(edit_micro)
         self.assertEqual(edit_page.status_code, 200)
 
@@ -344,21 +290,16 @@ class TaxBrainViewsTests(TestCase):
         # unimportant. The existence of the switch in the POST indicates
         # that the user set them to on. So, they must get switched to True
         next_csrf = str(edit_page.context['csrf_token'])
-        data2 = { u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':next_csrf,
-                'ID_BenefitSurtax_Switch_0':[u'False'],
-                'ID_BenefitSurtax_Switch_1':[u'False']}
+        data2 = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_em': [u'4333'],
+               u'ID_BenefitSurtax_Switch_0': [u'False'],
+               u'ID_BenefitSurtax_Switch_1': [u'False'],
+               'csrfmiddlewaretoken': next_csrf}
+        data2.update(mod)
 
-        response = self.client.post('/taxbrain/', data2)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        model_num2 = response.url[link_idx+1:-1]
+        result2 = do_micro_sim(self.client, data2)
 
-        out2 = OutputUrl.objects.get(pk=model_num2)
+        out2 = OutputUrl.objects.get(pk=result2["pk"])
         tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
         assert (tsi2.ID_BenefitSurtax_Switch_0 == u'True'
                 or tsi2.ID_BenefitSurtax_Switch_0 == u'1.0')
@@ -382,20 +323,21 @@ class TaxBrainViewsTests(TestCase):
         income tax bracket 2 will inflate above 38000 so should give
         no error
         """
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 15000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
+        result = do_micro_sim(self.client, data)
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 15000'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
-
-        response = self.client.post('/taxbrain/', data)
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        # Check that data was saved properly
+        truth_mods = {
+            START_YEAR: {'_II_brk2_cpi': False},
+            START_YEAR + 2: {
+                '_II_brk1': [[15000.0, 19069.63, 9534.81, 13650.38, 19069.63]]
+            }
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR))
 
 
     def test_taxbrain_wildcard_params_with_validation_gives_error(self):
@@ -406,40 +348,49 @@ class TaxBrainViewsTests(TestCase):
         is false so should give an error
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 38000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
 
-    def test_taxbrain_wildcard_in_validation_params_OK(self):
+
+    def test_taxbrain_spec_operators_in_validation_params_OK(self):
         """
         Set upper threshold for income tax bracket 1 to *, 38000
         Set upper threshold for income tax bracket 2 to *, *, 39500
         should be OK
         """
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 38000'],
+               u'II_brk2_0': [u'*, *, 39500'],
+               u'cpi_offset': [u'<,-0.0025'],
+               u'FICA_ss_trt': [u'< ,0.1,*,0.15,0.2']}
+        data.update(mod)
+        result = do_micro_sim(self.client, data)
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, *, 38000'],
-                u'II_brk2_0': [u'*, *, 39500'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        truth_mods = {
+            START_YEAR - 1: {
+                '_cpi_offset': [-0.0025],
+                '_FICA_ss_trt': [0.1]
+            },
+            START_YEAR + 1: {
+                '_FICA_ss_trt': [0.15]
+            },
+            START_YEAR + 2: {
+                '_FICA_ss_trt': [0.2]
+            }
+        }
 
-        response = self.client.post('/taxbrain/', data)
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
+
+
 
     def test_taxbrain_wildcard_in_validation_params_gives_error(self):
         """
@@ -449,48 +400,90 @@ class TaxBrainViewsTests(TestCase):
         so should give an error
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'*, 38000'],
-                u'II_brk2_0': [u'*, *, 39500'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123', u'II_brk2_cpi':u'False'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, 38000'],
+               u'II_brk2_0': [u'*, *, 39500'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
 
+
+    def test_taxbrain_improper_reverse_gives_error1(self):
+        """
+        Check reverse operator post without other numbers throws error
+        """
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'cpi_offset': [u'<,']}
+        data.update(mod)
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+
+    def test_taxbrain_improper_reverse_gives_error2(self):
+        """
+        Check reverse operator not in first position throws error
+        """
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'cpi_offset': [u'-0.002,<,-0.001']}
+        data.update(mod)
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+
+    def test_taxbrain_bool_separated_values(self):
+        """
+        Test _DependentCredit_before_CTC can be posted as comma separated
+        string
+        """
+        data = get_post_data(2018, _ID_BenefitSurtax_Switches=False)
+        data['DependentCredit_before_CTC'] = [u'True,*, FALSE,tRUe,*,0']
+
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was submitted properly
+        truth_mods = {
+            2018: {'_DependentCredit_before_CTC': [True]},
+            2020: {'_DependentCredit_before_CTC': [False]},
+            2021: {'_DependentCredit_before_CTC': [True]},
+            2023: {'_DependentCredit_before_CTC': [False]}
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(2018))
+
+
     def test_taxbrain_rt_capital_gain_goes_to_amt(self):
         """
         Transfer over the regular tax capital gains to AMT
         """
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
 
-        data = {'CG_rt1': [0.25], 'CG_rt3': [u'0.25'], 'CG_rt2': [u'0.18'],
-                'CG_brk1_cpi': [u'True'], 'CG_brk2_cpi': [u'True'],
-                'CG_brk1_0': [u'38659'], 'CG_brk1_1': [u'76300'],
-                'CG_brk1_2': [u'38650'], 'CG_brk1_3': [u'51400'],
-                'CG_brk2_0': [u'425050'], 'CG_brk2_1': [u'476950'],
-                'CG_brk2_2': [u'243475'], 'CG_brk2_3': [u'451000'],
-                'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {'CG_rt1': [0.25], 'CG_rt3': [u'0.25'], 'CG_rt2': [u'0.18'],
+               'CG_brk1_cpi': [u'True'], 'CG_brk2_cpi': [u'True'],
+               'CG_brk1_0': [u'38659'], 'CG_brk1_1': [u'76300'],
+               'CG_brk1_2': [u'38650'], 'CG_brk1_3': [u'51400'],
+               'CG_brk2_0': [u'425050'], 'CG_brk2_1': [u'476950'],
+               'CG_brk2_2': [u'243475'], 'CG_brk2_3': [u'451000']}
+        data.update(mod)
 
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
+        result = do_micro_sim(self.client, data)
 
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        model_num = response.url[link_idx+1:-1]
-
-        out2 = OutputUrl.objects.get(pk=model_num)
+        out2 = OutputUrl.objects.get(pk=result["pk"])
         tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
         assert tsi2.CG_rt1 == u'0.25'
         assert tsi2.CG_rt2 == u'0.18'
@@ -525,12 +518,6 @@ class TaxBrainViewsTests(TestCase):
         """
         Transfer over the ind. income tax params to passthrough
         """
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
-
-
         values1 = {"II_brk1_0": [u'8750.'],
                    "II_brk1_1": [u'9200.'],
                    "II_brk1_2": [u'9350.'], "II_brk1_3": [u'9350.'],
@@ -566,8 +553,7 @@ class TaxBrainViewsTests(TestCase):
                    "II_brk7_2": [u'999999.'], "II_brk7_3": [u'999999.'],
                    "II_rt7": [0.42]}
 
-        data = {'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
 
         data.update(values1)
         data.update(values2)
@@ -576,60 +562,30 @@ class TaxBrainViewsTests(TestCase):
         data.update(values5)
         data.update(values6)
         data.update(values7)
-
-        response = self.client.post('/taxbrain/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-
+        #TODO: check how values are saved
+        do_micro_sim(self.client, data)
 
     def test_taxbrain_file_post_only_reform(self):
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
-
-        response = self.client.post('/taxbrain/file/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        do_micro_sim(self.client, data, post_url="/taxbrain/file/")
 
 
     def test_taxbrain_file_post_reform_and_assumptions(self):
-        #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.reform_text)
-        tc_file2 = SimpleUploadedFile("test_assumptions.json", test_assumptions.assumptions_text)
-        data = {u'docfile': tc_file,
-                u'assumpfile': tc_file2,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+        data = get_file_post_data(START_YEAR,
+                                  test_reform.reform_text,
+                                  test_assumptions.assumptions_text)
 
-        response = self.client.post('/taxbrain/file/', data)
-        # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
-        # Go to results page
-        link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        do_micro_sim(self.client, data, post_url="/taxbrain/file/")
+
 
     def test_taxbrain_view_old_data_model(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        tsi = TaxSaveInputs()
+        unique_url = get_taxbrain_model(taxcalc_vers="0.10.0",
+                                        webapp_vers="1.1.0")
+
+        tsi = unique_url.unique_inputs
         old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   "example_old_result.json")
 
@@ -637,7 +593,6 @@ class TaxBrainViewsTests(TestCase):
             tsi.tax_result = json.loads(f.read())
         tsi.first_year = 2016
         tsi.save()
-
         factory = RequestFactory()
         req = factory.get('/taxbrain/')
         url = '/taxbrain/42'
@@ -653,14 +608,12 @@ class TaxBrainViewsTests(TestCase):
         it gives an error
         """
         #Monkey patch to mock out running of compute jobs
-        import sys
-        from webapp.apps.taxbrain import views as webapp_views
-        webapp_views.dropq_compute = MockCompute()
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = { u'has_errors': [u'False'], u'II_brk1_0': [u'XTOT*4500'],
-                u'II_brk2_0': [u'*, *, 39500'],
-                u'start_year': unicode(START_YEAR),
-                'csrfmiddlewaretoken':'abc123'}
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'XTOT*4500'],
+               u'II_brk2_0': [u'*, *, 39500']}
+        data.update(mod)
 
         response = self.client.post('/taxbrain/', data)
         self.assertEqual(response.status_code, 200)
@@ -671,40 +624,204 @@ class TaxBrainViewsTests(TestCase):
         """
         POST a reform file that causes errors. See PB issue #630
         """
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
+
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform.json", test_reform.bad_reform)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_file_post_data(START_YEAR, test_reform.bad_reform)
+
         #TODO: make sure still not allowed to submit on second submission
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'ERROR: value 9e+99 > max value 81210.81 for _II_brk2_4 for 2020'
+        msg = 'ERROR: _II_brk1_4 value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
         assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': START_YEAR
+        }
+
+        response = self.client.post('/taxbrain/file/', data2)
+        assert response.status_code == 200
 
 
     def test_taxbrain_warning_reform_file(self):
         """
-        POST a reform file that causes warnings. See PB issue #630
+        POST a reform file that causes warnings and check that re-submission
+        is allowed. See PB issue #630 and #761
         """
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         #Monkey patch to mock out running of compute jobs
-        import sys
-        webapp_views = sys.modules['webapp.apps.taxbrain.views']
-        webapp_views.dropq_compute = MockCompute()
-        tc_file = SimpleUploadedFile("test_reform1.json", test_reform.warning_reform)
-        data = {u'docfile': tc_file,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR), 'csrfmiddlewaretoken':'abc123'}
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        #TODO: make sure we can submit after we see warnings
+        data = get_file_post_data(START_YEAR, test_reform.warning_reform)
+
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: value 1000.0 < min value 6794.31 for 2020'
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
         assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': START_YEAR
+        }
+
+        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+
+        truth_mods = {
+            2020: {
+                "_STD":  [[1000, 13583.32, 6791.67, 10000.32, 13583.32]]
+            }
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
+
+
+    def test_taxbrain_reform_file_file_swap(self):
+        """
+        POST a reform file that causes warnings, swap files, and make sure
+        swapped files are used. See PB issue #630 and #761
+        """
+        start_year = 2017
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_file_post_data(start_year, test_reform.warning_reform)
+
+        response = self.client.post('/taxbrain/file/', data)
+        # Check that no redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
+        assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': start_year
+        }
+        data_file = get_file_post_data(START_YEAR,
+                                       test_reform.r1,
+                                       test_assumptions.assumptions_text)
+        data2['docfile'] = data_file['docfile']
+        data2['assumpfile'] = data_file['assumpfile']
+
+        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+
+        dropq_compute = result['tb_dropq_compute']
+        user_mods = json.loads(dropq_compute.last_posted["user_mods"])
+        assert user_mods["behavior"][str(start_year)]["_BE_sub"][0] == 1.0
+        truth_mods = {2018: {'_II_em': [8000.0]}}
+        check_posted_params(dropq_compute, truth_mods, start_year)
+
+
+    def test_taxbrain_reform_file_file_swap_no_assump(self):
+        """
+        POST a reform file that causes warnings, swap files, and make sure
+        swapped files are used. See PB issue #630 and #761
+        """
+        start_year = 2017
+        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
+        #Monkey patch to mock out running of compute jobs
+        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+
+        data = get_file_post_data(start_year, test_reform.warning_reform)
+
+        response = self.client.post('/taxbrain/file/', data)
+        # Check that no redirect happens
+        self.assertEqual(response.status_code, 200)
+        assert response.context['has_errors'] is True
+        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
+        assert msg in response.context['errors']
+
+        # get most recent object
+        objects = js.objects.order_by('id')
+        obj = objects[len(objects) - 1]
+
+        next_token = str(response.context['csrf_token'])
+
+        form_id = obj.id
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'form_id': form_id,
+            'has_errors': [u'True'],
+            'start_year': start_year
+        }
+        data_file = get_file_post_data(START_YEAR, test_reform.r1)
+        data2['docfile'] = data_file['docfile']
+
+        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+
+        dropq_compute = result['tb_dropq_compute']
+        user_mods = json.loads(dropq_compute.last_posted["user_mods"])
+        truth_mods = {2018: {'_II_em': [8000.0]}}
+        check_posted_params(dropq_compute, truth_mods, start_year)
+
+
+    def test_taxbrain_up_to_2018(self):
+        start_year = 2018
+        data = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
+        mod = {u'II_brk1_0': [u'*, *, 15000'],
+               u'II_brk2_cpi': u'False'}
+        data.update(mod)
+        result = do_micro_sim(self.client, data)
+
+        # Check that data was saved properly
+        truth_mods = {
+            start_year: {'_II_brk2_cpi': False},
+        }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(start_year))
+
+
+    def test_taxbrain_file_up_to_2018(self):
+        start_year = 2018
+        data = get_file_post_data(start_year, test_reform.reform_text)
+
+        post_url = '/taxbrain/file/'
+
+        result = do_micro_sim(
+            self.client,
+            data,
+            post_url=post_url
+        )
+
+        # Check that data was saved properly
+        truth_mods = taxcalc.Calculator.read_json_param_objects(
+            test_reform.reform_text,
+            None,
+        )
+        truth_mods = truth_mods["policy"]
+        check_posted_params(result["tb_dropq_compute"], truth_mods,
+                            str(start_year))

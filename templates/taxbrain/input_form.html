@@ -152,9 +152,7 @@
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                   {% for param in params %}
                     {% for key, value in param.items %}
-                      {% if key != "ubi" %}
-                        <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
-                      {% endif %}
+                      <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
                     {% endfor %}
                   {% endfor %}
               </ul>
@@ -162,23 +160,12 @@
                 <a href="#" ></a>
                 <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" name="full_calc" value="Show me the results!">
             </div>
-              {% if enable_quick_calc %}
               <div class="sidebar-button">
                 <a href="#" ></a>
                 <button id="tax-submit-quick" class="btn btn-tertiary btn-block" type="submit" value="quick_calc" name="quick_calc">
-                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; 2% sample)</span>
+                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; small sample)</span>
                 </button>
               </div>
-              {% endif %}
-              <!--
-              <div class="sidebar-note">
-                <div class="sidebar-count">
-                  <span>11</span> / 24
-                </div>
-                <h3>Changes made to the Current Tax Policy</h3>
-                <p>Data is pre-populated with current tax policy parameters. The amount listed above tracks the number of parameters changed, that different from the current tax policy parameters.</p>
-              </div>
-              -->
             </div> <!-- sidebar -->
           </div>
           <div class="col-xs-9">
@@ -205,6 +192,7 @@
                   <strong>DO NOT</strong> use commas as thousands separators. </li>
                   <li> Express rates as decimals. </li>
                   <li>You can represent a value that would otherwise manifest itself in a year with the <strong>*</strong> operator. So, for example, if you enter <strong>0.1, *, 0.2</strong> in a tax rate field, the rate will be 10 percent in the Start Year, 10 percent a year after the Start Year, and 20 percent two years after the Start Year and forward. If you enter <strong>100, *, 200</strong> in a CPI-indexed field for a credit amount, the credit will be $100 in the Start Year, $100*(1+CPI) the next year, and $200 the following year.</li>
+                  <li>You may specify a parameter change in the year before the Start Year with the <strong> < </strong> operator. For example, if you set the Start Year as 2018 and a Parameter Indexing Offset parameter to <strong> <,-0.0025,-0.001 </strong> then this sets the Offset to -0.0025 in 2017 and -0.001 in 2018.</li>
                   <li> <a href = "//ospc.org/docs" target="_blank">Read the Docs</a> </li>
                   <li> <a href = "//docs.google.com/forms/d/e/1FAIpQLSfvKEsQZNe9_16FhKNZcEyv3C8qXZhBfrqLxSd4VR97w92moQ/viewform" target="_blank">Leave Feedback</a> </li>
                   </ul>
@@ -214,6 +202,8 @@
                   <li>Brady-Ryan Plan (<a href = "//www.ospc.org/taxbrain/edit/13337/?start_year=2017" target="_blank">Reform</a>,  <a href = "//docs.google.com/document/d/1ZWePr-l-KaLOf8RPt3dbfAkiK-dzztYqs711BtfeS_c/edit?usp=sharing" target="_blank">Notes</a>)</li>
                   <li>Trump 2016 Campaign (<a href = "//www.ospc.org/taxbrain/edit/11178/?start_year=2017" target="_blank">Reform</a>,  <a href = "//docs.google.com/document/d/1QicaAeWdSgwGEWWRxIkjegyAq4lakoMklFhVHzwIukM/edit?usp=sharing" target="_blank">Notes</a>)</li>
                   <li>2017 Trump Administration (<a href = "//www.ospc.org/taxbrain/edit/11522/?start_year=2017" target="_blank">Reform</a>,  <a href = "//docs.google.com/document/d/1Cum1NU6nP_a0v3-Ro7MKJYeNkaBeGRKKqBrTnAqi0_Q/edit?usp=sharing" target="_blank">Notes</a>)</li>
+                  <li>Brown-Khanna GAIN Act of 2017 (<a href = "https://www.ospc.org/taxbrain/edit/19212/?start_year=2017" target="_blank">Reform</a>, <a href = "https://docs.google.com/document/d/1lmxHhJ_FYCiN3x84G9LU25fRs5gxiRlfX7AmXBjCG5w/edit?usp=sharing" target="_blank">Notes</a>)</li>
+                  <li>Tax Cuts and Jobs Act (<a href = "https://www.ospc.org/taxbrain/edit/30126/?start_year=2018" target="_blank">Reform</a>, <a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/reforms/TCJA_Reconciliation.json" target="_blank">Notes</a>)</li>
                   </ul>
 
                   <div>

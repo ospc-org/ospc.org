@@ -18,8 +18,8 @@ DROPQ_WORKERS = dropq_workers.split(",")
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
-ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
+AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
+GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
@@ -175,6 +175,7 @@ class MockDynamicCompute(DynamicCompute):
             resp = {'job_id': job_id, 'guid': 'guia123456789'}
             resp = json.dumps(resp)
             mock.register_uri('POST', '/ogusa_start_job', text=resp)
+            self.last_posted = data
             return DynamicCompute.remote_submit_job(self, theurl, data, timeout)
 
     def remote_register_job(self, theurl, data, timeout):

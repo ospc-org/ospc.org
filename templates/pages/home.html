@@ -42,34 +42,37 @@
         </div>
         <div class="collapse navbar-collapse" id="main-nav">
           <ul class="nav navbar-nav navbar-right">
-            <li class="{% if section.active_nav == 'home' %}current{% endif %}">
-              <a href="/">Home</a>
+            <li class="nav-dropdown {% if section.active_nav == 'gallery' %}current{% endif %}">
+              <a href="https://www.ospc.org/">PolicyBrain</a>
+                <ul>
+                  <li>
+                    <a href="/taxbrain/">TaxBrain</a>
+                  </li>
+                  <li>
+                    <a href="/ccc/">Cost of Capital Calculator</a>
+                  </li>
+                  <li>
+                    <a href="/gallery">Gallery</a>
+                  </li>
+                </ul>
             </li>
-            <li class="{% if section.active_nav == 'apps' %}current{% endif %}">
-              <a href="/taxbrain">Apps</a>
-            </li>
-            <li class="{% if section.active_nav == 'about' %}current{% endif %}">
-              <a href="/about">About</a>
+            <li class="nav-dropdown {% if section.active_nav == 'docs' %}current{% endif %}">
+              <a href="#">Documentation</a>
+                <ul>
+                  <li>
+                    <a href="/getting-started" target="_blank">Getting Started</a>
+                  </li>
+                  <li>
+                    <a href="/docs" target="_blank">Modeling Docs</a>
+                  </li>
+                </ul>
             </li>
             <li class="{% if section.active_nav == 'news' %}current{% endif %}">
-              <a href="//news.ospc.org">News</a>
+              <a href="http://news.ospc.org/">News</a>
             </li>
-            <li class="{% if section.active_nav == 'gallery' %}current{% endif %}">
-              <a href="/gallery">Gallery</a>
+            <li class="{% if section.active_nav == 'about' %}current{% endif %}">
+              <a href="/about">About OSPC</a>
             </li>
-            {% if user.is_authenticated %}
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                  {{username}}
-                  <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a href="/logout">Logout</a></li>
-                </ul>
-              </li>
-            {% else %}
-              <li><a href="/accounts/login">Login</a></li>
-            {% endif %}
           </ul>
         </div>
       </div>
@@ -91,11 +94,7 @@
           </div>
           <div class="footer-main-links">
             <ul>
-              <li><a href="/">Home</a></li>
-              <li><a href="/taxbrain">Apps</a></li>
-              <li><a href="/about">About</a></li>
-              <li><a href="/news">News</a></li>
-              <li><a href="/gallery">Gallery</a></li>
+              <li><a href="/about">Learn more about the Open Source Policy Center</a></li>
             </ul>
           </div>
           <div class="footer-main-text">
