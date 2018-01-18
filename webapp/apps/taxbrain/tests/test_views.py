@@ -565,6 +565,33 @@ class TaxBrainViewsTests(TestCase):
         #TODO: check how values are saved
         do_micro_sim(self.client, data)
 
+    def test_taxbrain_parse_negative_numebers(self):
+        """
+        Transfer over the regular tax capital gains to AMT
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = {u'ID_Medical_frt_add4aged': [u'-0.02'],
+                'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num = response.url[link_idx+1:-1]
+
+        out2 = OutputUrl.objects.get(pk=model_num)
+        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
+        assert tsi2.ID_Medical_frt_add4aged == u'-0.02'
+
+
     def test_taxbrain_file_post_only_reform(self):
         data = get_file_post_data(START_YEAR, test_reform.reform_text)
         do_micro_sim(self.client, data, post_url="/taxbrain/file/")
