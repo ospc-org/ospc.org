@@ -642,6 +642,18 @@ class TaxSaveInputs(models.Model):
     PT_excl_rt = CommaSeparatedField(default=None, blank=True, null=True)
     PT_excl_wagelim_rt = CommaSeparatedField(default=None, blank=True, null=True)
     PT_excl_wagelim_rt_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_excl_wagelim_thd_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_thd_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_thd_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_thd_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_excl_wagelim_prt_0 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_prt_1 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_prt_2 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_prt_3 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_prt_4 = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_wagelim_prt_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Fair Share Tax Parameters
     FST_AGI_trt = CommaSeparatedField(default=None, blank=True, null=True)
