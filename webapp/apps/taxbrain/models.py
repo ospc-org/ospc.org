@@ -148,6 +148,7 @@ class TaxSaveInputs(models.Model):
     ALD_KEOGH_SEP_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_EarlyWithdraw_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_AlimonyPaid_hc = CommaSeparatedField(default=None, blank=True, null=True)
+    ALD_AlimonyReceived_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Dependents_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Dependents_Child_c = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Dependents_Child_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
