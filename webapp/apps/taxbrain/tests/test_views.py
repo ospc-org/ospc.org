@@ -514,6 +514,69 @@ class TaxBrainViewsTests(TestCase):
         assert tsi2.AMT_CG_brk2_3 == u'451000.0'
 
 
+    def test_taxbrain_amt_cg_rt_not_pinned_to_cg_rt(self):
+        """
+        Transfer over the regular tax capital gains to AMT
+        """
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.taxbrain import views as webapp_views
+        webapp_views.dropq_compute = MockCompute()
+
+        data = {'CG_rt1': [0.25], 'CG_rt2': [u'0.30'],
+                'CG_rt3': [u'0.40'], 'CG_rt4': [u'0.50'],
+                'AMT_CG_rt1': [0.22], 'AMT_CG_rt2': [u'0.29'],
+                'AMT_CG_rt3': [u'0.42'], 'AMT_CG_rt4': [u'0.49'],
+                'CG_brk1_cpi': [u'True'], 'CG_brk2_cpi': [u'True'],
+                'CG_brk1_0': [u'38659'], 'CG_brk1_1': [u'76300'],
+                'CG_brk1_2': [u'38650'], 'CG_brk1_3': [u'51400'],
+                'CG_brk2_0': [u'425050'], 'CG_brk2_1': [u'476950'],
+                'CG_brk2_2': [u'243475'], 'CG_brk2_3': [u'451000'],
+                'has_errors': [u'False'], u'start_year': unicode(START_YEAR),
+                'csrfmiddlewaretoken':'abc123'}
+
+        response = self.client.post('/taxbrain/', data)
+        # Check that redirect happens
+        self.assertEqual(response.status_code, 302)
+
+        # Go to results page
+        link_idx = response.url[:-1].rfind('/')
+        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        model_num = response.url[link_idx+1:-1]
+
+        out2 = OutputUrl.objects.get(pk=model_num)
+        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
+        assert tsi2.CG_rt1 == u'0.25'
+        assert tsi2.CG_rt2 == u'0.30'
+        assert tsi2.CG_rt3 == u'0.40'
+        assert tsi2.CG_rt4 == u'0.50'
+        assert tsi2.CG_brk1_cpi == True
+        assert tsi2.CG_brk1_0 == u'38659'
+        assert tsi2.CG_brk1_1 == u'76300'
+        assert tsi2.CG_brk1_2 == u'38650'
+        assert tsi2.CG_brk1_3 == u'51400'
+        assert tsi2.CG_brk2_cpi == True
+        assert tsi2.CG_brk2_0 == u'425050'
+        assert tsi2.CG_brk2_1 == u'476950'
+        assert tsi2.CG_brk2_2 == u'243475'
+        assert tsi2.CG_brk2_3 == u'451000'
+
+        assert tsi2.AMT_CG_rt1 == u'0.22'
+        assert tsi2.AMT_CG_rt2 == u'0.29'
+        assert tsi2.AMT_CG_rt3 == u'0.42'
+        assert tsi2.AMT_CG_rt4 == u'0.49'
+        assert tsi2.AMT_CG_brk1_cpi == True
+        assert tsi2.AMT_CG_brk1_0 == u'38659.0'
+        assert tsi2.AMT_CG_brk1_1 == u'76300.0'
+        assert tsi2.AMT_CG_brk1_2 == u'38650.0'
+        assert tsi2.AMT_CG_brk1_3 == u'51400.0'
+        assert tsi2.AMT_CG_brk2_cpi == True
+        assert tsi2.AMT_CG_brk2_0 == u'425050.0'
+        assert tsi2.AMT_CG_brk2_1 == u'476950.0'
+        assert tsi2.AMT_CG_brk2_2 == u'243475.0'
+        assert tsi2.AMT_CG_brk2_3 == u'451000.0'
+
+
     def test_taxbrain_rt_to_passthrough(self):
         """
         Transfer over the ind. income tax params to passthrough
