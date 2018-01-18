@@ -639,7 +639,7 @@ class TaxSaveInputs(models.Model):
     PT_EligibleRate_passive = CommaSeparatedField(default=None, blank=True, null=True)
     PT_wages_active_income = models.CharField(default="False", blank=True, null=True, max_length=50)
     PT_top_stacking = models.CharField(default="True", blank=True, null=True, max_length=50)
-    PT_exclusion_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_excl_rt = CommaSeparatedField(default=None, blank=True, null=True)
     PT_exclusion_wage_limit = CommaSeparatedField(default=None, blank=True, null=True)
     PT_exclusion_wage_limit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
