@@ -5,11 +5,11 @@ pd.options.mode.chained_assignment = None
 
 # importing Bokeh libraries
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, Title, CustomJS
+from bokeh.models import ColumnDataSource, Title, CustomJS, LabelSet
 from bokeh.models.widgets import Select, Panel, Tabs, RadioButtonGroup
 from bokeh.models import HoverTool, WheelZoomTool, ResetTool, SaveTool
 from bokeh.models import NumeralTickFormatter
-from bokeh.layouts import gridplot
+from bokeh.layouts import gridplot, column
 from bokeh.embed import components
 from bokeh.resources import CDN
 
@@ -163,6 +163,22 @@ def bubble_plot_tabs(dataframes):
     p.add_tools(WheelZoomTool(), ResetTool(), SaveTool())
     p.toolbar_location = "right"
     p.toolbar.logo = None
+
+    # Define and add a legend
+    legend_cds = ColumnDataSource({'size': SIZES,
+                                   'label': ['<$20B', '', '', '<$1T'],
+                                   'x': [0, .15, .35, .6]})
+    p_legend = figure(height=150, width=480, x_range=(-0.075, .75),
+                      title='Asset Amount')
+    p_legend.circle(y=None, x='x', size='size', source=legend_cds, color=BLUE,
+                    fill_alpha=.4, alpha=.4, line_color="#333333")
+    l = LabelSet(y=None, x='x', text='label', x_offset=-20, y_offset=-50,
+                 source=legend_cds)
+    p_legend.add_layout(l)
+    p_legend.axis.visible = False
+    p_legend.grid.grid_line_color = None
+    p_legend.toolbar.active_drag = None
+
     data_sources['equip_plot'] = p
 
     # Structures plot
@@ -206,6 +222,19 @@ def bubble_plot_tabs(dataframes):
     p2.add_tools(WheelZoomTool(), ResetTool(), SaveTool())
     p2.toolbar_location = "right"
     p2.toolbar.logo = None
+
+    # Define and add a legend
+    p2_legend = figure(height=150, width=380, x_range=(-0.075, .75),
+                       title='Asset Amount')
+    p2_legend.circle(y=None, x='x', size='size', source=legend_cds, color=RED,
+                     fill_alpha=.4, alpha=.4, line_color="#333333")
+    l2 = LabelSet(y=None, x='x', text='label', x_offset=-20, y_offset=-50,
+                  source=legend_cds)
+    p2_legend.add_layout(l2)
+    p2_legend.axis.visible = False
+    p2_legend.grid.grid_line_color = None
+    p2_legend.toolbar.active_drag = None
+
     data_sources['struc_plot'] = p2
 
     # add buttons
@@ -229,8 +258,8 @@ def bubble_plot_tabs(dataframes):
     controls_callback.args['type_buttons'] = type_buttons
 
     # Create Tabs
-    tab = Panel(child=p, title='Equipment')
-    tab2 = Panel(child=p2, title='Structures')
+    tab = Panel(child=column([p, p_legend]), title='Equipment')
+    tab2 = Panel(child=column([p2, p2_legend]), title='Structures')
     tabs = Tabs(tabs=[tab, tab2])
     layout = gridplot(
         children=[[tabs],
