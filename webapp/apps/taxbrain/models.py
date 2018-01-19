@@ -698,9 +698,9 @@ class TaxSaveInputs(models.Model):
     CR_OtherCredits_hc = CommaSeparatedField(default=None, blank=True, null=True)
     CR_Education_hc = CommaSeparatedField(default=None, blank=True, null=True)
 
-    UBI1 = CommaSeparatedField(default=None, blank=True, null=True)
-    UBI2 = CommaSeparatedField(default=None, blank=True, null=True)
-    UBI3 = CommaSeparatedField(default=None, blank=True, null=True)
+    UBI_u18 = CommaSeparatedField(default=None, blank=True, null=True)
+    UBI_1820 = CommaSeparatedField(default=None, blank=True, null=True)
+    UBI_21 = CommaSeparatedField(default=None, blank=True, null=True)
     UBI_ecrt = CommaSeparatedField(default=None, blank=True, null=True)
 
     # Boolean Checkbox Fields
