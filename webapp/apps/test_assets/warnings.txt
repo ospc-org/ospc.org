@@ -1,0 +1,8 @@
+WARNING: 2020 _STD_3 value 150.0 < min value 9900.32
+WARNING: 2021 _STD_3 value 153.57 < min value 10138.33
+WARNING: 2022 _STD_3 value 157.3 < min value 10387.12
+WARNING: 2023 _STD_3 value 161.03 < min value 10635.66
+WARNING: 2024 _STD_3 value 164.89 < min value 10893.32
+WARNING: 2025 _STD_3 value 168.81 < min value 11154.96
+WARNING: 2026 _STD_3 value 172.83 < min value 11422.83
+WARNING: 2027 _STD_3 value 176.98 < min value 11699.38
