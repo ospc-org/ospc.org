@@ -89,7 +89,7 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file
-        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        data = get_file_post_data(START_YEAR, test_reform.r1)
         micro1 = do_micro_sim(self.client, data, post_url='/taxbrain/file/')
         micro1 = micro1["response"]
 

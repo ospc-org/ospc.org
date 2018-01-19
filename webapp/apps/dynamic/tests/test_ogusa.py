@@ -163,7 +163,7 @@ class DynamicOGUSAViewsTests(TestCase):
         self.client.login(username='temporary', password='temporary')
         start_year = 2016
         # Do the microsim from file
-        data = get_file_post_data(start_year, test_reform.reform_text)
+        data = get_file_post_data(start_year, test_reform.r1)
         micro1 = do_micro_sim(self.client, data, post_url='/taxbrain/file/')
 
         # Do the partial equilibrium simulation based on the microsim

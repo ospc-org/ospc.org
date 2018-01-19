@@ -81,7 +81,7 @@ class DynamicElasticityViewsTests(TestCase):
     @pytest.mark.xfail
     def test_elasticity_reform_from_file(self):
         # Do the microsim from file
-        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        data = get_file_post_data(START_YEAR, test_reform.r1)
         # set dyn_dropq_compute to False so that
         # webapp.apps.dynamic_views.dropq_compute is not Mocked
         micro1 = do_micro_sim(

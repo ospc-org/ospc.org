@@ -103,7 +103,7 @@ class TaxBrainViewsTests(TestCase):
         Using file-upload interface, test quick calculation post and full
         post from quick_calc page
         """
-        data = get_file_post_data(START_YEAR, test_reform.reform_text, quick_calc=False)
+        data = get_file_post_data(START_YEAR, test_reform.r1, quick_calc=False)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -125,7 +125,7 @@ class TaxBrainViewsTests(TestCase):
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
-            test_reform.reform_text,
+            test_reform.r1,
             None,
         )
         truth_mods = truth_mods["policy"]
@@ -150,7 +150,7 @@ class TaxBrainViewsTests(TestCase):
 
 
     def test_back_to_back_quickcalc(self):
-        "Test back to back quick calc posts"
+        "Test back to back quick  calc posts"
         # switches 0, 4, 6 are False
         data = get_post_data(START_YEAR, quick_calc=True)
         del data[u'ID_BenefitSurtax_Switch_0']
@@ -333,7 +333,7 @@ class TaxBrainViewsTests(TestCase):
         truth_mods = {
             START_YEAR: {'_II_brk2_cpi': False},
             START_YEAR + 2: {
-                '_II_brk1': [[15000.0, 19069.63, 9534.81, 13650.38, 19069.63]]
+                '_II_brk1':  [[15000.0, 19050.0, 9525.0, 13600.0, 19050.0]]
             }
         }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
@@ -566,13 +566,13 @@ class TaxBrainViewsTests(TestCase):
         do_micro_sim(self.client, data)
 
     def test_taxbrain_file_post_only_reform(self):
-        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        data = get_file_post_data(START_YEAR, test_reform.r1)
         do_micro_sim(self.client, data, post_url="/taxbrain/file/")
 
 
     def test_taxbrain_file_post_reform_and_assumptions(self):
         data = get_file_post_data(START_YEAR,
-                                  test_reform.reform_text,
+                                  test_reform.r1,
                                   test_assumptions.assumptions_text)
 
         do_micro_sim(self.client, data, post_url="/taxbrain/file/")
@@ -636,8 +636,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'ERROR: _II_brk1_4 value 9e+99 > max value 89239.88 for _II_brk2_4 for 2024'
-        assert msg in response.context['errors']
+        assert any(['_II_brk1_4' in msg and '2024' in msg
+                    for msg in response.context['errors']])
 
         # get most recent object
         objects = js.objects.order_by('id')
@@ -672,8 +672,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
-        assert msg in response.context['errors']
+        assert any(['_STD_0' in msg and '2023' in msg
+                    for msg in response.context['errors']])
 
         # get most recent object
         objects = js.objects.order_by('id')
@@ -693,7 +693,7 @@ class TaxBrainViewsTests(TestCase):
 
         truth_mods = {
             2020: {
-                "_STD":  [[1000, 13583.32, 6791.67, 10000.32, 13583.32]]
+                "_STD":  [[1000, 24981.84, 12490.92, 18736.38, 24981.84]]
             }
         }
         check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
@@ -715,8 +715,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
-        assert msg in response.context['errors']
+        assert any(['_STD_0' in msg and '2023' in msg
+                    for msg in response.context['errors']])
 
         # get most recent object
         objects = js.objects.order_by('id')
@@ -762,8 +762,8 @@ class TaxBrainViewsTests(TestCase):
         # Check that no redirect happens
         self.assertEqual(response.status_code, 200)
         assert response.context['has_errors'] is True
-        msg = 'WARNING: _STD_0 value 1073.53 < min value 7191.08 for 2023'
-        assert msg in response.context['errors']
+        assert any(['_STD_0' in msg and '2023' in msg
+                    for msg in response.context['errors']])
 
         # get most recent object
         objects = js.objects.order_by('id')
@@ -807,7 +807,7 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_file_up_to_2018(self):
         start_year = 2018
-        data = get_file_post_data(start_year, test_reform.reform_text)
+        data = get_file_post_data(start_year, test_reform.r1)
 
         post_url = '/taxbrain/file/'
 
@@ -819,7 +819,7 @@ class TaxBrainViewsTests(TestCase):
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
-            test_reform.reform_text,
+            test_reform.r1,
             None,
         )
         truth_mods = truth_mods["policy"]
