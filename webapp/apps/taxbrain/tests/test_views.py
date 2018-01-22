@@ -743,7 +743,7 @@ class TaxBrainViewsTests(TestCase):
 
         dropq_compute = result['tb_dropq_compute']
         user_mods = json.loads(dropq_compute.last_posted["user_mods"])
-        assert user_mods["behavior"][str(start_year)]["_BE_sub"][0] == 1.0
+        assert user_mods["behavior"][str(2018)]["_BE_sub"][0] == 1.0
         truth_mods = {2018: {'_II_em': [8000.0]}}
         check_posted_params(dropq_compute, truth_mods, start_year)
 

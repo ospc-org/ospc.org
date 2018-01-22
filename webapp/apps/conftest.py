@@ -27,6 +27,8 @@ def set_fixture_prop(func):
         if request.cls:
             setattr(request.cls, request.fixturename, res)
 
+        return res
+
     return wrapper
 
 @pytest.fixture()
@@ -170,18 +172,19 @@ def errors_warnings_json_reform():
 @pytest.fixture(scope="session")
 def test_coverage_exp_read_json_reform():
     _test_coverage_exp_read_json_reform = {
-        2017: {u'_EITC_rt': [[0.0765, 0.34, 1.0, 0.45]],
-               u'_NIIT_PT_taxed': [False],
-               u'_ID_BenefitCap_Switch': [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
-               u'_ALD_InvInc_ec_base_RyanBrady': [False],
-               u'_EITC_indiv': [False],
-               u'_ID_BenefitSurtax_Switch': [[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]],
-               u'_STD': [[10000.0, 12700.0, 6350.0, 9350.0, 12700.0]],
-               u'_II_no_em_nu18': [False],
-               u'_ID_Charity_c_cpi': True,
-               u'_CG_nodiff': [False],
-               u'_CTC_new_refund_limited': [False]},
-        2018: {u'_FICA_ss_trt': [0.1]},
+        2018: {
+            u'_EITC_rt': [[0.0765, 0.34, 1.0, 0.45]],
+            u'_NIIT_PT_taxed': [False],
+            u'_ID_BenefitCap_Switch': [[0, 0, 0, 0, 0, 0, 0]],
+            u'_ALD_InvInc_ec_base_RyanBrady': [False],
+            u'_EITC_indiv': [False],
+            u'_ID_BenefitSurtax_Switch': [[1, 0, 0, 0, 0, 0, 0]],
+            u'_STD': [[15000.0, 24000.0, 12000.0, 18000.0, 24000.0]],
+            u'_II_no_em_nu18': [False],
+            u'_ID_Charity_c_cpi': True,
+            u'_CG_nodiff': [False],
+            u'_CTC_new_refund_limited': [False]},
+        2019: {u'_FICA_ss_trt': [0.1]},
         2020: {u'_FICA_ss_trt': [0.2]}
     }
 
@@ -191,15 +194,18 @@ def test_coverage_exp_read_json_reform():
 @pytest.fixture(scope="session")
 def errors_warnings_exp_read_json_reform():
     _errors_warnings_exp_read_json_reform = {
-        2017:
-            {u'_II_brk4': [[500.0, 233350.0, 116675.0, 212500.0, 233350.0]],
-            u'_STD': [[7000.0, 12700.0, 6350.0, 10000.0, 12700.0]],
-            u'_ID_BenefitSurtax_Switch': [[True, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]],
-            u'_FICA_ss_trt': [-1.0]},
-        2019: {u'_FICA_ss_trt': [0.1]},
-        2020: {u'_STD': [[7486.87, 13583.32, 6791.67, 150.0, 13583.32]]}
+        2018: {
+            u'_STD': [[7000.0, 24000.0, 12000.0, 20000.0, 24000.0]],
+            u'_ID_BenefitSurtax_Switch': [[True, 1, 1, 1, 1, 1, 1]],
+            u'_FICA_ss_trt': [-1.0]
+        },
+        2019: {
+            u'_II_brk4': [[500.0, 321268.5, 160634.25, 160634.25, 321268.5]],
+            u'_FICA_ss_trt': [0.1]},
+        2020: {
+            u'_STD': [[7286.37, 24981.84, 12490.92, 150.0, 24981.84]]
+        }
     }
-
     return _errors_warnings_exp_read_json_reform
 
 
@@ -243,7 +249,11 @@ def exp_assumptions_text():
         'growdiff_response': {},
         'consumption': {},
         'behavior': {
-            2017: {u'_BE_sub': [1.0], u'_BE_inc': [-0.6], u'_BE_cg': [-0.67]}},
+            2018: {
+                u'_BE_sub': [1.0],
+                 u'_BE_inc': [-0.6],
+                 u'_BE_cg': [-0.67]}
+            },
         'growdiff_baseline': {}
     }
 

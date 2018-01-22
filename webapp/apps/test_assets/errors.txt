@@ -1,13 +1,10 @@
-ERROR: 2017 _FICA_ss_trt value -1.0 < min value 0
 ERROR: 2018 _FICA_ss_trt value -1.0 < min value 0
-ERROR: 2017 _II_brk4_0 value 500.0 < min value 91900.0 for _II_brk3_0
-ERROR: 2018 _II_brk4_0 value 511.25 < min value 93967.75 for _II_brk3_0
-ERROR: 2019 _II_brk4_0 value 522.7 < min value 96072.63 for _II_brk3_0
-ERROR: 2020 _II_brk4_0 value 534.77 < min value 98291.91 for _II_brk3_0
-ERROR: 2021 _II_brk4_0 value 547.5 < min value 100631.26 for _II_brk3_0
-ERROR: 2022 _II_brk4_0 value 560.8 < min value 103076.6 for _II_brk3_0
-ERROR: 2023 _II_brk4_0 value 574.09 < min value 105519.52 for _II_brk3_0
-ERROR: 2024 _II_brk4_0 value 587.87 < min value 108051.99 for _II_brk3_0
-ERROR: 2025 _II_brk4_0 value 601.86 < min value 110623.63 for _II_brk3_0
-ERROR: 2026 _II_brk4_0 value 616.18 < min value 113256.47 for _II_brk3_0
-ERROR: 2027 _II_brk4_0 value 630.97 < min value 115974.63 for _II_brk3_0
+ERROR: 2019 _II_brk4_0 value 500.0 < min value 84141.75 for _II_brk3_0
+ERROR: 2020 _II_brk4_0 value 510.3 < min value 85875.07 for _II_brk3_0
+ERROR: 2021 _II_brk4_0 value 521.17 < min value 87704.21 for _II_brk3_0
+ERROR: 2022 _II_brk4_0 value 532.53 < min value 89616.16 for _II_brk3_0
+ERROR: 2023 _II_brk4_0 value 543.82 < min value 91516.02 for _II_brk3_0
+ERROR: 2024 _II_brk4_0 value 555.51 < min value 93483.61 for _II_brk3_0
+ERROR: 2025 _II_brk4_0 value 567.34 < min value 95474.81 for _II_brk3_0
+ERROR: 2026 _II_brk4_0 value 579.42 < min value 110791.0 for _II_brk3_0
+ERROR: 2027 _II_brk4_0 value 591.88 < min value 113173.01 for _II_brk3_0
