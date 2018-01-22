@@ -1,7 +1,7 @@
 name: aei_dropq
 dependencies:
 - python<=2.7.14,>=2.7.12
-- pandas>=0.20.1
+- pandas>=0.22.0
 - flask
 - greenlet
 - xlrd
