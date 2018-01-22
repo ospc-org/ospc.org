@@ -2,7 +2,7 @@ nomkl
 taxcalc==0.15.0
 btax==0.1.9
 numba>=0.33.0
-pandas
+pandas>=0.22.0
 gevent
 pillow
 pyparsing
