@@ -17,12 +17,11 @@ from taxcalc import Policy
 from .utils import do_elasticity_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data)
-from ...test_assets import test_reform, test_assumptions
 
 
 import pytest
 
-
+@pytest.mark.usefixtures("r1")
 class DynamicElasticityViewsTests(TestCase):
     ''' Test the elasticity of GDP dynamic views of this app. '''
 
@@ -81,7 +80,7 @@ class DynamicElasticityViewsTests(TestCase):
     @pytest.mark.xfail
     def test_elasticity_reform_from_file(self):
         # Do the microsim from file
-        data = get_file_post_data(START_YEAR, test_reform.r1)
+        data = get_file_post_data(START_YEAR, self.r1)
         # set dyn_dropq_compute to False so that
         # webapp.apps.dynamic_views.dropq_compute is not Mocked
         micro1 = do_micro_sim(

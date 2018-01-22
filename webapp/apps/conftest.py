@@ -1,16 +1,39 @@
 import pytest
 import json
 import os
+import functools
 
 CUR_PATH = os.path.join(
     os.path.abspath(os.path.dirname(__file__)),
     'test_assets'
 )
-@pytest.fixture(scope="session")
-def r1():
+
+
+def set_fixture_prop(func):
+    """
+    Decorator for py.test fixtures that sets a class property if it is called
+    by a class. This is required because you cannot pass py.test fixtures as
+    arguments for class methods
+
+    py.test fixture in class:
+    https://docs.pytest.org/en/latest/unittest.html
+
+    py.test access args for decorated function:
+    https://github.com/pytest-dev/pytest/issues/2782
+    """
+    @functools.wraps(func)
+    def wrapper(request):
+        res = func(request)
+        if request.cls:
+            setattr(request.cls, request.fixturename, res)
+
+    return wrapper
+
+@pytest.fixture()
+@set_fixture_prop
+def r1(request):
     with open(os.path.join(CUR_PATH, 'r1.json')) as f:
         return f.read()
-
 
 @pytest.fixture(scope="session")
 def regression_sample_reform():
@@ -18,14 +41,16 @@ def regression_sample_reform():
         return f.read()
 
 
-@pytest.fixture(scope="session")
-def bad_reform():
+@pytest.fixture()
+@set_fixture_prop
+def bad_reform(request):
     with open(os.path.join(CUR_PATH, 'bad_reform.json')) as f:
         return f.read()
 
 
-@pytest.fixture(scope="session")
-def warning_reform():
+@pytest.fixture()
+@set_fixture_prop
+def warning_reform(request):
     with open(os.path.join(CUR_PATH, 'warning_reform.json')) as f:
         return f.read()
 
@@ -34,7 +59,7 @@ def warning_reform():
     ********************************************************************
     The following objects were created for test_param_formatters.py.
 
-    fields_base -- typical metadata associated with TaxBrain run
+    fields_base -- typical metadata associated with TaxBrain runs
 
     test_coverage_* objects -- these objects do not throw TC warnings or errors
         but include a representative for each type of TC parameter in
@@ -45,6 +70,8 @@ def warning_reform():
 
     map_back_to_tb -- required for mapping Tax-Calculator styled parameter
         names to TaxBrain styled names
+
+    assumptions_text -- typical assumptions data for TaxBrain runs
     ********************************************************************
 """
 
@@ -203,8 +230,9 @@ def exp_errors_warnings():
         return json.loads(f.read())
 
 
-@pytest.fixture(scope="session")
-def assumptions_text():
+@pytest.fixture()
+@set_fixture_prop
+def assumptions_text(request):
     with open(os.path.join(CUR_PATH, 'assumptions_text.txt')) as f:
         return f.read()
 

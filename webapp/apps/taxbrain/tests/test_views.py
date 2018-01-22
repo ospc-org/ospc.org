@@ -28,6 +28,8 @@ from ...test_assets.utils import (check_posted_params, do_micro_sim,
 
 START_YEAR = 2016
 
+@pytest.mark.usefixtures("r1", "assumptions_text", "warning_reform",
+                         "bad_reform")
 class TaxBrainViewsTests(TestCase):
     ''' Test the views of this app. '''
 
@@ -103,7 +105,7 @@ class TaxBrainViewsTests(TestCase):
         Using file-upload interface, test quick calculation post and full
         post from quick_calc page
         """
-        data = get_file_post_data(START_YEAR, test_reform.r1, quick_calc=False)
+        data = get_file_post_data(START_YEAR, self.r1, quick_calc=False)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -125,7 +127,7 @@ class TaxBrainViewsTests(TestCase):
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
-            test_reform.r1,
+            self.r1,
             None,
         )
         truth_mods = truth_mods["policy"]
@@ -566,14 +568,14 @@ class TaxBrainViewsTests(TestCase):
         do_micro_sim(self.client, data)
 
     def test_taxbrain_file_post_only_reform(self):
-        data = get_file_post_data(START_YEAR, test_reform.r1)
+        data = get_file_post_data(START_YEAR, self.r1)
         do_micro_sim(self.client, data, post_url="/taxbrain/file/")
 
 
     def test_taxbrain_file_post_reform_and_assumptions(self):
         data = get_file_post_data(START_YEAR,
-                                  test_reform.r1,
-                                  test_assumptions.assumptions_text)
+                                  self.r1,
+                                  self.assumptions_text)
 
         do_micro_sim(self.client, data, post_url="/taxbrain/file/")
 
@@ -629,7 +631,7 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = get_file_post_data(START_YEAR, test_reform.bad_reform)
+        data = get_file_post_data(START_YEAR, self.bad_reform)
 
         #TODO: make sure still not allowed to submit on second submission
         response = self.client.post('/taxbrain/file/', data)
@@ -666,7 +668,7 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = get_file_post_data(START_YEAR, test_reform.warning_reform)
+        data = get_file_post_data(START_YEAR, self.warning_reform)
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
@@ -709,7 +711,7 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = get_file_post_data(start_year, test_reform.warning_reform)
+        data = get_file_post_data(start_year, self.warning_reform)
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
@@ -732,8 +734,8 @@ class TaxBrainViewsTests(TestCase):
             'start_year': start_year
         }
         data_file = get_file_post_data(START_YEAR,
-                                       test_reform.r1,
-                                       test_assumptions.assumptions_text)
+                                       self.r1,
+                                       self.assumptions_text)
         data2['docfile'] = data_file['docfile']
         data2['assumpfile'] = data_file['assumpfile']
 
@@ -756,7 +758,7 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = get_file_post_data(start_year, test_reform.warning_reform)
+        data = get_file_post_data(start_year, self.warning_reform)
 
         response = self.client.post('/taxbrain/file/', data)
         # Check that no redirect happens
@@ -778,7 +780,7 @@ class TaxBrainViewsTests(TestCase):
             'has_errors': [u'True'],
             'start_year': start_year
         }
-        data_file = get_file_post_data(START_YEAR, test_reform.r1)
+        data_file = get_file_post_data(START_YEAR, self.r1)
         data2['docfile'] = data_file['docfile']
 
         result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
@@ -807,7 +809,7 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_file_up_to_2018(self):
         start_year = 2018
-        data = get_file_post_data(start_year, test_reform.r1)
+        data = get_file_post_data(start_year, self.r1)
 
         post_url = '/taxbrain/file/'
 
@@ -819,7 +821,7 @@ class TaxBrainViewsTests(TestCase):
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
-            test_reform.r1,
+            self.r1,
             None,
         )
         truth_mods = truth_mods["policy"]
