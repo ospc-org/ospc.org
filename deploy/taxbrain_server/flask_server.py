@@ -171,6 +171,7 @@ def example():
 
 @app.route('/ogusa_start_job', methods=['POST'])
 def ogusa_start_job():
+    start_year = int(request.form["start_year"])
     user_mods = json.loads(request.form['user_mods'])
     ogusa_params = json.loads(request.form['ogusa_params'])
 
@@ -178,7 +179,12 @@ def ogusa_start_job():
 
     with ticket_lock_context():
         guid = uuid.uuid1().hex
-        job = ogusa_async.delay(user_mods=user_mods, ogusa_params=ogusa_params, guid=guid)
+        job = ogusa_async.delay(
+            start_year=start_year,
+            user_mods=user_mods,
+            ogusa_params=ogusa_params,
+            guid=guid
+        )
         RUNNING_JOBS[job.id] = job
         print('job_id', job)
         print('GUID IS ', guid)

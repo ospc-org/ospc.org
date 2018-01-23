@@ -209,7 +209,7 @@ def filter_ogusa_only(user_values):
             print "Removing ", k, v
             del user_values[k]
         else:
-            user_values[k] = float(v)
+            user_values[k] = float(v[0]) if isinstance(v, list) else float(v)
 
     return user_values
 

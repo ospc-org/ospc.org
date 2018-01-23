@@ -127,14 +127,15 @@ def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
 
 
 @celery_app.task
-def ogusa_async(user_mods, ogusa_params, guid):
+def ogusa_async(start_year, user_mods, ogusa_params, guid):
     print("user mods: ", user_mods)
     user_mods = convert_int_key(user_mods)
     user_reform = {'policy': user_mods}
     for key in EXPECTED_KEYS:
         if key not in user_reform:
             user_reform[key] = {}
-    diff_data = run_ogusa.run_micro_macro(reform=user_reform,
+    diff_data = run_ogusa.run_micro_macro(start_year=start_year,
+                                          reform=user_reform,
                                           user_params=ogusa_params,
                                           guid=guid)
 
