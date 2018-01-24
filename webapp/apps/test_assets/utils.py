@@ -3,7 +3,6 @@ import os
 import sys
 
 from ..taxbrain.compute import MockCompute
-from test_reform import test_coverage_fields
 
 from ..taxbrain.models import TaxSaveInputs, OutputUrl
 from ..taxbrain.forms import PersonalExemptionForm
@@ -85,7 +84,9 @@ def check_posted_params(mock_compute, params_to_check, start_year):
     assert last_posted["first_budget_year"] == int(start_year)
     for year in params_to_check:
         for param in params_to_check[year]:
-            assert user_mods["policy"][str(year)][param] == params_to_check[year][param]
+            act = user_mods["policy"][str(year)][param]
+            exp = params_to_check[year][param]
+            assert exp == act
 
 
 def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False):
@@ -128,7 +129,7 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
     return data
 
 
-def get_taxbrain_model(fields=test_coverage_fields, first_year=2017,
+def get_taxbrain_model(fields, first_year=2017,
                        quick_calc=False, taxcalc_vers="0.13.0",
                        webapp_vers="1.2.0", exp_comp_datetime = "2017-10-10"):
     fields = fields.copy()

@@ -201,12 +201,11 @@ class TaxInputTests(TestCase):
         floored_std_aged = list(map(math.floor, dd['_STD_Aged'][0]))
         assert dd['_STD_Aged'] == [floored_std_aged]
         assert dd_meta['_STD_Aged']['value'] == [floored_std_aged]
-
         floored_ii_em_ps = list(map(math.floor, dd['_II_em_ps'][0]))
         assert dd['_II_em_ps'] == [floored_ii_em_ps]
         assert dd_meta['_II_em_ps']['value'] == [floored_ii_em_ps]
 
-        floored_ii_em = [math.floor(dd['_II_em'][0])]
+        floored_ii_em = list(map(math.floor, dd['_II_em']))
         assert dd['_II_em'] == floored_ii_em
         assert dd_meta['_II_em']['value'] == floored_ii_em
 

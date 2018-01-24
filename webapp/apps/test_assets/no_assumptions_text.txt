@@ -1,0 +1,6 @@
+{
+    "growdiff_response": {},
+    "consumption": {},
+    "behavior": {},
+    "growdiff_baseline": {}
+}

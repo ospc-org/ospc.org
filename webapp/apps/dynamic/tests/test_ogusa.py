@@ -24,9 +24,8 @@ START_YEAR = 2016
 from .utils import do_ogusa_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data)
-from ...test_assets import test_reform, test_assumptions
 
-
+@pytest.mark.usefixtures("r1")
 class DynamicOGUSAViewsTests(TestCase):
     ''' Test the ogusa dynamic views of this app. '''
 
@@ -163,7 +162,7 @@ class DynamicOGUSAViewsTests(TestCase):
         self.client.login(username='temporary', password='temporary')
         start_year = 2016
         # Do the microsim from file
-        data = get_file_post_data(start_year, test_reform.reform_text)
+        data = get_file_post_data(start_year, self.r1)
         micro1 = do_micro_sim(self.client, data, post_url='/taxbrain/file/')
 
         # Do the partial equilibrium simulation based on the microsim

@@ -4,6 +4,7 @@ from django.test import Client
 import mock
 import os
 import json
+import pytest
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -17,9 +18,8 @@ from taxcalc import Policy
 from .utils import do_behavioral_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data)
-from ...test_assets import test_reform, test_assumptions
 
-
+@pytest.mark.usefixtures("r1")
 class DynamicBehavioralViewsTests(TestCase):
     ''' Test the partial equilibrium dynamic views of this app. '''
 
@@ -89,7 +89,7 @@ class DynamicBehavioralViewsTests(TestCase):
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file
-        data = get_file_post_data(START_YEAR, test_reform.reform_text)
+        data = get_file_post_data(START_YEAR, self.r1)
         micro1 = do_micro_sim(self.client, data, post_url='/taxbrain/file/')
         micro1 = micro1["response"]
 
