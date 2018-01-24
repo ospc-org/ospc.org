@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.test import Client
 import json
 import os
+import pytest
 import numpy as np
 from datetime import datetime
 
@@ -27,6 +28,7 @@ class TaxBrainJSONReformModelTest(TestCase):
             raw_assumption_text=self.test_string
         )
 
+@pytest.mark.usefixtures("test_coverage_fields")
 class TaxBrainResultsTest(TestCase):
 
     def setUp(self):
@@ -42,7 +44,8 @@ class TaxBrainResultsTest(TestCase):
         with open(new_path) as js:
             new_labels = json.loads(js.read())
 
-        unique_url = get_taxbrain_model(taxcalc_vers="0.10.2",
+        unique_url = get_taxbrain_model(self.test_coverage_fields,
+                                        taxcalc_vers="0.10.2",
                                         webapp_vers="1.1.1")
 
         model = unique_url.unique_inputs
@@ -62,7 +65,8 @@ class TaxBrainResultsTest(TestCase):
         with open(new_path) as js:
             new_labels = json.loads(js.read())
 
-        unique_url = get_taxbrain_model(taxcalc_vers="0.13.0",
+        unique_url = get_taxbrain_model(self.test_coverage_fields,
+                                        taxcalc_vers="0.13.0",
                                         webapp_vers="1.2.0")
 
         model = unique_url.unique_inputs

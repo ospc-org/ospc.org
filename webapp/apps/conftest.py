@@ -37,7 +37,7 @@ def r1(request):
     with open(os.path.join(CUR_PATH, 'r1.json')) as f:
         return f.read()
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def regression_sample_reform():
     with open(os.path.join(CUR_PATH, 'regression_sample_reform.json')) as f:
         return f.read()
@@ -78,7 +78,7 @@ def warning_reform(request):
 """
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def fields_base():
     _fields_base = {
         '_state': "<django.db.models.base.ModelState object at 0x10c764950>",
@@ -91,8 +91,13 @@ def fields_base():
     return _fields_base
 
 
-@pytest.fixture(scope="session")
-def test_coverage_fields(fields_base):
+@pytest.fixture()
+@set_fixture_prop
+def test_coverage_fields(request):
+    # quick work-around to get set_fixture_prop decorator to work with
+    # fixture as argument
+    # this is equivalent to `test_coverage_fields(fields_base)`
+    _fields_base = request.getfixturevalue('fields_base')
     _test_coverage_fields = dict(
         cpi_offset = ['<', -0.0025],
         CG_nodiff = [False],
@@ -102,13 +107,13 @@ def test_coverage_fields(fields_base):
         ID_BenefitSurtax_Switch_0 = [True],
         ID_Charity_c_cpi = True,
         EITC_rt_2 = [1.0],
-        **fields_base
+        **_fields_base
     )
 
     return _test_coverage_fields
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def test_coverage_reform():
     _test_coverage_reform = {
         '_cpi_offset': {'2016': [-0.0025]},
@@ -124,7 +129,7 @@ def test_coverage_reform():
     return _test_coverage_reform
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def errors_warnings_fields(fields_base):
     _errors_warnings_fields = dict(
             STD_0 = [7000.0],
@@ -138,7 +143,7 @@ def errors_warnings_fields(fields_base):
     return _errors_warnings_fields
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def errors_warnings_reform():
     _errors_warnings_reform = {
         u'_STD_single': {u'2017': [7000.0]},
@@ -151,25 +156,25 @@ def errors_warnings_reform():
     return _errors_warnings_reform
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def map_back_to_tb():
     with open(os.path.join(CUR_PATH, 'map_back_to_tb.json')) as f:
         return json.loads(f.read())
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def test_coverage_json_reform():
     with open(os.path.join(CUR_PATH, 'test_coverage_json_reform.json')) as f:
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def errors_warnings_json_reform():
     with open(os.path.join(CUR_PATH, 'errors_warnings_json_reform.json')) as f:
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def test_coverage_exp_read_json_reform():
     _test_coverage_exp_read_json_reform = {
         2018: {
@@ -191,7 +196,7 @@ def test_coverage_exp_read_json_reform():
     return _test_coverage_exp_read_json_reform
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def errors_warnings_exp_read_json_reform():
     _errors_warnings_exp_read_json_reform = {
         2018: {
@@ -209,28 +214,28 @@ def errors_warnings_exp_read_json_reform():
     return _errors_warnings_exp_read_json_reform
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def errors():
     with open(os.path.join(CUR_PATH, 'errors.txt')) as f:
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def warnings():
     with open(os.path.join(CUR_PATH, 'warnings.txt')) as f:
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def errors_warnings(warnings, errors):
     return {'warnings': warnings, 'errors': errors}
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def empty_errors_warnings():
     return {'errors': {}, 'warnings': {}}
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def exp_errors_warnings():
     with open(os.path.join(CUR_PATH, 'exp_errors_warnings.json')) as f:
         return json.loads(f.read())
@@ -243,7 +248,7 @@ def assumptions_text(request):
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def exp_assumptions_text():
     _exp_assumptions_text = {
         'growdiff_response': {},
@@ -260,12 +265,12 @@ def exp_assumptions_text():
     return _exp_assumptions_text
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def no_assumptions_text():
     with open(os.path.join(CUR_PATH, 'no_assumptions_text.txt')) as f:
         return f.read()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def no_assumptions_text_json(no_assumptions_text):
     return json.loads(no_assumptions_text)

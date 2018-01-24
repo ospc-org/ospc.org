@@ -19,7 +19,6 @@ from ..views import get_result_context
 import taxcalc
 from taxcalc import Policy
 
-from ...test_assets import test_reform, test_assumptions
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data,
                                   get_dropq_compute_from_module,
@@ -29,7 +28,7 @@ from ...test_assets.utils import (check_posted_params, do_micro_sim,
 START_YEAR = 2016
 
 @pytest.mark.usefixtures("r1", "assumptions_text", "warning_reform",
-                         "bad_reform")
+                         "bad_reform", "test_coverage_fields")
 class TaxBrainViewsTests(TestCase):
     ''' Test the views of this app. '''
 
@@ -584,7 +583,8 @@ class TaxBrainViewsTests(TestCase):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        unique_url = get_taxbrain_model(taxcalc_vers="0.10.0",
+        unique_url = get_taxbrain_model(self.test_coverage_fields,
+                                        taxcalc_vers="0.10.0",
                                         webapp_vers="1.1.0")
 
         tsi = unique_url.unique_inputs
