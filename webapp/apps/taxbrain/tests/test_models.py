@@ -45,7 +45,7 @@ class TaxBrainResultsTest(TestCase):
             new_labels = json.loads(js.read())
 
         unique_url = get_taxbrain_model(self.test_coverage_fields,
-                                        taxcalc_vers="0.10.2",
+                                        taxcalc_vers="0.10.2.abc",
                                         webapp_vers="1.1.1")
 
         model = unique_url.unique_inputs

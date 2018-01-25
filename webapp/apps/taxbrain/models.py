@@ -778,7 +778,12 @@ class TaxSaveInputs(models.Model):
         """
         outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
         taxcalc_vers = outputurl.taxcalc_vers
-        taxcalc_vers = tuple(map(int, taxcalc_vers.split('.')))
+        taxcalc_vers = taxcalc_vers.split('.')
+        # older PB versions stored commit reference too
+        # e.g. taxcalc_vers = "0.9.0.d79abf"
+        if len(taxcalc_vers) >=3:
+            taxcalc_vers = taxcalc_vers[:3]
+        taxcalc_vers = tuple(map(int, taxcalc_vers))
         if taxcalc_vers >= (0, 13, 0):
             return self._tax_result
         else:
