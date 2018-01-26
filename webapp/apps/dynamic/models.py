@@ -87,6 +87,25 @@ class DynamicBehaviorSaveInputs(models.Model):
     micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
                                   on_delete=models.SET_NULL)
 
+    def get_tax_result(self):
+        """
+        If taxcalc version is greater than or equal to 0.13.0, return table
+        If taxcalc version is less than 0.13.0, then rename keys to new names
+        and then return table
+        """
+        outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
+        taxcalc_vers = outputurl.taxcalc_vers
+        taxcalc_vers = taxcalc_vers.split('.')
+        # older PB versions stored commit reference too
+        # e.g. taxcalc_vers = "0.9.0.d79abf"
+        if len(taxcalc_vers) >=3:
+            taxcalc_vers = taxcalc_vers[:3]
+        taxcalc_vers = tuple(map(int, taxcalc_vers))
+        if taxcalc_vers >= (0, 13, 0):
+            return self.tax_result
+        else:
+            return rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
+
     class Meta:
         permissions = (
             ("view_inputs", "Allowed to view Taxbrain."),

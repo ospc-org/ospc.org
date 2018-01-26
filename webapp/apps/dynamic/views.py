@@ -718,7 +718,7 @@ def behavior_results(request, pk):
     model = url.unique_inputs
     if model.tax_result:
 
-        output = model.tax_result
+        output = model.get_tax_result()
         first_year = model.first_year
         created_on = model.creation_date
         if 'fiscal_tots' in output:
