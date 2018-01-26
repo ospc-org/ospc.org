@@ -53,7 +53,7 @@ class TaxBrainResultsTest(TestCase):
         model.creation_date = datetime.now()
         model.save()
 
-        np.testing.assert_equal(model.tax_result, new_labels)
+        np.testing.assert_equal(model.get_tax_result(), new_labels)
 
 
     def test_tc_gt_0130(self):
@@ -74,4 +74,4 @@ class TaxBrainResultsTest(TestCase):
         model.creation_date = datetime.now()
         model.save()
 
-        np.testing.assert_equal(model.tax_result, new_labels)
+        np.testing.assert_equal(model.get_tax_result(), new_labels)

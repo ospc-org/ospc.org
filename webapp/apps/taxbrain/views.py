@@ -826,7 +826,7 @@ def add_summary_column(table):
 
 
 def get_result_context(model, request, url):
-    output = model.tax_result
+    output = model.get_tax_result()
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
@@ -1014,7 +1014,7 @@ def csv_output(request, pk):
     filename = "taxbrain_outputs_" + suffix + ".csv"
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
-    results = url.unique_inputs.tax_result
+    results = url.unique_inputs.get_tax_result()
     first_year = url.unique_inputs.first_year
     csv_results = format_csv(results, pk, first_year)
     writer = csv.writer(response)

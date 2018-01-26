@@ -757,7 +757,7 @@ class TaxSaveInputs(models.Model):
     """
 
     # Result
-    _tax_result = JSONField(default=None, blank=True, null=True, db_column='tax_result')
+    tax_result = JSONField(default=None, blank=True, null=True)
 
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
@@ -768,9 +768,7 @@ class TaxSaveInputs(models.Model):
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
-
-    @property
-    def tax_result(self):
+    def get_tax_result(self):
         """
         If taxcalc version is greater than or equal to 0.13.0, return table
         If taxcalc version is less than 0.13.0, then rename keys to new names
@@ -785,13 +783,9 @@ class TaxSaveInputs(models.Model):
             taxcalc_vers = taxcalc_vers[:3]
         taxcalc_vers = tuple(map(int, taxcalc_vers))
         if taxcalc_vers >= (0, 13, 0):
-            return self._tax_result
+            return self.tax_result
         else:
-            return rename_keys(self._tax_result, PRE_TC_0130_RES_MAP)
-
-    @tax_result.setter
-    def tax_result(self, result):
-        self._tax_result = result
+            return rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
 
     class Meta:
         permissions = (
