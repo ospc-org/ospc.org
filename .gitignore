@@ -24,3 +24,8 @@ dump.rdb
 *.pem
 
 _build
+
+.DS_Store
+*.egg-info
+staticfiles
+
