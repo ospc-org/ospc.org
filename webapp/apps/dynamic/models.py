@@ -95,7 +95,11 @@ class DynamicBehaviorSaveInputs(models.Model):
         """
         outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
         taxcalc_vers = outputurl.taxcalc_vers
-        taxcalc_vers = taxcalc_vers.split('.')
+        # only the older (pre 0.13.0) taxcalc versions are null
+        if taxcalc_vers:
+            taxcalc_vers = taxcalc_vers.split('.')
+        else:
+            taxcalc_vers = (-1, -1, -1)
         # older PB versions stored commit reference too
         # e.g. taxcalc_vers = "0.9.0.d79abf"
         if len(taxcalc_vers) >=3:
