@@ -953,7 +953,10 @@ def output_detail(request, pk):
 
             #Just need the error message from one failed job
             error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
-            error_msg = error_msgs[0]
+            if error_msgs:
+                error_msg = error_msgs[0]
+            else:
+                error_msg = "Error: stack trace for this error is unavailable"
             val_err_idx = error_msg.rfind("Error")
             error = ErrorMessageTaxCalculator()
             error_contents = error_msg[val_err_idx:].replace(" ","&nbsp;")
