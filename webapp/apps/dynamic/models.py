@@ -97,15 +97,13 @@ class DynamicBehaviorSaveInputs(models.Model):
         taxcalc_vers = outputurl.taxcalc_vers
         # only the older (pre 0.13.0) taxcalc versions are null
         if taxcalc_vers:
-            taxcalc_vers = taxcalc_vers.split('.')
+            taxcalc_vers = LooseVersion(taxcalc_vers)
         else:
-            taxcalc_vers = (-1, -1, -1)
+            return rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
+
         # older PB versions stored commit reference too
         # e.g. taxcalc_vers = "0.9.0.d79abf"
-        if len(taxcalc_vers) >=3:
-            taxcalc_vers = taxcalc_vers[:3]
-        taxcalc_vers = tuple(map(int, taxcalc_vers))
-        if taxcalc_vers >= (0, 13, 0):
+        if taxcalc_vers >= LooseVersion("0.13.0"):
             return self.tax_result
         else:
             return rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
