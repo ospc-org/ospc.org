@@ -21,7 +21,7 @@ class TaxBrainJSONReformModelTest(TestCase):
             raw_assumption_text=self.test_string
         )
 
-@pytest.mark.usefixtures("test_coverage_fields")
+
 class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
 
     def test_static_tc_lt_0130(self):
