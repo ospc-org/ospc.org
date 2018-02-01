@@ -1107,6 +1107,12 @@ def rename_keys(rename_dict, map_dict):
 
 
 def reorder_lists(results, reorder_ix_map, table_names):
+    """
+    Reorder lists in `results[table_id][bin_label]`. Required for difference
+    tables calculated with Tax-Calculator version <0.13.0
+
+    returns: results table with reordered lists in selected tables
+    """
 
     def reorder(disordered):
         reordered = disordered[:]
