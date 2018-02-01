@@ -61,16 +61,7 @@ source activate $AEI_ENV_NAME
 # Installs conda requirements.
 if prompt_user "Install conda requirements?"; then
   CHANNEL='-c ospc/label/dev -c ospc'
-  PACKAGES=()
-  for pkg in $(cat ${SCRIPT_DIR}/../conda-requirements.txt); do
-    if [[ ! $pkg =~ btax|ogusa|taxcalc ]]; then
-      PACKAGES+=($pkg)
-    fi
-  done
-  # Places these packages last, to install taxcalc, etc. at the end.
-  PACKAGES+=('btax' 'ogusa')
-  echo "conda install $CHANNEL ${PACKAGES[@]}"
-  conda install -y $CHANNEL ${PACKAGES[@]}
+  conda install -y $CHANNEL -r ${SCRIPT_DIR}/../conda-requirements.txt
 fi
 
 # Installs package requirements (including the current package).
