@@ -7,12 +7,9 @@ import numpy as np
 from datetime import datetime
 
 from ..taxbrain.models import (JSONReformTaxCalculator,
-                                OutputUrl)
+                               OutputUrl)
 from utils import get_taxbrain_model
 from ..taxbrain.forms import PersonalExemptionForm
-
-from ..dynamic.models import DynamicBehaviorOutputUrl
-from ..dynamic.forms import DynamicBehavioralInputsModelForm
 
 START_YEAR = 2016
 
