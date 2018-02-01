@@ -14,7 +14,8 @@ import re
 from mock import Mock
 import sys
 
-from ..constants import START_YEAR
+from ..constants import (START_YEAR,
+                         TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE)
 
 import taxcalc
 from taxcalc import Policy
@@ -1413,7 +1414,10 @@ def get_tax_result(OutputUrlCls, pk, tax_result):
 
     # older PB versions stored commit reference too
     # e.g. taxcalc_vers = "0.9.0.d79abf"
-    if taxcalc_vers >= LooseVersion("0.13.0"):
+    backwards_incompatible = LooseVersion(
+        TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
+    )
+    if taxcalc_vers >= backwards_incompatible:
         return tax_result
     else:
         return rename_keys(tax_result, PRE_TC_0130_RES_MAP)
