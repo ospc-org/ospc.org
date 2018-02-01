@@ -12,8 +12,11 @@ REQS_FILES=(
 # Path to the log directory.
 LOGDIR=taxbrain_server/logs
 
-# Name of the environment (in the dropq_environment.yml file).
+# Name of the environment (in the DROPQ_YML_PATH file).
 AEI_ENV_NAME='aei_dropq'
+
+# The path to the dropq_environment.yml definition.
+DROPQ_YML_PATH=fab/dropq_environment.yml
 
 # Defines a finction that prompts the user for a particular action.
 prompt_user() {
@@ -27,32 +30,39 @@ prompt_user() {
 }
 
 if prompt_user "Create / reset environment?"; then
-  echo '*** Creating environment ***'
   if [[ $(conda env list) =~ $AEI_ENV_NAME ]]; then
-    echo "Removing old environment: $AEI_ENV_NAME"
-    conda env remove --name $AEI_ENV_NAME
+    if prompt_user "Remove existing environment?"; then
+      conda env remove --name $AEI_ENV_NAME
+      conda env create --file $DROPQ_YML_PATH
+    else
+      conda env update --file $DROPQ_YML_PATH
+    fi
+  else
+    conda env create --file $DROPQ_YML_PATH
   fi
-  conda env create --file fab/dropq_environment.yml
 fi
 
+source activate $AEI_ENV_NAME
+
 if prompt_user "Install conda requirements?"; then
-  echo '*** Installing conda requirements ***'
-  CHANNEL='-c ospc/label/dev -c ospc '
+  CHANNEL='-c ospc/label/dev -c ospc'
+  PACKAGES=()
   for pkg in $(cat ../conda-requirements.txt); do
     if [[ ! $pkg =~ btax|ogusa|taxcalc ]]; then
-      echo "Installing ${pkg}..."
-      conda install $channel $pkg -y
+      PACKAGES+=($pkg)
     fi
   done
+  echo "conda install $CHANNEL ${PACKAGES[@]}"
+  conda install -y $CHANNEL ${PACKAGES[@]}
 fi
 
 if prompt_user "Install package requirements?"; then
-  echo '*** Installing package requirements ***'
-  install_conda_reqs
+  REQUIREMENTS=()
   for reqs in "${REQS_FILES[@]}"; do
-    echo "pip install -r $reqs"
-    pip install -r $reqs
+    REQUIREMENTS+=("-r $reqs")
   done
+  echo "pip install ${REQUIREMENTS[@]}"
+  pip install ${REQUIREMENTS[@]}
   pip uninstall -y taxbrain_server
   pip install -e .
 fi
