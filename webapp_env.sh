@@ -1,3 +1,5 @@
+source activate aei_dropq
+
 export NUM_BUDGET_YEARS=10
 export DEV_DEBUG=True
 export HTML_MINIFY=True
