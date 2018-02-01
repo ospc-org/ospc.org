@@ -10,21 +10,24 @@
 
 set -e
 
+# Gets the path to the current script's directory.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Paths to the requirements files that are installed.
 REQS_FILES=(
-  ../requirements.txt
-  ../requirements_dev.txt
-  requirements.txt
+  ${SCRIPT_DIR}/../requirements.txt
+  ${SCRIPT_DIR}/../requirements_dev.txt
+  ${SCRIPT_DIR}/requirements.txt
 )
 
 # Path to the log directory.
-LOGDIR=taxbrain_server/logs
+LOGDIR=${SCRIPT_DIR}/taxbrain_server/logs
 
 # Name of the environment (in the DROPQ_YML_PATH file).
 AEI_ENV_NAME='aei_dropq'
 
 # The path to the dropq_environment.yml definition.
-DROPQ_YML_PATH=fab/dropq_environment.yml
+DROPQ_YML_PATH=${SCRIPT_DIR}/fab/dropq_environment.yml
 
 # Defines a finction that prompts the user for a particular action.
 prompt_user() {
@@ -58,13 +61,13 @@ source activate $AEI_ENV_NAME
 if prompt_user "Install conda requirements?"; then
   CHANNEL='-c ospc/label/dev -c ospc'
   PACKAGES=()
-  for pkg in $(cat ../conda-requirements.txt); do
+  for pkg in $(cat ${SCRIPT_DIR}/../conda-requirements.txt); do
     if [[ ! $pkg =~ btax|ogusa|taxcalc ]]; then
       PACKAGES+=($pkg)
     fi
   done
-  # Places the "ogusa" package last, to install taxcalc, etc. at the end.
-  PACKAGES+=('ogusa')
+  # Places these packages last, to install taxcalc, etc. at the end.
+  PACKAGES+=('btax' 'ogusa')
   echo "conda install $CHANNEL ${PACKAGES[@]}"
   conda install -y $CHANNEL ${PACKAGES[@]}
 fi
@@ -83,9 +86,9 @@ fi
 
 # Reinitializes the log directory.
 if prompt_user "Re-initialize logs directory?"; then
-  rm -rf taxbrain_server/logs/*
+  rm -rf ${SCRIPT_DIR}/taxbrain_server/logs/*
 fi
 
 echo "Finished creating environment; to start, run:"
-echo "  source activate aei_dropq && source webapp_env.sh"
+echo "  source webapp_env.sh"
 
