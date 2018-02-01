@@ -358,6 +358,9 @@ TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'combined_tax':'Combined Payroll and Individual Income Tax Liability Change',
 }
 
+REORDER_LT_TC_0130_DIFF_LIST = [1, 3, 0, 5, 6, 4, 2, 7]
+DIFF_TABLE_IDs = ['diff_itax_xdec', 'diff_ptax_xdec', 'diff_comb_xdec',
+                  'diff_itax_xbin', 'diff_ptax_xbin', 'diff_comb_xbin']
 
 def get_default_policy_param_name(param, default_params):
     """
@@ -1103,6 +1106,24 @@ def rename_keys(rename_dict, map_dict):
     return rename_dict
 
 
+def reorder_lists(results, reorder_ix_map, table_names):
+
+    def reorder(disordered):
+        reordered = disordered[:]
+        for ix in range(len(reorder_ix_map)):
+            reordered[reorder_ix_map[ix]] = disordered[ix]
+        return reordered
+
+    for table_name in table_names:
+        bins = list(results[table_name].keys())
+        for ix in range(len(bins)):
+            results[table_name][bins[ix]] = reorder(
+                results[table_name][bins[ix]]
+            )
+
+    return results
+
+
 def taxcalc_results_to_tables(results, first_budget_year):
     """
     Take various results from dropq, i.e. mY_dec, mX_bin, df_dec, etc
@@ -1151,6 +1172,9 @@ def taxcalc_results_to_tables(results, first_budget_year):
             multi_year_cells = True
 
         elif table_id in ['diff_itax_xbin', 'diff_ptax_xbin', 'diff_comb_xbin']:
+            if table_id == "diff_comb_xbin":
+                print(results[table_id]['<$10K_0'])
+
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -1420,4 +1444,6 @@ def get_tax_result(OutputUrlCls, pk, tax_result):
     if taxcalc_vers >= backwards_incompatible:
         return tax_result
     else:
-        return rename_keys(tax_result, PRE_TC_0130_RES_MAP)
+        renamed = rename_keys(tax_result, PRE_TC_0130_RES_MAP)
+        return reorder_lists(renamed, REORDER_LT_TC_0130_DIFF_LIST,
+                             DIFF_TABLE_IDs)
