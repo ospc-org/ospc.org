@@ -1,4 +1,5 @@
 import re
+from distutils.version import LooseVersion
 
 from django.db import models
 from django.core import validators
@@ -13,6 +14,9 @@ from jsonfield import JSONField
 
 from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
                                TaxSaveInputs, OutputUrl)
+
+from ..taxbrain.helpers import rename_keys, PRE_TC_0130_RES_MAP
+
 import datetime
 
 
@@ -93,7 +97,7 @@ class DynamicBehaviorSaveInputs(models.Model):
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
+        outputurl = DynamicBehaviorOutputUrl.objects.get(unique_inputs__pk=self.pk)
         taxcalc_vers = outputurl.taxcalc_vers
         # only the older (pre 0.13.0) taxcalc versions are null
         if taxcalc_vers:

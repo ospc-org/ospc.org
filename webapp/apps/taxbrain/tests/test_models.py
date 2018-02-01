@@ -6,8 +6,13 @@ import pytest
 import numpy as np
 from datetime import datetime
 
-from ..models import JSONReformTaxCalculator
+from ..models import (JSONReformTaxCalculator,
+                      OutputUrl)
 from ...test_assets.utils import get_taxbrain_model
+from ..forms import PersonalExemptionForm
+
+from ...dynamic.models import DynamicBehaviorOutputUrl
+from ...dynamic.forms import DynamicBehavioralInputsModelForm
 
 START_YEAR = 2016
 
@@ -34,8 +39,7 @@ class TaxBrainResultsTest(TestCase):
     def setUp(self):
         pass
 
-
-    def test_tc_lt_0130(self):
+    def tc_lt_0130(self, Form=PersonalExemptionForm, UrlModel=OutputUrl):
         old_path = os.path.join(CURDIR, "skelaton_res_lt_0130.json")
         with open(old_path) as js:
             old_labels = json.loads(js.read())
@@ -46,7 +50,8 @@ class TaxBrainResultsTest(TestCase):
 
         unique_url = get_taxbrain_model(self.test_coverage_fields,
                                         taxcalc_vers="0.10.2.abc",
-                                        webapp_vers="1.1.1")
+                                        webapp_vers="1.1.1",
+                                        Form=Form, UrlModel=UrlModel)
 
         model = unique_url.unique_inputs
         model.tax_result = old_labels
@@ -55,8 +60,7 @@ class TaxBrainResultsTest(TestCase):
 
         np.testing.assert_equal(model.get_tax_result(), new_labels)
 
-
-    def test_tc_gt_0130(self):
+    def tc_gt_0130(self, Form=PersonalExemptionForm, UrlModel=OutputUrl):
         old_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
         with open(old_path) as js:
             old_labels = json.loads(js.read())
@@ -67,7 +71,8 @@ class TaxBrainResultsTest(TestCase):
 
         unique_url = get_taxbrain_model(self.test_coverage_fields,
                                         taxcalc_vers="0.13.0",
-                                        webapp_vers="1.2.0")
+                                        webapp_vers="1.2.0",
+                                        Form=Form, UrlModel=UrlModel)
 
         model = unique_url.unique_inputs
         model.tax_result = old_labels
@@ -75,3 +80,19 @@ class TaxBrainResultsTest(TestCase):
         model.save()
 
         np.testing.assert_equal(model.get_tax_result(), new_labels)
+
+
+    def test_static_tc_lt_0130(self):
+        self.tc_lt_0130()
+
+    def test_static_tc_gt_0130(self):
+        self.tc_gt_0130()
+
+
+    def test_dynamic_tc_lt_0130(self):
+        self.tc_lt_0130(Form=DynamicBehavioralInputsModelForm,
+                        UrlModel=DynamicBehaviorOutputUrl)
+
+    def test_dynamic_tc_gt_0130(self):
+        self.tc_gt_0130(Form=DynamicBehavioralInputsModelForm,
+                        UrlModel=DynamicBehaviorOutputUrl)
