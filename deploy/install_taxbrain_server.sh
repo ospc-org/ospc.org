@@ -56,13 +56,11 @@ if prompt_user "Create / reset environment?"; then
 fi
 
 # Everything from here down is done in the environment.
+echo "source activate $AEI_ENV_NAME"
 source activate $AEI_ENV_NAME
 
-# Installs conda requirements.
-if prompt_user "Install conda requirements?"; then
-  CHANNEL='-c ospc/label/dev -c ospc'
-  conda install -y $CHANNEL -r ${SCRIPT_DIR}/../conda-requirements.txt
-fi
+CHANNEL='-c ospc/label/dev -c ospc'
+conda install -y $CHANNEL -r ${SCRIPT_DIR}/../conda-requirements.txt
 
 # Installs package requirements (including the current package).
 if prompt_user "Install package requirements?"; then
