@@ -1,4 +1,9 @@
 #!/bin/bash
+# Interactive installation script.
+# For a fresh install, simply run:
+#   yes | ./install_taxbrain_server.sh
+# Optionally, pipe all output to /dev/null:
+#   yes | ./install_taxbrain_server.sh > /dev/null
 
 set -e
 
@@ -29,6 +34,7 @@ prompt_user() {
   fi
 }
 
+# Creates a new environment, or resets the current environment.
 if prompt_user "Create / reset environment?"; then
   if [[ $(conda env list) =~ $AEI_ENV_NAME ]]; then
     if prompt_user "Remove existing environment?"; then
@@ -42,8 +48,10 @@ if prompt_user "Create / reset environment?"; then
   fi
 fi
 
+# Everything from here down is done in the environment.
 source activate $AEI_ENV_NAME
 
+# Installs conda requirements.
 if prompt_user "Install conda requirements?"; then
   CHANNEL='-c ospc/label/dev -c ospc'
   PACKAGES=()
@@ -56,6 +64,7 @@ if prompt_user "Install conda requirements?"; then
   conda install -y $CHANNEL ${PACKAGES[@]}
 fi
 
+# Installs package requirements (including the current package).
 if prompt_user "Install package requirements?"; then
   REQUIREMENTS=()
   for reqs in "${REQS_FILES[@]}"; do
@@ -63,14 +72,13 @@ if prompt_user "Install package requirements?"; then
   done
   echo "pip install ${REQUIREMENTS[@]}"
   pip install ${REQUIREMENTS[@]}
-  pip uninstall -y taxbrain_server
+  # Installs project in development mode.
   pip install -e .
 fi
 
+# Reinitializes the log directory.
 if prompt_user "Re-initialize logs directory?"; then
-  echo "*** Re-initializing logs directory: ${LOGDIR} ***"
-  rm -rf taxbrain_server/logs
-  mkdir taxbrain_server/logs
+  rm -rf taxbrain_server/logs/*
 fi
 
 echo "DONE"
