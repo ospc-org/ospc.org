@@ -1,35 +1,43 @@
 #!/bin/bash
-install_env(){
-    export has_env=1;
-    conda env remove --name aei_dropq &> /dev/null;
-    conda env create --file fab/dropq_environment.yml || return 0;
-    return 0;
-}
-install_conda_reqs(){
-    echo ---------------------------------------Installing conda requirements;
-    channel="-c ospc/label/dev -c ospc "
-    for pkg in $(cat ../conda-requirements.txt);do
-        echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg -y || return 1;
-    done
-    echo install $channel ogusa -y
-    conda install $channel ogusa -y
-}
-install_reqs(){
-    install_conda_reqs || return 1;
-    echo Install webapp-public requirements.txt
-    pip install -r ../requirements.txt || return 1;
-    echo Install webapp-public requirements_dev.txt
-    pip install -r ../requirements_dev.txt || return 1;
-    echo Install requirements.txt of the deploy folder;
-    pip install -r requirements.txt || return 1;
-    pip uninstall -y taxbrain_server &> /dev/null;
-    pip install -e . || return 1;
-    rm -rf taxbrain_server/logs
-    mkdir taxbrain_server/logs || return 1;
-    return 0;
-}
-msg(){
-    echo Local server installation complete!
-    return 0;
-}
-install_env && source activate aei_dropq && install_reqs && msg || echo FAILED
+
+set -e
+
+# Paths to the requirements files that are installed.
+REQS_FILES=(
+  ../requirements.txt
+  ../requirements_dev.txt
+  requirements.txt
+)
+
+# Path to the log directory.
+LOGDIR=taxbrain_server/logs
+
+echo '*** Creating environment ***'
+export HAS_ENV=1
+conda env remove --name aei_dropq
+conda env create --file fab/dropq_environment.yml
+
+echo '*** Installing conda requirements ***'
+CHANNEL='-c ospc/label/dev -c ospc '
+for pkg in $(cat ../conda-requirements.txt); do
+  if [[ ! $pkg =~ btax|ogusa|taxcalc ]]; then
+    echo "Installing ${pkg}..."
+    conda install $channel $pkg -y
+  fi
+done
+
+echo '*** Installing package requirements ***'
+install_conda_reqs
+for reqs in "${REQS_FILES[@]}"; do
+  echo "pip install -r $reqs"
+  pip install -r $reqs
+done
+pip uninstall -y taxbrain_server
+pip install -e .
+
+echo "*** Re-initializing logs directory: ${LOGDIR} ***"
+rm -rf taxbrain_server/logs
+mkdir taxbrain_server/logs
+
+echo "DONE"
+
