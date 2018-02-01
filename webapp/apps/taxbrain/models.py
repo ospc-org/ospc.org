@@ -12,7 +12,7 @@ from uuidfield import UUIDField
 from jsonfield import JSONField
 import datetime
 
-from helpers import rename_keys, PRE_TC_0130_RES_MAP
+import helpers
 
 def convert_to_floats(tsi):
     """
@@ -775,20 +775,11 @@ class TaxSaveInputs(models.Model):
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
-        taxcalc_vers = outputurl.taxcalc_vers
-        # only the older (pre 0.13.0) taxcalc versions are null
-        if taxcalc_vers:
-            taxcalc_vers = LooseVersion(taxcalc_vers)
-        else:
-            return rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
-
-        # older PB versions stored commit reference too
-        # e.g. taxcalc_vers = "0.9.0.d79abf"
-        if taxcalc_vers >= LooseVersion("0.13.0"):
-            return self.tax_result
-        else:
-            return rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
+        return helpers.get_tax_result(
+            OutputUrl,
+            self.pk,
+            self.tax_result
+        )
 
     class Meta:
         permissions = (
