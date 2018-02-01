@@ -31,7 +31,8 @@ DROPQ_YML_PATH=${SCRIPT_DIR}/fab/dropq_environment.yml
 
 # Defines a finction that prompts the user for a particular action.
 prompt_user() {
-  read -p "$1 [y/N] " -n 1 -r
+  printf "$1 [y/N] "
+  read -p "" -n 1 -r
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     return 0
