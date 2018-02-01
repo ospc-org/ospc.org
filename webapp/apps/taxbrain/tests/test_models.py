@@ -9,6 +9,7 @@ from datetime import datetime
 from ..models import (JSONReformTaxCalculator,
                       OutputUrl)
 from ...test_assets.utils import get_taxbrain_model
+from ...test_assets.test_models import TaxBrainTableResults
 from ..forms import PersonalExemptionForm
 
 from ...dynamic.models import DynamicBehaviorOutputUrl
@@ -34,53 +35,7 @@ class TaxBrainJSONReformModelTest(TestCase):
         )
 
 @pytest.mark.usefixtures("test_coverage_fields")
-class TaxBrainResultsTest(TestCase):
-
-    def setUp(self):
-        pass
-
-    def tc_lt_0130(self, Form=PersonalExemptionForm, UrlModel=OutputUrl):
-        old_path = os.path.join(CURDIR, "skelaton_res_lt_0130.json")
-        with open(old_path) as js:
-            old_labels = json.loads(js.read())
-
-        new_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
-        with open(new_path) as js:
-            new_labels = json.loads(js.read())
-
-        unique_url = get_taxbrain_model(self.test_coverage_fields,
-                                        taxcalc_vers="0.10.2.abc",
-                                        webapp_vers="1.1.1",
-                                        Form=Form, UrlModel=UrlModel)
-
-        model = unique_url.unique_inputs
-        model.tax_result = old_labels
-        model.creation_date = datetime.now()
-        model.save()
-
-        np.testing.assert_equal(model.get_tax_result(), new_labels)
-
-    def tc_gt_0130(self, Form=PersonalExemptionForm, UrlModel=OutputUrl):
-        old_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
-        with open(old_path) as js:
-            old_labels = json.loads(js.read())
-
-        new_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
-        with open(new_path) as js:
-            new_labels = json.loads(js.read())
-
-        unique_url = get_taxbrain_model(self.test_coverage_fields,
-                                        taxcalc_vers="0.13.0",
-                                        webapp_vers="1.2.0",
-                                        Form=Form, UrlModel=UrlModel)
-
-        model = unique_url.unique_inputs
-        model.tax_result = old_labels
-        model.creation_date = datetime.now()
-        model.save()
-
-        np.testing.assert_equal(model.get_tax_result(), new_labels)
-
+class TaxBrainResultsTest(TaxBrainTableResults, TestCase):
 
     def test_static_tc_lt_0130(self):
         self.tc_lt_0130()
