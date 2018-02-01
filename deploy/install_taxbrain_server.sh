@@ -59,8 +59,11 @@ fi
 echo "source activate $AEI_ENV_NAME"
 source activate $AEI_ENV_NAME
 
-CHANNEL='-c ospc/label/dev -c ospc'
-conda install -y $CHANNEL -r ${SCRIPT_DIR}/../conda-requirements.txt
+conda install \
+  --yes \
+  -c ospc/label/dev \
+  -c ospc \
+  --file ${SCRIPT_DIR}/../conda-requirements.txt
 
 # Installs package requirements (including the current package).
 if prompt_user "Install package requirements?"; then
