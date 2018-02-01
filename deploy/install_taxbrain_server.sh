@@ -4,6 +4,9 @@
 #   yes | ./install_taxbrain_server.sh
 # Optionally, pipe all output to /dev/null:
 #   yes | ./install_taxbrain_server.sh > /dev/null
+# For slow connections, it is helpful to increase the timeout for package downloads.
+# To do so, add the following to your ~/.condarc file:
+#   remote_read_timeout_secs: 1000.0
 
 set -e
 
@@ -60,6 +63,8 @@ if prompt_user "Install conda requirements?"; then
       PACKAGES+=($pkg)
     fi
   done
+  # Places the "ogusa" package last, to install taxcalc, etc. at the end.
+  PACKAGES+=('ogusa')
   echo "conda install $CHANNEL ${PACKAGES[@]}"
   conda install -y $CHANNEL ${PACKAGES[@]}
 fi
@@ -81,5 +86,6 @@ if prompt_user "Re-initialize logs directory?"; then
   rm -rf taxbrain_server/logs/*
 fi
 
-echo "DONE"
+echo "Finished creating environment; to start, run:"
+echo "  source activate aei_dropq && source webapp_env.sh"
 
