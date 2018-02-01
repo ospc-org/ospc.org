@@ -67,7 +67,7 @@ if prompt_user "Install conda requirements?"; then
     fi
   done
   # Places these packages last, to install taxcalc, etc. at the end.
-  PACKAGES+=('btax' 'ogusa')
+  PACKAGES+=('btax' 'ogusa' 'taxcalc')
   echo "conda install $CHANNEL ${PACKAGES[@]}"
   conda install -y $CHANNEL ${PACKAGES[@]}
 fi
