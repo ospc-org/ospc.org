@@ -140,10 +140,10 @@ def test_reorder_lists():
 
     res = reorder_lists(data, reorder_map, reorder_table_ids)
 
-    assert (res["table_label_0"]["bin_0"] == [0, 1, 2] and
-            res["table_label_0"]["bin_1"] == [2, 1, 0] and
-            res["table_label_1"]["bin_0"] == [0, 1, 2] and
-            res["table_label_1"]["bin_1"] == [2, 1, 0])
+    assert (res["table_label_0"]["bin_0"] == [0, 1, 2])
+    assert (res["table_label_0"]["bin_1"] == [2, 1, 0])
+    assert (res["table_label_1"]["bin_0"] == [0, 1, 2])
+    assert (res["table_label_1"]["bin_1"] == [2, 1, 0])
 
 
 @pytest.mark.parametrize(
