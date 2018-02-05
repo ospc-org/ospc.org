@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('model_pk', models.IntegerField(default=None, null=True)),
                 ('exp_comp_datetime', models.DateTimeField(default=datetime.datetime(2015, 1, 1, 0, 0))),
-                ('uuid', models.UUIDField(null=True, default=uuid.uuid4, editable=False, max_length=32, blank=True, unique=True)),
+                ('uuid', models.UUIDField(null=True, default=None, editable=False, max_length=32, blank=True, unique=True)),
                 ('btax_vers', models.CharField(default=None, max_length=50, null=True, blank=True)),
                 ('taxcalc_vers', models.CharField(default=None, max_length=50, null=True, blank=True)),
             ],

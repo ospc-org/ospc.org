@@ -117,7 +117,7 @@ class BTaxSaveInputs(models.Model):
     first_year = models.IntegerField(default=None, null=True)
 
     # Result
-    tax_result = JSONField(default=None, blank=True, null=True)
+    tax_result = models.TextField(default=None, blank=True, null=True)
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
