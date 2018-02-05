@@ -74,7 +74,7 @@ class SeparatedValuesField(models.TextField):
         return self.get_db_prep_value(value)
 
     def from_db_value(self, value, expression, connection, context):
-        return self.to_python(value, connection=connection)
+        return self.to_python(value)
 
 
 class JSONReformTaxCalculator(models.Model):
