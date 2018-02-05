@@ -27,7 +27,6 @@ from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
 from django import forms
 
-from djqscsv import render_to_csv_response
 from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
                     has_field_errors, DynamicElasticityInputsModelForm)
 from .models import (DynamicSaveInputs, DynamicOutputUrl,

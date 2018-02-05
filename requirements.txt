@@ -11,7 +11,6 @@ sendgrid-django
 psycopg2>=2.5.4
 django-user-accounts
 django-uuidfield==0.5.0
-django-queryset-csv==0.2.10
 newrelic==2.58.2.45
 pdfkit==0.4.1
 django-hermes
