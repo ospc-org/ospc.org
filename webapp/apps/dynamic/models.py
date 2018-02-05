@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from jsonfield import JSONField
+from django.contrib.postgres.fields import JSONField
 
 
 from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
