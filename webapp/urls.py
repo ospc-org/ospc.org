@@ -12,7 +12,7 @@ from webapp.apps.register.views import (
   register_success,
 )
 
-urlpatterns = patterns('',
+urlpatterns = [
 
     url(r'^admin/', include(admin.site.urls)),
 
@@ -30,5 +30,5 @@ urlpatterns = patterns('',
 
     # Third party app urls
     url(r'^account/', include("account.urls")),
-    url(r'^blog/', include("hermes.urls")),
-) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]

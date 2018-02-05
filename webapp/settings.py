@@ -27,24 +27,29 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
+from django.conf import global_settings
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.environ.get('DEV_DEBUG') == 'True' else False
 
-TEMPLATE_DEBUG = DEBUG
-
-TEMPLATE_DIRS = [
-    (BASE_DIR + '/templates/'),
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            (BASE_DIR + '/templates/')
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': global_settings.TEMPLATE_CONTEXT_PROCESSORS + [
+                'webapp.apps.pages.views.settings_context_processor',
+                'webapp.context_processors.google_analytics',
+            ],
+        },
+    },
 ]
 
-from django.conf import global_settings
 
 WEBAPP_VERSION = "1.3.0"
-
-TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + [
-    'webapp.apps.pages.views.settings_context_processor',
-    'webapp.context_processors.google_analytics',
-]
 
 # Application definition
 
@@ -69,7 +74,6 @@ INSTALLED_APPS = [
     'flatblocks',
     'account',
     'gunicorn',
-    'hermes',
     'import_export',
     'storages'
 ]
