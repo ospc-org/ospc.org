@@ -14,7 +14,7 @@ import taxcalc
 
 from django.core.mail import send_mail
 from django.core import serializers
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import (HttpResponseRedirect, HttpResponse, Http404, HttpResponseServerError,
