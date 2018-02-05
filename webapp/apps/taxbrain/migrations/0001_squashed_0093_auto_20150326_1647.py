@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import jsonfield.fields
-import uuidfield.fields
+import uuid
 import django.core.validators
 import webapp.apps.taxbrain.models
 
@@ -78,7 +78,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('unique_inputs', models.ForeignKey(default=None, to='taxbrain.TaxSaveInputs')),
-                ('uuid', uuidfield.fields.UUIDField(null=True, default=None, editable=False, max_length=32, blank=True, unique=True)),
+                ('uuid', models.UUIDField(null=True, default=uuid.uuid4, editable=False, max_length=32, blank=True, unique=True)),
                 ('taxcalc_vers', models.CharField(default=None, max_length=50, null=True, blank=True)),
             ],
             options={

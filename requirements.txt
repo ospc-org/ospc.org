@@ -15,7 +15,6 @@ newrelic==2.58.2.45
 pdfkit==0.4.1
 django-hermes
 mock
-jsonfield
 eventlet
 django-debug-toolbar==1.2.1
 django_import_export

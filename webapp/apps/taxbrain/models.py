@@ -1,4 +1,5 @@
 import re
+import uuid
 
 from django.db import models
 from django.core import validators
@@ -7,11 +8,10 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from uuidfield import UUIDField
-from jsonfield import JSONField
+from django.contrib.postgres.fields import JSONField
 import datetime
 
-from helpers import rename_keys, PRE_TC_0130_RES_MAP
+import helpers
 
 def convert_to_floats(tsi):
     """
@@ -52,7 +52,6 @@ class CommaSeparatedField(models.CharField):
 
 
 class SeparatedValuesField(models.TextField):
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         self.token = kwargs.pop('token', ',')
@@ -72,6 +71,9 @@ class SeparatedValuesField(models.TextField):
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value, connection=connection)
 
 
 class JSONReformTaxCalculator(models.Model):
@@ -768,7 +770,6 @@ class TaxSaveInputs(models.Model):
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
-
     @property
     def tax_result(self):
         """
@@ -814,7 +815,7 @@ class OutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
-    uuid = UUIDField(auto=True, default=None, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,

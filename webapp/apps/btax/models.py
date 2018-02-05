@@ -1,4 +1,5 @@
 import re
+import uuid
 
 from django.db import models
 from django.core import validators
@@ -7,7 +8,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from uuidfield import UUIDField
 from jsonfield import JSONField
 import datetime
 
@@ -138,7 +138,7 @@ class BTaxOutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
-    uuid = UUIDField(auto=True, default=None, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True)
     btax_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
