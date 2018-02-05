@@ -30,5 +30,7 @@ urlpatterns = [
 
     # Third party app urls
     url(r'^account/', include("account.urls")),
+
+    #WHAT DOES THIS DO?
     # static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 ]
