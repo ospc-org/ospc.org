@@ -157,7 +157,7 @@ class DynamicOutputUrl(models.Model):
     unique_inputs = models.ForeignKey(DynamicSaveInputs, default=None)
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
-    uuid = models.UUIDField(default=uuid.uuid4, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     ogusa_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
@@ -179,7 +179,7 @@ class DynamicBehaviorOutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
-    uuid = models.UUIDField(default=uuid.uuid4, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
@@ -201,7 +201,7 @@ class DynamicElasticityOutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
-    uuid = models.UUIDField(default=uuid.uuid4, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
