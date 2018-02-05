@@ -4,7 +4,8 @@ import numpy as np
 import taxcalc
 import pyparsing as pp
 from ..helpers import (nested_form_parameters, rename_keys, INPUT, make_bool,
-                       is_reverse, TaxCalcParam)
+                       is_reverse, TaxCalcParam,
+                       reorder_lists)
 
 
 CURRENT_LAW_POLICY = """
@@ -129,6 +130,21 @@ def test_rename_keys(monkeypatch):
     }
     act = rename_keys(a, map_dict)
     np.testing.assert_equal(act, exp)
+
+
+def test_reorder_lists():
+    reorder_map = [1, 0, 2]
+    data = {"table_label_0": {"bin_0": [1, 0, 2], "bin_1": [1, 2, 0]},
+            "table_label_1": {"bin_0": [1, 0, 2], "bin_1": [1, 2, 0]}}
+    reorder_table_ids = ["table_label_0", "table_label_1"]
+
+    res = reorder_lists(data, reorder_map, reorder_table_ids)
+
+    assert (res["table_label_0"]["bin_0"] == [0, 1, 2])
+    assert (res["table_label_0"]["bin_1"] == [2, 1, 0])
+    assert (res["table_label_1"]["bin_0"] == [0, 1, 2])
+    assert (res["table_label_1"]["bin_1"] == [2, 1, 0])
+
 
 @pytest.mark.parametrize(
     'item',

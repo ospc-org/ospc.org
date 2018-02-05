@@ -1,5 +1,6 @@
 import re
 import uuid
+from distutils.version import LooseVersion
 
 from django.db import models
 from django.core import validators
@@ -759,7 +760,7 @@ class TaxSaveInputs(models.Model):
     """
 
     # Result
-    _tax_result = JSONField(default=None, blank=True, null=True, db_column='tax_result')
+    tax_result = JSONField(default=None, blank=True, null=True)
 
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
@@ -770,24 +771,17 @@ class TaxSaveInputs(models.Model):
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
-    @property
-    def tax_result(self):
+    def get_tax_result(self):
         """
         If taxcalc version is greater than or equal to 0.13.0, return table
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        outputurl = OutputUrl.objects.get(unique_inputs__pk=self.pk)
-        taxcalc_vers = outputurl.taxcalc_vers
-        taxcalc_vers = tuple(map(int, taxcalc_vers.split('.')))
-        if taxcalc_vers >= (0, 13, 0):
-            return self._tax_result
-        else:
-            return rename_keys(self._tax_result, PRE_TC_0130_RES_MAP)
-
-    @tax_result.setter
-    def tax_result(self, result):
-        self._tax_result = result
+        return helpers.get_tax_result(
+            OutputUrl,
+            self.pk,
+            self.tax_result
+        )
 
     class Meta:
         permissions = (

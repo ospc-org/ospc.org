@@ -18,3 +18,5 @@ DPRC_TOOLTIP = "Net present value of depreciation deductions."
 
 START_YEARS = ('2013', '2014', '2015', '2016', '2017', '2018')
 START_YEAR = os.environ.get('START_YEAR', '2017')
+
+TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE = "0.13.0"
