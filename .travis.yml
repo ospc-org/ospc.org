@@ -19,8 +19,7 @@ addons:
 
 before_script:
   - python manage.py makemigrations taxbrain
-  - python manage.py migrate taxbrain
-  - python manage.py migrate --fake
+  - python manage.py migrate
 
 script:
   - py.test webapp/apps/
