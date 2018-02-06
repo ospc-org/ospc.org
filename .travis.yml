@@ -14,8 +14,10 @@ install:
   - popd
   - source activate aei_dropq
 
+addons:
+    postgresql: "9.4"
+
 before_script:
-  - python manage.py syncdb --noinput
   - python manage.py makemigrations taxbrain
   - python manage.py migrate taxbrain
   - python manage.py migrate --fake
