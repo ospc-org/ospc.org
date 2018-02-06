@@ -255,7 +255,7 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    start_year = request.REQUEST['start_year']
+    start_year = request.GET['start_year']
     taxbrain_data = {}
     assumptions_data = {}
     map_back_to_tb = {}
@@ -268,19 +268,19 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
         taxbrain_data = dict(taxbrain_model.__dict__)
         taxbrain_data = growth_fixup(taxbrain_data)
         taxbrain_data = parse_fields(taxbrain_data)
-        taxbrain_data = benefit_switch_fixup(request.REQUEST,
+        taxbrain_data = benefit_switch_fixup(request.POST,
                                              taxbrain_data,
                                              taxbrain_model,
                                              name="ID_BenefitSurtax_Switch")
-        taxbrain_data = benefit_switch_fixup(request.REQUEST,
+        taxbrain_data = benefit_switch_fixup(request.POST,
                                              taxbrain_data,
                                              taxbrain_model,
                                              name="ID_BenefitCap_Switch")
-        taxbrain_data = benefit_switch_fixup(request.REQUEST,
+        taxbrain_data = benefit_switch_fixup(request.POST,
                                              taxbrain_data,
                                              taxbrain_model,
                                              name="ID_AmountCap_Switch")
-        taxbrain_data = amt_fixup(request.REQUEST,
+        taxbrain_data = amt_fixup(request.POST,
                                   taxbrain_data,
                                   taxbrain_model)
         # convert GUI input to json style taxcalc reform
@@ -382,11 +382,11 @@ def submit_reform(request, user=None, json_reform_id=None):
     is_file = False
     submitted_ids = None
     max_q_length = None
-    start_year = request.REQUEST['start_year']
-    fields = dict(request.REQUEST)
+    start_year = request.GET['start_year']
+    fields = dict(request.POST)
     #TODO: use either first_year or start_year; validation error is thrown
     # if start_year not in fields
-    fields['first_year'] = fields['start_year']
+    fields['first_year'] = start_year
     # Assume we do the full calculation unless we find out otherwise
     do_full_calc = False if fields.get('quick_calc') else True
     if do_full_calc and 'full_calc' in fields:
@@ -566,7 +566,7 @@ def file_input(request):
     Receive request from file input interface and returns parsed data or an
     input form
     """
-    form_id = request.REQUEST.get('form_id', None)
+    form_id = request.POST.get('form_id', None)
     if form_id == 'None':
         form_id = None
 
@@ -575,7 +575,7 @@ def file_input(request):
     has_errors = False
     if request.method == 'POST':
         # save start_year
-        start_year = request.REQUEST['start_year']
+        start_year = request.GET['start_year']
         # File is not submitted
         if 'docfile' not in dict(request.FILES) and form_id is None:
             errors = ["Please specify a tax-law change before submitting."]
@@ -642,13 +642,19 @@ def personal_results(request):
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
+        print(request.__dict__)
         has_errors = make_bool(request.POST['has_errors'])
-        start_year = request.REQUEST['start_year']
-        fields = dict(request.REQUEST)
+        start_year = request.GET['start_year']
+
+        print('get', sorted(request.GET.keys()))
+        print('\n')
+        print('post', sorted(request.POST.keys()))
+
+        fields = dict(request.POST)
         # TODO: find better solution for full_calc vs quick_calc
         # Assume we do the full calculation unless we find out otherwise
         do_full_calc = False if fields.get('quick_calc') else True
-        fields['first_year'] = fields['start_year']
+        fields['first_year'] = start_year
         use_puf_not_cps = fields.get('use_puf_not_cps', True)
         if do_full_calc and 'full_calc' in fields:
             del fields['full_calc']
