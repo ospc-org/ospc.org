@@ -114,7 +114,7 @@ if os.environ.get('DATABASE_URL', None):
         },
         'TEST': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'USER': os.ENVIRON.get('TESTDBUSERNAME', 'postgres'),
+            'USER': os.environ.get('TESTDBUSERNAME', 'postgres'),
             'NAME': 'test',
         }
     }
