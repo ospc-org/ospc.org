@@ -215,7 +215,8 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
 
     return reform_dict, assumptions_dict, errors_warnings
 
-def get_reform_from_file(request, reform_text=None, assumptions_text=None):
+def get_reform_from_file(request_files, reform_text=None,
+                         assumptions_text=None):
     """
     Parse files from request object and collect errors_warnings
 
@@ -225,11 +226,11 @@ def get_reform_from_file(request, reform_text=None, assumptions_text=None):
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    if "docfile" in request.FILES:
-        inmemfile_reform = request.FILES['docfile']
+    if "docfile" in request_files:
+        inmemfile_reform = request_files['docfile']
         reform_text = inmemfile_reform.read()
-    if 'assumpfile' in request.FILES:
-        inmemfile_assumption = request.FILES['assumpfile']
+    if 'assumpfile' in files:
+        inmemfile_assumption = request_files['assumpfile']
         assumptions_text = inmemfile_assumption.read()
 
     (reform_dict, assumptions_dict,
@@ -242,7 +243,7 @@ def get_reform_from_file(request, reform_text=None, assumptions_text=None):
             errors_warnings)
 
 
-def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
+def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
                         stored_errors=None):
     """
     Parse request and model objects and collect reforms and warnings
@@ -255,7 +256,7 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    start_year = request.GET['start_year']
+    start_year = fields['start_year']
     taxbrain_data = {}
     assumptions_data = {}
     map_back_to_tb = {}
@@ -268,19 +269,19 @@ def get_reform_from_gui(request, taxbrain_model=None, behavior_model=None,
         taxbrain_data = dict(taxbrain_model.__dict__)
         taxbrain_data = growth_fixup(taxbrain_data)
         taxbrain_data = parse_fields(taxbrain_data)
-        taxbrain_data = benefit_switch_fixup(request.POST,
+        taxbrain_data = benefit_switch_fixup(fields,
                                              taxbrain_data,
                                              taxbrain_model,
                                              name="ID_BenefitSurtax_Switch")
-        taxbrain_data = benefit_switch_fixup(request.POST,
+        taxbrain_data = benefit_switch_fixup(fields,
                                              taxbrain_data,
                                              taxbrain_model,
                                              name="ID_BenefitCap_Switch")
-        taxbrain_data = benefit_switch_fixup(request.POST,
+        taxbrain_data = benefit_switch_fixup(fields,
                                              taxbrain_data,
                                              taxbrain_model,
                                              name="ID_AmountCap_Switch")
-        taxbrain_data = amt_fixup(request.POST,
+        taxbrain_data = amt_fixup(fields,
                                   taxbrain_data,
                                   taxbrain_model)
         # convert GUI input to json style taxcalc reform
@@ -364,10 +365,24 @@ def submit_reform(request, user=None, json_reform_id=None):
 
     returns dictionary of arguments intended to be inputs for `save_model`
     """
-    start_year = START_YEAR
-    no_inputs = False
+    fields = dict(request.GET)
+    fields.update(dict(request.POST))
+    fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+    start_year = fields.get('start_year', START_YEAR)
+    # TODO: migrate first_year to start_year to get rid of weird stuff like
+    # this
+    fields['first_year'] = fields['start_year']
+    has_errors = make_bool(fields['has_errors'])
 
-    has_errors = make_bool(request.POST['has_errors'])
+    # get files from the request object
+    request_files = request.FILES
+
+    # which file to use, front-end not yet implemented
+    use_puf_not_cps = fields.get('use_puf_not_cps', True)
+    assert use_puf_not_cps
+
+    # declare a bunch of variables--TODO: clean this up
+    no_inputs = False
     taxcalc_errors = False
     taxcalc_warnings = False
     is_valid = True
@@ -382,11 +397,6 @@ def submit_reform(request, user=None, json_reform_id=None):
     is_file = False
     submitted_ids = None
     max_q_length = None
-    start_year = request.GET['start_year']
-    fields = dict(request.POST)
-    #TODO: use either first_year or start_year; validation error is thrown
-    # if start_year not in fields
-    fields['first_year'] = start_year
     # Assume we do the full calculation unless we find out otherwise
     do_full_calc = False if fields.get('quick_calc') else True
     if do_full_calc and 'full_calc' in fields:
@@ -409,14 +419,14 @@ def submit_reform(request, user=None, json_reform_id=None):
         assumptions_text = json_reform.raw_assumption_text
         errors_warnings = json.loads(json_reform.errors_warnings_text)
 
-        if "docfile" in request.FILES or "assumpfile" in request.FILES:
-            if "docfile" in request.FILES or len(reform_text) == 0:
+        if "docfile" in request_files or "assumpfile" in request_files:
+            if "docfile" in request_files or len(reform_text) == 0:
                 reform_text = None
-            if "assumpfile" in request.FILES or len(assumptions_text) == 0:
+            if "assumpfile" in request_files or len(assumptions_text) == 0:
                 assumptions_text = None
 
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
-                errors_warnings) = get_reform_from_file(request,
+                errors_warnings) = get_reform_from_file(request_files,
                                                         reform_text,
                                                         assumptions_text)
 
@@ -430,10 +440,10 @@ def submit_reform(request, user=None, json_reform_id=None):
             has_errors = False
 
     else: # fresh file upload or GUI run
-        if 'docfile' in request.FILES:
+        if 'docfile' in request_files:
             is_file = True
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
-                errors_warnings) = get_reform_from_file(request)
+                errors_warnings) = get_reform_from_file(request_files)
         else:
             personal_inputs = PersonalExemptionForm(start_year, fields)
             # If an attempt is made to post data we don't accept
@@ -445,7 +455,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             if is_valid:
                 model = personal_inputs.save()
                 (reform_dict, assumptions_dict, reform_text, assumptions_text,
-                    errors_warnings) = get_reform_from_gui(request,
+                    errors_warnings) = get_reform_from_gui(fields,
                                                            taxbrain_model=model)
 
         json_reform = JSONReformTaxCalculator(
@@ -639,28 +649,6 @@ def personal_results(request):
     has_errors = False
     use_puf_not_cps = True
     if request.method=='POST':
-        # Client is attempting to send inputs, validate as form data
-        # Need need to the pull the start_year out of the query string
-        # to properly set up the Form
-        print(request.__dict__)
-        has_errors = make_bool(request.POST['has_errors'])
-        start_year = request.GET['start_year']
-
-        print('get', sorted(request.GET.keys()))
-        print('\n')
-        print('post', sorted(request.POST.keys()))
-
-        fields = dict(request.POST)
-        # TODO: find better solution for full_calc vs quick_calc
-        # Assume we do the full calculation unless we find out otherwise
-        do_full_calc = False if fields.get('quick_calc') else True
-        fields['first_year'] = start_year
-        use_puf_not_cps = fields.get('use_puf_not_cps', True)
-        if do_full_calc and 'full_calc' in fields:
-            del fields['full_calc']
-        elif 'quick_calc' in fields:
-            del fields['quick_calc']
-
         obj, _, has_errors, _ = process_reform(request)
 
         # case where validation failed in forms.PersonalExemptionForm
@@ -674,9 +662,13 @@ def personal_results(request):
         # Errors from taxcalc.tbi.reform_warnings_errors
         else:
             personal_inputs = obj
+            start_year = personal_inputs._first_year
+
 
     else:
         # Probably a GET request, load a default form
+        print('get get', request.GET)
+        print('get post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
