@@ -100,6 +100,9 @@ class PersonalExemptionForm(ModelForm):
         for _id, default in all_defaults:
             self._meta.widgets[_id].attrs['placeholder'] = default
 
+        # temporary quick hack to get underlying values
+        args = {k: args[0][k][0] if isinstance(args[0][k], list) else args[0][k] for k in args[0]}
+        args = (args,)
         # If a stored instance is passed,
         # set CPI flags based on the values in this instance
         if 'instance' in kwargs:
