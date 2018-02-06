@@ -1178,9 +1178,6 @@ def taxcalc_results_to_tables(results, first_budget_year):
             multi_year_cells = True
 
         elif table_id in ['diff_itax_xbin', 'diff_ptax_xbin', 'diff_comb_xbin']:
-            if table_id == "diff_comb_xbin":
-                print(results[table_id]['<$10K_0'])
-
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
