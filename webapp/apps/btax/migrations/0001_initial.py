@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import datetime
-import jsonfield.fields
 from django.conf import settings
 import uuid
 import webapp.apps.taxbrain.models
@@ -93,7 +92,7 @@ class Migration(migrations.Migration):
                 ('job_ids', webapp.apps.taxbrain.models.SeparatedValuesField(default=None, null=True, blank=True)),
                 ('jobs_not_ready', webapp.apps.taxbrain.models.SeparatedValuesField(default=None, null=True, blank=True)),
                 ('first_year', models.IntegerField(default=None, null=True)),
-                ('tax_result', jsonfield.fields.JSONField(default=None, null=True, blank=True)),
+                ('tax_result', models.TextField(default=None, null=True, blank=True)),
                 ('creation_date', models.DateTimeField(default=datetime.datetime(2015, 1, 1, 0, 0))),
             ],
             options={

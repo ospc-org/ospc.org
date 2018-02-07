@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 import datetime
 import webapp.apps.taxbrain.models
-import jsonfield.fields
 import django.db.models.deletion
 from django.conf import settings
 import uuid
@@ -37,7 +36,7 @@ class Migration(migrations.Migration):
                 ('BE_CG_trn', webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True)),
                 ('job_ids', webapp.apps.taxbrain.models.SeparatedValuesField(default=None, null=True, blank=True)),
                 ('first_year', models.IntegerField(default=None, null=True)),
-                ('tax_result', jsonfield.fields.JSONField(default=None, null=True, blank=True)),
+                ('tax_result', models.TextField(default=None, null=True, blank=True)),
                 ('creation_date', models.DateTimeField(default=datetime.datetime(2015, 1, 1, 0, 0))),
                 ('micro_sim', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, blank=True, to='taxbrain.OutputUrl', null=True)),
             ],
@@ -52,7 +51,7 @@ class Migration(migrations.Migration):
                 ('EGDP_amtr', webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True)),
                 ('job_ids', webapp.apps.taxbrain.models.SeparatedValuesField(default=None, null=True, blank=True)),
                 ('first_year', models.IntegerField(default=None, null=True)),
-                ('tax_result', jsonfield.fields.JSONField(default=None, null=True, blank=True)),
+                ('tax_result', models.TextField(default=None, null=True, blank=True)),
                 ('creation_date', models.DateTimeField(default=datetime.datetime(2015, 1, 1, 0, 0))),
                 ('micro_sim', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, blank=True, to='taxbrain.OutputUrl', null=True)),
             ],

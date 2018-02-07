@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import jsonfield.fields
 import uuid
 import django.core.validators
 import webapp.apps.taxbrain.models
@@ -96,7 +95,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='taxsaveinputs',
             name='tax_result',
-            field=jsonfield.fields.JSONField(default=None, null=True, blank=True),
+            field=models.TextField(default=None, null=True, blank=True),
             preserve_default=True,
         ),
         migrations.AddField(
