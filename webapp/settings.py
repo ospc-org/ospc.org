@@ -115,7 +115,7 @@ if os.environ.get('DATABASE_URL', None):
         'TEST': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'USER': os.environ.get('TESTDBUSERNAME', 'postgres'),
-            'NAME': 'test',
+            'NAME': 'test_db',
         }
     }
     # Parse database configuration from $DATABASE_URL
