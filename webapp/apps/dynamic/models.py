@@ -1,4 +1,5 @@
 import re
+from distutils.version import LooseVersion
 
 from django.db import models
 from django.core import validators
@@ -13,6 +14,9 @@ from jsonfield import JSONField
 
 from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
                                TaxSaveInputs, OutputUrl)
+
+from ..taxbrain import helpers as taxbrain_helpers
+
 import datetime
 
 
@@ -86,6 +90,18 @@ class DynamicBehaviorSaveInputs(models.Model):
 
     micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
                                   on_delete=models.SET_NULL)
+
+    def get_tax_result(self):
+        """
+        If taxcalc version is greater than or equal to 0.13.0, return table
+        If taxcalc version is less than 0.13.0, then rename keys to new names
+        and then return table
+        """
+        return taxbrain_helpers.get_tax_result(
+            DynamicBehaviorOutputUrl,
+            self.pk,
+            self.tax_result
+        )
 
     class Meta:
         permissions = (

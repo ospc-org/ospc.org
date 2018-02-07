@@ -826,7 +826,7 @@ def add_summary_column(table):
 
 
 def get_result_context(model, request, url):
-    output = model.tax_result
+    output = model.get_tax_result()
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
@@ -953,7 +953,10 @@ def output_detail(request, pk):
 
             #Just need the error message from one failed job
             error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
-            error_msg = error_msgs[0]
+            if error_msgs:
+                error_msg = error_msgs[0]
+            else:
+                error_msg = "Error: stack trace for this error is unavailable"
             val_err_idx = error_msg.rfind("Error")
             error = ErrorMessageTaxCalculator()
             error_contents = error_msg[val_err_idx:].replace(" ","&nbsp;")
@@ -1014,7 +1017,7 @@ def csv_output(request, pk):
     filename = "taxbrain_outputs_" + suffix + ".csv"
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
-    results = url.unique_inputs.tax_result
+    results = url.unique_inputs.get_tax_result()
     first_year = url.unique_inputs.first_year
     csv_results = format_csv(results, pk, first_year)
     writer = csv.writer(response)

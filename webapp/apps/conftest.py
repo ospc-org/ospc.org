@@ -274,3 +274,19 @@ def no_assumptions_text():
 @pytest.fixture()
 def no_assumptions_text_json(no_assumptions_text):
     return json.loads(no_assumptions_text)
+
+
+@pytest.fixture()
+@set_fixture_prop
+def skelaton_res_lt_0130(request):
+    _path = os.path.join(CUR_PATH, "skelaton_res_lt_0130.json")
+    with open(_path) as js:
+        return json.loads(js.read())
+
+
+@pytest.fixture()
+@set_fixture_prop
+def skelaton_res_gt_0130(request):
+    _path = os.path.join(CUR_PATH, "skelaton_res_gt_0130.json")
+    with open(_path) as js:
+        return json.loads(js.read())
