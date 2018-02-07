@@ -17,9 +17,5 @@ install:
 addons:
     postgresql: "9.4"
 
-before_script:
-  - python manage.py makemigrations taxbrain
-  - python manage.py migrate
-
 script:
   - py.test webapp/apps/
