@@ -102,33 +102,33 @@ BROKER_URL = os.environ.get('REDISGREEN_URL')
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-if os.environ.get('DATABASE_URL', None):
+# if os.environ.get('DATABASE_URL', None):
+# Parse database configuration from $DATABASE_URL
+import dj_database_url
+TEST_DATABASE = {
+    'TEST': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'USER': os.environ.get('TESTDBUSERNAME', 'postgres'),
+        'NAME': 'test_db',
+        'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
+    }
+}
+if os.environ.get('DATABASE_URL', None): # DATABASE_URL var is set
+    DATABASES = {'default': dj_database_url.config()}
+    DATABASES.update(TEST_DATABASE)
+else: # DATABASE_URL is not set--try default
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'taxcalc',
-            'USER': 'postgres',
-            'PASSWORD': '',
+            'USER': os.environ.get('TESTDBUSERNAME', 'postgres'),
+            'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
             'HOST': 'localhost',
             'PORT': '5432',
-        },
-        'TEST': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'USER': os.environ.get('TESTDBUSERNAME', 'postgres'),
-            'NAME': 'test_db',
-            'PASSWORD': '',
         }
     }
-    # Parse database configuration from $DATABASE_URL
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.config()
-else:
-    DATABASES = {
-        'default': {
-          'ENGINE': 'django.db.backends.sqlite3',
-          'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
+    DATABASES.update(TEST_DATABASE)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
