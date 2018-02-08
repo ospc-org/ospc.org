@@ -144,7 +144,7 @@ def get_taxbrain_model(fields, first_year=2017,
     personal_inputs = Form(first_year, fields)
 
     model = personal_inputs.save()
-    model.job_ids = '1,2,3'
+    model.job_ids = ['1','2','3']
     model.json_text = None
     model.first_year = first_year
     model.quick_calc = quick_calc

@@ -77,7 +77,7 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
 TAXCALC_DEFAULTS_2016 = default_policy(2016)
 
 
-class PersonalExemptionForm(ModelForm):
+class TaxBrainForm(ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
         self._first_year = int(first_year)
@@ -109,122 +109,8 @@ class PersonalExemptionForm(ModelForm):
                 if getattr(instance, flag) is not None and flag in self._meta.widgets:
                     self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
 
-        super(PersonalExemptionForm, self).__init__(*args, **kwargs)
+        super(TaxBrainForm, self).__init__(*args, **kwargs)
 
-    def discover_cpi_flag(self, param, user_values):
-        ''' Helper function to discover the CPI setting for this parameter'''
-
-        cpi_flag_from_user = user_values.get(param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get(param[1:] + "_cpi", None)
-
-        if cpi_flag_from_user is None:
-            attrs = self._default_meta[param]
-            cpi_flag = attrs.get('cpi_inflated', False)
-        else:
-            cpi_flag = cpi_flag_from_user
-        return cpi_flag
-
-    def get_comp_data(self, comp_key, param_id, col, param_values):
-        """
-        Get the data necessary for a min/max validation comparison, given:
-            param_id - The webapp-internal TC parameter ID
-            col - The column number for the param
-            comp_key - a key that is either:
-               * a static value
-               * the word 'default' - we should use the field's defaults
-               * the name of another param - we should use that param's
-                 corresponding column field. If values have been submitted for
-                 it, use them. Otherwise use its defaults
-             param_values - either user supplied or default values of the
-                            parameter
-
-        After finding the proper data, expand it to the required length.
-        Either the parameter specified by comp_key, or the parameter referred
-        by param_id may need to be extended and have wildcard entries
-        replaced.
-
-        Returns: dict
-                 'source': text for error reporting
-                 'comp_data': a sequence of values associated with param
-                 'epx_col_values': a (possibly) expanded set of column values
-                                   for comparison against comp_data
-        """
-
-        len_param_values = len(param_values)
-        param_name = "_" + param_id
-        param_column_name = param_name + "_" + str(col)
-
-        if is_number(comp_key):
-            source = "the static value"
-            new_len = len_param_values
-            comp_data = [comp_key]
-            len_diff = len_param_values - len(comp_data)
-            # No inflation of static values, just repeat
-            if len_diff > 0:
-                comp_data += [comp_data[-1]] * len_diff
-            col_values = param_values
-
-        elif comp_key == 'default':
-            source = "this field's default"
-            new_len = len_param_values
-            # Grab the default values and expand if necessary
-            base_param = self._default_params[param_id]
-            base_col = base_param.col_fields[col]
-            comp_data = base_col.values
-            len_diff = len_param_values - len(comp_data)
-            if len_diff > 0:
-                new_data = expand_unless_empty(comp_data, param_name,
-                                   param_column_name, self, new_len)
-                comp_data = new_data
-            col_values = param_values
-
-        elif comp_key in self._default_params:
-            # Comparing two parameters against each other, either of
-            # which might be expanded and have wildcards
-            other_param = self._default_params[comp_key]
-            other_col = other_param.col_fields[col]
-            other_values = None
-            other_param_name = parameter_name(other_col.id)
-            other_param_column_name = other_col.id
-            new_len = len_param_values
-
-            if other_col.id in self.cleaned_data:
-                other_values_raw = self.cleaned_data[other_col.id]
-                try:
-                    other_values = string_to_float_array(other_values_raw)
-                    new_len = max(len_param_values, len(other_values))
-                    other_values = expand_unless_empty(other_values, other_param_name,
-                                            other_param_column_name, self,
-                                            new_len)
-
-                except ValueError as ve:
-                    # Assume wildcards here
-                    other_values_list = other_values_raw.split(',')
-                    new_len = max(len_param_values, len(other_values_list))
-                    other_values = expand_unless_empty(other_values_list, other_param_name,
-                                        other_param_column_name, self,
-                                        new_len)
-
-            if other_values:
-                comp_data = other_values
-                source = other_param.name + "'s value"
-            else:
-                other_defaults = other_col.values
-                comp_data = expand_unless_empty(other_defaults, other_param_name,
-                                   other_param_column_name, self, new_len)
-                source = other_param.name + "'s default"
-            col_values = expand_unless_empty(param_values, param_name, param_column_name, self, new_len)
-        else:
-            raise ValueError('Unknown comp keyword "{0}"'.format(comp_key))
-
-        if len(comp_data) < 1:
-            raise ValueError('No comparison data found for kw'.format(comp_key))
-
-        assert len(comp_data) == len(col_values)
-        return {'source': source, 'comp_data': comp_data, 'exp_col_values': col_values}
 
     def clean(self):
         """
