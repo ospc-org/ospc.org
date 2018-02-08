@@ -108,7 +108,7 @@ import dj_database_url
 TEST_DATABASE = {
     'TEST': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': os.environ.get('TESTDBUSERNAME', 'postgres'),
+        'USER': os.environ.get('DATABASE_USER', 'postgres'),
         'NAME': 'test_db',
         'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
     }
@@ -121,7 +121,7 @@ else: # DATABASE_URL is not set--try default
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'taxcalc',
-            'USER': os.environ.get('TESTDBUSERNAME', 'postgres'),
+            'USER': os.environ.get('DATABASE_USER', 'postgres'),
             'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
             'HOST': 'localhost',
             'PORT': '5432',

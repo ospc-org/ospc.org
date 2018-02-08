@@ -1,5 +1,5 @@
 # if you want to use a user besides postgres,
-# run `DATABASE_NAME=yourusername source webapp_env.sh`
+# run `DATABASE_USER=yourusername source webapp_env.sh`
 export DATABASE_NAME=policybrain_local_database
 if [ -z ${DATABASE_USER+x} ]
 then
