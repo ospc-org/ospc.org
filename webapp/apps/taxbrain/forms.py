@@ -3,6 +3,7 @@ from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 from pyparsing import ParseException
+import six
 
 from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
@@ -123,7 +124,7 @@ class TaxBrainForm(ModelForm):
             if k not in INPUTS_META:
                 raw_fields[k] = v
         args_data["raw_fields"] = json.dumps(raw_fields)
-        args_data["fields"] = json.dumps("{}")
+        args_data["fields"] = json.dumps("")
         return (args_data,)
 
 
@@ -156,15 +157,17 @@ class TaxBrainForm(ModelForm):
         """
         fields = self.cleaned_data['raw_fields']
         for param_name, value in fields.iteritems():
-            # First make sure the text parses OK
-            if len(value) > 0:
+            # make sure the text parses OK
+            if isinstance(value, six.string_types) and len(value) > 0:
                 try:
                     INPUT.parseString(value)
                     # reverse character is not at the beginning
                     assert value.find('<') <= 0
                 except (ParseException, AssertionError):
                     # Parse Error - we don't recognize what they gave us
-                    self.add_error(col_field.id, "Unrecognized value: {}".format(value))
+                    self.add_error(param_name, "Unrecognized value: {}".format(value))
+            else:
+                assert isinstance(value, bool) or len(value) == 0
 
     class Meta:
         model = TaxSaveInputs
