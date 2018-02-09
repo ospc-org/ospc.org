@@ -762,6 +762,12 @@ class TaxSaveInputs(models.Model):
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
 
+    # # raw gui input
+    raw_fields = JSONField(default=None, blank=True, null=True)
+    #
+    # # validated gui input
+    fields = JSONField(default=None, blank=True, null=True)
+
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
 
