@@ -8,7 +8,7 @@ from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       int_to_nth, is_string, string_to_float_array, check_wildcards,
                       default_taxcalc_data, expand_list, propagate_user_list,
-                      convert_val, INPUT)
+                      convert_val, INPUT, INPUTS_META)
 import taxcalc
 
 
@@ -80,6 +80,7 @@ TAXCALC_DEFAULTS_2016 = default_policy(2016)
 class TaxBrainForm(ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
+        args = TaxBrainForm.add_fields(args)
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
 
@@ -111,6 +112,20 @@ class TaxBrainForm(ModelForm):
 
         super(TaxBrainForm, self).__init__(*args, **kwargs)
 
+    @staticmethod
+    def add_fields(args):
+        import json
+        if not args:
+            return args
+        args_data = args[0]
+        raw_fields = {}
+        for k, v in args_data.items():
+            if k not in INPUTS_META:
+                raw_fields[k] = v
+        args_data["raw_fields"] = json.dumps(raw_fields)
+        args_data["fields"] = json.dumps("{}")
+        return (args_data,)
+
 
     def clean(self):
         """
@@ -136,39 +151,20 @@ class TaxBrainForm(ModelForm):
 
     def do_taxcalc_validations(self):
         """
-        Run the validations specified by Taxcalc's param definitions
-
-        Each parameter can be assigned a min and a max, the value of which can
-        be statically defined or determined dynamically via a keyword.
-
-        Keywords correlate to submitted value array for a different parameter,
-        or to the default value array for the validated field.
-
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        Do minimal type checking to make sure that we did not get any
+        malicious input
         """
-
-        for param_id, param in self._default_params.iteritems():
-            if param.coming_soon or param.hidden:
-                continue
-
+        fields = self.cleaned_data['raw_fields']
+        for param_name, value in fields.iteritems():
             # First make sure the text parses OK
-            BOOLEAN_FLAGS = (u'True', u'False')
-            for col, col_field in enumerate(param.col_fields):
-                if col_field.id not in self.cleaned_data:
-                    continue
-
-                submitted_col_values_raw = self.cleaned_data[col_field.id]
-                if len(submitted_col_values_raw) > 0 and submitted_col_values_raw not in BOOLEAN_FLAGS:
-                    try:
-                        INPUT.parseString(submitted_col_values_raw)
-                        # reverse character is not at the beginning
-                        assert submitted_col_values_raw.find('<') <= 0
-                    except (ParseException, AssertionError):
-                        # Parse Error - we don't recognize what they gave us
-                        self.add_error(col_field.id, "Unrecognized value: {}".format(submitted_col_values_raw))
+            if len(value) > 0:
+                try:
+                    INPUT.parseString(value)
+                    # reverse character is not at the beginning
+                    assert value.find('<') <= 0
+                except (ParseException, AssertionError):
+                    # Parse Error - we don't recognize what they gave us
+                    self.add_error(col_field.id, "Unrecognized value: {}".format(value))
 
     class Meta:
         model = TaxSaveInputs
