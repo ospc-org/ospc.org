@@ -9,7 +9,7 @@ from datetime import datetime
 from ..taxbrain.models import (JSONReformTaxCalculator,
                                OutputUrl)
 from utils import get_taxbrain_model
-from ..taxbrain.forms import PersonalExemptionForm
+from ..taxbrain.forms import TaxBrainForm
 
 START_YEAR = 2016
 
@@ -22,7 +22,7 @@ class TaxBrainTableResults:
     def setUp(self):
         pass
 
-    def tc_lt_0130(self, Form=PersonalExemptionForm, UrlModel=OutputUrl):
+    def tc_lt_0130(self, Form=TaxBrainForm, UrlModel=OutputUrl):
         unique_url = get_taxbrain_model(self.test_coverage_fields,
                                         taxcalc_vers="0.10.2.abc",
                                         webapp_vers="1.1.1",
@@ -36,7 +36,7 @@ class TaxBrainTableResults:
         np.testing.assert_equal(model.get_tax_result(),
                                 self.skelaton_res_gt_0130)
 
-    def tc_gt_0130(self, Form=PersonalExemptionForm, UrlModel=OutputUrl):
+    def tc_gt_0130(self, Form=TaxBrainForm, UrlModel=OutputUrl):
         unique_url = get_taxbrain_model(self.test_coverage_fields,
                                         taxcalc_vers="0.13.0",
                                         webapp_vers="1.2.0",

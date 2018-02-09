@@ -6,7 +6,7 @@ import pytz
 import os
 import tempfile
 import re
-from collections import defaultdict
+
 
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -40,7 +40,7 @@ from .forms import TaxBrainForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       is_wildcard, convert_val, make_bool, nested_form_parameters,
-                      to_json_reform, parse_fields)
+                      )
 from .compute import (DropqCompute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
                       NUM_BUDGET_YEARS_QUICK)
 
@@ -53,6 +53,8 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
 from ..formatters import get_version
+from .param_formatters import (get_reform_from_file, get_reform_from_gui,
+                               to_json_reform)
 
 from django.conf import settings
 WEBAPP_VERSION = settings.WEBAPP_VERSION
@@ -81,64 +83,6 @@ def log_ip(request):
         # we don't have a real, public ip address for user
         print("BEGIN DROPQ WORK FROM: unknown IP")
 
-
-def benefit_switch_fixup(request, reform, model, name="ID_BenefitSurtax_Switch"):
-    """
-    Take the incoming POST, the user reform, and the TaxSaveInputs
-    model and fixup the switches _0, ..., _6 to one array of
-    bools. Also set the model values correctly based on incoming
-    POST
-    """
-    # Djengo forms needs switches to be True/False but in the interest of
-    # ensuring that reforms created from a file or the GUI interface are the
-    # same (down to the data type) the reform data are set to 1.0/0.0
-    _ids = [name + '_' + str(i) for i in range(7)]
-    values_from_model = [[reform[_id][0] for _id in _ids]]
-    final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
-    for _id, val in zip(_ids, final_values[0]):
-        reform[_id] = [1 if val else 0]
-        setattr(model, _id, unicode(val))
-    return reform
-
-def amt_fixup(request, reform, model):
-    """
-    Take the regular tax captial gains parameters from the user reform
-    and set them as the equivalent Alternative Minimum Tax capital
-    gains parameters
-    """
-    cap_gains_params = ["CG_rt1", "CG_brk1_0", "CG_brk1_1",
-                        "CG_brk1_2", "CG_brk1_3", "CG_brk1_cpi",
-                        "CG_rt2", "CG_brk2_0", "CG_brk2_1",
-                        "CG_brk2_2", "CG_brk2_3", "CG_brk2_cpi",
-                        "CG_rt3"]
-
-    for cgparam in cap_gains_params:
-        if cgparam in reform:
-            reform['AMT_' + cgparam] = reform[cgparam]
-            if cgparam.endswith("_cpi"):
-                setattr(model, 'AMT_' + cgparam, reform[cgparam])
-            else:
-                setattr(model, 'AMT_' + cgparam, reform[cgparam][0])
-
-    return reform
-
-def growth_fixup(mod):
-    if mod['growth_choice']:
-        if mod['growth_choice'] == 'factor_adjustment':
-            del mod['factor_target']
-        if mod['growth_choice'] == 'factor_target':
-            del mod['factor_adjustment']
-    else:
-        if 'factor_adjustment' in mod:
-            del mod['factor_adjustment']
-        if 'factor_target' in mod:
-            del mod['factor_target']
-
-    del mod['growth_choice']
-
-    return mod
-
-
 def denormalize(x):
     ans = ["#".join([i[0],i[1]]) for i in x]
     ans = [str(x) for x in ans]
@@ -148,171 +92,6 @@ def denormalize(x):
 def normalize(x):
     ans = [i.split('#') for i in x]
     return ans
-
-
-def append_errors_warnings(errors_warnings, append_func):
-    """
-    Appends warning/error messages to some object, append_obj, according to
-    the provided function, append_func
-    """
-    for action in ['warnings', 'errors']:
-        for param in errors_warnings[action]:
-            for year in sorted(
-                errors_warnings[action][param].keys(),
-                key=lambda x: int(x)
-            ):
-                msg = errors_warnings[action][param][year]
-                append_func(param, msg)
-
-
-def parse_errors_warnings(errors_warnings, map_back_to_tb):
-    """
-    Parse error messages so that they can be mapped to Taxbrain param ID. This
-    allows the messages to be displayed under the field where the value is
-    entered.
-
-    returns: dictionary 'parsed' with keys: 'errors' and 'warnings'
-        parsed['errors/warnings'] = {year: {tb_param_name: 'error message'}}
-    """
-    parsed = {'errors': defaultdict(dict), 'warnings': defaultdict(dict)}
-    for action in errors_warnings:
-        msgs = errors_warnings[action]
-        if len(msgs) == 0:
-            continue
-        for msg in msgs.split('\n'):
-            if len(msg) == 0: # new line
-                continue
-            msg_spl = msg.split()
-            msg_action = msg_spl[0]
-            year = msg_spl[1]
-            curr_id = msg_spl[2][1:]
-            msg_parse = msg_spl[2:]
-            parsed[action][curr_id][year] = ' '.join([msg_action] + msg_parse +
-                                                         ['for', year])
-
-    return parsed
-
-def read_json_reform(reform, assumptions, map_back_to_tb={}):
-    """
-    Read reform and parse errors
-
-    returns reform and assumption dictionaries that are compatible with
-            taxcalc.Policy.implement_reform
-            parsed warning and error messsages to be displayed on input page
-            if necessary
-    """
-    policy_dict = taxcalc.Calculator.read_json_param_objects(
-        reform,
-        assumptions,
-    )
-    # get errors and warnings on parameters that do not cause ValueErrors
-    errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
-    errors_warnings = parse_errors_warnings(errors_warnings,
-                                            map_back_to_tb)
-    # separate reform and assumptions
-    reform_dict = policy_dict["policy"]
-    assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
-
-    return reform_dict, assumptions_dict, errors_warnings
-
-def get_reform_from_file(request_files, reform_text=None,
-                         assumptions_text=None):
-    """
-    Parse files from request object and collect errors_warnings
-
-    returns reform and assumptions dictionaries that are compatible with
-            taxcalc.Policy.implement_reform
-            raw reform and assumptions text
-            parsed warning and error messsages to be displayed on input page
-            if necessary
-    """
-    if "docfile" in request_files:
-        inmemfile_reform = request_files['docfile']
-        reform_text = inmemfile_reform.read()
-    if 'assumpfile' in files:
-        inmemfile_assumption = request_files['assumpfile']
-        assumptions_text = inmemfile_assumption.read()
-
-    (reform_dict, assumptions_dict,
-        errors_warnings) = read_json_reform(reform_text,
-                                            assumptions_text)
-
-    assumptions_text = assumptions_text or ""
-
-    return (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors_warnings)
-
-
-def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
-                        stored_errors=None):
-    """
-    Parse request and model objects and collect reforms and warnings
-    This function is also called by dynamic/views.behavior_model.  In the
-    future, this could be used as a generic GUI parameter parsing function.
-
-    returns reform and assumptions dictionaries that are compatible with
-            taxcalc.Policy.implement_reform
-            raw reform and assumptions text
-            parsed warning and error messsages to be displayed on input page
-            if necessary
-    """
-    start_year = fields['start_year']
-    taxbrain_data = {}
-    assumptions_data = {}
-    map_back_to_tb = {}
-
-    policy_dict_json = {}
-    assumptions_dict_json = {}
-
-    # prepare taxcalc params from TaxSaveInputs model
-    if taxbrain_model is not None:
-        taxbrain_data = dict(taxbrain_model.__dict__)
-        taxbrain_data = growth_fixup(taxbrain_data)
-        taxbrain_data = parse_fields(taxbrain_data)
-        taxbrain_data = benefit_switch_fixup(fields,
-                                             taxbrain_data,
-                                             taxbrain_model,
-                                             name="ID_BenefitSurtax_Switch")
-        taxbrain_data = benefit_switch_fixup(fields,
-                                             taxbrain_data,
-                                             taxbrain_model,
-                                             name="ID_BenefitCap_Switch")
-        taxbrain_data = benefit_switch_fixup(fields,
-                                             taxbrain_data,
-                                             taxbrain_model,
-                                             name="ID_AmountCap_Switch")
-        taxbrain_data = amt_fixup(fields,
-                                  taxbrain_data,
-                                  taxbrain_model)
-        # convert GUI input to json style taxcalc reform
-        policy_dict_json, map_back_to_tb = to_json_reform(taxbrain_data,
-                                                          int(start_year))
-    if behavior_model is not None:
-        assumptions_data = dict(behavior_model.__dict__)
-        assumptions_data = parse_fields(assumptions_data)
-        (assumptions_dict_json,
-            map_back_assump) = to_json_reform(assumptions_data,
-                                              int(start_year),
-                                              cls=taxcalc.Behavior)
-        map_back_to_tb.update(map_back_assump)
-
-    policy_dict_json = {"policy": policy_dict_json}
-
-    policy_dict_json = json.dumps(policy_dict_json)
-
-    assumptions_dict_json = {"behavior": assumptions_dict_json,
-                             "growdiff_response": {},
-                             "consumption": {},
-                             "growdiff_baseline": {}}
-    assumptions_dict_json = json.dumps(assumptions_dict_json)
-
-    (reform_dict, assumptions_dict,
-        errors_warnings) = read_json_reform(policy_dict_json,
-                                            assumptions_dict_json,
-                                            map_back_to_tb)
-
-    return (reform_dict, assumptions_dict, "", "", errors_warnings)
-
 
 def save_model(url, request, model, json_reform, has_errors, start_year,
                do_full_calc, is_file, reform_dict, assumptions_dict,
@@ -454,7 +233,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             is_valid = personal_inputs.is_valid()
             if is_valid:
                 model = personal_inputs.save()
-                model.set_fields()
+                # model.set_fields()
                 (reform_dict, assumptions_dict, reform_text, assumptions_text,
                     errors_warnings) = get_reform_from_gui(fields,
                                                            taxbrain_model=model)

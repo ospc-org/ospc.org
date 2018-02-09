@@ -5,7 +5,7 @@ import sys
 from ..taxbrain.compute import MockCompute
 
 from ..taxbrain.models import OutputUrl
-from ..taxbrain.forms import PersonalExemptionForm
+from ..taxbrain.forms import TaxBrainForm
 
 from ..dynamic import views
 from ..taxbrain import views
@@ -132,7 +132,7 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
 def get_taxbrain_model(fields, first_year=2017,
                        quick_calc=False, taxcalc_vers="0.13.0",
                        webapp_vers="1.2.0", exp_comp_datetime = "2017-10-10",
-                       Form=PersonalExemptionForm, UrlModel=OutputUrl):
+                       Form=TaxBrainForm, UrlModel=OutputUrl):
     fields = fields.copy()
     del fields['_state']
     del fields['creation_date']

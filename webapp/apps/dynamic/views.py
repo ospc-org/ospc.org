@@ -33,11 +33,13 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
-from ..taxbrain.views import (growth_fixup, benefit_switch_fixup, make_bool, dropq_compute,
-                              JOB_PROC_TIME_IN_SECONDS, get_reform_from_gui,
-                              parse_fields, add_summary_column)
+from ..taxbrain.views import (make_bool, dropq_compute,
+                              JOB_PROC_TIME_IN_SECONDS,
+                              add_summary_column)
+from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
+                                         parse_fields)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
-                                convert_val, to_json_reform)
+                                convert_val)
 
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
@@ -107,7 +109,6 @@ def dynamic_input(request, pk):
 
             if not taxbrain_model.json_text:
                 taxbrain_dict = dict(taxbrain_model.__dict__)
-                growth_fixup(taxbrain_dict)
                 for key, value in taxbrain_dict.items():
                     if type(value) == type(unicode()):
                         try:
@@ -123,8 +124,6 @@ def dynamic_input(request, pk):
                 #Don't need to pass around the microsim results
                 if 'tax_result' in microsim_data:
                     del microsim_data['tax_result']
-
-                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
                 # start calc job
                 submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)

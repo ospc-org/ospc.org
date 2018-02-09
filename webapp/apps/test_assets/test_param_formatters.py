@@ -5,10 +5,11 @@ import taxcalc
 import numpy as np
 from collections import defaultdict
 
-from ..taxbrain.views import (read_json_reform, parse_errors_warnings,
-                              append_errors_warnings)
-
-from ..taxbrain.helpers import (get_default_policy_param_name, to_json_reform)
+from ..taxbrain.param_formatters import (read_json_reform,
+                                         parse_errors_warnings,
+                                         append_errors_warnings,
+                                         get_default_policy_param_name,
+                                         to_json_reform)
 
 START_YEAR = 2017
 CUR_PATH = os.path.abspath(os.path.dirname(__file__))
