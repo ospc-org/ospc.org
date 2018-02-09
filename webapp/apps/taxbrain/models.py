@@ -789,6 +789,24 @@ class TaxSaveInputs(models.Model):
             self.tax_result
         )
 
+    def set_fields(self, form_object):
+        """
+        Parse raw fields
+            1. Only keep fields that user specifies
+            2. Map TB names to TC names
+            3. Do more specific type checking--in particular, check if
+               field is the type that Tax-Calculator expects from this param
+        """
+        raise NotImplementedError()
+
+    def get_model_specs(self):
+        """
+        Build JSON model specifications up from fields data
+
+        returns: reform_dict, assumptions_dict, errors_warnings
+        """
+        raise NotImplementedError()
+
     class Meta:
         permissions = (
             ("view_inputs", "Allowed to view Taxbrain."),
