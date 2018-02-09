@@ -36,7 +36,7 @@ from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
 from django import forms
 
-from .forms import PersonalExemptionForm, has_field_errors
+from .forms import TaxBrainForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
 from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
                       is_wildcard, convert_val, make_bool, nested_form_parameters,
@@ -445,7 +445,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
                 errors_warnings) = get_reform_from_file(request_files)
         else:
-            personal_inputs = PersonalExemptionForm(start_year, fields)
+            personal_inputs = TaxBrainForm(start_year, fields)
             # If an attempt is made to post data we don't accept
             # raise a 400
             if personal_inputs.non_field_errors():
@@ -454,6 +454,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             is_valid = personal_inputs.is_valid()
             if is_valid:
                 model = personal_inputs.save()
+                model.set_fields()
                 (reform_dict, assumptions_dict, reform_text, assumptions_text,
                     errors_warnings) = get_reform_from_gui(fields,
                                                            taxbrain_model=model)
@@ -651,7 +652,7 @@ def personal_results(request):
     if request.method=='POST':
         obj, _, has_errors, _ = process_reform(request)
 
-        # case where validation failed in forms.PersonalExemptionForm
+        # case where validation failed in forms.TaxBrainForm
         # TODO: assert HttpResponse status is 404
         if has_errors and isinstance(obj, HttpResponse):
             return obj
@@ -673,7 +674,7 @@ def personal_results(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
-        personal_inputs = PersonalExemptionForm(first_year=start_year)
+        personal_inputs = TaxBrainForm(first_year=start_year)
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
@@ -781,7 +782,7 @@ def edit_personal_results(request, pk):
     model = TaxSaveInputs.objects.get(pk=url.model_pk)
     start_year = model.first_year
 
-    form_personal_exemp = PersonalExemptionForm(first_year=start_year, instance=model)
+    form_personal_exemp = TaxBrainForm(first_year=start_year, instance=model)
 
     taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
     webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
