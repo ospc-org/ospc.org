@@ -212,6 +212,12 @@ TAXCALC_HIDDEN_FIELDS = [
     '_LLC_Expense_c', '_FEI_ec_c'
 ]
 
+INPUTS_META = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
+          u'full_calc', u'quick_calc', 'first_year', '_state',
+          'creation_date', 'id', 'job_ids', 'jobs_not_ready',
+          'json_text_id', 'tax_result', 'reform_style',
+          '_micro_sim_cache', 'micro_sim_id', )
+
 #
 # Display TaxCalc result data
 #
@@ -418,11 +424,7 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
     number_reverse_operators = 1
     default_params = cls.default_data(start_year=start_year,
                                       metadata=True)
-    ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
-              u'full_calc', u'quick_calc', 'first_year', '_state',
-              'creation_date', 'id', 'job_ids', 'jobs_not_ready',
-              'json_text_id', 'tax_result', 'reform_style',
-              '_micro_sim_cache', 'micro_sim_id', )
+    ignore = INPUTS_META
 
     reform = {}
     for param in fields:
