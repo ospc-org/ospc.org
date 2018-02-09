@@ -7,7 +7,6 @@ from .models import (DynamicSaveInputs, DynamicBehaviorSaveInputs,
 from ..taxbrain.helpers import (TaxCalcField, TaxCalcParam,
                                 string_to_float_array, int_to_nth,
                                 is_string, is_number)
-from ..taxbrain.forms import PersonalExemptionForm
 from .helpers import (default_parameters, default_behavior_parameters,
                       default_elasticity_parameters)
 
