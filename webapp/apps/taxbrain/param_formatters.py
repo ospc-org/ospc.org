@@ -50,20 +50,36 @@ def amt_fixup(request, reform, model):
 
 
 def growth_fixup(mod):
-    if mod['growth_choice']:
-        if mod['growth_choice'] == 'factor_adjustment':
-            del mod['factor_target']
-        if mod['growth_choice'] == 'factor_target':
-            del mod['factor_adjustment']
-    else:
-        if 'factor_adjustment' in mod:
-            del mod['factor_adjustment']
-        if 'factor_target' in mod:
-            del mod['factor_target']
-
-    del mod['growth_choice']
+    # if mod['growth_choice']:
+    #     if mod['growth_choice'] == 'factor_adjustment':
+    #         del mod['factor_target']
+    #     if mod['growth_choice'] == 'factor_target':
+    #         del mod['factor_adjustment']
+    # else:
+    #     if 'factor_adjustment' in mod:
+    #         del mod['factor_adjustment']
+    #     if 'factor_target' in mod:
+    #         del mod['factor_target']
+    #
+    # del mod['growth_choice']
 
     return mod
+
+
+def switch_fixup(taxbrain_data, fields, taxbrain_model):
+    print(sorted(taxbrain_data.keys()))
+    growth_fixup(taxbrain_data)
+    benefit_names = ["ID_BenefitSurtax_Switch", "ID_BenefitCap_Switch",
+                     "ID_AmountCap_Switch"]
+    for benefit_name in benefit_names:
+        benefit_switch_fixup(fields,
+                             taxbrain_data,
+                             taxbrain_model,
+                             name=benefit_name)
+
+    amt_fixup(fields,
+              taxbrain_data,
+              taxbrain_model)
 
 
 def parse_fields(param_dict):
@@ -303,23 +319,8 @@ def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
     # prepare taxcalc params from TaxSaveInputs model
     if taxbrain_model is not None:
         taxbrain_data = dict(taxbrain_model.__dict__)
-        taxbrain_data = growth_fixup(taxbrain_data)
         taxbrain_data = parse_fields(taxbrain_data)
-        taxbrain_data = benefit_switch_fixup(fields,
-                                             taxbrain_data,
-                                             taxbrain_model,
-                                             name="ID_BenefitSurtax_Switch")
-        taxbrain_data = benefit_switch_fixup(fields,
-                                             taxbrain_data,
-                                             taxbrain_model,
-                                             name="ID_BenefitCap_Switch")
-        taxbrain_data = benefit_switch_fixup(fields,
-                                             taxbrain_data,
-                                             taxbrain_model,
-                                             name="ID_AmountCap_Switch")
-        taxbrain_data = amt_fixup(fields,
-                                  taxbrain_data,
-                                  taxbrain_model)
+        switch_fixup(taxbrain_data, fields, taxbrain_model)
         # convert GUI input to json style taxcalc reform
         policy_dict_json, map_back_to_tb = to_json_reform(taxbrain_data,
                                                           int(start_year))
