@@ -80,6 +80,104 @@ def parse_fields(param_dict):
     return param_dict
 
 
+def get_default_policy_param_name(param, default_params):
+    """
+    Map TaxBrain field name to Tax-Calculator parameter name
+    For example: STD_0 maps to _STD_single
+
+    returns: Tax-Calculator param name
+    """
+    if '_' + param in default_params: # ex. EITC_indiv --> _EITC_indiv
+        return '_' + param
+    param_pieces = param.split('_')
+    end_piece = param_pieces[-1]
+    no_suffix = '_' + '_'.join(param_pieces[:-1])
+    if end_piece == 'cpi': # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
+        if no_suffix in default_params:
+            return '_' + param
+        else:
+            msg = "Received unexpected parameter: {}"
+            raise ValueError(msg.format(param))
+    if no_suffix in default_params: # ex. STD_0 --> _STD_single
+        try:
+            ix = int(end_piece)
+        except ValueError:
+            msg = "Parsing {}: Expected integer for index but got {}"
+            raise ValueError(msg.format(param, end_piece))
+        num_columns = len(default_params[no_suffix]['col_label'])
+        if ix < 0 or ix >= num_columns:
+            msg = "Parsing {}: Index {} not in range ({}, {})"
+            raise IndexError(msg.format(param, ix, 0, num_columns))
+        col_label = default_params[no_suffix]['col_label'][ix]
+        return no_suffix + '_' + col_label
+    msg = "Received unexpected parameter: {}"
+    raise ValueError(msg.format(param))
+
+
+def to_json_reform(fields, start_year, cls=taxcalc.Policy):
+    """
+    Convert fields style dictionary to json reform style dictionary
+    For example:
+    fields = {'_state': <django.db.models.base.ModelState object at 0x10c764950>,
+              'creation_date': datetime.datetime(2015, 1, 1, 0, 0), 'id': 64,
+              'ID_ps_cpi': True, 'quick_calc': False,
+              'FICA_ss_trt': [u'*', 0.1, u'*', 0.2], 'first_year': 2017,
+              'ID_BenefitSurtax_Switch_0': [True], 'ID_Charity_c_cpi': True,
+              'EITC_rt_2': [1.0]}
+    to
+    reform = {'_CG_nodiff': {'2017': [False]},
+              '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
+              '_ID_Charity_c_cpi': {'2017': True},
+              '_EITC_rt_2kids': {'2017': [1.0]}}
+
+    returns json style reform
+    """
+    map_back_to_tb = {}
+    number_reverse_operators = 1
+    default_params = cls.default_data(start_year=start_year,
+                                      metadata=True)
+    ignore = INPUTS_META
+
+    reform = {}
+    for param in fields:
+        if param not in ignore:
+            param_name = get_default_policy_param_name(param, default_params)
+            map_back_to_tb[param_name] = param
+            reform[param_name] = {}
+            if not isinstance(fields[param], list):
+                assert isinstance(fields[param], bool) and param.endswith('_cpi')
+                reform[param_name][str(start_year)] = fields[param]
+                continue
+            i = 0
+            while i < len(fields[param]):
+                if is_wildcard(fields[param][i]):
+                    # may need to do something here
+                    pass
+                elif is_reverse(fields[param][i]):
+                    # only the first character can be a reverse char
+                    # and there must be a following character
+                    assert len(fields[param]) > 1
+                    # set value for parameter in start_year - 1
+                    assert (isinstance(fields[param][i + 1], (int, float)) or
+                            isinstance(fields[param][i + 1], bool))
+                    reform[param_name][str(start_year - 1)] = \
+                        [fields[param][i + 1]]
+
+                    # realign year and parameter indices
+                    for op in (0, number_reverse_operators + 1):
+                        fields[param].pop(0)
+                    continue
+                else:
+                    assert (isinstance(fields[param][i], (int, float)) or
+                            isinstance(fields[param][i], bool))
+                    reform[param_name][str(start_year + i)] = \
+                        [fields[param][i]]
+
+                i += 1
+
+    return reform, map_back_to_tb
+
+
 def append_errors_warnings(errors_warnings, append_func):
     """
     Appends warning/error messages to some object, append_obj, according to
@@ -122,6 +220,7 @@ def parse_errors_warnings(errors_warnings, map_back_to_tb):
 
     return parsed
 
+
 def read_json_reform(reform, assumptions, map_back_to_tb={}):
     """
     Read reform and parse errors
@@ -144,6 +243,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
     assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
 
     return reform_dict, assumptions_dict, errors_warnings
+
 
 def get_reform_from_file(request_files, reform_text=None,
                          assumptions_text=None):
@@ -248,101 +348,3 @@ def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
                                             map_back_to_tb)
 
     return (reform_dict, assumptions_dict, "", "", errors_warnings)
-
-
-def get_default_policy_param_name(param, default_params):
-    """
-    Map TaxBrain field name to Tax-Calculator parameter name
-    For example: STD_0 maps to _STD_single
-
-    returns: Tax-Calculator param name
-    """
-    if '_' + param in default_params: # ex. EITC_indiv --> _EITC_indiv
-        return '_' + param
-    param_pieces = param.split('_')
-    end_piece = param_pieces[-1]
-    no_suffix = '_' + '_'.join(param_pieces[:-1])
-    if end_piece == 'cpi': # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
-        if no_suffix in default_params:
-            return '_' + param
-        else:
-            msg = "Received unexpected parameter: {}"
-            raise ValueError(msg.format(param))
-    if no_suffix in default_params: # ex. STD_0 --> _STD_single
-        try:
-            ix = int(end_piece)
-        except ValueError:
-            msg = "Parsing {}: Expected integer for index but got {}"
-            raise ValueError(msg.format(param, end_piece))
-        num_columns = len(default_params[no_suffix]['col_label'])
-        if ix < 0 or ix >= num_columns:
-            msg = "Parsing {}: Index {} not in range ({}, {})"
-            raise IndexError(msg.format(param, ix, 0, num_columns))
-        col_label = default_params[no_suffix]['col_label'][ix]
-        return no_suffix + '_' + col_label
-    msg = "Received unexpected parameter: {}"
-    raise ValueError(msg.format(param))
-
-
-def to_json_reform(fields, start_year, cls=taxcalc.Policy):
-    """
-    Convert fields style dictionary to json reform style dictionary
-    For example:
-    fields = {'_state': <django.db.models.base.ModelState object at 0x10c764950>,
-              'creation_date': datetime.datetime(2015, 1, 1, 0, 0), 'id': 64,
-              'ID_ps_cpi': True, 'quick_calc': False,
-              'FICA_ss_trt': [u'*', 0.1, u'*', 0.2], 'first_year': 2017,
-              'ID_BenefitSurtax_Switch_0': [True], 'ID_Charity_c_cpi': True,
-              'EITC_rt_2': [1.0]}
-    to
-    reform = {'_CG_nodiff': {'2017': [False]},
-              '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
-              '_ID_Charity_c_cpi': {'2017': True},
-              '_EITC_rt_2kids': {'2017': [1.0]}}
-
-    returns json style reform
-    """
-    map_back_to_tb = {}
-    number_reverse_operators = 1
-    default_params = cls.default_data(start_year=start_year,
-                                      metadata=True)
-    ignore = INPUTS_META
-
-    reform = {}
-    for param in fields:
-        if param not in ignore:
-            param_name = get_default_policy_param_name(param, default_params)
-            map_back_to_tb[param_name] = param
-            reform[param_name] = {}
-            if not isinstance(fields[param], list):
-                assert isinstance(fields[param], bool) and param.endswith('_cpi')
-                reform[param_name][str(start_year)] = fields[param]
-                continue
-            i = 0
-            while i < len(fields[param]):
-                if is_wildcard(fields[param][i]):
-                    # may need to do something here
-                    pass
-                elif is_reverse(fields[param][i]):
-                    # only the first character can be a reverse char
-                    # and there must be a following character
-                    assert len(fields[param]) > 1
-                    # set value for parameter in start_year - 1
-                    assert (isinstance(fields[param][i + 1], (int, float)) or
-                            isinstance(fields[param][i + 1], bool))
-                    reform[param_name][str(start_year - 1)] = \
-                        [fields[param][i + 1]]
-
-                    # realign year and parameter indices
-                    for op in (0, number_reverse_operators + 1):
-                        fields[param].pop(0)
-                    continue
-                else:
-                    assert (isinstance(fields[param][i], (int, float)) or
-                            isinstance(fields[param][i], bool))
-                    reform[param_name][str(start_year + i)] = \
-                        [fields[param][i]]
-
-                i += 1
-
-    return reform, map_back_to_tb
