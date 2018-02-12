@@ -2,6 +2,7 @@ from django.test import TestCase
 import pytest
 
 from ..models import JSONReformTaxCalculator
+from ..forms import TaxBrainForm
 from ...test_assets.utils import get_taxbrain_model
 from ...test_assets.test_models import TaxBrainTableResults, TaxBrainModelsTest
 
@@ -33,5 +34,21 @@ class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
 
 class TaxBrainFieldsTest(TaxBrainModelsTest, TestCase):
 
-    def test_1(self):
-        assert 1==2
+    def test_set_fields(self):
+        fields = self.test_coverage_fields.copy()
+        fields.pop('_state', None)
+        fields.pop('creation_date', None)
+        fields.pop('id', None)
+        for key in fields:
+            if isinstance(fields[key], list):
+                fields[key] = ','.join(map(str, fields[key]))
+        first_year = fields.get('first_year', 2017)
+        form = TaxBrainForm(first_year, fields)
+
+        model = form.save(commit=False)
+
+        # model.set_fields(form)
+        # model.save()
+        results = model.get_model_specs()
+        model.save()
+        print(results)

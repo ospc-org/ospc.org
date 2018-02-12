@@ -233,10 +233,8 @@ def submit_reform(request, user=None, json_reform_id=None):
             is_valid = personal_inputs.is_valid()
             if is_valid:
                 model = personal_inputs.save()
-                # model.set_fields()
                 (reform_dict, assumptions_dict, reform_text, assumptions_text,
-                    errors_warnings) = get_reform_from_gui(fields,
-                                                           taxbrain_model=model)
+                    errors_warnings) = model.get_model_specs()
 
         json_reform = JSONReformTaxCalculator(
             reform_text=json.dumps(reform_dict),

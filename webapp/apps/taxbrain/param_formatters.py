@@ -186,7 +186,13 @@ def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    start_year = fields['start_year']
+    if taxbrain_model is not None:
+        start_year = taxbrain_model.start_year
+    elif behavior_model is not None:
+        start_year = behavior_model.start_year
+    else:
+        raise ValueError("Neither taxbrain_model nor behavior_model was given")
+
     taxbrain_data = {}
     assumptions_data = {}
     map_back_to_tb = {}

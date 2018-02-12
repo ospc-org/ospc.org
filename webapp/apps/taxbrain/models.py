@@ -13,6 +13,7 @@ from django.contrib.postgres.fields import JSONField
 import datetime
 
 import helpers
+from param_formatters import get_reform_from_gui
 
 def convert_to_floats(tsi):
     """
@@ -805,7 +806,11 @@ class TaxSaveInputs(models.Model):
 
         returns: reform_dict, assumptions_dict, errors_warnings
         """
-        raise NotImplementedError()
+        return get_reform_from_gui(self.raw_fields, self)
+
+    @property
+    def start_year(self):
+        return self.first_year
 
     class Meta:
         permissions = (
