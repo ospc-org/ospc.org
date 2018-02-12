@@ -161,11 +161,19 @@ class TaxBrainForm(ModelForm):
             if isinstance(value, six.string_types) and len(value) > 0:
                 try:
                     INPUT.parseString(value)
-                    # reverse character is not at the beginning
-                    assert value.find('<') <= 0
                 except (ParseException, AssertionError):
                     # Parse Error - we don't recognize what they gave us
                     self.add_error(param_name, "Unrecognized value: {}".format(value))
+                try:
+                    # reverse character is not at the beginning
+                    assert value.find('<') <= 0
+                except AssertionError:
+                    self.add_error(
+                        param_name,
+                        ("Operator '<' can only be used "
+                         "at the beginning")
+                    )
+
             else:
                 assert isinstance(value, bool) or len(value) == 0
 
