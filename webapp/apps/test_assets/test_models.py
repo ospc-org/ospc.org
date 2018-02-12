@@ -15,12 +15,16 @@ START_YEAR = 2016
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
-@pytest.mark.usefixtures("test_coverage_fields", "skelaton_res_lt_0130",
-                         "skelaton_res_gt_0130")
-class TaxBrainTableResults:
+@pytest.mark.usefixtures("test_coverage_fields")
+class TaxBrainModelsTest:
 
     def setUp(self):
         pass
+
+
+@pytest.mark.usefixtures("skelaton_res_lt_0130",
+                         "skelaton_res_gt_0130")
+class TaxBrainTableResults(TaxBrainModelsTest):
 
     def tc_lt_0130(self, Form=TaxBrainForm, UrlModel=OutputUrl):
         unique_url = get_taxbrain_model(self.test_coverage_fields,

@@ -3,7 +3,7 @@ import pytest
 
 from ..models import JSONReformTaxCalculator
 from ...test_assets.utils import get_taxbrain_model
-from ...test_assets.test_models import TaxBrainTableResults
+from ...test_assets.test_models import TaxBrainTableResults, TaxBrainModelsTest
 
 
 class TaxBrainJSONReformModelTest(TestCase):
@@ -29,3 +29,9 @@ class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
 
     def test_static_tc_gt_0130(self):
         self.tc_gt_0130()
+
+
+class TaxBrainFieldsTest(TaxBrainModelsTest, TestCase):
+
+    def test_1(self):
+        assert 1==2
