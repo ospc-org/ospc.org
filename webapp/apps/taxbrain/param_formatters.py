@@ -1,4 +1,4 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import six
 import json
 
@@ -6,6 +6,9 @@ import taxcalc
 
 from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
                      make_bool, convert_val)
+
+
+MetaParam = namedtuple("MetaParam", ["param_name", "param_meta"])
 
 
 def benefit_switch_fixup(fields, model, name="ID_BenefitSurtax_Switch"):
@@ -95,21 +98,21 @@ def parse_fields(param_dict):
     return param_dict
 
 
-def get_default_policy_param_name(param, default_params):
+def get_default_policy_param(param, default_params):qq
     """
     Map TaxBrain field name to Tax-Calculator parameter name
     For example: STD_0 maps to _STD_single
 
-    returns: Tax-Calculator param name
+    returns: named tuple with taxcalc param name and metadata
     """
     if '_' + param in default_params: # ex. EITC_indiv --> _EITC_indiv
-        return '_' + param
+        return MetaParam('_' + param, default_params['_' + param])
     param_pieces = param.split('_')
     end_piece = param_pieces[-1]
     no_suffix = '_' + '_'.join(param_pieces[:-1])
     if end_piece == 'cpi': # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
         if no_suffix in default_params:
-            return '_' + param
+            return MetaParam('_' + param, default_params[no_suffix])
         else:
             msg = "Received unexpected parameter: {}"
             raise ValueError(msg.format(param))
@@ -124,7 +127,7 @@ def get_default_policy_param_name(param, default_params):
             msg = "Parsing {}: Index {} not in range ({}, {})"
             raise IndexError(msg.format(param, ix, 0, num_columns))
         col_label = default_params[no_suffix]['col_label'][ix]
-        return no_suffix + '_' + col_label
+        return MetaParam(no_suffix + '_' + col_label, default_params[no_suffix])
     msg = "Received unexpected parameter: {}"
     raise ValueError(msg.format(param))
 
@@ -156,7 +159,8 @@ def to_json_reform(fields, start_year, cls=taxcalc.Policy):
     reform = {}
     for param in fields:
         if param not in ignore:
-            param_name = get_default_policy_param_name(param, default_params)
+            meta_param = get_default_policy_param(param, default_params)
+            param_name = meta_param.param_name
             map_back_to_tb[param_name] = param
             reform[param_name] = {}
             if not isinstance(fields[param], list):
@@ -317,7 +321,7 @@ def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
 
     # prepare taxcalc params from TaxSaveInputs model
     if taxbrain_model is not None:
-        taxbrain_data = dict(taxbrain_model.__dict__)
+        taxbrain_data = taxbrain_model.raw_fields
         taxbrain_data = parse_fields(taxbrain_data)
         switch_fixup(taxbrain_data, fields, taxbrain_model)
         # convert GUI input to json style taxcalc reform

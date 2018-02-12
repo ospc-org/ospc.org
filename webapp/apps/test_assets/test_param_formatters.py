@@ -3,13 +3,13 @@ import os
 import pytest
 import taxcalc
 import numpy as np
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from ..taxbrain.param_formatters import (read_json_reform,
                                          parse_errors_warnings,
                                          append_errors_warnings,
-                                         get_default_policy_param_name,
-                                         to_json_reform)
+                                         get_default_policy_param,
+                                         to_json_reform, MetaParam)
 
 START_YEAR = 2017
 CUR_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -22,7 +22,7 @@ def default_params_Policy():
 
 
 ###############################################################################
-# Test get_default_policy_param_name
+# Test get_default_policy_param
 # 3 Cases for search success:
 #   1. "_" + param name
 #   2. "_" + param name + index name (i.e. STD_0 --> _STD_single)
@@ -31,21 +31,23 @@ def default_params_Policy():
                          [("FICA_ss_trt", "_FICA_ss_trt"),
                           ("ID_BenefitSurtax_Switch_0", "_ID_BenefitSurtax_Switch_medical"),
                           ("CG_brk3_cpi", "_CG_brk3_cpi")])
-def test_get_default_policy_param_name_passing(param, exp_param, default_params_Policy):
-    act_param = get_default_policy_param_name(param, default_params_Policy)
-    np.testing.assert_equal(act_param, exp_param)
+def test_get_default_policy_param_passing(param, exp_param, default_params_Policy):
+    act_param = get_default_policy_param(param, default_params_Policy)
+    assert isinstance(act_param, MetaParam)
+    np.testing.assert_equal(act_param.param_name, exp_param)
+    assert isinstance(act_param.param_meta, (dict, OrderedDict))
 
 @pytest.mark.parametrize("param", ["CG_brk3_extra_cpi", "not_a_param"])
-def test_get_default_policy_param_name_failing0(param, default_params_Policy):
+def test_get_default_policy_param_failing0(param, default_params_Policy):
     """
     Check that non-recognized parameters throw a ValueError
     """
     match="Received unexpected parameter: {0}".format(param)
     with pytest.raises(ValueError, match=match):
-        get_default_policy_param_name(param, default_params_Policy)
+        get_default_policy_param(param, default_params_Policy)
 
 
-def test_get_default_policy_param_name_failing1(default_params_Policy):
+def test_get_default_policy_param_failing1(default_params_Policy):
     """
     Check that parameter with non-integer characters after the final '_'
     throws ValueError
@@ -53,10 +55,10 @@ def test_get_default_policy_param_name_failing1(default_params_Policy):
     param = "ID_BenefitSurtax_Switch_idx"
     match = "Parsing {}: Expected integer for index but got {}".format(param, "idx")
     with pytest.raises(ValueError, match=match):
-        get_default_policy_param_name(param, default_params_Policy)
+        get_default_policy_param(param, default_params_Policy)
 
 
-def test_get_default_policy_param_name_failing2(default_params_Policy):
+def test_get_default_policy_param_failing2(default_params_Policy):
     """
     Check that parameter with correct name but out of bounds index throws
     IndexError
@@ -66,7 +68,16 @@ def test_get_default_policy_param_name_failing2(default_params_Policy):
     match = "Parsing {}: Index {} not in range \({}, {}\)"
     match = match.format(param, 12, 0, 7)
     with pytest.raises(IndexError, match=match):
-        get_default_policy_param_name(param, default_params_Policy)
+        get_default_policy_param(param, default_params_Policy)
+
+##############################################################################
+# Test meta_apram construction and attribute access
+def test_meta_param():
+    name_part = 'param_name'
+    dict_part = {'dict': 'has some meta info'}
+    meta_param = MetaParam(name_part, dict_part)
+    assert meta_param.param_name == name_part
+    assert meta_param.param_meta == dict_part
 
 ###############################################################################
 # Test to_json_reform
