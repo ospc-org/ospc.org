@@ -129,14 +129,14 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
     return data
 
 
-def get_taxbrain_model(fields, first_year=2017,
+def get_taxbrain_model(_fields, first_year=2017,
                        quick_calc=False, taxcalc_vers="0.13.0",
                        webapp_vers="1.2.0", exp_comp_datetime = "2017-10-10",
                        Form=TaxBrainForm, UrlModel=OutputUrl):
-    fields = fields.copy()
-    del fields['_state']
-    del fields['creation_date']
-    del fields['id']
+    fields = _fields.copy()
+    fields.pop('_state', None)
+    fields.pop('creation_date', None)
+    fields.pop('id', None)
     for key in fields:
         if isinstance(fields[key], list):
             fields[key] = ','.join(map(str, fields[key]))
