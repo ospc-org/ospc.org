@@ -7,23 +7,24 @@ import taxcalc
 from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
                      make_bool, convert_val)
 
-def benefit_switch_fixup(request, reform, model, name="ID_BenefitSurtax_Switch"):
+
+def benefit_switch_fixup(fields, model, name="ID_BenefitSurtax_Switch"):
     """
     Take the incoming POST, the user reform, and the TaxSaveInputs
     model and fixup the switches _0, ..., _6 to one array of
     bools. Also set the model values correctly based on incoming
     POST
     """
-    # Djengo forms needs switches to be True/False but in the interest of
+    # Django forms needs switches to be True/False but in the interest of
     # ensuring that reforms created from a file or the GUI interface are the
     # same (down to the data type) the reform data are set to 1.0/0.0
-    _ids = [name + '_' + str(i) for i in range(7)]
-    values_from_model = [[reform[_id][0] for _id in _ids]]
-    final_values = [[True if _id in request else switch for (switch, _id) in zip(values_from_model[0], _ids)]]
-    for _id, val in zip(_ids, final_values[0]):
-        reform[_id] = [1 if val else 0]
-        setattr(model, _id, unicode(val))
-    return reform
+    # _ids = [name + '_' + str(i) for i in range(7)]
+    # values_from_model = [[fields[_id][0] for _id in _ids if _id in fields]]
+    # final_values = [[True if _id in fields else False for (fields, _id) in zip(values_from_model[0], _ids)]]
+    # for _id, val in zip(_ids, final_values[0]):
+    #     fields[_id] = [1 if val else 0]
+    #     setattr(model, _id, unicode(val))
+    return fields
 
 
 def amt_fixup(request, reform, model):
@@ -67,13 +68,11 @@ def growth_fixup(mod):
 
 
 def switch_fixup(taxbrain_data, fields, taxbrain_model):
-    print(sorted(taxbrain_data.keys()))
     growth_fixup(taxbrain_data)
     benefit_names = ["ID_BenefitSurtax_Switch", "ID_BenefitCap_Switch",
                      "ID_AmountCap_Switch"]
     for benefit_name in benefit_names:
         benefit_switch_fixup(fields,
-                             taxbrain_data,
                              taxbrain_model,
                              name=benefit_name)
 
