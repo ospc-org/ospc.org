@@ -15,25 +15,6 @@ import datetime
 import helpers
 from param_formatters import get_reform_from_gui
 
-def convert_to_floats(tsi):
-    """
-    A helper function that tax all of the fields of a TaxSaveInputs model
-    and converts them to floats, or list of floats
-    """
-    def numberfy_one(x):
-        if isinstance(x, float):
-            return x
-        else:
-            return float(x)
-
-    def numberfy(x):
-        if isinstance(x, list):
-            return [numberfy_one(i) for i in x]
-        else:
-            return numberfy_one(x)
-
-    attrs = vars(tsi)
-    return { k:numberfy(v) for k,v in attrs.items() if v}
 
 # digit or true/false (case insensitive)
 COMMASEP_REGEX = "(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
