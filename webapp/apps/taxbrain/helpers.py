@@ -53,14 +53,14 @@ FALSE_REGEX = re.compile('(?i)false')
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
-        return x in ['*', u'*'] or x.strip() in ['*', u'*']
+        return x in ('*', u'*') or x.strip() in ('*', u'*')
     else:
         return False
 
 
 def is_reverse(x):
     if isinstance(x, six.string_types):
-        return x in ['<', u'<'] or x.strip() in ['<', u'<']
+        return x in ('<', u'<') or x.strip() in ('<', u'<')
     else:
         return False
 
@@ -106,18 +106,6 @@ def convert_val(x):
     except ValueError:
         return make_bool(x)
 
-def parse_fields(param_dict):
-    for k, v in param_dict.copy().items():
-        if v == u'' or v is None or v == []:
-            del param_dict[k]
-            continue
-        if isinstance(v, six.string_types):
-            if k in BOOL_PARAMS:
-                converter = make_bool
-            else:
-                converter = convert_val
-            param_dict[k] = [converter(x.strip()) for x in v.split(',') if x]
-    return param_dict
 
 def int_to_nth(x):
     if x < 1:
