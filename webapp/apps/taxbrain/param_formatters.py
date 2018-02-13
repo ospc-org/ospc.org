@@ -170,11 +170,16 @@ def parse_fields(param_dict, default_params):
 
         # get upstream package parameter name and meta info
         meta_param = get_default_policy_param(k, default_params)
-        values = []
-        for item in v.split(","):
-             values.append(parse_value(item, meta_param))
-        parsed[meta_param.param_name] = values
-
+        # cpi params come through as boolean values
+        if isinstance(v, bool):
+            assert k.endswith('cpi')
+            item = str(v)
+            parsed[meta_param.param_name] = parse_value(item, meta_param)
+        else:
+            values = []
+            for item in v.split(","):
+                 values.append(parse_value(item, meta_param))
+            parsed[meta_param.param_name] = values
     return parsed
 
 

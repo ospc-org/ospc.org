@@ -91,7 +91,8 @@ def test_meta_param():
      ("STD_2", "*", "*"), ("EITC_MinEligAge", "22.2", 22.2),
      ("EITC_MinEligAge", "22.0", 22),
      ("ID_BenefitCap_Switch_0", "fAlse", False),
-     ("ID_Medical_frt_add4aged", "-0.01", -0.01)
+     ("ID_Medical_frt_add4aged", "-0.01", -0.01),
+     ("ID_Charity_c_cpi", "True", True)
     ]
 )
 def test_parse_values(name, value, exp, default_params_Policy):
@@ -104,7 +105,8 @@ def test_parse_fields(default_params_Policy):
               "EITC_MinEligAge": "22",
               "AMEDT_ec_0": "300000,*,250000.0",
               "STD_0": "", "STD_1": "15000,<",
-              "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true"}
+              "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true",
+              "ID_Charity_c_cpi": True}
     act = parse_fields(params, default_params_Policy)
     exp = {
         '_AMEDT_ec_single': [300000.0, '*', 250000.0],
@@ -112,9 +114,9 @@ def test_parse_fields(default_params_Policy):
         '_FICA_ss_trt': ['<', 0.1],
         '_ID_BenefitCap_Switch_medical': [True, '*', False],
         "_STD_joint": [15000.0,"<"],
-        "_ID_BenefitCap_Switch_statelocal": [True, False, "<", True, True]
+        "_ID_BenefitCap_Switch_statelocal": [True, False, "<", True, True],
+        "_ID_Charity_c_cpi": True,
     }
-
     assert act == exp
 
 ###############################################################################
