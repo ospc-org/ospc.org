@@ -1,11 +1,12 @@
 from collections import defaultdict, namedtuple
 import six
 import json
+import ast
 
 import taxcalc
 
 from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
-                     make_bool, convert_val)
+                     make_bool, convert_val, TRUE_REGEX, FALSE_REGEX)
 
 
 MetaParam = namedtuple("MetaParam", ["param_name", "param_meta"])
@@ -84,21 +85,100 @@ def switch_fixup(taxbrain_data, fields, taxbrain_model):
               taxbrain_model)
 
 
-def parse_fields(param_dict):
-    for k, v in param_dict.copy().items():
-        if v == u'' or v is None or v == []:
-            del param_dict[k]
-            continue
-        if isinstance(v, six.string_types):
-            if k in BOOL_PARAMS:
-                converter = make_bool
+def parse_value(value, meta_param):
+    """
+    Parse the value to the type that the upstream package specification
+    requires, but we let the upstream package deal with creating error messages
+
+    returns: parsed value
+    """
+    # expecting a string
+    assert isinstance(value, six.string_types)
+
+    value = value.strip()
+
+    # if value is wildcard or reverse operator, then return it
+    if is_wildcard(value) or is_reverse(value):
+        return value.strip()
+
+    # get type requirements from model specification
+    boolean_value = meta_param.param_meta["boolean_value"]
+    if not boolean_value:
+        integer_value = meta_param.param_meta["integer_value"]
+    else:
+        integer_value = False
+    float_value = not(boolean_value or integer_value)
+
+    # Try to parse case-insensitive True/False strings
+    if TRUE_REGEX.match(value, endpos=4):
+        prepped = "True"
+    elif FALSE_REGEX.match(value, endpos=5):
+        prepped = "False"
+    else:
+        # ast.literal_eval won't parse negative numbers
+        negate = 1
+        if value.rfind("-") == 0:
+            negate = -1
+            prepped = value[1:]
+        else:
+            prepped = value
+
+    # value is not an integer, float, or boolean string
+    try:
+        parsed = ast.literal_eval(prepped)
+    except ValueError:
+        return parsed
+
+    # Use information given to us by upstream specs to convert this value
+    # into desired type or fail silently
+    if isinstance(parsed, bool):
+        return parsed
+    elif isinstance(parsed, int):
+        if boolean_value:
+            return True if parsed else False
+        elif float_value:
+            return negate * float(parsed)
+        else:
+            return negate * parsed
+    elif isinstance(parsed, float):
+        if boolean_value:
+            return True if parsed else False
+        elif integer_value:
+            # Don't want to lose info when we cast the float down to int
+            # Note: 5.0 % 1.0 == 0.0 but 5.2 % 1.0 == 0.2
+            if parsed % 1.0 > 0:
+                return negate * parsed
             else:
-                converter = convert_val
-            param_dict[k] = [converter(x.strip()) for x in v.split(',') if x]
-    return param_dict
+                return negate * int(parsed)
+        else:
+            return negate * parsed
+    else:
+        return parsed
+
+def parse_fields(param_dict, default_params):
+    """
+    Parses the raw GUI input into the correct types and maps the names to the
+    appropriate default names
+
+    returns: dictionary with parsed data
+    """
+    parsed = {}
+    for k, v in param_dict.items():
+        # user did not specify a value for this param
+        if not v:
+            continue
+
+        # get upstream package parameter name and meta info
+        meta_param = get_default_policy_param(k, default_params)
+        values = []
+        for item in v.split(","):
+             values.append(parse_value(item, meta_param))
+        parsed[meta_param.param_name] = values
+
+    return parsed
 
 
-def get_default_policy_param(param, default_params):qq
+def get_default_policy_param(param, default_params):
     """
     Map TaxBrain field name to Tax-Calculator parameter name
     For example: STD_0 maps to _STD_single
@@ -321,8 +401,10 @@ def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
 
     # prepare taxcalc params from TaxSaveInputs model
     if taxbrain_model is not None:
+        default_params = taxcalc.Policy.default_data(start_year=start_year,
+                                                     metadata=True)
         taxbrain_data = taxbrain_model.raw_fields
-        taxbrain_data = parse_fields(taxbrain_data)
+        taxbrain_data = parse_fields(taxbrain_data, default_params)
         switch_fixup(taxbrain_data, fields, taxbrain_model)
         # convert GUI input to json style taxcalc reform
         policy_dict_json, map_back_to_tb = to_json_reform(taxbrain_data,

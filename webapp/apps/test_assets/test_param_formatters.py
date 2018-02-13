@@ -9,7 +9,8 @@ from ..taxbrain.param_formatters import (read_json_reform,
                                          parse_errors_warnings,
                                          append_errors_warnings,
                                          get_default_policy_param,
-                                         to_json_reform, MetaParam)
+                                         to_json_reform, MetaParam,
+                                         parse_value, parse_fields)
 
 START_YEAR = 2017
 CUR_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -78,6 +79,41 @@ def test_meta_param():
     meta_param = MetaParam(name_part, dict_part)
     assert meta_param.param_name == name_part
     assert meta_param.param_meta == dict_part
+
+##############################################################################
+# Test parse_value
+@pytest.mark.parametrize(
+    "name,value,exp",
+    [("FICA_ss_trt", "0.10", 0.10), ("ID_BenefitCap_Switch_0", "True", True),
+     ("EITC_MinEligAge", "22", 22), ("EITC_indiv", "True", True),
+     ("AMEDT_ec_0", "300000", 300000.0),
+     ("ID_BenefitCap_Switch_0", "0", False), ("STD_1", "<", "<"),
+     ("STD_2", "*", "*"), ("EITC_MinEligAge", "22.2", 22.2),
+     ("EITC_MinEligAge", "22.0", 22), ("ID_BenefitCap_Switch_0", "fAlse", False)
+    ]
+)
+def test_parse_values(name, value, exp, default_params_Policy):
+    meta_param = get_default_policy_param(name, default_params_Policy)
+    assert parse_value(value, meta_param) == exp
+
+# Test meta_param construction and attribute access
+def test_parse_fields(default_params_Policy):
+    params = {"FICA_ss_trt": "<,0.10", "ID_BenefitCap_Switch_0": "True,*,False",
+              "EITC_MinEligAge": "22",
+              "AMEDT_ec_0": "300000,*,250000.0",
+              "STD_0": "", "STD_1": "15000,<",
+              "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true"}
+    act = parse_fields(params, default_params_Policy)
+    exp = {
+        '_AMEDT_ec_single': [300000.0, '*', 250000.0],
+        '_EITC_MinEligAge': [22],
+        '_FICA_ss_trt': ['<', 0.1],
+        '_ID_BenefitCap_Switch_medical': [True, '*', False],
+        "_STD_joint": [15000.0,"<"],
+        "_ID_BenefitCap_Switch_statelocal": [True, False, "<", True, True]
+    }
+
+    assert act == exp
 
 ###############################################################################
 # Test to_json_reform
