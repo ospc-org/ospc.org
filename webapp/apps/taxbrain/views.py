@@ -54,7 +54,7 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
 
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
-                               to_json_reform)
+                               to_json_reform, append_errors_warnings)
 
 from django.conf import settings
 WEBAPP_VERSION = settings.WEBAPP_VERSION
@@ -235,7 +235,6 @@ def submit_reform(request, user=None, json_reform_id=None):
                 model = personal_inputs.save()
                 (reform_dict, assumptions_dict, reform_text, assumptions_text,
                     errors_warnings) = model.get_model_specs()
-
         json_reform = JSONReformTaxCalculator(
             reform_text=json.dumps(reform_dict),
             assumption_text=json.dumps(assumptions_dict),
