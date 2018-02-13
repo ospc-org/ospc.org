@@ -17,10 +17,10 @@ from param_formatters import get_reform_from_gui
 
 
 # digit or true/false (case insensitive)
-COMMASEP_REGEX = "(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
+COMMASEP_REGEX = "(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
 
 class CommaSeparatedField(models.CharField):
-    default_validators = [validators.RegexValidator(regex="(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))")]
+    default_validators = [validators.RegexValidator(regex=COMMASEP_REGEX)]
     description = "A comma separated field that allows multiple floats."
 
     def __init__(self, verbose_name=None, name=None, **kwargs):
