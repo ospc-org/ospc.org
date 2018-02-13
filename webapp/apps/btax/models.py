@@ -12,8 +12,7 @@ from django.contrib.postgres.fields import JSONField
 import datetime
 
 from ..taxbrain.models import (SeparatedValuesField,
-                               CommaSeparatedField,
-                               convert_to_floats)
+                               CommaSeparatedField)
 
 
 
