@@ -15,7 +15,7 @@ START_YEAR = 2016
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
-@pytest.mark.usefixtures("test_coverage_fields")
+@pytest.mark.usefixtures("test_coverage_fields", "test_coverage_gui_fields")
 class TaxBrainModelsTest:
 
     def setUp(self):

@@ -12,8 +12,10 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
 import datetime
 
+import taxcalc
+
 import helpers
-from param_formatters import get_reform_from_gui
+import param_formatters
 
 
 # digit or true/false (case insensitive)
@@ -779,7 +781,12 @@ class TaxSaveInputs(models.Model):
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
         """
-        raise NotImplementedError()
+        default_data = taxcalc.Policy.default_data(start_year=self.start_year,
+                                                   metadata=True)
+        fields = param_formatters.parse_fields(self.raw_fields, default_data)
+        param_formatters.switch_fixup(fields, self)
+        self.fields = fields
+
 
     def get_model_specs(self):
         """
@@ -787,10 +794,14 @@ class TaxSaveInputs(models.Model):
 
         returns: reform_dict, assumptions_dict, errors_warnings
         """
-        return get_reform_from_gui(self.raw_fields, self)
+        return param_formatters.get_reform_from_gui(
+            self.start_year,
+            taxbrain_fields=self.fields,
+        )
 
     @property
     def start_year(self):
+        # alias for first_year
         return self.first_year
 
     class Meta:

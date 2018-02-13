@@ -3,7 +3,7 @@ import pytest
 
 from ..models import JSONReformTaxCalculator
 from ..forms import TaxBrainForm
-from ...test_assets.utils import get_taxbrain_model
+from ...test_assets.utils import get_taxbrain_model, stringify_fields
 from ...test_assets.test_models import TaxBrainTableResults, TaxBrainModelsTest
 
 
@@ -35,20 +35,19 @@ class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
 class TaxBrainFieldsTest(TaxBrainModelsTest, TestCase):
 
     def test_set_fields(self):
-        fields = self.test_coverage_fields.copy()
-        fields.pop('_state', None)
-        fields.pop('creation_date', None)
-        fields.pop('id', None)
-        for key in fields:
-            if isinstance(fields[key], list):
-                fields[key] = ','.join(map(str, fields[key]))
-        first_year = fields.get('first_year', 2017)
-        form = TaxBrainForm(first_year, fields)
+        start_year = 2017
+        fields = self.test_coverage_gui_fields.copy()
+        fields = stringify_fields(fields)
+        fields['first_year'] = start_year
+        form = TaxBrainForm(start_year, fields)
 
+        # returns TaxSaveInputs object but does not save to the database
         model = form.save(commit=False)
 
-        # model.set_fields(form)
-        # model.save()
-        results = model.get_model_specs()
+        # parse fields--map to package name and cast input strings to python
+        # vals as specified by upstream package
+        model.set_fields(form)
         model.save()
-        print(results)
+        # get formatted model specifications
+        results = model.get_model_specs()
+        # do some kind of check here

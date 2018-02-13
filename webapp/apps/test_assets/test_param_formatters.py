@@ -12,6 +12,8 @@ from ..taxbrain.param_formatters import (read_json_reform,
                                          to_json_reform, MetaParam,
                                          parse_value, parse_fields)
 
+from .utils import stringify_fields
+
 START_YEAR = 2017
 CUR_PATH = os.path.abspath(os.path.dirname(__file__))
 
@@ -126,20 +128,22 @@ def test_parse_fields(default_params_Policy):
 #   2. Fields cause errors
 @pytest.mark.parametrize(
     ("_fields,_exp_reform"),
-    [("test_coverage_fields", "test_coverage_reform"),
-     ("errors_warnings_fields", "errors_warnings_reform")]
+    [("test_coverage_gui_fields", "test_coverage_reform"),
+     ("errors_warnings_gui_fields", "errors_warnings_reform")]
 )
-def test_to_json_reform(request, _fields, _exp_reform):
+def test_to_json_reform(request, _fields, _exp_reform, default_params_Policy):
     fields = request.getfixturevalue(_fields)
+    stringified_fields = stringify_fields(fields)
+    parsed_fields = parse_fields(stringified_fields, default_params_Policy)
     exp_reform = request.getfixturevalue(_exp_reform)
-    act, _ = to_json_reform(fields, START_YEAR)
+    act = to_json_reform(START_YEAR, parsed_fields)
     np.testing.assert_equal(act, exp_reform)
 
 ###############################################################################
 # Test parse_errors_warnings
-def test_parse_errors_warnings(errors_warnings, map_back_to_tb,
+def test_parse_errors_warnings(errors_warnings,
                                exp_errors_warnings):
-    act = parse_errors_warnings(errors_warnings, map_back_to_tb)
+    act = parse_errors_warnings(errors_warnings)
     np.testing.assert_equal(act, exp_errors_warnings)
 
 
@@ -197,26 +201,25 @@ def test_append_ew_personal_inputs():
 #   2. Reform does not throw errors and behavior assumptions are made
 #   3. Reform throws errors and warnings and behavior assumptions are not made
 @pytest.mark.parametrize(
-    ("_test_reform,_test_assump,_map_back_to_tb,_exp_reform,_exp_assump,"
+    ("_test_reform,_test_assump,_exp_reform,_exp_assump,"
      "_exp_errors_warnings"),
     [("test_coverage_json_reform", "no_assumptions_text",
-      "map_back_to_tb", "test_coverage_exp_read_json_reform",
+      "test_coverage_exp_read_json_reform",
       "no_assumptions_text_json",
       "empty_errors_warnings"),
      ("test_coverage_json_reform", "assumptions_text",
-      "map_back_to_tb", "test_coverage_exp_read_json_reform",
+      "test_coverage_exp_read_json_reform",
       "exp_assumptions_text",
       "empty_errors_warnings"),
      ("errors_warnings_json_reform", "no_assumptions_text",
-      "map_back_to_tb", "errors_warnings_exp_read_json_reform",
+      "errors_warnings_exp_read_json_reform",
       "no_assumptions_text_json", "exp_errors_warnings")
      ]
 )
-def test_read_json_reform(request, _test_reform, _test_assump, _map_back_to_tb,
+def test_read_json_reform(request, _test_reform, _test_assump,
                           _exp_reform, _exp_assump, _exp_errors_warnings):
     test_reform = request.getfixturevalue(_test_reform)
     test_assump = request.getfixturevalue(_test_assump)
-    map_back_to_tb = request.getfixturevalue(_map_back_to_tb)
     exp_reform = request.getfixturevalue(_exp_reform)
     exp_assump = request.getfixturevalue(_exp_assump)
     exp_errors_warnings = request.getfixturevalue(_exp_errors_warnings)
@@ -224,8 +227,7 @@ def test_read_json_reform(request, _test_reform, _test_assump, _map_back_to_tb,
 
     act_reform, act_assump, act_errors_warnings = read_json_reform(
         test_reform,
-        test_assump,
-        map_back_to_tb
+        test_assump
     )
     np.testing.assert_equal(act_reform, exp_reform)
     np.testing.assert_equal(act_assump, exp_assump)

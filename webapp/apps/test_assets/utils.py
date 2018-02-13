@@ -137,9 +137,7 @@ def get_taxbrain_model(_fields, first_year=2017,
     fields.pop('_state', None)
     fields.pop('creation_date', None)
     fields.pop('id', None)
-    for key in fields:
-        if isinstance(fields[key], list):
-            fields[key] = ','.join(map(str, fields[key]))
+    fields = stringify_fields(fields)
 
     personal_inputs = Form(first_year, fields)
 
@@ -159,3 +157,10 @@ def get_taxbrain_model(_fields, first_year=2017,
     unique_url.save()
 
     return unique_url
+
+
+def stringify_fields(fields):
+    for key in fields:
+        if isinstance(fields[key], list):
+            fields[key] = ','.join(map(str, fields[key]))
+    return fields

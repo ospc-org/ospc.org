@@ -31,7 +31,7 @@ def benefit_switch_fixup(fields, model, name="ID_BenefitSurtax_Switch"):
     return fields
 
 
-def amt_fixup(request, reform, model):
+def amt_fixup(fields, model):
     """
     Take the regular tax captial gains parameters from the user reform
     and set them as the equivalent Alternative Minimum Tax capital
@@ -44,14 +44,14 @@ def amt_fixup(request, reform, model):
                         "CG_rt3"]
 
     for cgparam in cap_gains_params:
-        if cgparam in reform:
-            reform['AMT_' + cgparam] = reform[cgparam]
+        if cgparam in fields:
+            fields['AMT_' + cgparam] = fields[cgparam]
             if cgparam.endswith("_cpi"):
-                setattr(model, 'AMT_' + cgparam, reform[cgparam])
+                setattr(model, 'AMT_' + cgparam, fields[cgparam])
             else:
-                setattr(model, 'AMT_' + cgparam, reform[cgparam][0])
+                setattr(model, 'AMT_' + cgparam, fields[cgparam][0])
 
-    return reform
+    return fields
 
 
 def growth_fixup(mod):
@@ -71,18 +71,14 @@ def growth_fixup(mod):
     return mod
 
 
-def switch_fixup(taxbrain_data, fields, taxbrain_model):
-    growth_fixup(taxbrain_data)
+def switch_fixup(fields, taxbrain_model):
+    growth_fixup(fields)
     benefit_names = ["ID_BenefitSurtax_Switch", "ID_BenefitCap_Switch",
                      "ID_AmountCap_Switch"]
     for benefit_name in benefit_names:
-        benefit_switch_fixup(fields,
-                             taxbrain_model,
-                             name=benefit_name)
+        benefit_switch_fixup(fields, taxbrain_model, name=benefit_name)
 
-    amt_fixup(fields,
-              taxbrain_data,
-              taxbrain_model)
+    amt_fixup(fields, taxbrain_model)
 
 
 def parse_value(value, meta_param):
@@ -217,69 +213,61 @@ def get_default_policy_param(param, default_params):
     raise ValueError(msg.format(param))
 
 
-def to_json_reform(fields, start_year, cls=taxcalc.Policy):
+def to_json_reform(start_year, fields):
     """
     Convert fields style dictionary to json reform style dictionary
     For example:
-    fields = {'_state': <django.db.models.base.ModelState object at 0x10c764950>,
-              'creation_date': datetime.datetime(2015, 1, 1, 0, 0), 'id': 64,
-              'ID_ps_cpi': True, 'quick_calc': False,
-              'FICA_ss_trt': [u'*', 0.1, u'*', 0.2], 'first_year': 2017,
-              'ID_BenefitSurtax_Switch_0': [True], 'ID_Charity_c_cpi': True,
-              'EITC_rt_2': [1.0]}
+    start_year = 2017, cls = taxcalc.Policy
+    fields = {'_CG_nodiff': [False]},
+              '_FICA_ss_trt': ["*", 0.1, "*", 0.2],
+              '_ID_Charity_c_cpi': True,
+              '_EITC_rt_2kids': [1.0]}
     to
     reform = {'_CG_nodiff': {'2017': [False]},
               '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
               '_ID_Charity_c_cpi': {'2017': True},
               '_EITC_rt_2kids': {'2017': [1.0]}}
 
-    returns json style reform
+    returns: json style reform
     """
-    map_back_to_tb = {}
     number_reverse_operators = 1
-    default_params = cls.default_data(start_year=start_year,
-                                      metadata=True)
     ignore = INPUTS_META
 
     reform = {}
     for param in fields:
-        if param not in ignore:
-            meta_param = get_default_policy_param(param, default_params)
-            param_name = meta_param.param_name
-            map_back_to_tb[param_name] = param
-            reform[param_name] = {}
-            if not isinstance(fields[param], list):
-                assert isinstance(fields[param], bool) and param.endswith('_cpi')
-                reform[param_name][str(start_year)] = fields[param]
+        reform[param] = {}
+        if not isinstance(fields[param], list):
+            assert isinstance(fields[param], bool) and param.endswith('_cpi')
+            reform[param][str(start_year)] = fields[param]
+            continue
+        i = 0
+        while i < len(fields[param]):
+            if is_wildcard(fields[param][i]):
+                # may need to do something here
+                pass
+            elif is_reverse(fields[param][i]):
+                # only the first character can be a reverse char
+                # and there must be a following character
+                assert len(fields[param]) > 1
+                # set value for parameter in start_year - 1
+                assert (isinstance(fields[param][i + 1], (int, float)) or
+                        isinstance(fields[param][i + 1], bool))
+                reform[param][str(start_year - 1)] = \
+                    [fields[param][i + 1]]
+
+                # realign year and parameter indices
+                for op in (0, number_reverse_operators + 1):
+                    fields[param].pop(0)
                 continue
-            i = 0
-            while i < len(fields[param]):
-                if is_wildcard(fields[param][i]):
-                    # may need to do something here
-                    pass
-                elif is_reverse(fields[param][i]):
-                    # only the first character can be a reverse char
-                    # and there must be a following character
-                    assert len(fields[param]) > 1
-                    # set value for parameter in start_year - 1
-                    assert (isinstance(fields[param][i + 1], (int, float)) or
-                            isinstance(fields[param][i + 1], bool))
-                    reform[param_name][str(start_year - 1)] = \
-                        [fields[param][i + 1]]
+            else:
+                assert (isinstance(fields[param][i], (int, float)) or
+                        isinstance(fields[param][i], bool))
+                reform[param][str(start_year + i)] = \
+                    [fields[param][i]]
 
-                    # realign year and parameter indices
-                    for op in (0, number_reverse_operators + 1):
-                        fields[param].pop(0)
-                    continue
-                else:
-                    assert (isinstance(fields[param][i], (int, float)) or
-                            isinstance(fields[param][i], bool))
-                    reform[param_name][str(start_year + i)] = \
-                        [fields[param][i]]
+            i += 1
 
-                i += 1
-
-    return reform, map_back_to_tb
+    return reform
 
 
 def append_errors_warnings(errors_warnings, append_func):
@@ -297,7 +285,7 @@ def append_errors_warnings(errors_warnings, append_func):
                 append_func(param, msg)
 
 
-def parse_errors_warnings(errors_warnings, map_back_to_tb):
+def parse_errors_warnings(errors_warnings):
     """
     Parse error messages so that they can be mapped to Taxbrain param ID. This
     allows the messages to be displayed under the field where the value is
@@ -325,7 +313,7 @@ def parse_errors_warnings(errors_warnings, map_back_to_tb):
     return parsed
 
 
-def read_json_reform(reform, assumptions, map_back_to_tb={}):
+def read_json_reform(reform, assumptions):
     """
     Read reform and parse errors
 
@@ -340,8 +328,7 @@ def read_json_reform(reform, assumptions, map_back_to_tb={}):
     )
     # get errors and warnings on parameters that do not cause ValueErrors
     errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
-    errors_warnings = parse_errors_warnings(errors_warnings,
-                                            map_back_to_tb)
+    errors_warnings = parse_errors_warnings(errors_warnings)
     # separate reform and assumptions
     reform_dict = policy_dict["policy"]
     assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
@@ -377,7 +364,7 @@ def get_reform_from_file(request_files, reform_text=None,
             errors_warnings)
 
 
-def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
+def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
                         stored_errors=None):
     """
     Parse request and model objects and collect reforms and warnings
@@ -390,38 +377,24 @@ def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    if taxbrain_model is not None:
-        start_year = taxbrain_model.start_year
-    elif behavior_model is not None:
-        start_year = behavior_model.start_year
-    else:
-        raise ValueError("Neither taxbrain_model nor behavior_model was given")
+    if not taxbrain_fields or behavior_fields:
+        raise ValueError("Neither taxbrain data nor behavior data was given")
 
     taxbrain_data = {}
     assumptions_data = {}
-    map_back_to_tb = {}
 
     policy_dict_json = {}
     assumptions_dict_json = {}
 
     # prepare taxcalc params from TaxSaveInputs model
-    if taxbrain_model is not None:
-        default_params = taxcalc.Policy.default_data(start_year=start_year,
-                                                     metadata=True)
-        taxbrain_data = taxbrain_model.raw_fields
-        taxbrain_data = parse_fields(taxbrain_data, default_params)
-        switch_fixup(taxbrain_data, fields, taxbrain_model)
+    if taxbrain_fields is not None:
         # convert GUI input to json style taxcalc reform
-        policy_dict_json, map_back_to_tb = to_json_reform(taxbrain_data,
-                                                          int(start_year))
-    if behavior_model is not None:
-        assumptions_data = dict(behavior_model.__dict__)
-        assumptions_data = parse_fields(assumptions_data)
-        (assumptions_dict_json,
-            map_back_assump) = to_json_reform(assumptions_data,
-                                              int(start_year),
-                                              cls=taxcalc.Behavior)
-        map_back_to_tb.update(map_back_assump)
+        policy_dict_json = to_json_reform(int(start_year),
+                                          taxbrain_fields)
+    if behavior_fields is not None:
+        assumptions_data = parse_fields(behavior_fields)
+        assumptions_dict_json = to_json_reform(assumptions_data,
+                                               int(start_yearl))
 
     policy_dict_json = {"policy": policy_dict_json}
 
@@ -435,7 +408,6 @@ def get_reform_from_gui(fields, taxbrain_model=None, behavior_model=None,
 
     (reform_dict, assumptions_dict,
         errors_warnings) = read_json_reform(policy_dict_json,
-                                            assumptions_dict_json,
-                                            map_back_to_tb)
+                                            assumptions_dict_json)
 
     return (reform_dict, assumptions_dict, "", "", errors_warnings)
