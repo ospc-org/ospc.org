@@ -89,7 +89,9 @@ def test_meta_param():
      ("AMEDT_ec_0", "300000", 300000.0),
      ("ID_BenefitCap_Switch_0", "0", False), ("STD_1", "<", "<"),
      ("STD_2", "*", "*"), ("EITC_MinEligAge", "22.2", 22.2),
-     ("EITC_MinEligAge", "22.0", 22), ("ID_BenefitCap_Switch_0", "fAlse", False)
+     ("EITC_MinEligAge", "22.0", 22),
+     ("ID_BenefitCap_Switch_0", "fAlse", False),
+     ("ID_Medical_frt_add4aged", "-0.01", -0.01)
     ]
 )
 def test_parse_values(name, value, exp, default_params_Policy):
