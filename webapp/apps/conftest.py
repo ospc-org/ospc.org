@@ -281,6 +281,32 @@ def exp_assumptions_text():
 
 
 @pytest.fixture()
+@set_fixture_prop
+def test_coverage_behavioral_gui_fields(request):
+    _test_coverage_behavoiral_gui_fields = {
+        u'BE_sub': [1.0],
+        u'BE_inc': [-0.6],
+        u'BE_cg': [-0.67]
+    }
+    return _test_coverage_behavoiral_gui_fields
+
+
+@pytest.fixture()
+@set_fixture_prop
+def test_coverage_behavioral_fields(request):
+    # quick work-around to get set_fixture_prop decorator to work with
+    # fixture as argument
+    # this is equivalent to
+    # `test_coverage_fields(fields_base, test_coverage_behavioral_gui_fields)`
+    _fields_base = request.getfixturevalue('fields_base')
+    _test_coverage_behavoiral_gui_fields = request.getfixturevalue(
+        'test_coverage_behavioral_gui_fields'
+    )
+    _test_coverage_behavoiral_fields = dict(_test_coverage_gui_fields, **_fields_base)
+    return _test_coverage_behavoiral_fields
+
+
+@pytest.fixture()
 def no_assumptions_text():
     with open(os.path.join(CUR_PATH, 'no_assumptions_text.txt')) as f:
         return f.read()
