@@ -1,3 +1,10 @@
+"""
+This module provides a set of mix-ins to be used throughout PolicyBrain models.
+To read more about Django model mix-ins, check out the following links:
+https://docs.djangoproject.com/en/2.0/topics/db/models/#abstract-base-classes
+http://blog.kevinastone.com/django-model-behaviors.html
+"""
+
 from django.db import models
 
 import taxcalc
@@ -8,8 +15,10 @@ from .helpers import (rename_keys, reorder_lists, PRE_TC_0130_RES_MAP,
 from ..constants import TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
 import param_formatters
 
-
 class Resultable(models.Model):
+    """
+    Mix-in to provide logic around retrieving model results.
+    """
 
     class Meta:
         abstract = True
@@ -41,6 +50,9 @@ class Resultable(models.Model):
                                  DIFF_TABLE_IDs)
 
 class Fieldable(models.Model):
+    """
+    Mix-in for providing logic around formatting raw GUI input fields
+    """
 
     class Meta:
         abstract = True
@@ -54,7 +66,7 @@ class Fieldable(models.Model):
                field is the type that Tax-Calculator expects from this param
         """
         default_data = upstream_obj.default_data(start_year=self.start_year,
-                                                   metadata=True)
+                                                 metadata=True)
         fields = param_formatters.parse_fields(self.raw_fields, default_data)
         param_formatters.switch_fixup(fields, self)
         self.fields = fields
