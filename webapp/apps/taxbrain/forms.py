@@ -74,47 +74,9 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
     return param_values
 
 
-
-TAXCALC_DEFAULTS_2016 = default_policy(2016)
-
-
-class TaxBrainForm(ModelForm):
-
-    def __init__(self, first_year, *args, **kwargs):
-        args = TaxBrainForm.add_fields(args)
-        self._first_year = int(first_year)
-        self._default_params = default_policy(self._first_year)
-
-        self._default_meta = default_taxcalc_data(taxcalc.policy.Policy,
-                               start_year=self._first_year, metadata=True)
-
-
-        self._default_taxcalc_data = default_taxcalc_data(taxcalc.policy.Policy,
-                                         start_year=self._first_year)
-        # Defaults are set in the Meta, but we need to swap
-        # those outs here in the init because the user may
-        # have chosen a different start year
-        all_defaults = []
-        for param in self._default_params.values():
-            for field in param.col_fields:
-                all_defaults.append((field.id, field.default_value))
-
-        for _id, default in all_defaults:
-            self._meta.widgets[_id].attrs['placeholder'] = default
-
-        # If a stored instance is passed,
-        # set CPI flags based on the values in this instance
-        if 'instance' in kwargs:
-            instance = kwargs['instance']
-            cpi_flags = [attr for attr in dir(instance) if attr.endswith('_cpi')]
-            for flag in cpi_flags:
-                if getattr(instance, flag) is not None and flag in self._meta.widgets:
-                    self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
-
-        super(TaxBrainForm, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def add_fields(args):
+class AbstractPolicyBrainForm:
+    
+    def add_fields(self, args):
         import json
         if not args:
             return args
@@ -126,21 +88,6 @@ class TaxBrainForm(ModelForm):
         args_data["raw_fields"] = json.dumps(raw_fields)
         args_data["fields"] = json.dumps("")
         return (args_data,)
-
-
-    def clean(self):
-        """
-        " This method should be used to provide custom model validation, and to
-        modify attributes on your model if desired. For instance, you could use
-        it to automatically provide a value for a field, or to do validation
-        that requires access to more than a single field."
-        per https://docs.djangoproject.com/en/1.8/ref/models/instances/
-
-        Note that this can be defined both on forms and on the model, but is
-        only automatically called on form submissions.
-        """
-        self.do_taxcalc_validations()
-        self.add_errors_on_extra_inputs()
 
     def add_errors_on_extra_inputs(self):
         ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken'}
@@ -176,6 +123,60 @@ class TaxBrainForm(ModelForm):
 
             else:
                 assert isinstance(value, bool) or len(value) == 0
+
+
+TAXCALC_DEFAULTS_2016 = default_policy(2016)
+
+
+class TaxBrainForm(AbstractPolicyBrainForm, ModelForm):
+
+    def __init__(self, first_year, *args, **kwargs):
+        args = self.add_fields(args)
+        self._first_year = int(first_year)
+        self._default_params = default_policy(self._first_year)
+
+        self._default_meta = default_taxcalc_data(taxcalc.policy.Policy,
+                               start_year=self._first_year, metadata=True)
+
+
+        self._default_taxcalc_data = default_taxcalc_data(taxcalc.policy.Policy,
+                                         start_year=self._first_year)
+        # Defaults are set in the Meta, but we need to swap
+        # those outs here in the init because the user may
+        # have chosen a different start year
+        all_defaults = []
+        for param in self._default_params.values():
+            for field in param.col_fields:
+                all_defaults.append((field.id, field.default_value))
+
+        for _id, default in all_defaults:
+            self._meta.widgets[_id].attrs['placeholder'] = default
+
+        # If a stored instance is passed,
+        # set CPI flags based on the values in this instance
+        if 'instance' in kwargs:
+            instance = kwargs['instance']
+            cpi_flags = [attr for attr in dir(instance) if attr.endswith('_cpi')]
+            for flag in cpi_flags:
+                if getattr(instance, flag) is not None and flag in self._meta.widgets:
+                    self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
+
+        super(TaxBrainForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        """
+        " This method should be used to provide custom model validation, and to
+        modify attributes on your model if desired. For instance, you could use
+        it to automatically provide a value for a field, or to do validation
+        that requires access to more than a single field."
+        per https://docs.djangoproject.com/en/1.8/ref/models/instances/
+
+        Note that this can be defined both on forms and on the model, but is
+        only automatically called on form submissions.
+        """
+        self.do_taxcalc_validations()
+        self.add_errors_on_extra_inputs()
+
 
     class Meta:
         model = TaxSaveInputs
