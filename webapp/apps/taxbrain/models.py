@@ -17,6 +17,8 @@ import taxcalc
 import helpers
 import param_formatters
 
+from behaviors import Resultable, Fieldable
+
 
 # digit or true/false (case insensitive)
 COMMASEP_REGEX = "(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
@@ -84,7 +86,7 @@ class ErrorMessageTaxCalculator(models.Model):
     text = models.CharField(blank=True, null=False, max_length=4000)
 
 
-class TaxSaveInputs(models.Model):
+class TaxSaveInputs(Fieldable, Resultable, models.Model):
     """
     This model contains all the parameters for the tax model and the tax
     result.
@@ -767,13 +769,9 @@ class TaxSaveInputs(models.Model):
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        return helpers.get_tax_result(
-            OutputUrl,
-            self.pk,
-            self.tax_result
-        )
+        return Resultable.get_tax_result(self, OutputUrl)
 
-    def set_fields(self, form_object):
+    def set_fields(self):
         """
         Parse raw fields
             1. Only keep fields that user specifies
@@ -781,12 +779,7 @@ class TaxSaveInputs(models.Model):
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
         """
-        default_data = taxcalc.Policy.default_data(start_year=self.start_year,
-                                                   metadata=True)
-        fields = param_formatters.parse_fields(self.raw_fields, default_data)
-        param_formatters.switch_fixup(fields, self)
-        self.fields = fields
-
+        Fieldable.set_fields(self, taxcalc.Policy)
 
     def get_model_specs(self):
         """

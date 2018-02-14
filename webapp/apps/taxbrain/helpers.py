@@ -1,5 +1,4 @@
 from collections import namedtuple
-from distutils.version import LooseVersion
 import numbers
 import os
 import pandas as pd
@@ -1314,30 +1313,3 @@ def format_csv(tax_results, url_id, first_budget_year):
                 res.append(dfb[row+"_" + str(count)])
 
     return res
-
-
-def get_tax_result(OutputUrlCls, pk, tax_result):
-    """
-    If taxcalc version is greater than or equal to 0.13.0, return table
-    If taxcalc version is less than 0.13.0, then rename keys to new names
-    and then return table
-    """
-    outputurl = OutputUrlCls.objects.get(unique_inputs__pk=pk)
-    taxcalc_vers = outputurl.taxcalc_vers
-    # only the older (pre 0.13.0) taxcalc versions are null
-    if taxcalc_vers:
-        taxcalc_vers = LooseVersion(taxcalc_vers)
-    else:
-        return rename_keys(tax_result, PRE_TC_0130_RES_MAP)
-
-    # older PB versions stored commit reference too
-    # e.g. taxcalc_vers = "0.9.0.d79abf"
-    backwards_incompatible = LooseVersion(
-        TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
-    )
-    if taxcalc_vers >= backwards_incompatible:
-        return tax_result
-    else:
-        renamed = rename_keys(tax_result, PRE_TC_0130_RES_MAP)
-        return reorder_lists(renamed, REORDER_LT_TC_0130_DIFF_LIST,
-                             DIFF_TABLE_IDs)

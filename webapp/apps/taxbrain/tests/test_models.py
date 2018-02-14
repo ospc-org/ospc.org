@@ -46,7 +46,7 @@ class TaxBrainFieldsTest(TaxBrainModelsTest, TestCase):
 
         # parse fields--map to package name and cast input strings to python
         # vals as specified by upstream package
-        model.set_fields(form)
+        model.set_fields()
         model.save()
         # get formatted model specifications
         results = model.get_model_specs()
