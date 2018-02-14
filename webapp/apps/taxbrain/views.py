@@ -232,7 +232,9 @@ def submit_reform(request, user=None, json_reform_id=None):
                         'has_errors': True}
             is_valid = personal_inputs.is_valid()
             if is_valid:
-                model = personal_inputs.save()
+                model = personal_inputs.save(commit=False)
+                model.set_fields()
+                model.save()
                 (reform_dict, assumptions_dict, reform_text, assumptions_text,
                     errors_warnings) = model.get_model_specs()
         json_reform = JSONReformTaxCalculator(
