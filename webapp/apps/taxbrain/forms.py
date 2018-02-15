@@ -74,20 +74,25 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
     return param_values
 
 
-class AbstractPolicyBrainForm:
-    
+class PolicyBrainForm:
+
     def add_fields(self, args):
         import json
         if not args:
             return args
+        parsed_data = {}
         args_data = args[0]
         raw_fields = {}
         for k, v in args_data.items():
             if k not in INPUTS_META:
                 raw_fields[k] = v
-        args_data["raw_fields"] = json.dumps(raw_fields)
-        args_data["fields"] = json.dumps("")
-        return (args_data,)
+            elif k is 'first_year':
+                parsed_data[k] = v
+            else:
+                pass
+        parsed_data["raw_fields"] = json.dumps(raw_fields)
+        parsed_data["fields"] = json.dumps("")
+        return (parsed_data,)
 
     def add_errors_on_extra_inputs(self):
         ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken'}
@@ -128,7 +133,7 @@ class AbstractPolicyBrainForm:
 TAXCALC_DEFAULTS_2016 = default_policy(2016)
 
 
-class TaxBrainForm(AbstractPolicyBrainForm, ModelForm):
+class TaxBrainForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
         args = self.add_fields(args)
@@ -160,7 +165,7 @@ class TaxBrainForm(AbstractPolicyBrainForm, ModelForm):
             for flag in cpi_flags:
                 if getattr(instance, flag) is not None and flag in self._meta.widgets:
                     self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
-
+        self.base_fields.update(self.Meta.update_fields)
         super(TaxBrainForm, self).__init__(*args, **kwargs)
 
     def clean(self):
@@ -177,12 +182,12 @@ class TaxBrainForm(AbstractPolicyBrainForm, ModelForm):
         self.do_taxcalc_validations()
         self.add_errors_on_extra_inputs()
 
-
     class Meta:
         model = TaxSaveInputs
         exclude = ['creation_date']
         widgets = {}
         labels = {}
+        update_fields = {}
         boolean_fields = [
             "_ID_BenefitSurtax_Switch",
             "_ID_BenefitCap_Switch",
@@ -212,8 +217,18 @@ class TaxBrainForm(AbstractPolicyBrainForm, ModelForm):
                 if param.tc_id in boolean_fields:
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
+                    update_fields[field.id] = forms.BooleanField(
+                        label=field.id,
+                        widget=widgets[field.id],
+                        required=False
+                    )
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
+                    update_fields[field.id] = forms.fields.CharField(
+                        label=field.id,
+                        widget=widgets[field.id],
+                        required=False
+                    )
 
                 labels[field.id] = field.label
 
@@ -228,7 +243,11 @@ class TaxBrainForm(AbstractPolicyBrainForm, ModelForm):
                     attrs['disabled'] = True
 
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
-
+                update_fields[field.id] = forms.NullBooleanField(
+                    label=field.id,
+                    widget=widgets[field.id],
+                    required=False
+                )
 
 def has_field_errors(form, include_parse_errors=False):
     """
