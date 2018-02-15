@@ -299,10 +299,14 @@ def test_coverage_behavioral_fields(request):
     # this is equivalent to
     # `test_coverage_fields(fields_base, test_coverage_behavioral_gui_fields)`
     _fields_base = request.getfixturevalue('fields_base')
+    _fields_base.pop('quick_calc', None)
     _test_coverage_behavoiral_gui_fields = request.getfixturevalue(
         'test_coverage_behavioral_gui_fields'
     )
-    _test_coverage_behavoiral_fields = dict(_test_coverage_gui_fields, **_fields_base)
+    _test_coverage_behavoiral_fields = dict(
+        _test_coverage_behavoiral_gui_fields,
+        **_fields_base
+    )
     return _test_coverage_behavoiral_fields
 
 
