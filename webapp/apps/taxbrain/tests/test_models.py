@@ -4,7 +4,7 @@ import pytest
 from ..models import JSONReformTaxCalculator
 from ..forms import TaxBrainForm
 from ...test_assets.utils import get_taxbrain_model, stringify_fields
-from ...test_assets.test_models import TaxBrainTableResults, TaxBrainModelsTest
+from ...test_assets.test_models import TaxBrainTableResults, TaxBrainFieldsTest
 
 
 class TaxBrainJSONReformModelTest(TestCase):
@@ -32,7 +32,7 @@ class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
         self.tc_gt_0130(self.test_coverage_fields)
 
 
-class TaxBrainStaticFieldsTest(TaxBrainModelsTest, TestCase):
+class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
 
     def test_set_fields(self):
         start_year = 2017
