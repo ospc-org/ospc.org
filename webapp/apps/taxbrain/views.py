@@ -368,7 +368,7 @@ def file_input(request):
     if request.method == 'POST':
         # save start_year
         start_year = (request.GET.get('start_year', None) or
-                      request.POST.get('start_year', None)
+                      request.POST.get('start_year', None))
         assert start_year is not None
         # File is not submitted
         if 'docfile' not in dict(request.FILES) and form_id is None:
