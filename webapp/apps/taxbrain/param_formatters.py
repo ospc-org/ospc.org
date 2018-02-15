@@ -169,7 +169,7 @@ def parse_fields(param_dict, default_params):
         values = []
         if meta_param.param_name.endswith("cpi"):
             assert len(v.split(',')) == 1
-            values = parse_value(v, meta_param)
+            values = bool(ast.literal_eval(v))
             assert isinstance(values, bool)
         else:
             for item in v.split(","):
