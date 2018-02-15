@@ -7,7 +7,7 @@ from .models import (DynamicSaveInputs, DynamicBehaviorSaveInputs,
 from ..taxbrain.helpers import (TaxCalcField, TaxCalcParam,
                                 string_to_float_array, int_to_nth,
                                 is_string, is_number)
-from ..taxbrain.forms import AbstractPolicyBrainForm
+from ..taxbrain.forms import PolicyBrainForm
 from .helpers import (default_parameters, default_behavior_parameters,
                       default_elasticity_parameters)
 
@@ -214,7 +214,7 @@ class DynamicElasticityInputsModelForm(ModelForm):
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
 
 
-class DynamicBehavioralInputsModelForm(AbstractPolicyBrainForm, ModelForm):
+class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
         args = self.add_fields(args)
