@@ -362,9 +362,14 @@ def file_input(request):
     start_year = START_YEAR
     errors = []
     has_errors = False
+    print('post', request.POST)
+    print('get', request.GET)
+    print('files', request.FILES)
     if request.method == 'POST':
         # save start_year
-        start_year = request.GET['start_year']
+        start_year = (request.GET.get('start_year', None) or
+                      request.POST.get('start_year', None)
+        assert start_year is not None
         # File is not submitted
         if 'docfile' not in dict(request.FILES) and form_id is None:
             errors = ["Please specify a tax-law change before submitting."]
@@ -453,6 +458,7 @@ def personal_results(request):
             start_year = params['start_year'][0]
 
         personal_inputs = TaxBrainForm(first_year=start_year)
+
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
