@@ -377,11 +377,8 @@ def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
             parsed warning and error messsages to be displayed on input page
             if necessary
     """
-    if not taxbrain_fields or behavior_fields:
+    if taxbrain_fields is None and behavior_fields is None:
         raise ValueError("Neither taxbrain data nor behavior data was given")
-
-    taxbrain_data = {}
-    assumptions_data = {}
 
     policy_dict_json = {}
     assumptions_dict_json = {}
@@ -392,9 +389,8 @@ def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
         policy_dict_json = to_json_reform(int(start_year),
                                           taxbrain_fields)
     if behavior_fields is not None:
-        assumptions_data = parse_fields(behavior_fields)
-        assumptions_dict_json = to_json_reform(assumptions_data,
-                                               int(start_yearl))
+        assumptions_dict_json = to_json_reform(int(start_year),
+                                               behavior_fields)
 
     policy_dict_json = {"policy": policy_dict_json}
 

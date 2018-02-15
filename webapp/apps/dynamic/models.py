@@ -17,6 +17,7 @@ from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
                                TaxSaveInputs, OutputUrl)
 from ..taxbrain.behaviors import Resultable, Fieldable
 from ..taxbrain import helpers as taxbrain_helpers
+from ..taxbrain import param_formatters
 
 import datetime
 
@@ -115,6 +116,12 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
                field is the type that Tax-Calculator expects from this param
         """
         Fieldable.set_fields(self, taxcalc.Behavior)
+
+    def get_model_specs(self):
+        return param_formatters.get_reform_from_gui(
+            self.start_year,
+            behavior_fields=self.fields
+        )
 
     @property
     def start_year(self):
