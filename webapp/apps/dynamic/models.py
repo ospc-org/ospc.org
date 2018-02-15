@@ -11,10 +11,11 @@ from django.contrib.auth.models import User
 
 from django.contrib.postgres.fields import JSONField
 
+import taxcalc
 
 from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
                                TaxSaveInputs, OutputUrl)
-
+from ..taxbrain.behaviors import Resultable, Fieldable
 from ..taxbrain import helpers as taxbrain_helpers
 
 import datetime
@@ -58,7 +59,7 @@ class DynamicSaveInputs(models.Model):
         )
 
 
-class DynamicBehaviorSaveInputs(models.Model):
+class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
     """
     This model contains all the parameters for the dynamic behavioral tax
     model and the tax result.
@@ -91,17 +92,33 @@ class DynamicBehaviorSaveInputs(models.Model):
     micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
                                   on_delete=models.SET_NULL)
 
+    # # raw gui input
+    raw_fields = JSONField(default=None, blank=True, null=True)
+    #
+    # # validated gui input
+    fields = JSONField(default=None, blank=True, null=True)
+
     def get_tax_result(self):
         """
         If taxcalc version is greater than or equal to 0.13.0, return table
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        return taxbrain_helpers.get_tax_result(
-            DynamicBehaviorOutputUrl,
-            self.pk,
-            self.tax_result
-        )
+        return Resultable.get_tax_result(self, DynamicBehaviorOutputUrl)
+
+    def set_fields(self):
+        """
+        Parse raw fields
+            1. Only keep fields that user specifies
+            2. Map TB names to TC names
+            3. Do more specific type checking--in particular, check if
+               field is the type that Tax-Calculator expects from this param
+        """
+        Fieldable.set_fields(self, taxcalc.Behavior)
+
+    @property
+    def start_year(self):
+        return self.first_year
 
     class Meta:
         permissions = (
