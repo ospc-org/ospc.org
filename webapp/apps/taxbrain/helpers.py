@@ -786,19 +786,8 @@ class TaxCalcParam(object):
                     first_budget_year
                 ))
 
-        # we assume we can CPI inflate if first value isn't a ratio
-        first_value = self.col_fields[0].values[0]
-        inflatable_params = SPECIAL_INFLATABLE_PARAMS
-        non_inflatable_params = SPECIAL_NON_INFLATABLE_PARAMS
-        if 'inflatable' in attributes:
-            self.inflatable = attributes['inflatable']
-        elif self.tc_id in inflatable_params:
-            self.inflatable = True
-        elif (self.tc_id in non_inflatable_params or
-              self.nice_id in BOOL_PARAMS):
-            self.inflatable = False
-        else:
-            self.inflatable = first_value > 1
+        # get attribute indicating whether parameter is cpi inflatable.
+        self.inflatable = attributes.get("cpi_inflatable", False)
 
         if self.inflatable:
             cpi_flag = attributes['cpi_inflated']
