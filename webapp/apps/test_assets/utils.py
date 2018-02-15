@@ -165,4 +165,6 @@ def stringify_fields(fields):
     for key in fields:
         if isinstance(fields[key], list):
             fields[key] = ','.join(map(str, fields[key]))
+        else:
+            fields[key] = str(fields[key])
     return fields

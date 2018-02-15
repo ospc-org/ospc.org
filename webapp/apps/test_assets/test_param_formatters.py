@@ -108,7 +108,7 @@ def test_parse_fields(default_params_Policy):
               "AMEDT_ec_0": "300000,*,250000.0",
               "STD_0": "", "STD_1": "15000,<",
               "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true",
-              "ID_Charity_c_cpi": True}
+              "ID_Charity_c_cpi": "True"}
     act = parse_fields(params, default_params_Policy)
     exp = {
         '_AMEDT_ec_single': [300000.0, '*', 250000.0],
