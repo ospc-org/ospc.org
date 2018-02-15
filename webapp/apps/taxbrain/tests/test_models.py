@@ -26,28 +26,17 @@ class TaxBrainJSONReformModelTest(TestCase):
 class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
 
     def test_static_tc_lt_0130(self):
-        self.tc_lt_0130()
+        self.tc_lt_0130(self.test_coverage_fields)
 
     def test_static_tc_gt_0130(self):
-        self.tc_gt_0130()
+        self.tc_gt_0130(self.test_coverage_fields)
 
 
-class TaxBrainFieldsTest(TaxBrainModelsTest, TestCase):
+class TaxBrainStaticFieldsTest(TaxBrainModelsTest, TestCase):
 
     def test_set_fields(self):
         start_year = 2017
         fields = self.test_coverage_gui_fields.copy()
-        fields = stringify_fields(fields)
         fields['first_year'] = start_year
-        form = TaxBrainForm(start_year, fields)
 
-        # returns TaxSaveInputs object but does not save to the database
-        model = form.save(commit=False)
-
-        # parse fields--map to package name and cast input strings to python
-        # vals as specified by upstream package
-        model.set_fields()
-        model.save()
-        # get formatted model specifications
-        results = model.get_model_specs()
-        # do some kind of check here
+        self.parse_fields(start_year, fields, Form=TaxBrainForm)
