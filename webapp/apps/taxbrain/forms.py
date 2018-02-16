@@ -136,6 +136,7 @@ TAXCALC_DEFAULTS_2016 = default_policy(2016)
 class TaxBrainForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
+        # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
@@ -165,8 +166,11 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             for flag in cpi_flags:
                 if getattr(instance, flag) is not None and flag in self._meta.widgets:
                     self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
-        self.base_fields.update(self.Meta.update_fields)
+
         super(TaxBrainForm, self).__init__(*args, **kwargs)
+        # update fields in a similar way as
+        # https://www.pydanny.com/overloading-form-fields.html
+        self.fields.update(self.Meta.update_fields)
 
     def clean(self):
         """
@@ -183,8 +187,11 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         self.add_errors_on_extra_inputs()
 
     class Meta:
+
         model = TaxSaveInputs
-        exclude = ['creation_date']
+        # we are only updating the "first_year", "raw_fields", and "fields"
+        # fields
+        fields = ['first_year', 'raw_fields', 'fields']
         widgets = {}
         labels = {}
         update_fields = {}
@@ -218,14 +225,14 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                     update_fields[field.id] = forms.BooleanField(
-                        label=field.id,
+                        label='',
                         widget=widgets[field.id],
                         required=False
                     )
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
                     update_fields[field.id] = forms.fields.CharField(
-                        label=field.id,
+                        label='',
                         widget=widgets[field.id],
                         required=False
                     )
@@ -244,7 +251,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
 
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
                 update_fields[field.id] = forms.NullBooleanField(
-                    label=field.id,
+                    label='',
                     widget=widgets[field.id],
                     required=False
                 )
