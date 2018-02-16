@@ -138,6 +138,9 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
     def __init__(self, first_year, *args, **kwargs):
         # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
+        # this seems to update the saved data in the appropriate way
+        if "instance" in kwargs:
+            kwargs["initial"] = kwargs["instance"].raw_input_fields
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
 
