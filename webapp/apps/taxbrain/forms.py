@@ -141,12 +141,6 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
 
-        self._default_meta = default_taxcalc_data(taxcalc.policy.Policy,
-                               start_year=self._first_year, metadata=True)
-
-
-        self._default_taxcalc_data = default_taxcalc_data(taxcalc.policy.Policy,
-                                         start_year=self._first_year)
         # Defaults are set in the Meta, but we need to swap
         # those outs here in the init because the user may
         # have chosen a different start year
