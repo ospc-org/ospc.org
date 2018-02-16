@@ -218,6 +218,10 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
         args = self.add_fields(args)
+        # this seems to update the saved data in the appropriate way
+        if "instance" in kwargs:
+            kwargs["initial"] = kwargs["instance"].raw_input_fields
+
         self._first_year = int(first_year)
         self._default_params = default_behavior_parameters(self._first_year)
         # Defaults are set in the Meta, but we need to swap
@@ -232,7 +236,9 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
             self._meta.widgets[_id].attrs['placeholder'] = default
 
         super(DynamicBehavioralInputsModelForm, self).__init__(*args, **kwargs)
-
+        # update fields in a similar way as
+        # https://www.pydanny.com/overloading-form-fields.html
+        self.fields.update(self.Meta.update_fields)
 
     def clean(self):
         """
@@ -251,9 +257,12 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
 
     class Meta:
         model = DynamicBehaviorSaveInputs
-        exclude = ['creation_date']
+        # we are only updating the "first_year", "raw_fields", and "fields"
+        # fields
+        fields = ['first_year', 'raw_input_fields', 'input_fields']
         widgets = {}
         labels = {}
+        update_fields = {}
         for param in BEHAVIOR_DEFAULT_PARAMS.values():
             for field in param.col_fields:
                 attrs = {
@@ -261,26 +270,14 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
                     'placeholder': field.default_value,
                 }
 
-                if param.coming_soon:
-                    attrs['disabled'] = True
-                    attrs['checked'] = False
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
-                else:
-                    widgets[field.id] = forms.TextInput(attrs=attrs)
+                widgets[field.id] = forms.TextInput(attrs=attrs)
+                update_fields[field.id] = forms.BooleanField(
+                    label='',
+                    widget=widgets[field.id],
+                    required=False
+                )
 
                 labels[field.id] = field.label
-
-            if param.inflatable:
-                field = param.cpi_field
-                attrs = {
-                    'class': 'form-control sr-only',
-                    'placeholder': bool(field.default_value),
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
-                widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
 
 
 class DynamicInputsModelForm(ModelForm):

@@ -94,10 +94,10 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
                                   on_delete=models.SET_NULL)
 
     # # raw gui input
-    raw_fields = JSONField(default=None, blank=True, null=True)
+    raw_input_fields = JSONField(default=None, blank=True, null=True)
     #
     # # validated gui input
-    fields = JSONField(default=None, blank=True, null=True)
+    input_fields = JSONField(default=None, blank=True, null=True)
 
     def get_tax_result(self):
         """
@@ -120,7 +120,7 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
     def get_model_specs(self):
         return param_formatters.get_reform_from_gui(
             self.start_year,
-            behavior_fields=self.fields
+            behavior_fields=self.input_fields
         )
 
     @property

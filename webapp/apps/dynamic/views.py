@@ -80,7 +80,7 @@ def dynamic_input(request, pk):
 
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.REQUEST)
+        fields = dict(request.POST)
         fields['first_year'] = fields['start_year']
         start_year = fields['start_year']
         strip_empty_lists(fields)
@@ -157,7 +157,7 @@ def dynamic_input(request, pk):
     else:
 
         # Probably a GET request, load a default form
-        start_year = request.REQUEST.get('start_year')
+        start_year = request.GET.get('start_year')
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))
@@ -186,19 +186,27 @@ def dynamic_behavioral(request, pk):
     This view handles the dynamic behavioral input page and calls the function that
     handles the calculation on the inputs.
     """
-    start_year = request.REQUEST.get('start_year')
+    start_year = START_YEAR
     if request.method == 'POST':
+        fields = dict(request.GET)
+        fields.update(dict(request.POST))
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        start_year = fields.get('start_year', START_YEAR)
+        # TODO: migrate first_year to start_year to get rid of weird stuff like
+        # this
+        fields['first_year'] = fields['start_year']
+
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.REQUEST)
-        strip_empty_lists(fields)
-        start_year = request.GET['start_year']
+        # save start_year
+        start_year = (request.GET.get('start_year', None) or
+                      request.POST.get('start_year', None))
+        assert start_year is not None
         fields['first_year'] = start_year
         dyn_mod_form = DynamicBehavioralInputsModelForm(start_year, fields)
 
         if dyn_mod_form.is_valid():
-            model = dyn_mod_form.save()
-            curr_dict = dict(model.__dict__)
-            worker_data = parse_fields(curr_dict)
+            model = dyn_mod_form.save(commit=False)
+            model.set_fields()
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -206,20 +214,11 @@ def dynamic_behavioral(request, pk):
             taxbrain_model = outputsurl.unique_inputs
              # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
-                (reform_dict, assumptions_dict, _, _,
-                    errors_warnings) = get_reform_from_gui(
-                        request,
-                        taxbrain_model=taxbrain_model,
-                        behavior_model=model
-                )
+                raise NotImplementedError("Backwards compatibility has not been implemented yet")
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
                 (_, assumptions_dict, _, _,
-                    errors_warnings) = get_reform_from_gui(
-                        request,
-                        taxbrain_model=None,
-                        behavior_model=model
-                    )
+                    errors_warnings) = model.get_model_specs()
             # start calc job
             user_mods = dict({'policy': reform_dict}, **assumptions_dict)
             data = {'user_mods': json.dumps(user_mods),
@@ -294,19 +293,23 @@ def dynamic_elasticities(request, pk):
     This view handles the dynamic macro elasticities input page and
     calls the function that handles the calculation on the inputs.
     """
-    start_year = request.REQUEST.get('start_year')
+    start_year = START_YEAR
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.REQUEST)
-        strip_empty_lists(fields)
-        fields['first_year'] = start_year
+        fields = dict(request.GET)
+        fields.update(dict(request.POST))
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        start_year = fields.get('start_year', START_YEAR)
+        print(fields)
+        # TODO: migrate first_year to start_year to get rid of weird stuff like
+        # this
+        fields['first_year'] = fields['start_year']
         dyn_mod_form = DynamicElasticityInputsModelForm(start_year, fields)
 
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
-            curr_dict = dict(model.__dict__)
-            worker_data = parse_fields(curr_dict)
+            gdp_elasticity = float(model.elastic_gdp)
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -314,12 +317,7 @@ def dynamic_elasticities(request, pk):
             taxbrain_model = outputsurl.unique_inputs
              # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
-                (reform_dict, _, _, _,
-                    errors_warnings) = get_reform_from_gui(
-                        request,
-                        taxbrain_model=taxbrain_model,
-                        behavior_model=None
-                )
+                raise NotImplementedError("Backwards compatibility has not been implemented yet")
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
             # empty assumptions dictionary
@@ -330,7 +328,7 @@ def dynamic_elasticities(request, pk):
 
             user_mods = dict({'policy': reform_dict}, **assumptions_dict)
             data = {'user_mods': json.dumps(user_mods),
-                    'gdp_elasticity': worker_data['elastic_gdp'],
+                    'gdp_elasticity': gdp_elasticity,
                     'first_budget_year': int(start_year),
                     'start_budget_year': 0,
                     'num_budget_years': NUM_BUDGET_YEARS}
@@ -380,6 +378,10 @@ def dynamic_elasticities(request, pk):
 
     else:
         # Probably a GET request, load a default form
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in START_YEARS:
+            start_year = params['start_year'][0]
+
         form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year)
 
     elasticity_default_params = default_elasticity_parameters(int(start_year))
