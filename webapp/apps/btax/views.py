@@ -99,15 +99,18 @@ def btax_results(request):
     """
     no_inputs = False
     start_year = START_YEAR
-    REQUEST = request.REQUEST
     if request.method=='POST':
         print 'POST'
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
         has_errors = make_bool(request.POST['has_errors'])
-        start_year = REQUEST['start_year']
-        fields = dict(REQUEST)
+        fields = dict(request.GET)
+        fields.update(dict(request.POST))
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        start_year = fields.get('start_year', START_YEAR)
+        # TODO: migrate first_year to start_year to get rid of weird stuff like
+        # this
         fields['first_year'] = fields['start_year']
         btax_inputs = BTaxExemptionForm(start_year, fields)
         btax_inputs = make_bool_gds_ads(btax_inputs)
