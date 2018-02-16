@@ -4,6 +4,7 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 from pyparsing import ParseException
 import six
+import json
 
 from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
@@ -77,7 +78,6 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
 class PolicyBrainForm:
 
     def add_fields(self, args):
-        import json
         if not args:
             return args
         parsed_data = {}
