@@ -90,8 +90,8 @@ class PolicyBrainForm:
                 parsed_data[k] = v
             else:
                 pass
-        parsed_data["raw_fields"] = json.dumps(raw_fields)
-        parsed_data["fields"] = json.dumps("")
+        parsed_data["raw_input_fields"] = json.dumps(raw_fields)
+        parsed_data["input_fields"] = json.dumps("")
         return (parsed_data,)
 
     def add_errors_on_extra_inputs(self):
@@ -107,7 +107,7 @@ class PolicyBrainForm:
         Do minimal type checking to make sure that we did not get any
         malicious input
         """
-        fields = self.cleaned_data['raw_fields']
+        fields = self.cleaned_data['raw_input_fields']
         for param_name, value in fields.iteritems():
             # make sure the text parses OK
             if isinstance(value, six.string_types) and len(value) > 0:
@@ -191,7 +191,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         model = TaxSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
-        fields = ['first_year', 'raw_fields', 'fields']
+        fields = ['first_year', 'raw_input_fields', 'input_fields']
         widgets = {}
         labels = {}
         update_fields = {}

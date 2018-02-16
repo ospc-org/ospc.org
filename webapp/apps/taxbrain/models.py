@@ -749,10 +749,10 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
     tax_result = JSONField(default=None, blank=True, null=True)
 
     # # raw gui input
-    raw_fields = JSONField(default=None, blank=True, null=True)
+    raw_input_fields = JSONField(default=None, blank=True, null=True)
     #
     # # validated gui input
-    fields = JSONField(default=None, blank=True, null=True)
+    input_fields = JSONField(default=None, blank=True, null=True)
 
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
@@ -789,7 +789,7 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
         """
         return param_formatters.get_reform_from_gui(
             self.start_year,
-            taxbrain_fields=self.fields,
+            taxbrain_fields=self.input_fields,
         )
 
     @property

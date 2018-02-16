@@ -67,9 +67,9 @@ class Fieldable(models.Model):
         """
         default_data = upstream_obj.default_data(start_year=self.start_year,
                                                  metadata=True)
-        fields = param_formatters.parse_fields(self.raw_fields, default_data)
-        param_formatters.switch_fixup(fields, self)
-        self.fields = fields
+        input_fields = param_formatters.parse_fields(self.raw_input_fields, default_data)
+        param_formatters.switch_fixup(input_fields, self)
+        self.input_fields = input_fields
 
     def get_model_specs(self):
         """

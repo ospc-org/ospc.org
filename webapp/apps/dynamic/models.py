@@ -208,6 +208,11 @@ class DynamicBehaviorOutputUrl(models.Model):
         max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
+    # # raw gui input
+    raw_input_fields = JSONField(default=None, blank=True, null=True)
+    #
+    # # validated gui input
+    input_fields = JSONField(default=None, blank=True, null=True)
 
     def get_absolute_url(self):
         kwargs = {
