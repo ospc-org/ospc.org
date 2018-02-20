@@ -95,20 +95,20 @@ def parse_value(value, meta_param):
 
     # if value is wildcard or reverse operator, then return it
     if is_wildcard(value) or is_reverse(value):
-        return value.strip()
+        return value
 
     # get type requirements from model specification
     boolean_value = meta_param.param_meta["boolean_value"]
-    if not boolean_value:
-        integer_value = meta_param.param_meta["integer_value"]
-    else:
+    if boolean_value:
         integer_value = False
+    else:
+        integer_value = meta_param.param_meta["integer_value"]
     float_value = not(boolean_value or integer_value)
 
     # Try to parse case-insensitive True/False strings
-    if TRUE_REGEX.match(value, endpos=4):
+    if value.title() == "True":
         prepped = "True"
-    elif FALSE_REGEX.match(value, endpos=5):
+    elif value.title() == "False":
         prepped = "False"
     else:
         # ast.literal_eval won't parse negative numbers
@@ -119,6 +119,7 @@ def parse_value(value, meta_param):
         else:
             prepped = value
 
+    # Try to parse string and except ValueError if
     # value is not an integer, float, or boolean string
     try:
         parsed = ast.literal_eval(prepped)
