@@ -62,7 +62,6 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
         """
         Test that deprecated fields are added correctly
         """
-        return
         start_year = 2017
         tsi = TaxSaveInputs(
             raw_input_fields = {
@@ -77,8 +76,8 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
         assert tsi.deprecated_fields == ['deprecated_param']
         tsi.raw_input_fields['yet_another_deprecated_param'] = '1001'
         tsi.set_fields()
-        assert tsi.deprecated_param == ['deprecated_param',
-                                        'yet_another_deprecated_param']
+        assert tsi.deprecated_fields == ['deprecated_param',
+                                         'yet_another_deprecated_param']
         assert tsi.raw_input_fields['deprecated_param'] == '1000'
         assert tsi.raw_input_fields['yet_another_deprecated_param'] == '1001'
         assert 'deprecated_param' not in tsi.input_fields
