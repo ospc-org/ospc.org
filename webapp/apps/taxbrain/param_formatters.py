@@ -105,9 +105,9 @@ def parse_value(value, meta_param):
         integer_value = meta_param.param_meta["integer_value"]
 
     # Try to parse case-insensitive True/False strings
-    if value.title() == "True":
+    if value.lower() == "true":
         prepped = "True"
-    elif value.title() == "False":
+    elif value.lower() == "false":
         prepped = "False"
     else:
         prepped = value
@@ -169,7 +169,6 @@ def parse_fields(param_dict, default_params):
         else:
             for item in v.split(","):
                  values.append(parse_value(item, meta_param))
-        print(meta_param.param_name, v, values)
         parsed[meta_param.param_name] = values
 
     return parsed
