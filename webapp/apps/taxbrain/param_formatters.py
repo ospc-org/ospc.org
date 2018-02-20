@@ -111,13 +111,7 @@ def parse_value(value, meta_param):
     elif value.title() == "False":
         prepped = "False"
     else:
-        # ast.literal_eval won't parse negative numbers
-        negate = 1
-        if value.rfind("-") == 0:
-            negate = -1
-            prepped = value[1:]
-        else:
-            prepped = value
+        prepped = value
 
     # Try to parse string and except ValueError if
     # value is not an integer, float, or boolean string
@@ -134,9 +128,9 @@ def parse_value(value, meta_param):
         if boolean_value:
             return True if parsed else False
         elif float_value:
-            return negate * float(parsed)
+            return float(parsed)
         else:
-            return negate * parsed
+            return parsed
     elif isinstance(parsed, float):
         if boolean_value:
             return True if parsed else False
@@ -144,11 +138,11 @@ def parse_value(value, meta_param):
             # Don't want to lose info when we cast the float down to int
             # Note: 5.0 % 1.0 == 0.0 but 5.2 % 1.0 == 0.2
             if parsed % 1.0 > 0:
-                return negate * parsed
+                return parsed
             else:
-                return negate * int(parsed)
+                return int(parsed)
         else:
-            return negate * parsed
+            return parsed
     else:
         return parsed
 
