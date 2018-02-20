@@ -120,7 +120,7 @@ def parse_value(value, meta_param):
         return parsed
 
     # Use information given to us by upstream specs to convert this value
-    # into desired type or fail silently
+    # into desired type or let upstream package throw error
     if boolean_value:
         if isinstance(parsed, bool):
             return parsed
@@ -130,7 +130,9 @@ def parse_value(value, meta_param):
                 return True
             else:
                 return False
-        else: # a string; upstream package will handle the error
+        else:
+            # not a boolean or integer/float that is equal to 0 or 1
+            # upstream package will handle the error
             return parsed
     elif integer_value:
         if isinstance(parsed, int):
@@ -138,10 +140,10 @@ def parse_value(value, meta_param):
         elif isinstance(parsed, float) and int(parsed) == parsed:
             return int(parsed)
         else:
-            # a string or non-integer rational number;
+            # rational number that cannot be casted to int without losing info
             # upstream package will handle the error
             return parsed
-    else: # either a float or string that can not be casted to type boolean
+    else: # parsed is type float
         return parsed
 
 def parse_fields(param_dict, default_params):
@@ -167,6 +169,7 @@ def parse_fields(param_dict, default_params):
         else:
             for item in v.split(","):
                  values.append(parse_value(item, meta_param))
+        print(meta_param.param_name, v, values)
         parsed[meta_param.param_name] = values
 
     return parsed
