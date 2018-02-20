@@ -107,6 +107,10 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
         """
         return Resultable.get_tax_result(self, DynamicBehaviorOutputUrl)
 
+    NONPARAM_FIELDS = set(["job_ids", "jobs_not_ready", "first_year",
+                           "tax_result", "raw_input_fields", "input_fields",
+                           "creation_date", "id"])
+
     def set_fields(self):
         """
         Parse raw fields
@@ -115,7 +119,8 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
         """
-        Fieldable.set_fields(self, taxcalc.Behavior)
+        Fieldable.set_fields(self, taxcalc.Behavior,
+                             nonparam_fields=self.NONPARAM_FIELDS)
 
     def get_model_specs(self):
         return param_formatters.get_reform_from_gui(

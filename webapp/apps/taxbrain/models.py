@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 import datetime
 
 import taxcalc
@@ -754,6 +754,13 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
     # # validated gui input
     input_fields = JSONField(default=None, blank=True, null=True)
 
+    # deprecated fields list
+    deprecated_fields = ArrayField(
+        models.CharField(max_length=50, blank=True),
+        blank=True,
+        null=True
+    )
+
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
 
@@ -771,6 +778,10 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
         """
         return Resultable.get_tax_result(self, OutputUrl)
 
+    NONPARAM_FIELDS = set(["job_ids", "jobs_not_ready", "first_year", "quick_calc",
+                           "tax_result", "raw_input_fields", "input_fields",
+                           "json_text", "error_text", "creation_date", "id"])
+
     def set_fields(self):
         """
         Parse raw fields
@@ -779,7 +790,8 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
         """
-        Fieldable.set_fields(self, taxcalc.Policy)
+        Fieldable.set_fields(self, taxcalc.Policy,
+                             nonparam_fields=self.NONPARAM_FIELDS)
 
     def get_model_specs(self):
         """

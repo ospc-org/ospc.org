@@ -57,7 +57,7 @@ class Fieldable(models.Model):
     class Meta:
         abstract = True
 
-    def set_fields(self, upstream_obj):
+    def set_fields(self, upstream_obj, nonparam_fields=None):
         """
         Parse raw fields
             1. Only keep fields that user specifies
@@ -67,7 +67,30 @@ class Fieldable(models.Model):
         """
         default_data = upstream_obj.default_data(start_year=self.start_year,
                                                  metadata=True)
-        input_fields = param_formatters.parse_fields(self.raw_input_fields, default_data)
+
+        if self.raw_input_fields is None:
+            self.raw_input_fields = {}
+            for field in self._meta.fields:
+                if (getattr(self, field.attname, None) and
+                    field not in nonparam_fields):
+                    self.raw_input_fields[field.name] = getattr(self, field.attname)
+
+        input_fields, failed_lookups = param_formatters.parse_fields(
+            self.raw_input_fields,
+            default_data
+        )
+
+        if failed_lookups:
+            # distinct elements
+            potential_failed_lookups = set(failed_lookups)
+            # only keep parameters that used to be in the upstream package
+            set_failed_lookups = potential_failed_lookups - nonparam_fields
+            if self.deprecated_fields is None:
+                self.deprecated_fields = []
+            # drop parameters that we already know are deprecated
+            set_failed_lookups.difference_update(self.deprecated_fields)
+            self.deprecated_fields += list(set_failed_lookups)
+
         param_formatters.switch_fixup(input_fields, self)
         self.input_fields = input_fields
 
