@@ -103,7 +103,6 @@ def parse_value(value, meta_param):
         integer_value = False
     else:
         integer_value = meta_param.param_meta["integer_value"]
-    float_value = not(boolean_value or integer_value)
 
     # Try to parse case-insensitive True/False strings
     if value.title() == "True":
@@ -122,28 +121,27 @@ def parse_value(value, meta_param):
 
     # Use information given to us by upstream specs to convert this value
     # into desired type or fail silently
-    if isinstance(parsed, bool):
-        return parsed
-    elif isinstance(parsed, int):
-        if boolean_value:
-            return True if parsed else False
-        elif float_value:
-            return float(parsed)
-        else:
+    if boolean_value:
+        if isinstance(parsed, bool):
             return parsed
-    elif isinstance(parsed, float):
-        if boolean_value:
-            return True if parsed else False
-        elif integer_value:
-            # Don't want to lose info when we cast the float down to int
-            # Note: 5.0 % 1.0 == 0.0 but 5.2 % 1.0 == 0.2
-            if parsed % 1.0 > 0:
-                return parsed
+        elif (isinstance(parsed, (float, int)) and
+              parsed in (0, 0.0, 1, 1.0)):
+            if parsed:
+                return True
             else:
-                return int(parsed)
-        else:
+                return False
+        else: # a string; upstream package will handle the error
             return parsed
-    else:
+    elif integer_value:
+        if isinstance(parsed, int):
+            return parsed
+        elif isinstance(parsed, float) and int(parsed) == parsed:
+            return int(parsed)
+        else:
+            # a string or non-integer rational number;
+            # upstream package will handle the error
+            return parsed
+    else: # either a float or string that can not be casted to type boolean
         return parsed
 
 def parse_fields(param_dict, default_params):
