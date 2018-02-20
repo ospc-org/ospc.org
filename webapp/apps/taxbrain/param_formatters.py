@@ -173,6 +173,8 @@ def parse_fields(param_dict, default_params):
 
     return parsed
 
+class ParameterLookUpException(Exception):
+    pass
 
 def get_default_policy_param(param, default_params):
     """
@@ -191,21 +193,21 @@ def get_default_policy_param(param, default_params):
             return MetaParam('_' + param, default_params[no_suffix])
         else:
             msg = "Received unexpected parameter: {}"
-            raise ValueError(msg.format(param))
+            raise ParameterLookUpException(msg.format(param))
     if no_suffix in default_params: # ex. STD_0 --> _STD_single
         try:
             ix = int(end_piece)
         except ValueError:
             msg = "Parsing {}: Expected integer for index but got {}"
-            raise ValueError(msg.format(param, end_piece))
+            raise ParameterLookUpException(msg.format(param, end_piece))
         num_columns = len(default_params[no_suffix]['col_label'])
         if ix < 0 or ix >= num_columns:
             msg = "Parsing {}: Index {} not in range ({}, {})"
-            raise IndexError(msg.format(param, ix, 0, num_columns))
+            raise ParameterLookUpException(msg.format(param, ix, 0, num_columns))
         col_label = default_params[no_suffix]['col_label'][ix]
         return MetaParam(no_suffix + '_' + col_label, default_params[no_suffix])
     msg = "Received unexpected parameter: {}"
-    raise ValueError(msg.format(param))
+    raise ParameterLookUpException(msg.format(param))
 
 
 def to_json_reform(start_year, fields):

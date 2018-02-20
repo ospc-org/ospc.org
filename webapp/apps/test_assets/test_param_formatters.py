@@ -10,7 +10,8 @@ from ..taxbrain.param_formatters import (read_json_reform,
                                          append_errors_warnings,
                                          get_default_policy_param,
                                          to_json_reform, MetaParam,
-                                         parse_value, parse_fields)
+                                         parse_value, parse_fields,
+                                         ParameterLookUpException)
 
 from .utils import stringify_fields
 
@@ -46,7 +47,7 @@ def test_get_default_policy_param_failing0(param, default_params_Policy):
     Check that non-recognized parameters throw a ValueError
     """
     match="Received unexpected parameter: {0}".format(param)
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(ParameterLookUpException, match=match):
         get_default_policy_param(param, default_params_Policy)
 
 
@@ -57,7 +58,7 @@ def test_get_default_policy_param_failing1(default_params_Policy):
     """
     param = "ID_BenefitSurtax_Switch_idx"
     match = "Parsing {}: Expected integer for index but got {}".format(param, "idx")
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(ParameterLookUpException, match=match):
         get_default_policy_param(param, default_params_Policy)
 
 
@@ -70,7 +71,7 @@ def test_get_default_policy_param_failing2(default_params_Policy):
     # comment out "(" since this is treated as a regexp string
     match = "Parsing {}: Index {} not in range \({}, {}\)"
     match = match.format(param, 12, 0, 7)
-    with pytest.raises(IndexError, match=match):
+    with pytest.raises(ParameterLookUpException, match=match):
         get_default_policy_param(param, default_params_Policy)
 
 ##############################################################################
