@@ -568,8 +568,9 @@ def edit_personal_results(request, pk):
            'documentation for a sensible replacement')
     form_personal_exemp = TaxBrainForm(first_year=start_year, instance=model)
     form_personal_exemp.is_valid()
-    for dep in model.deprecated_fields:
-        form_personal_exemp.add_error(None, msg.format(dep))
+    if model.deprecated_fields is not None:
+        for dep in model.deprecated_fields:
+            form_personal_exemp.add_error(None, msg.format(dep))
 
     taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
     webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
