@@ -197,21 +197,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         widgets = {}
         labels = {}
         update_fields = {}
-        boolean_fields = [
-            "_ID_BenefitSurtax_Switch",
-            "_ID_BenefitCap_Switch",
-            "_ALD_InvInc_ec_base_RyanBrady",
-            "_NIIT_PT_taxed",
-            "_CG_nodiff",
-            "_EITC_indiv",
-            "_CTC_new_refund_limited",
-            "_II_no_em_nu18",
-            "_ID_AmountCap_Switch",
-            "_CTC_new_for_all",
-            "_CTC_new_refund_limited_all_payroll",
-            "_PT_wages_active_income",
-            "_PT_top_stacking",
-        ]
+        boolean_fields = []
 
         for param in TAXCALC_DEFAULTS_2016.values():
             for field in param.col_fields:
