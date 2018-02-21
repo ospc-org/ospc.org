@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import ast
 
 from ..taxbrain.compute import MockCompute
 
@@ -86,8 +87,15 @@ def check_posted_params(mock_compute, params_to_check, start_year):
         for param in params_to_check[year]:
             act = user_mods["policy"][str(year)][param]
             exp = params_to_check[year][param]
-            assert exp == act
-
+            # more extensive assertion statement
+            # catches: [['true', '2']] == [['true', '2']] 
+            # as well as [['true', '2']] == [['1', '2.0']]
+            if exp == act:
+                continue
+            try:
+                assert ast.literal_eval(exp) == ast.literal_eval(act)
+            except ValueError:
+                assert exp == act
 
 def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False):
     """
