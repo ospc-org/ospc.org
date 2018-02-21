@@ -140,7 +140,8 @@ def get_taxbrain_model(_fields, first_year=2017,
     fields = stringify_fields(fields)
 
     personal_inputs = Form(first_year, fields)
-
+    if not personal_inputs.is_valid():
+        print(personal_inputs.errors)
     model = personal_inputs.save(commit=False)
     model.set_fields()
     model.save()

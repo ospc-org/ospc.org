@@ -183,6 +183,11 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         self.do_taxcalc_validations()
         self.add_errors_on_extra_inputs()
 
+    def add_error(self, field, error):
+        if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
+            self.cleaned_data = {}
+        ModelForm.add_error(self, field, error)
+
     class Meta:
 
         model = TaxSaveInputs

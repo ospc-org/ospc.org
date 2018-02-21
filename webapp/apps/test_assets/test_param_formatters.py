@@ -110,8 +110,9 @@ def test_parse_fields(default_params_Policy):
               "STD_0": "", "STD_1": "15000,<",
               "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true",
               "ID_Charity_c_cpi": "True",
-              "ID_Medical_c_cpi": "1"}
-    act = parse_fields(params, default_params_Policy)
+              "ID_Medical_c_cpi": "1",
+              "not-a-param": "fake"}
+    act, failed_lookups = parse_fields(params, default_params_Policy)
     exp = {
         '_AMEDT_ec_single': [300000.0, '*', 250000.0],
         '_EITC_MinEligAge': [22],
@@ -123,6 +124,7 @@ def test_parse_fields(default_params_Policy):
         "_ID_Medical_c_cpi": True
     }
     assert act == exp
+    assert failed_lookups == ["not-a-param"]
 
 ###############################################################################
 # Test to_json_reform
@@ -137,7 +139,7 @@ def test_parse_fields(default_params_Policy):
 def test_to_json_reform(request, _fields, _exp_reform, default_params_Policy):
     fields = request.getfixturevalue(_fields)
     stringified_fields = stringify_fields(fields)
-    parsed_fields = parse_fields(stringified_fields, default_params_Policy)
+    parsed_fields, _ = parse_fields(stringified_fields, default_params_Policy)
     exp_reform = request.getfixturevalue(_exp_reform)
     act = to_json_reform(START_YEAR, parsed_fields)
     np.testing.assert_equal(act, exp_reform)

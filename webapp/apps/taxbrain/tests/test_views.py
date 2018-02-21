@@ -826,3 +826,41 @@ class TaxBrainViewsTests(TestCase):
         truth_mods = truth_mods["policy"]
         check_posted_params(result["tb_dropq_compute"], truth_mods,
                             str(start_year))
+
+
+    def test_taxbrain_old_data_gives_deprecation_errors(self):
+        """
+        Simulate the creation of a previous PolicyBrain run and check for
+        deprecation error messages
+        """
+        start_year = 2018
+        fields = get_post_data(start_year)
+        fields["first_year"] = start_year
+        unique_url = get_taxbrain_model(fields,
+                                        taxcalc_vers="0.14.2",
+                                        webapp_vers="1.3.0")
+        model = unique_url.unique_inputs
+        model.raw_input_fields = None
+        model.input_fields = None
+        model.deprecated_fields = None
+        model.ALD_Alimony_hc = "*,1,*,*,*,*,*,*,0"
+        model.PT_exclusion_rt = "0.2,*,*,*,*,*,*,*,0.0"
+        model.PT_exclusion_wage_limit = "0.5,*,*,*,*,*,*,*,9e99"
+        model.save()
+        unique_url.unique_inputs = model
+        unique_url.save()
+
+        pk = unique_url.pk
+
+        edit_micro = "/taxbrain/edit/{}/?start_year={}".format(pk, start_year)
+        response = self.client.get(edit_micro)
+        assert response.status_code == 200
+
+        assert response.context['has_errors'] is False
+
+        msg = ('Field {} has been deprecated refer to the Tax-Caclulator '
+               'documentation for a sensible replacement')
+
+        for param in ["ALD_Alimony_hc", "PT_exclusion_rt",
+                      "PT_exclusion_wage_limit"]:
+            assert msg.format(param) in str(response.context["form"].errors)

@@ -154,13 +154,19 @@ def parse_fields(param_dict, default_params):
     returns: dictionary with parsed data
     """
     parsed = {}
+    failed_lookups = []
     for k, v in param_dict.items():
         # user did not specify a value for this param
         if not v:
             continue
 
         # get upstream package parameter name and meta info
-        meta_param = get_default_policy_param(k, default_params)
+        try:
+            meta_param = get_default_policy_param(k, default_params)
+        except ParameterLookUpException:
+            failed_lookups.append(k)
+            continue
+
         values = []
         if meta_param.param_name.endswith("cpi"):
             assert len(v.split(',')) == 1
@@ -171,7 +177,7 @@ def parse_fields(param_dict, default_params):
                  values.append(parse_value(item, meta_param))
         parsed[meta_param.param_name] = values
 
-    return parsed
+    return parsed, failed_lookups
 
 class ParameterLookUpException(Exception):
     pass

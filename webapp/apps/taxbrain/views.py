@@ -486,7 +486,7 @@ def submit_micro(request, pk):
         raise Http404
 
     model = TaxSaveInputs.objects.get(pk=url.model_pk)
-    start_year = dict(model.__dict__)['first_year']
+    start_year = model.start_year
     # This will be a new model instance so unset the primary key
     model.pk = None
     # Unset the computed results, set quick_calc to False
@@ -503,12 +503,9 @@ def submit_micro(request, pk):
     json_reform = model.json_text
     # necessary for simulations before PR 641
     if not is_file:
+        model.set_fields()
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors_warnings) = get_reform_from_gui(
-                request,
-                taxbrain_model=model,
-                behavior_model=None
-        )
+            errors_warnings) = model.get_model_specs()
         json_reform = JSONReformTaxCalculator(
             reform_text=json.dumps(reform_dict),
             assumption_text=json.dumps(assumptions_dict),
@@ -565,8 +562,14 @@ def edit_personal_results(request, pk):
 
     model = TaxSaveInputs.objects.get(pk=url.model_pk)
     start_year = model.first_year
+    model.set_fields()
 
+    msg = ('Field {} has been deprecated refer to the Tax-Caclulator '
+           'documentation for a sensible replacement')
     form_personal_exemp = TaxBrainForm(first_year=start_year, instance=model)
+    form_personal_exemp.is_valid()
+    for dep in model.deprecated_fields:
+        form_personal_exemp.add_error(None, msg.format(dep))
 
     taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
     webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
