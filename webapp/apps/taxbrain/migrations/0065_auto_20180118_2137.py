@@ -11,9 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='taxsaveinputs',
-            old_name='ALD_Alimony_hc',
-            new_name='ALD_AlimonyPaid_hc',
-        ),
+        # migrations.RenameField(
+        #     model_name='taxsaveinputs',
+        #     old_name='ALD_Alimony_hc',
+        #     new_name='ALD_AlimonyPaid_hc',
+        # ),
     ]

@@ -12,9 +12,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='ALD_AlimonyReceived_hc',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='ALD_AlimonyReceived_hc',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
     ]

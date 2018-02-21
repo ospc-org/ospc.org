@@ -12,64 +12,64 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_prt_0',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_prt_1',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_prt_2',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_prt_3',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_prt_4',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_prt_cpi',
-            field=models.NullBooleanField(default=None),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_thd_0',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_thd_1',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_thd_2',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_thd_3',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_thd_4',
-            field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='PT_excl_wagelim_thd_cpi',
-            field=models.NullBooleanField(default=None),
-        ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_prt_0',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_prt_1',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_prt_2',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_prt_3',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_prt_4',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_prt_cpi',
+        #     field=models.NullBooleanField(default=None),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_thd_0',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_thd_1',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_thd_2',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_thd_3',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_thd_4',
+        #     field=webapp.apps.taxbrain.models.CommaSeparatedField(default=None, max_length=200, null=True, blank=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='taxsaveinputs',
+        #     name='PT_excl_wagelim_thd_cpi',
+        #     field=models.NullBooleanField(default=None),
+        # ),
     ]

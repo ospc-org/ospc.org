@@ -11,14 +11,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='taxsaveinputs',
-            old_name='PT_exclusion_wage_limit',
-            new_name='PT_excl_wagelim_rt',
-        ),
-        migrations.RenameField(
-            model_name='taxsaveinputs',
-            old_name='PT_exclusion_wage_limit_cpi',
-            new_name='PT_excl_wagelim_rt_cpi',
-        ),
+        # migrations.RenameField(
+        #     model_name='taxsaveinputs',
+        #     old_name='PT_exclusion_wage_limit',
+        #     new_name='PT_excl_wagelim_rt',
+        # ),
+        # migrations.RenameField(
+        #     model_name='taxsaveinputs',
+        #     old_name='PT_exclusion_wage_limit_cpi',
+        #     new_name='PT_excl_wagelim_rt_cpi',
+        # ),
     ]
