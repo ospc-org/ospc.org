@@ -9,7 +9,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 
 import taxcalc
 
@@ -95,7 +95,14 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
 
     # # raw gui input
     raw_input_fields = JSONField(default=None, blank=True, null=True)
-    #
+
+    # deprecated fields list
+    deprecated_fields = ArrayField(
+        models.CharField(max_length=50, blank=True),
+        blank=True,
+        null=True
+    )
+
     # # validated gui input
     input_fields = JSONField(default=None, blank=True, null=True)
 
