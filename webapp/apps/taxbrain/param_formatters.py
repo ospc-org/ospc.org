@@ -12,7 +12,7 @@ from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
 MetaParam = namedtuple("MetaParam", ["param_name", "param_meta"])
 
 
-def benefit_switch_fixup(fields, model, name="ID_BenefitSurtax_Switch"):
+def benefit_switch_fixup(fields, name="ID_BenefitSurtax_Switch"):
     """
     Take the incoming POST, the user reform, and the TaxSaveInputs
     model and fixup the switches _0, ..., _6 to one array of
@@ -31,7 +31,7 @@ def benefit_switch_fixup(fields, model, name="ID_BenefitSurtax_Switch"):
     return fields
 
 
-def amt_fixup(fields, model):
+def amt_fixup(fields):
     """
     Take the regular tax captial gains parameters from the user reform
     and set them as the equivalent Alternative Minimum Tax capital
@@ -46,12 +46,6 @@ def amt_fixup(fields, model):
     for cgparam in cap_gains_params:
         if cgparam in fields:
             fields['AMT_' + cgparam] = fields[cgparam]
-            if cgparam.endswith("_cpi"):
-                setattr(model, 'AMT_' + cgparam, fields[cgparam])
-            else:
-                setattr(model, 'AMT_' + cgparam, fields[cgparam][0])
-
-    return fields
 
 
 def growth_fixup(mod):
@@ -71,14 +65,14 @@ def growth_fixup(mod):
     return mod
 
 
-def switch_fixup(fields, taxbrain_model):
+def switch_fixup(fields):
     growth_fixup(fields)
     benefit_names = ["ID_BenefitSurtax_Switch", "ID_BenefitCap_Switch",
                      "ID_AmountCap_Switch"]
     for benefit_name in benefit_names:
-        benefit_switch_fixup(fields, taxbrain_model, name=benefit_name)
+        benefit_switch_fixup(fields, name=benefit_name)
 
-    amt_fixup(fields, taxbrain_model)
+    amt_fixup(fields)
 
 
 def parse_value(value, meta_param):

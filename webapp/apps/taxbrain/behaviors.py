@@ -75,6 +75,7 @@ class Fieldable(models.Model):
                     field not in nonparam_fields):
                     self.raw_input_fields[field.name] = getattr(self, field.attname)
 
+        param_formatters.switch_fixup(self.raw_input_fields)
         input_fields, failed_lookups = param_formatters.parse_fields(
             self.raw_input_fields,
             default_data
@@ -91,7 +92,6 @@ class Fieldable(models.Model):
             set_failed_lookups.difference_update(self.deprecated_fields)
             self.deprecated_fields += list(set_failed_lookups)
 
-        param_formatters.switch_fixup(input_fields, self)
         self.input_fields = input_fields
 
     def get_model_specs(self):
