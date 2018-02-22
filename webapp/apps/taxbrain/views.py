@@ -565,7 +565,7 @@ def edit_personal_results(request, pk):
     model.set_fields()
 
     msg = ('Field {} has been deprecated. Refer to the Tax-Caclulator '
-           'documentation for a sensible replacement')
+           'documentation for a sensible replacement.')
     form_personal_exemp = TaxBrainForm(first_year=start_year, instance=model)
     form_personal_exemp.is_valid()
     if model.deprecated_fields is not None:

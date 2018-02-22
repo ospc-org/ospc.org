@@ -856,7 +856,7 @@ class TaxBrainViewsTests(TestCase):
         assert response.context['has_errors'] is False
 
         msg = ('Field {} has been deprecated. Refer to the Tax-Caclulator '
-               'documentation for a sensible replacement')
+               'documentation for a sensible replacement.')
 
         for param in ["ALD_Alimony_hc", "PT_exclusion_rt",
                       "PT_exclusion_wage_limit"]:
