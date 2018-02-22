@@ -11,7 +11,8 @@ from ..taxbrain.param_formatters import (read_json_reform,
                                          get_default_policy_param,
                                          to_json_reform, MetaParam,
                                          parse_value, parse_fields,
-                                         ParameterLookUpException)
+                                         ParameterLookUpException,
+                                         CPI_WIDGET)
 
 from .utils import stringify_fields
 
@@ -95,7 +96,6 @@ def test_meta_param():
      ("EITC_MinEligAge", "22.0", 22),
      ("ID_BenefitCap_Switch_0", "fAlse", False),
      ("ID_Medical_frt_add4aged", "-0.01", -0.01),
-     ("ID_Charity_c_cpi", "True", True), ("ID_Medical_c_cpi", "1", True)
     ]
 )
 def test_parse_values(name, value, exp, default_params_Policy):
@@ -111,6 +111,7 @@ def test_parse_fields(default_params_Policy):
               "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true",
               "ID_Charity_c_cpi": "True",
               "ID_Medical_c_cpi": "1",
+              "SS_Earnings_c_cpi": "2",
               "not-a-param": "fake"}
     act, failed_lookups = parse_fields(params, default_params_Policy)
     exp = {
@@ -121,10 +122,20 @@ def test_parse_fields(default_params_Policy):
         "_STD_joint": [15000.0,"<"],
         "_ID_BenefitCap_Switch_statelocal": [True, False, "<", True, True],
         "_ID_Charity_c_cpi": True,
-        "_ID_Medical_c_cpi": True
+        "_ID_Medical_c_cpi": True,
+        "_SS_Earnings_c_cpi": True
     }
     assert act == exp
     assert failed_lookups == ["not-a-param"]
+
+# test NullBooleanSelect.value_from_datadict
+@pytest.mark.parametrize(
+    "val, exp",
+    [('2', True), ('3', False), ('True', True), ('False', False),
+     (True, True), (False, False)])
+def test_cpi_widget(val, exp):
+    data = {'param_name': val}
+    assert CPI_WIDGET.value_from_datadict(data, None, 'param_name') == exp
 
 ###############################################################################
 # Test to_json_reform

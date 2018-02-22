@@ -41,7 +41,6 @@ from .helpers import (get_btax_defaults,
 from ..taxbrain.helpers import (format_csv,
                                 is_wildcard)
 from ..taxbrain.views import denormalize, normalize
-from ..taxbrain.param_formatters import benefit_switch_fixup
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,

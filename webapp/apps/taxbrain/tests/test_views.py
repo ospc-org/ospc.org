@@ -257,6 +257,7 @@ class TaxBrainViewsTests(TestCase):
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
         data[u'AMT_CG_brk2_cpi'] = u'False'
+        data[u'AMEDT_ec_cpi'] = u'True'
 
         result = do_micro_sim(self.client, data)
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
@@ -265,6 +266,8 @@ class TaxBrainViewsTests(TestCase):
         self.assertEqual(edit_page.status_code, 200)
         cpi_flag = edit_page.context['form']['AMT_CG_brk2_cpi'].field.widget.attrs['placeholder']
         self.assertEqual(cpi_flag, False)
+        cpi_flag = edit_page.context['form']['AMEDT_ec_cpi'].field.widget.attrs['placeholder']
+        self.assertEqual(cpi_flag, True)
 
 
 

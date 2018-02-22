@@ -3,6 +3,8 @@ import six
 import json
 import ast
 
+from django.forms import NullBooleanSelect
+
 import taxcalc
 
 from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
@@ -10,26 +12,7 @@ from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
 
 
 MetaParam = namedtuple("MetaParam", ["param_name", "param_meta"])
-
-
-def benefit_switch_fixup(fields, name="ID_BenefitSurtax_Switch"):
-    """
-    Take the incoming POST, the user reform, and the TaxSaveInputs
-    model and fixup the switches _0, ..., _6 to one array of
-    bools. Also set the model values correctly based on incoming
-    POST
-    """
-    # Django forms needs switches to be True/False but in the interest of
-    # ensuring that reforms created from a file or the GUI interface are the
-    # same (down to the data type) the reform data are set to 1.0/0.0
-    # _ids = [name + '_' + str(i) for i in range(7)]
-    # values_from_model = [[fields[_id][0] for _id in _ids if _id in fields]]
-    # final_values = [[True if _id in fields else False for (fields, _id) in zip(values_from_model[0], _ids)]]
-    # for _id, val in zip(_ids, final_values[0]):
-    #     fields[_id] = [1 if val else 0]
-    #     setattr(model, _id, unicode(val))
-    return fields
-
+CPI_WIDGET = NullBooleanSelect()
 
 def amt_fixup(fields):
     """
@@ -46,33 +29,6 @@ def amt_fixup(fields):
     for cgparam in cap_gains_params:
         if cgparam in fields:
             fields['AMT_' + cgparam] = fields[cgparam]
-
-
-def growth_fixup(mod):
-    # if mod['growth_choice']:
-    #     if mod['growth_choice'] == 'factor_adjustment':
-    #         del mod['factor_target']
-    #     if mod['growth_choice'] == 'factor_target':
-    #         del mod['factor_adjustment']
-    # else:
-    #     if 'factor_adjustment' in mod:
-    #         del mod['factor_adjustment']
-    #     if 'factor_target' in mod:
-    #         del mod['factor_target']
-    #
-    # del mod['growth_choice']
-
-    return mod
-
-
-def switch_fixup(fields):
-    growth_fixup(fields)
-    benefit_names = ["ID_BenefitSurtax_Switch", "ID_BenefitCap_Switch",
-                     "ID_AmountCap_Switch"]
-    for benefit_name in benefit_names:
-        benefit_switch_fixup(fields, name=benefit_name)
-
-    amt_fixup(fields)
 
 
 def parse_value(value, meta_param):
@@ -164,7 +120,22 @@ def parse_fields(param_dict, default_params):
         values = []
         if meta_param.param_name.endswith("cpi"):
             assert len(v.split(',')) == 1
-            values = bool(ast.literal_eval(v))
+            prepped = ast.literal_eval(v)
+            # raw data is stored as choices 1, 2, 3 with the following
+            # mapping:
+            #     '1': unknown (unknown=unspecified ==> use upstream default)
+            #     '2': True
+            #     '3': False
+            # value_from_datadict unpacks this data:
+            # https://github.com/django/django/blob/1.9/django/forms/widgets.py#L582-L589
+            if prepped == 1:
+                values = meta_param.param_meta["cpi_inflated"]
+            else:
+                values = CPI_WIDGET.value_from_datadict(
+                    {meta_param.param_name: str(prepped)},
+                    None,
+                    meta_param.param_name
+                )
             assert isinstance(values, bool)
         else:
             for item in v.split(","):

@@ -75,7 +75,7 @@ class Fieldable(models.Model):
                     field not in nonparam_fields):
                     self.raw_input_fields[field.name] = getattr(self, field.attname)
 
-        param_formatters.switch_fixup(self.raw_input_fields)
+        param_formatters.amt_fixup(self.raw_input_fields)
         input_fields, failed_lookups = param_formatters.parse_fields(
             self.raw_input_fields,
             default_data

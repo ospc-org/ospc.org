@@ -138,14 +138,38 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
     def __init__(self, first_year, *args, **kwargs):
         # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
-        # this seems to update the saved data in the appropriate way
+        # Override `initial` with `instance`. The only relevant field
+        # in `instance` is `raw_input_fields` which contains all of the user
+        # input data from the stored run. By overriding the `initial` kw
+        # argument we are making all of the user input from the previous run
+        # as stored in the `raw_input_fields` field of `instance` available
+        # to the fields attribute in django forms. This front-end data is
+        # derived from this fields attribute.
+        # Take a look at the source code for more info:
+        # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
         if "instance" in kwargs:
             kwargs["initial"] = kwargs["instance"].raw_input_fields
+            for k, v in kwargs["initial"].iteritems():
+                if k.endswith("cpi") and v:
+                    # raw data is stored as choices 1, 2, 3 with the following
+                    # mapping:
+                    #     '1': unknown
+                    #     '2': True
+                    #     '3': False
+                    # value_from_datadict unpacks this data:
+                    # https://github.com/django/django/blob/1.9/django/forms/widgets.py#L582-L589
+                    django_val = self._meta.widgets[k].value_from_datadict(
+                        kwargs["initial"],
+                        None,
+                        k
+                    )
+                    self._meta.widgets[k].attrs["placeholder"] = django_val
+
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
 
         # Defaults are set in the Meta, but we need to swap
-        # those outs here in the init because the user may
+        # those out here in the init because the user may
         # have chosen a different start year
         all_defaults = []
         for param in self._default_params.values():
@@ -154,15 +178,6 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
 
         for _id, default in all_defaults:
             self._meta.widgets[_id].attrs['placeholder'] = default
-
-        # If a stored instance is passed,
-        # set CPI flags based on the values in this instance
-        if 'instance' in kwargs:
-            instance = kwargs['instance']
-            cpi_flags = [attr for attr in dir(instance) if attr.endswith('_cpi')]
-            for flag in cpi_flags:
-                if getattr(instance, flag) is not None and flag in self._meta.widgets:
-                    self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
 
         super(TaxBrainForm, self).__init__(*args, **kwargs)
         # update fields in a similar way as
@@ -184,6 +199,11 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         self.add_errors_on_extra_inputs()
 
     def add_error(self, field, error):
+        """
+        Safely adds errors. There was an issue where the `cleaned_data`
+        attribute wasn't created after `is_valid` was called. This ensures
+        that the `cleaned_data` attribute is there.
+        """
         if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
             self.cleaned_data = {}
         ModelForm.add_error(self, field, error)
