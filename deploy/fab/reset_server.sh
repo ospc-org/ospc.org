@@ -78,9 +78,6 @@ redis-cli FLUSHALL
 cd ${DEP}/../Tax-Calculator && git fetch origin
 conda list | grep 'taxcalc' | awk -F' ' '{print $2}' | xargs -n 1 git checkout
 cp ~/deploy/puf.csv.gz ./ && gunzip -k puf.csv.gz
-cd taxcalc/tests
-echo $rs Test the correct puf is here - Tax-Calculator
-py.test -m "requires_pufcsv"
 cd $DEP/taxbrain_server/tests
 echo $rs Test the mock celery - mock flask tests in deploy
 MOCK_CELERY=1 TAX_ESTIMATE_PATH=$OGUSA_PATH py.test -p no:django -v
