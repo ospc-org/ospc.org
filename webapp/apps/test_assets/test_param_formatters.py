@@ -122,7 +122,6 @@ def test_parse_fields(default_params_Policy):
         "_STD_joint": [15000.0,"<"],
         "_ID_BenefitCap_Switch_statelocal": [True, False, "<", True, True],
         "_ID_Charity_c_cpi": True,
-        "_ID_Medical_c_cpi": True,
         "_SS_Earnings_c_cpi": True
     }
     assert act == exp

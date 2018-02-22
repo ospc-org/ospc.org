@@ -128,8 +128,10 @@ def parse_fields(param_dict, default_params):
             #     '3': False
             # value_from_datadict unpacks this data:
             # https://github.com/django/django/blob/1.9/django/forms/widgets.py#L582-L589
-            if prepped == 1:
-                values = meta_param.param_meta["cpi_inflated"]
+            if prepped is 1:
+                # no need to pass this to upstream model since they will be
+                # filled in
+                continue
             else:
                 values = CPI_WIDGET.value_from_datadict(
                     {meta_param.param_name: str(prepped)},

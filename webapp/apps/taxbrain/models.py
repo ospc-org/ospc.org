@@ -760,7 +760,8 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
 
     NONPARAM_FIELDS = set(["job_ids", "jobs_not_ready", "first_year", "quick_calc",
                            "tax_result", "raw_input_fields", "input_fields",
-                           "json_text", "error_text", "creation_date", "id"])
+                           "json_text", "error_text", "creation_date", "id",
+                           "raw_input_fields", "input_fields"])
 
     def set_fields(self):
         """

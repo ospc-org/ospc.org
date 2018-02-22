@@ -72,7 +72,7 @@ class Fieldable(models.Model):
             self.raw_input_fields = {}
             for field in self._meta.fields:
                 if (getattr(self, field.attname, None) and
-                    field not in nonparam_fields):
+                    field.name not in nonparam_fields):
                     self.raw_input_fields[field.name] = getattr(self, field.attname)
 
         param_formatters.amt_fixup(self.raw_input_fields)
