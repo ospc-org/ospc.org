@@ -736,7 +736,7 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
 
     # deprecated fields list
     deprecated_fields = ArrayField(
-        models.CharField(max_length=50, blank=True),
+        models.CharField(max_length=100, blank=True),
         blank=True,
         null=True
     )
