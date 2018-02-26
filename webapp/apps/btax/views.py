@@ -355,8 +355,8 @@ def output_detail(request, pk):
     if model.tax_result:
         exp_num_minutes = 0.25
         JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
-
-        tables = url.unique_inputs.tax_result[0]
+        tax_result = url.unique_inputs.tax_result
+        tables = json.loads(tax_result)[0]
         first_year = url.unique_inputs.first_year
         created_on = url.unique_inputs.creation_date
         tables["tooltips"] = {
@@ -365,7 +365,7 @@ def output_detail(request, pk):
             "coc": COC_TOOLTIP,
             "dprc": DPRC_TOOLTIP,
         }
-        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(model.tax_result[0]['dataframes'])
+        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(tables['dataframes'])
 
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
@@ -416,8 +416,8 @@ def output_detail(request, pk):
 
 
         if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.btax_get_results(normalize(job_ids))
-
+            tax_result = dropq_compute.btax_get_results(normalize(job_ids))
+            model.tax_result = json.dumps(tax_result)
             model.creation_date = datetime.datetime.now()
             print 'ready'
             model.save()
