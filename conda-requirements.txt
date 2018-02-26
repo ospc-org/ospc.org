@@ -1,6 +1,6 @@
 nomkl
-taxcalc==0.15.1
-btax==0.1.9
+taxcalc==0.15.2
+btax==0.2.2
 numba>=0.33.0
 pandas>=0.22.0
 gevent

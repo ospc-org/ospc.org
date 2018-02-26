@@ -156,7 +156,7 @@ def ogusa_async(user_mods, ogusa_params, guid):
 def btax_async(user_mods):
     print("user mods: ", user_mods)
     results = {}
-    tables = runner_json_tables(**user_mods)
+    tables = json.loads(runner_json_tables(**user_mods))
     if tables.get("json_table"):
         results.update(tables["json_table"])
         if tables.get("dataframes"):
@@ -171,7 +171,8 @@ def btax_async(user_mods):
     results['dropq_version'] = vinfo['version']
     binfo = btax._version.get_versions()
     results['btax_version'] = binfo['version']
-    return json.dumps(results)
+    json_res = json.dumps(results)
+    return json_res
 
 
 @celery_app.task

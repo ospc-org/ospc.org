@@ -1,11 +1,12 @@
 import json
 import os
 import sys
+import ast
 
 from ..taxbrain.compute import MockCompute
 
 from ..taxbrain.models import OutputUrl
-from ..taxbrain.forms import PersonalExemptionForm
+from ..taxbrain.forms import TaxBrainForm
 
 from ..dynamic import views
 from ..taxbrain import views
@@ -86,8 +87,15 @@ def check_posted_params(mock_compute, params_to_check, start_year):
         for param in params_to_check[year]:
             act = user_mods["policy"][str(year)][param]
             exp = params_to_check[year][param]
-            assert exp == act
-
+            # more extensive assertion statement
+            # catches: [['true', '2']] == [['true', '2']] 
+            # as well as [['true', '2']] == [['1', '2.0']]
+            if exp == act:
+                continue
+            try:
+                assert ast.literal_eval(exp) == ast.literal_eval(act)
+            except ValueError:
+                assert exp == act
 
 def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False):
     """
@@ -129,22 +137,23 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
     return data
 
 
-def get_taxbrain_model(fields, first_year=2017,
+def get_taxbrain_model(_fields, first_year=2017,
                        quick_calc=False, taxcalc_vers="0.13.0",
                        webapp_vers="1.2.0", exp_comp_datetime = "2017-10-10",
-                       Form=PersonalExemptionForm, UrlModel=OutputUrl):
-    fields = fields.copy()
-    del fields['_state']
-    del fields['creation_date']
-    del fields['id']
-    for key in fields:
-        if isinstance(fields[key], list):
-            fields[key] = ','.join(map(str, fields[key]))
+                       Form=TaxBrainForm, UrlModel=OutputUrl):
+    fields = _fields.copy()
+    fields.pop('_state', None)
+    fields.pop('creation_date', None)
+    fields.pop('id', None)
+    fields = stringify_fields(fields)
 
     personal_inputs = Form(first_year, fields)
-
-    model = personal_inputs.save()
-    model.job_ids = '1,2,3'
+    if not personal_inputs.is_valid():
+        print(personal_inputs.errors)
+    model = personal_inputs.save(commit=False)
+    model.set_fields()
+    model.save()
+    model.job_ids = ['1','2','3']
     model.json_text = None
     model.first_year = first_year
     model.quick_calc = quick_calc
@@ -159,3 +168,12 @@ def get_taxbrain_model(fields, first_year=2017,
     unique_url.save()
 
     return unique_url
+
+
+def stringify_fields(fields):
+    for key in fields:
+        if isinstance(fields[key], list):
+            fields[key] = ','.join(map(str, fields[key]))
+        else:
+            fields[key] = str(fields[key])
+    return fields

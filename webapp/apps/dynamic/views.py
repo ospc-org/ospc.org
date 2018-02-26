@@ -14,7 +14,7 @@ import taxcalc
 
 from django.core.mail import send_mail
 from django.core import serializers
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import (HttpResponseRedirect, HttpResponse, Http404, HttpResponseServerError,
@@ -27,18 +27,19 @@ from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
 from django import forms
 
-from djqscsv import render_to_csv_response
 from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
                     has_field_errors, DynamicElasticityInputsModelForm)
 from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import TaxSaveInputs, OutputUrl, ErrorMessageTaxCalculator
-from ..taxbrain.views import (growth_fixup, benefit_switch_fixup, make_bool, dropq_compute,
-                              JOB_PROC_TIME_IN_SECONDS, get_reform_from_gui,
-                              parse_fields, add_summary_column)
+from ..taxbrain.views import (make_bool, dropq_compute,
+                              JOB_PROC_TIME_IN_SECONDS,
+                              add_summary_column)
+from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
+                                         parse_fields)
 from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
-                                convert_val, to_json_reform)
+                                convert_val)
 
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
@@ -79,7 +80,7 @@ def dynamic_input(request, pk):
 
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.REQUEST)
+        fields = dict(request.POST)
         fields['first_year'] = fields['start_year']
         start_year = fields['start_year']
         strip_empty_lists(fields)
@@ -108,7 +109,6 @@ def dynamic_input(request, pk):
 
             if not taxbrain_model.json_text:
                 taxbrain_dict = dict(taxbrain_model.__dict__)
-                growth_fixup(taxbrain_dict)
                 for key, value in taxbrain_dict.items():
                     if type(value) == type(unicode()):
                         try:
@@ -124,8 +124,6 @@ def dynamic_input(request, pk):
                 #Don't need to pass around the microsim results
                 if 'tax_result' in microsim_data:
                     del microsim_data['tax_result']
-
-                benefit_switch_fixup(request.REQUEST, microsim_data, taxbrain_model)
 
                 # start calc job
                 submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(worker_data, int(start_year), microsim_data)
@@ -159,7 +157,7 @@ def dynamic_input(request, pk):
     else:
 
         # Probably a GET request, load a default form
-        start_year = request.REQUEST.get('start_year')
+        start_year = request.GET.get('start_year')
         form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))
@@ -188,19 +186,27 @@ def dynamic_behavioral(request, pk):
     This view handles the dynamic behavioral input page and calls the function that
     handles the calculation on the inputs.
     """
-    start_year = request.REQUEST.get('start_year')
+    start_year = START_YEAR
     if request.method == 'POST':
+        fields = dict(request.GET)
+        fields.update(dict(request.POST))
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        start_year = fields.get('start_year', START_YEAR)
+        # TODO: migrate first_year to start_year to get rid of weird stuff like
+        # this
+        fields['first_year'] = fields['start_year']
+
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.REQUEST)
-        strip_empty_lists(fields)
-        start_year = request.GET['start_year']
+        # save start_year
+        start_year = (request.GET.get('start_year', None) or
+                      request.POST.get('start_year', None))
+        assert start_year is not None
         fields['first_year'] = start_year
         dyn_mod_form = DynamicBehavioralInputsModelForm(start_year, fields)
 
         if dyn_mod_form.is_valid():
-            model = dyn_mod_form.save()
-            curr_dict = dict(model.__dict__)
-            worker_data = parse_fields(curr_dict)
+            model = dyn_mod_form.save(commit=False)
+            model.set_fields()
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -208,20 +214,11 @@ def dynamic_behavioral(request, pk):
             taxbrain_model = outputsurl.unique_inputs
              # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
-                (reform_dict, assumptions_dict, _, _,
-                    errors_warnings) = get_reform_from_gui(
-                        request,
-                        taxbrain_model=taxbrain_model,
-                        behavior_model=model
-                )
+                raise NotImplementedError("Backwards compatibility has not been implemented yet")
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
                 (_, assumptions_dict, _, _,
-                    errors_warnings) = get_reform_from_gui(
-                        request,
-                        taxbrain_model=None,
-                        behavior_model=model
-                    )
+                    errors_warnings) = model.get_model_specs()
             # start calc job
             user_mods = dict({'policy': reform_dict}, **assumptions_dict)
             data = {'user_mods': json.dumps(user_mods),
@@ -296,19 +293,23 @@ def dynamic_elasticities(request, pk):
     This view handles the dynamic macro elasticities input page and
     calls the function that handles the calculation on the inputs.
     """
-    start_year = request.REQUEST.get('start_year')
+    start_year = START_YEAR
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.REQUEST)
-        strip_empty_lists(fields)
-        fields['first_year'] = start_year
+        fields = dict(request.GET)
+        fields.update(dict(request.POST))
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        start_year = fields.get('start_year', START_YEAR)
+        print(fields)
+        # TODO: migrate first_year to start_year to get rid of weird stuff like
+        # this
+        fields['first_year'] = fields['start_year']
         dyn_mod_form = DynamicElasticityInputsModelForm(start_year, fields)
 
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
-            curr_dict = dict(model.__dict__)
-            worker_data = parse_fields(curr_dict)
+            gdp_elasticity = float(model.elastic_gdp)
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -316,12 +317,7 @@ def dynamic_elasticities(request, pk):
             taxbrain_model = outputsurl.unique_inputs
              # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
-                (reform_dict, _, _, _,
-                    errors_warnings) = get_reform_from_gui(
-                        request,
-                        taxbrain_model=taxbrain_model,
-                        behavior_model=None
-                )
+                raise NotImplementedError("Backwards compatibility has not been implemented yet")
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
             # empty assumptions dictionary
@@ -332,7 +328,7 @@ def dynamic_elasticities(request, pk):
 
             user_mods = dict({'policy': reform_dict}, **assumptions_dict)
             data = {'user_mods': json.dumps(user_mods),
-                    'gdp_elasticity': worker_data['elastic_gdp'],
+                    'gdp_elasticity': gdp_elasticity,
                     'first_budget_year': int(start_year),
                     'start_budget_year': 0,
                     'num_budget_years': NUM_BUDGET_YEARS}
@@ -382,6 +378,10 @@ def dynamic_elasticities(request, pk):
 
     else:
         # Probably a GET request, load a default form
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in START_YEARS:
+            start_year = params['start_year'][0]
+
         form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year)
 
     elasticity_default_params = default_elasticity_parameters(int(start_year))

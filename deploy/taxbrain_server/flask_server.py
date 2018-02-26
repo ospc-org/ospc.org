@@ -102,8 +102,9 @@ def btax_endpoint():
     raw_results = btax_async.delay(user_mods)
     RUNNING_JOBS[raw_results.id] = raw_results
     length = client.llen(queue_name) + 1
-    results = {'job_id':str(raw_results), 'qlength':length}
-    return str(json.dumps(results))
+    results = {'job_id': str(raw_results), 'qlength':length}
+    json_res = json.dumps(results)
+    return json_res
 
 
 @app.route("/elastic_gdp_start_job", methods=['POST'])

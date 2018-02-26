@@ -1,4 +1,5 @@
 import re
+import uuid
 from distutils.version import LooseVersion
 
 from django.db import models
@@ -8,37 +9,22 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from uuidfield import UUIDField
-from jsonfield import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 import datetime
 
+import taxcalc
+
 import helpers
+import param_formatters
 
-def convert_to_floats(tsi):
-    """
-    A helper function that tax all of the fields of a TaxSaveInputs model
-    and converts them to floats, or list of floats
-    """
-    def numberfy_one(x):
-        if isinstance(x, float):
-            return x
-        else:
-            return float(x)
+from behaviors import Resultable, Fieldable
 
-    def numberfy(x):
-        if isinstance(x, list):
-            return [numberfy_one(i) for i in x]
-        else:
-            return numberfy_one(x)
-
-    attrs = vars(tsi)
-    return { k:numberfy(v) for k,v in attrs.items() if v}
 
 # digit or true/false (case insensitive)
-COMMASEP_REGEX = "(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
+COMMASEP_REGEX = "(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
 
 class CommaSeparatedField(models.CharField):
-    default_validators = [validators.RegexValidator(regex="(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))")]
+    default_validators = [validators.RegexValidator(regex=COMMASEP_REGEX)]
     description = "A comma separated field that allows multiple floats."
 
     def __init__(self, verbose_name=None, name=None, **kwargs):
@@ -53,7 +39,6 @@ class CommaSeparatedField(models.CharField):
 
 
 class SeparatedValuesField(models.TextField):
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         self.token = kwargs.pop('token', ',')
@@ -73,6 +58,9 @@ class SeparatedValuesField(models.TextField):
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return self.get_db_prep_value(value)
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
 
 class JSONReformTaxCalculator(models.Model):
@@ -98,7 +86,7 @@ class ErrorMessageTaxCalculator(models.Model):
     text = models.CharField(blank=True, null=False, max_length=4000)
 
 
-class TaxSaveInputs(models.Model):
+class TaxSaveInputs(Fieldable, Resultable, models.Model):
     """
     This model contains all the parameters for the tax model and the tax
     result.
@@ -148,14 +136,7 @@ class TaxSaveInputs(models.Model):
     ALD_SelfEmp_HealthIns_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_KEOGH_SEP_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_EarlyWithdraw_hc = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_AlimonyPaid_hc = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_AlimonyReceived_hc = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_BusinessLosses_c_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_BusinessLosses_c_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_BusinessLosses_c_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_BusinessLosses_c_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_BusinessLosses_c_4 = CommaSeparatedField(default=None, blank=True, null=True)
-    ALD_BusinessLosses_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    ALD_Alimony_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Dependents_hc = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Dependents_Child_c = CommaSeparatedField(default=None, blank=True, null=True)
     ALD_Dependents_Child_c_cpi = models.NullBooleanField(default=None, blank=True, null=True)
@@ -647,21 +628,9 @@ class TaxSaveInputs(models.Model):
     PT_EligibleRate_passive = CommaSeparatedField(default=None, blank=True, null=True)
     PT_wages_active_income = models.CharField(default="False", blank=True, null=True, max_length=50)
     PT_top_stacking = models.CharField(default="True", blank=True, null=True, max_length=50)
-    PT_excl_rt = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_rt = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_rt_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    PT_excl_wagelim_thd_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_thd_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_thd_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_thd_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_thd_4 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_thd_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    PT_excl_wagelim_prt_0 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_prt_1 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_prt_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_prt_3 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_prt_4 = CommaSeparatedField(default=None, blank=True, null=True)
-    PT_excl_wagelim_prt_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    PT_exclusion_rt = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_exclusion_wage_limit = CommaSeparatedField(default=None, blank=True, null=True)
+    PT_exclusion_wage_limit_cpi = models.NullBooleanField(default=None, blank=True, null=True)
 
     # Fair Share Tax Parameters
     FST_AGI_trt = CommaSeparatedField(default=None, blank=True, null=True)
@@ -729,8 +698,7 @@ class TaxSaveInputs(models.Model):
     factor_adjustment = CommaSeparatedField(default=None, blank=True, null=True)
     factor_target = CommaSeparatedField(default=None, blank=True, null=True)
     growth_choice = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
-
+        max_length=50)
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
     jobs_not_ready = SeparatedValuesField(blank=True, default=None, null=True)
@@ -760,6 +728,19 @@ class TaxSaveInputs(models.Model):
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
 
+    # # raw gui input
+    raw_input_fields = JSONField(default=None, blank=True, null=True)
+    #
+    # # validated gui input
+    input_fields = JSONField(default=None, blank=True, null=True)
+
+    # deprecated fields list
+    deprecated_fields = ArrayField(
+        models.CharField(max_length=100, blank=True),
+        blank=True,
+        null=True
+    )
+
     # JSON input text
     json_text = models.ForeignKey(JSONReformTaxCalculator, null=True, default=None, blank=True)
 
@@ -775,11 +756,39 @@ class TaxSaveInputs(models.Model):
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        return helpers.get_tax_result(
-            OutputUrl,
-            self.pk,
-            self.tax_result
+        return Resultable.get_tax_result(self, OutputUrl)
+
+    NONPARAM_FIELDS = set(["job_ids", "jobs_not_ready", "first_year", "quick_calc",
+                           "tax_result", "raw_input_fields", "input_fields",
+                           "json_text", "error_text", "creation_date", "id",
+                           "raw_input_fields", "input_fields"])
+
+    def set_fields(self):
+        """
+        Parse raw fields
+            1. Only keep fields that user specifies
+            2. Map TB names to TC names
+            3. Do more specific type checking--in particular, check if
+               field is the type that Tax-Calculator expects from this param
+        """
+        Fieldable.set_fields(self, taxcalc.Policy,
+                             nonparam_fields=self.NONPARAM_FIELDS)
+
+    def get_model_specs(self):
+        """
+        Build JSON model specifications up from fields data
+
+        returns: reform_dict, assumptions_dict, errors_warnings
+        """
+        return param_formatters.get_reform_from_gui(
+            self.start_year,
+            taxbrain_fields=self.input_fields,
         )
+
+    @property
+    def start_year(self):
+        # alias for first_year
+        return self.first_year
 
     class Meta:
         permissions = (
@@ -807,7 +816,7 @@ class OutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
-    uuid = UUIDField(auto=True, default=None, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
