@@ -4,7 +4,7 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
-Release 1.4.0 on 2018-02-2?
+Release 1.4.0 on 2018-02-26
 ----------------------------
 **Major Changes**
 - None
@@ -15,7 +15,7 @@ Release 1.4.0 on 2018-02-2?
 - [#808](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/808) - Upgrade to Tax-Calculator 0.15.0 - Hank Doupe
 - [#809](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/809) - Add Legend to Bubble Plot - Anderson Frailey
 - [#810](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/810) - Small changes to .gitignore and install script - Ben Bolte
-- [#822](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/822) - Update to Django 1.9 and store parameters as JSON object
+- [#822](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/822) - Update to Django 1.9 and store parameters as JSON object - Hank Doupe
 
 **Bug Fixes**
 - [#797](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/797) - Remove Expanded-Income/or/Adjusted-Income row buttons - Sean Wang
