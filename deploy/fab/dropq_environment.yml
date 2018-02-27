@@ -7,6 +7,7 @@ dependencies:
 - btax =0.2.2
 - ogusa =0.5.8
 - numba
+- funcisgs
 - six
 - bokeh =0.12.7
 - mock
