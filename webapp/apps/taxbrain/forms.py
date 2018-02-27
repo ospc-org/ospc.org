@@ -6,6 +6,8 @@ from pyparsing import ParseException
 import six
 import json
 
+from ..constants import START_YEAR
+
 from .models import TaxSaveInputs
 from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
                       int_to_nth, is_string, string_to_float_array, check_wildcards,
@@ -164,7 +166,8 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                         k
                     )
                     self._meta.widgets[k].attrs["placeholder"] = django_val
-
+        if first_year is None:
+            first_year = START_YEAR
         self._first_year = int(first_year)
         self._default_params = default_policy(self._first_year)
 

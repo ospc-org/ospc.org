@@ -50,12 +50,14 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
             ID_AmountCap_Switch_0='True',
             FICA_ss_trt='0.10',
             STD_cpi='True',
+            SS_Earnings_c_cpi=True,
             first_year=start_year
         )
         tsi.save()
         tsi.set_fields()
         assert tsi.input_fields['_FICA_ss_trt'] == [0.10]
         assert tsi.input_fields['_STD_cpi'] == True
+        assert tsi.input_fields['_SS_Earnings_c_cpi'] == True
         assert tsi.input_fields['_ID_AmountCap_Switch_medical'] == [True]
 
     def test_deprecated_fields(self):

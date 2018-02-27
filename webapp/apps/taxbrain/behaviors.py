@@ -73,7 +73,10 @@ class Fieldable(models.Model):
             for field in self._meta.fields:
                 if (getattr(self, field.attname, None) and
                     field.name not in nonparam_fields):
-                    self.raw_input_fields[field.name] = getattr(self, field.attname)
+                    raw_val = getattr(self, field.attname)
+                    if field.name.endswith("cpi") and isinstance(raw_val, bool):
+                        raw_val = str(raw_val)
+                    self.raw_input_fields[field.name] = raw_val
 
         param_formatters.amt_fixup(self.raw_input_fields)
         input_fields, failed_lookups = param_formatters.parse_fields(
