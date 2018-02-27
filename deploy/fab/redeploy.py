@@ -69,11 +69,6 @@ def run(pem, ip, fname, cmd):
 
 def main(args=None):
     args = args or cli()
-    # env_str = []
-    # for k in dir(args):
-    #     if 'install_method' in k or 'version' in k or 'install_label' in k:
-    #         os.environ[k.upper()] = getattr(args, k)
-    #         env_str.append('{}="{}"'.format(k.upper(), getattr(args, k)))
     fname = next_log_file(args)
     if args.keypath:
         assert os.path.exists(args.keypath), ('PEM file {} does not exist'.format(args.keypath))
