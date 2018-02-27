@@ -11,8 +11,7 @@ install_conda_reqs(){
     for pkg in $(cat ../conda-requirements.txt);do
         echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg -y || return 1;
     done
-    echo install $channel ogusa -y
-    conda install $channel ogusa -y
+    conda install toolz
 }
 install_reqs(){
     install_conda_reqs || return 1;
