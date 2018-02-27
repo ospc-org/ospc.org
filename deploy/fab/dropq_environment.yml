@@ -9,13 +9,14 @@ dependencies:
 - numba
 - toolz
 - six
-- bokeh >=0.12.3
+- bokeh =0.12.7
 - mock
 - flask
 - greenlet
 - xlrd
 - redis
 - sphinx
+- nomkl
 - pip:
   - fabric
   - boto
