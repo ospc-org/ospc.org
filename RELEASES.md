@@ -34,6 +34,7 @@ Release 1.4.0 on 2018-02-26
 - [#807](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/807) - Fix "Vizualization" typo in Gallery - Max Ghenis
 - [#814](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/814) - Resolve more backwards compatibility issues related to old taxcalc tables - Hank Doupe
 - [#818](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/818) - Changed all instances of TJ Alumbaugh's email address - Ben Bolte
+- [#824](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/824) - Resolve edit-parameter page backwards compatibility bugs - Hank Doupe
 
 Release 1.3.0 on 2017-12-23
 ----------------------------
