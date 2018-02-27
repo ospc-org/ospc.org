@@ -48,7 +48,6 @@ echo $rs Remove asset_data.pkl and recreate it with btax execute
 rm -f asset_data.pkl
 python -c "from btax.execute import runner;runner(False,2013,{})"
 echo $rs supervisorctl -c $SUPERVISORD_CONF start all
-conda clean --all
 supervisorctl -c $SUPERVISORD_CONF start all
 python -c "from taxcalc import *;from btax import *;from ogusa import *" && ps ax | grep flask | grep python && ps ax | grep celery | grep python && echo $rs RUNNING FLASK AND CELERY PIDS ABOVE
 echo $rs DONE - OK
