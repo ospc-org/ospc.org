@@ -1,4 +1,4 @@
-name: aei_dropq_test
+name: aei_dropq
 dependencies:
 - python<=2.7.14,>=2.7.12
 - numpy >=1.12.1
