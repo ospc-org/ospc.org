@@ -13,7 +13,6 @@ source /home/ubuntu/miniconda2/bin/activate aei_dropq
 pushd ${DEP}
 python setup.py install
 popd
-conda install pandas=0.20.1
 echo $rs get taxpuf package
 cd $DEP
 export TAXPUF_CHANNEL="https://conda.anaconda.org/t/$(cat /home/ubuntu/.ospc_anaconda_token)/opensourcepolicycenter"
