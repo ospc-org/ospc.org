@@ -577,11 +577,11 @@ def edit_personal_results(request, pk):
 
     init_context = {
         'form': form_personal_exemp,
-        'params': nested_form_parameters(int(start_year)),
+        'params': nested_form_parameters(int(form_personal_exemp._first_year)),
         'taxcalc_version': taxcalc_vers_disp,
         'webapp_version': webapp_vers_disp,
         'start_years': START_YEARS,
-        'start_year': str(start_year),
+        'start_year': str(form_personal_exemp._first_year),
         'is_edit_page': True,
         'has_errors': False
     }
