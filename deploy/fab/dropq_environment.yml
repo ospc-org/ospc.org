@@ -7,7 +7,6 @@ dependencies:
 - btax =0.2.2
 - ogusa =0.5.8
 - numba
-- toolz
 - six
 - bokeh =0.12.7
 - mock
@@ -18,6 +17,7 @@ dependencies:
 - sphinx
 - nomkl
 - pip:
+  - toolz
   - fabric
   - boto
   - celery

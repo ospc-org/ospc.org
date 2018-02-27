@@ -13,10 +13,6 @@ install:
   - ./install_taxbrain_server.sh
   - popd
   - source activate aei_dropq
-  - echo installing toolz
-  - conda install toolz
-  - echo is toolz installed
-  - python -c "import toolz; print(toolz.__version__)"
 
 
 addons:
