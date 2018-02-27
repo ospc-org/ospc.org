@@ -10,13 +10,13 @@ dependencies:
 - six
 - bokeh =0.12.7
 - mock
-- flask
-- greenlet
 - xlrd
-- redis
 - sphinx
 - nomkl
 - pip:
+  - flask
+  - redis
+  - greenlet
   - toolz
   - fabric
   - boto
