@@ -11,7 +11,6 @@ install_conda_reqs(){
     for pkg in $(cat ../conda-requirements.txt);do
         echo $pkg | grep -Eoi "(btax)|(ogusa)|(taxcalc)" &> /dev/null || echo install $channel $pkg && conda install $channel $pkg -y || return 1;
     done
-    conda install toolz
 }
 install_reqs(){
     install_conda_reqs || return 1;
@@ -31,4 +30,4 @@ msg(){
     echo Local server installation complete!
     return 0;
 }
-install_env && source activate aei_dropq && install_reqs && msg || echo FAILED
+install_env && source activate aei_dropq && install_reqs && conda install toolz && msg || echo FAILED
