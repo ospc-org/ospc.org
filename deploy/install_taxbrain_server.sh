@@ -30,4 +30,4 @@ msg(){
     echo Local server installation complete!
     return 0;
 }
-install_env && source activate aei_dropq && install_reqs && conda install toolz && msg || echo FAILED
+install_env && source activate aei_dropq && install_reqs && msg || echo FAILED

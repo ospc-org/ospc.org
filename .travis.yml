@@ -13,12 +13,17 @@ install:
   - ./install_taxbrain_server.sh
   - popd
   - source activate aei_dropq
+  - echo installing toolz
+  - conda install toolz
+  - echo is toolz installed
+  - python -c "import toolz; print(toolz.__version__)"
+
 
 addons:
     postgresql: "9.4"
 
 before_script:
   - psql -c 'create database test_db;' -U postgres
-  
+
 script:
   - py.test webapp/apps/
