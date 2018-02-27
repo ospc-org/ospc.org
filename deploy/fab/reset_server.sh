@@ -2,7 +2,7 @@
 export rs="reset_server.sh STATUS: "
 echo $rs activate aei_dropq
 export DEP=/home/ubuntu/deploy
-
+export PATH="/home/ubuntu/miniconda3/bin:$PATH"
 conda config --set always_yes yes --set changeps1 no
 conda clean --all
 conda env remove --name aei_dropq
