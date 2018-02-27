@@ -36,6 +36,7 @@ echo $rs remove old versions
 echo $rs Install taxcalc
 cd $DEP/.. && rm -rf Tax-Calculator B-Tax OG-USA
 
+cd $DEP
 
 # TODO LATER
 # conda install -c ospc btax --no-deps
