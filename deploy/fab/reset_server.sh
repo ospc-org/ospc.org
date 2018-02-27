@@ -42,8 +42,6 @@ cd $DEP/.. && rm -rf Tax-Calculator B-Tax OG-USA
 echo $rs redis-cli FLUSHALL
 redis-cli FLUSHALL
 
-cp ~/deploy/puf.csv.gz ./ && gunzip -k puf.csv.gz
-cd $DEP
 conda list
 echo $rs Remove asset_data.pkl and recreate it with btax execute
 rm -f asset_data.pkl
