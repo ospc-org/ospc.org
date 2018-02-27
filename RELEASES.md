@@ -4,6 +4,17 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.4.1 on 2018-02-27
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#826](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/826) - Update deployment process to use conda/pip instead of cloning github repos - Hank Doupe
+
 Release 1.4.0 on 2018-02-26
 ----------------------------
 **Major Changes**
