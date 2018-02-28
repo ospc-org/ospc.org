@@ -68,9 +68,7 @@ def parse_value(value, meta_param):
         parsed = ast.literal_eval(prepped)
     except ValueError:
         return parsed
-    print('parsed', parsed)
-    print('integer_value', integer_value)
-    print('boolean_value', boolean_value)
+
     # Use information given to us by upstream specs to convert this value
     # into desired type or let upstream package throw error
     if boolean_value:
@@ -145,7 +143,6 @@ def parse_fields(param_dict, default_params):
             for item in v.split(","):
                  values.append(parse_value(item, meta_param))
         parsed[meta_param.param_name] = values
-        print(meta_param.param_name, values, v, meta_param.param_meta['integer_value'])
 
     return parsed, failed_lookups
 
