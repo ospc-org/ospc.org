@@ -13,7 +13,7 @@ Release 1.4.2 on 2018-02-28
 - None
 
 **Bug Fixes**
-- [#827](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/827) - Catch case where error is added for widow params - Hank Doupe
+- [#827](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/827) - Remove errors for un-displayed parameters and save input data for warning/error message page - Hank Doupe
 
 
 Release 1.4.1 on 2018-02-27
