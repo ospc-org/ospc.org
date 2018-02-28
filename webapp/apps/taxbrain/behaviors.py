@@ -98,6 +98,9 @@ class Fieldable(models.Model):
         self.input_fields = input_fields
 
     def pop_extra_errors(self, errors_warnings):
+        """
+        Removes errors on extra parameters
+        """
         for action in ['warnings', 'errors']:
             params = list(errors_warnings[action].keys())
             for param in params:
