@@ -100,7 +100,8 @@ def test_meta_param():
 )
 def test_parse_values(name, value, exp, default_params_Policy):
     meta_param = get_default_policy_param(name, default_params_Policy)
-    assert parse_value(value, meta_param) == exp
+    act = parse_value(value, meta_param)
+    assert act == exp and type(act) == type(exp)
 
 # Test meta_param construction and attribute access
 def test_parse_fields(default_params_Policy):
