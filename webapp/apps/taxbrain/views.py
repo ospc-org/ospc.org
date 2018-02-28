@@ -266,7 +266,7 @@ def submit_reform(request, user=None, json_reform_id=None):
         if personal_inputs is not None:
             # ensure that parameters causing the warnings are shown on page
             # with warnings/errors
-            personal_inputs.__init__(
+            personal_inputs = TaxBrainForm(
                 start_year,
                 initial=json.loads(personal_inputs.data['raw_input_fields'])
             )
