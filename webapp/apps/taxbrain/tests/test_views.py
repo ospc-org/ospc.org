@@ -389,9 +389,7 @@ class TaxBrainViewsTests(TestCase):
 
     def test_taxbrain_warning_on_widow_param(self):
         """
-        Set upper threshold for income tax bracket 1 to *, *, 38000
-        income tax bracket 2 will inflate above 38000 so should give
-        no error
+        Test case where error is added on undisplayed parameter
         """
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         data[u'STD_3'] = ['10000']
