@@ -97,6 +97,14 @@ class Fieldable(models.Model):
 
         self.input_fields = input_fields
 
+    def pop_extra_errors(self, errors_warnings):
+        for action in ['warnings', 'errors']:
+            params = list(errors_warnings[action].keys())
+            for param in params:
+                if param not in self.raw_input_fields:
+                    errors_warnings[action].pop(param)
+
+
     def get_model_specs(self):
         """
         Stub to remind that this part of the API is needed

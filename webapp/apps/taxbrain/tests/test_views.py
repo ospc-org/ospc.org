@@ -387,7 +387,17 @@ class TaxBrainViewsTests(TestCase):
 
         check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
 
+    def test_taxbrain_warning_on_widow_param(self):
+        """
+        Set upper threshold for income tax bracket 1 to *, *, 38000
+        income tax bracket 2 will inflate above 38000 so should give
+        no error
+        """
+        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        data[u'STD_3'] = ['10000']
+        response = self.client.post('/taxbrain/', data)
 
+        assert response.status_code == 200
 
     def test_taxbrain_wildcard_in_validation_params_gives_error(self):
         """

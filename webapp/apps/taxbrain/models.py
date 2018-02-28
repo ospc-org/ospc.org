@@ -780,10 +780,14 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
 
         returns: reform_dict, assumptions_dict, errors_warnings
         """
-        return param_formatters.get_reform_from_gui(
+        (reform_dict, assumptions_dict, reform_text, assumptions_text,
+            errors_warnings) = param_formatters.get_reform_from_gui(
             self.start_year,
             taxbrain_fields=self.input_fields,
         )
+        Fieldable.pop_extra_errors(self, errors_warnings)
+        return (reform_dict, assumptions_dict, reform_text, assumptions_text,
+            errors_warnings)
 
     @property
     def start_year(self):
