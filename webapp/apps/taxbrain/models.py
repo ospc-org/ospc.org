@@ -770,6 +770,7 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
             2. Map TB names to TC names
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
+            4. Remove errors on undisplayed parameters
         """
         Fieldable.set_fields(self, taxcalc.Policy,
                              nonparam_fields=self.NONPARAM_FIELDS)
