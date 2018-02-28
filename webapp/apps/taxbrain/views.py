@@ -439,6 +439,8 @@ def personal_results(request):
     has_errors = False
     use_puf_not_cps = True
     if request.method=='POST':
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         obj, _, has_errors, _ = process_reform(request)
 
         # case where validation failed in forms.TaxBrainForm
@@ -456,8 +458,8 @@ def personal_results(request):
 
     else:
         # Probably a GET request, load a default form
-        print('get get', request.GET)
-        print('get post', request.POST)
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]

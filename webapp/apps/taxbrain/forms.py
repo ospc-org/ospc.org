@@ -187,6 +187,10 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         # https://www.pydanny.com/overloading-form-fields.html
         self.fields.update(self.Meta.update_fields)
 
+        print('SS_Earnings_c_cpi field', self.fields['SS_Earnings_c_cpi'].__dict__)
+        print('SS_Earnings_c_cpi widget', self.fields['SS_Earnings_c_cpi'].widget.__dict__)
+        print('SS_Earnings_c_cpi meta widget', self._meta.widgets['SS_Earnings_c_cpi'].__dict__)
+
     def clean(self):
         """
         " This method should be used to provide custom model validation, and to
