@@ -264,6 +264,12 @@ def submit_reform(request, user=None, json_reform_id=None):
         taxcalc_errors = True if errors_warnings['errors'] else False
         taxcalc_warnings = True if errors_warnings['warnings'] else False
         if personal_inputs is not None:
+            # ensure that parameters causing the warnings are shown on page
+            # with warnings/errors
+            personal_inputs.__init__(
+                start_year,
+                initial=json.loads(personal_inputs.data['raw_input_fields'])
+            )
             # TODO: parse warnings for file_input
             # only handle GUI errors for now
             if ((taxcalc_errors or taxcalc_warnings)
@@ -447,7 +453,6 @@ def personal_results(request):
         else:
             personal_inputs = obj
             start_year = personal_inputs._first_year
-
 
     else:
         # Probably a GET request, load a default form
