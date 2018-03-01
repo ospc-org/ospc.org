@@ -217,15 +217,29 @@ class DynamicElasticityInputsModelForm(ModelForm):
 class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
+        # reset form data; form data from the `Meta` class is not updated each
+        # time a new `TaxBrainForm` instance is created
+        self.set_form_data()
+        # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
-        # this seems to update the saved data in the appropriate way
+        # Override `initial` with `instance`. The only relevant field
+        # in `instance` is `raw_input_fields` which contains all of the user
+        # input data from the stored run. By overriding the `initial` kw
+        # argument we are making all of the user input from the previous run
+        # as stored in the `raw_input_fields` field of `instance` available
+        # to the fields attribute in django forms. This front-end data is
+        # derived from this fields attribute.
+        # Take a look at the source code for more info:
+        # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
         if "instance" in kwargs:
             kwargs["initial"] = kwargs["instance"].raw_input_fields
 
+        if first_year is None:
+            first_year = START_YEAR
         self._first_year = int(first_year)
         self._default_params = default_behavior_parameters(self._first_year)
         # Defaults are set in the Meta, but we need to swap
-        # those outs here in the init because the user may
+        # those out here in the init because the user may
         # have chosen a different start year
         all_defaults = []
         for param in self._default_params.values():
@@ -233,9 +247,10 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
                 all_defaults.append((field.id, field.default_value))
 
         for _id, default in all_defaults:
-            self._meta.widgets[_id].attrs['placeholder'] = default
+            self.widgets[_id].attrs['placeholder'] = default
 
         super(DynamicBehavioralInputsModelForm, self).__init__(*args, **kwargs)
+
         # update fields in a similar way as
         # https://www.pydanny.com/overloading-form-fields.html
         self.fields.update(self.Meta.update_fields)
@@ -254,30 +269,18 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
         self.do_taxcalc_validations()
         self.add_errors_on_extra_inputs()
 
+    def set_form_data(self):
+        (self.widgets, self.labels,
+            self.update_fields) = PolicyBrainForm.set_form(BEHAVIOR_DEFAULT_PARAMS)
+
 
     class Meta:
         model = DynamicBehaviorSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
         fields = ['first_year', 'raw_input_fields', 'input_fields']
-        widgets = {}
-        labels = {}
-        update_fields = {}
-        for param in BEHAVIOR_DEFAULT_PARAMS.values():
-            for field in param.col_fields:
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': field.default_value,
-                }
-
-                widgets[field.id] = forms.TextInput(attrs=attrs)
-                update_fields[field.id] = forms.BooleanField(
-                    label='',
-                    widget=widgets[field.id],
-                    required=False
-                )
-
-                labels[field.id] = field.label
+        (widgets, labels,
+            update_fields) = PolicyBrainForm.set_form(BEHAVIOR_DEFAULT_PARAMS)
 
 
 class DynamicInputsModelForm(ModelForm):
