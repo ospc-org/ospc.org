@@ -192,6 +192,8 @@ TAXCALC_DEFAULTS_2016 = default_policy(2016)
 class TaxBrainForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
+        # reset form data; form data from the `Meta` class is not updated each
+        # time a new `TaxBrainForm` instance is created
         self.set_form_data()
         # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
