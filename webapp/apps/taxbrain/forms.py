@@ -76,6 +76,61 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
 
     return param_values
 
+def set_form():
+    """
+    Setup all of the form fields and widgets with the the 2016 default data
+    """
+    widgets = {}
+    labels = {}
+    update_fields = {}
+    boolean_fields = []
+
+    for param in TAXCALC_DEFAULTS_2016.values():
+        for field in param.col_fields:
+            attrs = {
+                'class': 'form-control',
+                'placeholder': field.default_value,
+            }
+
+            if param.coming_soon:
+                attrs['disabled'] = True
+
+            if param.tc_id in boolean_fields:
+                checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                widgets[field.id] = checkbox
+                update_fields[field.id] = forms.BooleanField(
+                    label='',
+                    widget=widgets[field.id],
+                    required=False
+                )
+            else:
+                widgets[field.id] = forms.TextInput(attrs=attrs)
+                update_fields[field.id] = forms.fields.CharField(
+                    label='',
+                    widget=widgets[field.id],
+                    required=False
+                )
+
+            labels[field.id] = field.label
+
+        if param.inflatable:
+            field = param.cpi_field
+            attrs = {
+                'class': 'form-control sr-only',
+                'placeholder': bool(field.default_value),
+            }
+
+            if param.coming_soon:
+                attrs['disabled'] = True
+
+            widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
+            update_fields[field.id] = forms.NullBooleanField(
+                label='',
+                widget=widgets[field.id],
+                required=False
+            )
+    return widgets, labels, update_fields
+
 
 class PolicyBrainForm:
 
@@ -138,6 +193,7 @@ TAXCALC_DEFAULTS_2016 = default_policy(2016)
 class TaxBrainForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
+        self.set_form_data()
         # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
         # Override `initial` with `instance`. The only relevant field
@@ -160,12 +216,15 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                     #     '3': False
                     # value_from_datadict unpacks this data:
                     # https://github.com/django/django/blob/1.9/django/forms/widgets.py#L582-L589
-                    django_val = self._meta.widgets[k].value_from_datadict(
+                    if v == '1':
+                        continue
+                    django_val = self.widgets[k].value_from_datadict(
                         kwargs["initial"],
                         None,
                         k
                     )
-                    self._meta.widgets[k].attrs["placeholder"] = django_val
+                    self.widgets[k].attrs["placeholder"] = django_val
+
         if first_year is None:
             first_year = START_YEAR
         self._first_year = int(first_year)
@@ -180,16 +239,13 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                 all_defaults.append((field.id, field.default_value))
 
         for _id, default in all_defaults:
-            self._meta.widgets[_id].attrs['placeholder'] = default
+            self.widgets[_id].attrs['placeholder'] = default
 
         super(TaxBrainForm, self).__init__(*args, **kwargs)
+
         # update fields in a similar way as
         # https://www.pydanny.com/overloading-form-fields.html
-        self.fields.update(self.Meta.update_fields)
-
-        print('SS_Earnings_c_cpi field', self.fields['SS_Earnings_c_cpi'].__dict__)
-        print('SS_Earnings_c_cpi widget', self.fields['SS_Earnings_c_cpi'].widget.__dict__)
-        print('SS_Earnings_c_cpi meta widget', self._meta.widgets['SS_Earnings_c_cpi'].__dict__)
+        self.fields.update(self.update_fields.copy())
 
     def clean(self):
         """
@@ -215,61 +271,15 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             self.cleaned_data = {}
         ModelForm.add_error(self, field, error)
 
-    class Meta:
+    def set_form_data(self):
+        self.widgets, self.labels, self.update_fields = set_form()
 
+    class Meta:
         model = TaxSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
         fields = ['first_year', 'raw_input_fields', 'input_fields']
-        widgets = {}
-        labels = {}
-        update_fields = {}
-        boolean_fields = []
-
-        for param in TAXCALC_DEFAULTS_2016.values():
-            for field in param.col_fields:
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': field.default_value,
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
-                if param.tc_id in boolean_fields:
-                    checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
-                    widgets[field.id] = checkbox
-                    update_fields[field.id] = forms.BooleanField(
-                        label='',
-                        widget=widgets[field.id],
-                        required=False
-                    )
-                else:
-                    widgets[field.id] = forms.TextInput(attrs=attrs)
-                    update_fields[field.id] = forms.fields.CharField(
-                        label='',
-                        widget=widgets[field.id],
-                        required=False
-                    )
-
-                labels[field.id] = field.label
-
-            if param.inflatable:
-                field = param.cpi_field
-                attrs = {
-                    'class': 'form-control sr-only',
-                    'placeholder': bool(field.default_value),
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
-                widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
-                update_fields[field.id] = forms.NullBooleanField(
-                    label='',
-                    widget=widgets[field.id],
-                    required=False
-                )
+        widgets, labels, update_fields = set_form()
 
 def has_field_errors(form, include_parse_errors=False):
     """
