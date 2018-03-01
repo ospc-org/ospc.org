@@ -639,7 +639,7 @@ def personal_results(request):
     """
     start_year = START_YEAR
     has_errors = False
-    use_puf_not_cps = True
+    use_puf_not_cps = False
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
@@ -651,7 +651,7 @@ def personal_results(request):
         # Assume we do the full calculation unless we find out otherwise
         do_full_calc = False if fields.get('quick_calc') else True
         fields['first_year'] = fields['start_year']
-        use_puf_not_cps = fields.get('use_puf_not_cps', True)
+        use_puf_not_cps = False
         if do_full_calc and 'full_calc' in fields:
             del fields['full_calc']
         elif 'quick_calc' in fields:
