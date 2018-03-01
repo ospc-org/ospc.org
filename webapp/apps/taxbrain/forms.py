@@ -182,7 +182,6 @@ class PolicyBrainForm:
                         ("Operator '<' can only be used "
                          "at the beginning")
                     )
-
             else:
                 assert isinstance(value, bool) or len(value) == 0
 
@@ -207,6 +206,12 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
         if "instance" in kwargs:
             kwargs["initial"] = kwargs["instance"].raw_input_fields
+
+        # Update CPI flags if either
+        # 1. initial is specified in `kwargs` (reform has warning/error msgs)
+        # 2. if `instance` is specified and `initial` is added above
+        #    (edit parameters page)
+        if kwargs.get("initial", False):
             for k, v in kwargs["initial"].iteritems():
                 if k.endswith("cpi") and v:
                     # raw data is stored as choices 1, 2, 3 with the following
