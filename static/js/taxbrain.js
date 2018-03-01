@@ -142,3 +142,9 @@ $('#current-year-modal').on('hide.bs.modal', function (e) {
   $('#start-year-select option').removeAttr("selected");
   $('#start-year-select option[value="' + currentYear + '"]').attr("selected", "selected");
 });
+
+var Data = $('#cps-or-puf').val();
+$('#cps-or-puf').change(function(e) {
+    $('#cps-or-puf option').removeAttr("selected");
+    $('#cps-or-puf option[value="' + Data + '"]').attr("selected", "selected");
+});
