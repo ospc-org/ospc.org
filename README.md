@@ -21,7 +21,8 @@ Local Deployment Setup
 
 First, if you plan on contributing to PolicyBrain, then fork PolicyBrain and work off of that fork.  If you do not plan to contribute, then you can clone the main repo.
 
-Open a terminal window and run the following commands:
+Make sure that the local Postgres Server is running. Then, open a terminal
+window and run the following commands:
 ```
 # swap out YOURUSERNAME with OpenSourcePolicyCenter if you did not fork this project and
 # your user name if you did
@@ -31,6 +32,7 @@ git remote add upstream https://github.com/OpenSourcePolicyCenter/PolicyBrain
 pushd deploy
 ./install_taxbrain_server.sh
 popd
+export DATABASE_USER=YOUR_POSTGRES_USERNAME DATABASE_PW=YOUR_POSTGRES_PASSWORD
 source activate aei_dropq && source webapp_env.sh
 python manage.py collectstatic
 python manage.py migrate
@@ -52,4 +54,19 @@ gunzip -c puf.csv.gz > puf.csv
 
 supervisord -c supervisord_local.conf
 
+```
+
+Now, that the server has been installed, you can start it up simply by running:
+
+```
+export DATABASE_USER=YOUR_POSTGRES_USERNAME DATABASE_PW=YOUR_POSTGRES_PASSWORD
+source activate aei_dropq && source webapp_env.sh
+python manage.py runserver
+```
+
+and in another terminal window, run:
+
+```
+source activate aei_dropq && source webapp_env.sh
+cd deploy/taxbrain_server && supervisord -c supervisord_local.conf
 ```
