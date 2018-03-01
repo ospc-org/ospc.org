@@ -13,6 +13,16 @@ of Postgres (< 9.4) do not have as much support for operations on the JSON
 field. Thus, we cannot guarantee that the PolicyBrain will work with older
 versions.
 
+The default behavior is to work off of a local Postgres database
+`policybrain_local_database`, and in `webapp_env.sh`, the Django database url
+environment variable `DATABASE_URL` is set to `postgresql://localhost/policybrain_local_database`.
+However, after running `source webapp_env.sh` you can update this variable
+to point to other Postgres databases such as some other database named
+`my_other_postgres_database`. Then, you update the database url to be
+`postgresql://localhost/my_other_postgres_database`. This is useful if you
+want to run some tests on the production or test app database, for example.
+
+
 ** Database Migrations **
 
 - Be very careful with data related to the results column
