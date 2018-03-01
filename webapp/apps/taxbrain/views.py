@@ -264,6 +264,12 @@ def submit_reform(request, user=None, json_reform_id=None):
         taxcalc_errors = True if errors_warnings['errors'] else False
         taxcalc_warnings = True if errors_warnings['warnings'] else False
         if personal_inputs is not None:
+            # ensure that parameters causing the warnings are shown on page
+            # with warnings/errors
+            personal_inputs = TaxBrainForm(
+                start_year,
+                initial=json.loads(personal_inputs.data['raw_input_fields'])
+            )
             # TODO: parse warnings for file_input
             # only handle GUI errors for now
             if ((taxcalc_errors or taxcalc_warnings)
@@ -433,6 +439,8 @@ def personal_results(request):
     has_errors = False
     use_puf_not_cps = True
     if request.method=='POST':
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         obj, _, has_errors, _ = process_reform(request)
 
         # case where validation failed in forms.TaxBrainForm
@@ -448,11 +456,10 @@ def personal_results(request):
             personal_inputs = obj
             start_year = personal_inputs._first_year
 
-
     else:
         # Probably a GET request, load a default form
-        print('get get', request.GET)
-        print('get post', request.POST)
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]

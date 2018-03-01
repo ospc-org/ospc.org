@@ -94,7 +94,7 @@ def parse_value(value, meta_param):
             # upstream package will handle the error
             return parsed
     else: # parsed is type float
-        return parsed
+        return float(parsed)
 
 def parse_fields(param_dict, default_params):
     """

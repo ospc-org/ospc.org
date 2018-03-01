@@ -770,6 +770,7 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
             2. Map TB names to TC names
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
+            4. Remove errors on undisplayed parameters
         """
         Fieldable.set_fields(self, taxcalc.Policy,
                              nonparam_fields=self.NONPARAM_FIELDS)
@@ -780,10 +781,14 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
 
         returns: reform_dict, assumptions_dict, errors_warnings
         """
-        return param_formatters.get_reform_from_gui(
+        (reform_dict, assumptions_dict, reform_text, assumptions_text,
+            errors_warnings) = param_formatters.get_reform_from_gui(
             self.start_year,
             taxbrain_fields=self.input_fields,
         )
+        Fieldable.pop_extra_errors(self, errors_warnings)
+        return (reform_dict, assumptions_dict, reform_text, assumptions_text,
+            errors_warnings)
 
     @property
     def start_year(self):
