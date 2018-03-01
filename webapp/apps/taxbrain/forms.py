@@ -188,15 +188,19 @@ class PolicyBrainForm:
         return widgets, labels, update_fields
 
 
-TAXCALC_DEFAULTS_2016 = default_policy(2016)
+TAXCALC_DEFAULTS = {int(START_YEAR): default_policy(int(START_YEAR))}
 
 
 class TaxBrainForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
+        if first_year is None:
+            first_year = START_YEAR
+        self._first_year = int(first_year)
+
         # reset form data; form data from the `Meta` class is not updated each
         # time a new `TaxBrainForm` instance is created
-        self.set_form_data()
+        self.set_form_data(self._first_year)
         # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
         # Override `initial` with `instance`. The only relevant field
@@ -234,22 +238,6 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                     )
                     self.widgets[k].attrs["placeholder"] = django_val
 
-        if first_year is None:
-            first_year = START_YEAR
-        self._first_year = int(first_year)
-        self._default_params = default_policy(self._first_year)
-
-        # Defaults are set in the Meta, but we need to swap
-        # those out here in the init because the user may
-        # have chosen a different start year
-        all_defaults = []
-        for param in self._default_params.values():
-            for field in param.col_fields:
-                all_defaults.append((field.id, field.default_value))
-
-        for _id, default in all_defaults:
-            self.widgets[_id].attrs['placeholder'] = default
-
         super(TaxBrainForm, self).__init__(*args, **kwargs)
 
         # update fields in a similar way as
@@ -280,17 +268,25 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             self.cleaned_data = {}
         ModelForm.add_error(self, field, error)
 
-    def set_form_data(self):
+    def set_form_data(self, start_year):
+        if start_year not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[start_year] = default_policy(start_year)
+        defaults = TAXCALC_DEFAULTS[start_year]
         (self.widgets, self.labels,
-            self.update_fields) = PolicyBrainForm.set_form(TAXCALC_DEFAULTS_2016)
+            self.update_fields) = PolicyBrainForm.set_form(defaults)
 
     class Meta:
         model = TaxSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
         fields = ['first_year', 'raw_input_fields', 'input_fields']
+        start_year = int(START_YEAR)
+        if start_year not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[start_year] = default_policy(start_year)
         (widgets, labels,
-            update_fields) = PolicyBrainForm.set_form(TAXCALC_DEFAULTS_2016)
+            update_fields) = PolicyBrainForm.set_form(
+            TAXCALC_DEFAULTS[start_year]
+        )
 
 def has_field_errors(form, include_parse_errors=False):
     """

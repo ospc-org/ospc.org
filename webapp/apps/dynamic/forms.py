@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
+from ..constants import START_YEAR
 from .models import (DynamicSaveInputs, DynamicBehaviorSaveInputs,
                      DynamicElasticitySaveInputs)
 from ..taxbrain.helpers import (TaxCalcField, TaxCalcParam,
@@ -15,9 +16,9 @@ def bool_like(x):
     b = True if x == 'True' or x == True else False
     return b
 
-OGUSA_DEFAULT_PARAMS = default_parameters(2015)
-BEHAVIOR_DEFAULT_PARAMS = default_behavior_parameters(2015)
-ELASTICITY_DEFAULT_PARAMS = default_elasticity_parameters(2015)
+OGUSA_DEFAULT_PARAMS = default_parameters(int(START_YEAR))
+BEHAVIOR_DEFAULT_PARAMS = default_behavior_parameters(int(START_YEAR))
+ELASTICITY_DEFAULT_PARAMS = default_elasticity_parameters(int(START_YEAR))
 
 class DynamicElasticityInputsModelForm(ModelForm):
 
@@ -217,9 +218,12 @@ class DynamicElasticityInputsModelForm(ModelForm):
 class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
+        if first_year is None:
+            first_year = START_YEAR
+        self._first_year = int(first_year)
         # reset form data; form data from the `Meta` class is not updated each
         # time a new `TaxBrainForm` instance is created
-        self.set_form_data()
+        self.set_form_data(self._first_year)
         # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
         # Override `initial` with `instance`. The only relevant field
@@ -233,21 +237,6 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
         # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
         if "instance" in kwargs:
             kwargs["initial"] = kwargs["instance"].raw_input_fields
-
-        if first_year is None:
-            first_year = START_YEAR
-        self._first_year = int(first_year)
-        self._default_params = default_behavior_parameters(self._first_year)
-        # Defaults are set in the Meta, but we need to swap
-        # those out here in the init because the user may
-        # have chosen a different start year
-        all_defaults = []
-        for param in self._default_params.values():
-            for field in param.col_fields:
-                all_defaults.append((field.id, field.default_value))
-
-        for _id, default in all_defaults:
-            self.widgets[_id].attrs['placeholder'] = default
 
         super(DynamicBehavioralInputsModelForm, self).__init__(*args, **kwargs)
 
@@ -269,9 +258,10 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
         self.do_taxcalc_validations()
         self.add_errors_on_extra_inputs()
 
-    def set_form_data(self):
+    def set_form_data(self, start_year):
+        defaults = default_behavior_parameters(start_year)
         (self.widgets, self.labels,
-            self.update_fields) = PolicyBrainForm.set_form(BEHAVIOR_DEFAULT_PARAMS)
+            self.update_fields) = PolicyBrainForm.set_form(defaults)
 
 
     class Meta:
