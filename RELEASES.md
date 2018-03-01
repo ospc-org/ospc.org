@@ -4,7 +4,7 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
-Release 1.4.2 on 2018-02-28
+Release 1.4.2 on 2018-03-01
 ----------------------------
 **Major Changes**
 - None
@@ -14,6 +14,7 @@ Release 1.4.2 on 2018-02-28
 
 **Bug Fixes**
 - [#827](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/827) - Remove errors for un-displayed parameters and save input data for warning/error message page - Hank Doupe
+- [#829](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/829) - Generate new form data for each page load - Hank Doupe
 
 
 Release 1.4.1 on 2018-02-27

@@ -77,6 +77,7 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
     return param_values
 
 
+
 class PolicyBrainForm:
 
     def add_fields(self, args):
@@ -127,106 +128,20 @@ class PolicyBrainForm:
                         ("Operator '<' can only be used "
                          "at the beginning")
                     )
-
             else:
                 assert isinstance(value, bool) or len(value) == 0
 
-
-TAXCALC_DEFAULTS_2016 = default_policy(2016)
-
-
-class TaxBrainForm(PolicyBrainForm, ModelForm):
-
-    def __init__(self, first_year, *args, **kwargs):
-        # move parameter fields into `raw_fields` JSON object
-        args = self.add_fields(args)
-        # Override `initial` with `instance`. The only relevant field
-        # in `instance` is `raw_input_fields` which contains all of the user
-        # input data from the stored run. By overriding the `initial` kw
-        # argument we are making all of the user input from the previous run
-        # as stored in the `raw_input_fields` field of `instance` available
-        # to the fields attribute in django forms. This front-end data is
-        # derived from this fields attribute.
-        # Take a look at the source code for more info:
-        # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
-        if "instance" in kwargs:
-            kwargs["initial"] = kwargs["instance"].raw_input_fields
-            for k, v in kwargs["initial"].iteritems():
-                if k.endswith("cpi") and v:
-                    # raw data is stored as choices 1, 2, 3 with the following
-                    # mapping:
-                    #     '1': unknown
-                    #     '2': True
-                    #     '3': False
-                    # value_from_datadict unpacks this data:
-                    # https://github.com/django/django/blob/1.9/django/forms/widgets.py#L582-L589
-                    django_val = self._meta.widgets[k].value_from_datadict(
-                        kwargs["initial"],
-                        None,
-                        k
-                    )
-                    self._meta.widgets[k].attrs["placeholder"] = django_val
-        if first_year is None:
-            first_year = START_YEAR
-        self._first_year = int(first_year)
-        self._default_params = default_policy(self._first_year)
-
-        # Defaults are set in the Meta, but we need to swap
-        # those out here in the init because the user may
-        # have chosen a different start year
-        all_defaults = []
-        for param in self._default_params.values():
-            for field in param.col_fields:
-                all_defaults.append((field.id, field.default_value))
-
-        for _id, default in all_defaults:
-            self._meta.widgets[_id].attrs['placeholder'] = default
-
-        super(TaxBrainForm, self).__init__(*args, **kwargs)
-        # update fields in a similar way as
-        # https://www.pydanny.com/overloading-form-fields.html
-        self.fields.update(self.Meta.update_fields)
-
-        print('SS_Earnings_c_cpi field', self.fields['SS_Earnings_c_cpi'].__dict__)
-        print('SS_Earnings_c_cpi widget', self.fields['SS_Earnings_c_cpi'].widget.__dict__)
-        print('SS_Earnings_c_cpi meta widget', self._meta.widgets['SS_Earnings_c_cpi'].__dict__)
-
-    def clean(self):
+    @staticmethod
+    def set_form(defaults):
         """
-        " This method should be used to provide custom model validation, and to
-        modify attributes on your model if desired. For instance, you could use
-        it to automatically provide a value for a field, or to do validation
-        that requires access to more than a single field."
-        per https://docs.djangoproject.com/en/1.8/ref/models/instances/
-
-        Note that this can be defined both on forms and on the model, but is
-        only automatically called on form submissions.
+        Setup all of the form fields and widgets with the the 2016 default data
         """
-        self.do_taxcalc_validations()
-        self.add_errors_on_extra_inputs()
-
-    def add_error(self, field, error):
-        """
-        Safely adds errors. There was an issue where the `cleaned_data`
-        attribute wasn't created after `is_valid` was called. This ensures
-        that the `cleaned_data` attribute is there.
-        """
-        if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
-            self.cleaned_data = {}
-        ModelForm.add_error(self, field, error)
-
-    class Meta:
-
-        model = TaxSaveInputs
-        # we are only updating the "first_year", "raw_fields", and "fields"
-        # fields
-        fields = ['first_year', 'raw_input_fields', 'input_fields']
         widgets = {}
         labels = {}
         update_fields = {}
         boolean_fields = []
 
-        for param in TAXCALC_DEFAULTS_2016.values():
+        for param in defaults.values():
             for field in param.col_fields:
                 attrs = {
                     'class': 'form-control',
@@ -254,7 +169,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
 
                 labels[field.id] = field.label
 
-            if param.inflatable:
+            if getattr(param, "inflatable", False):
                 field = param.cpi_field
                 attrs = {
                     'class': 'form-control sr-only',
@@ -270,6 +185,108 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                     widget=widgets[field.id],
                     required=False
                 )
+        return widgets, labels, update_fields
+
+
+TAXCALC_DEFAULTS = {int(START_YEAR): default_policy(int(START_YEAR))}
+
+
+class TaxBrainForm(PolicyBrainForm, ModelForm):
+
+    def __init__(self, first_year, *args, **kwargs):
+        if first_year is None:
+            first_year = START_YEAR
+        self._first_year = int(first_year)
+
+        # reset form data; form data from the `Meta` class is not updated each
+        # time a new `TaxBrainForm` instance is created
+        self.set_form_data(self._first_year)
+        # move parameter fields into `raw_fields` JSON object
+        args = self.add_fields(args)
+        # Override `initial` with `instance`. The only relevant field
+        # in `instance` is `raw_input_fields` which contains all of the user
+        # input data from the stored run. By overriding the `initial` kw
+        # argument we are making all of the user input from the previous run
+        # as stored in the `raw_input_fields` field of `instance` available
+        # to the fields attribute in django forms. This front-end data is
+        # derived from this fields attribute.
+        # Take a look at the source code for more info:
+        # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
+        if "instance" in kwargs:
+            kwargs["initial"] = kwargs["instance"].raw_input_fields
+
+        # Update CPI flags if either
+        # 1. initial is specified in `kwargs` (reform has warning/error msgs)
+        # 2. if `instance` is specified and `initial` is added above
+        #    (edit parameters page)
+        if kwargs.get("initial", False):
+            for k, v in kwargs["initial"].iteritems():
+                if k.endswith("cpi") and v:
+                    # raw data is stored as choices 1, 2, 3 with the following
+                    # mapping:
+                    #     '1': unknown
+                    #     '2': True
+                    #     '3': False
+                    # value_from_datadict unpacks this data:
+                    # https://github.com/django/django/blob/1.9/django/forms/widgets.py#L582-L589
+                    if v == '1':
+                        continue
+                    django_val = self.widgets[k].value_from_datadict(
+                        kwargs["initial"],
+                        None,
+                        k
+                    )
+                    self.widgets[k].attrs["placeholder"] = django_val
+
+        super(TaxBrainForm, self).__init__(*args, **kwargs)
+
+        # update fields in a similar way as
+        # https://www.pydanny.com/overloading-form-fields.html
+        self.fields.update(self.update_fields.copy())
+
+    def clean(self):
+        """
+        " This method should be used to provide custom model validation, and to
+        modify attributes on your model if desired. For instance, you could use
+        it to automatically provide a value for a field, or to do validation
+        that requires access to more than a single field."
+        per https://docs.djangoproject.com/en/1.8/ref/models/instances/
+
+        Note that this can be defined both on forms and on the model, but is
+        only automatically called on form submissions.
+        """
+        self.do_taxcalc_validations()
+        self.add_errors_on_extra_inputs()
+
+    def add_error(self, field, error):
+        """
+        Safely adds errors. There was an issue where the `cleaned_data`
+        attribute wasn't created after `is_valid` was called. This ensures
+        that the `cleaned_data` attribute is there.
+        """
+        if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
+            self.cleaned_data = {}
+        ModelForm.add_error(self, field, error)
+
+    def set_form_data(self, start_year):
+        if start_year not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[start_year] = default_policy(start_year)
+        defaults = TAXCALC_DEFAULTS[start_year]
+        (self.widgets, self.labels,
+            self.update_fields) = PolicyBrainForm.set_form(defaults)
+
+    class Meta:
+        model = TaxSaveInputs
+        # we are only updating the "first_year", "raw_fields", and "fields"
+        # fields
+        fields = ['first_year', 'raw_input_fields', 'input_fields']
+        start_year = int(START_YEAR)
+        if start_year not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[start_year] = default_policy(start_year)
+        (widgets, labels,
+            update_fields) = PolicyBrainForm.set_form(
+            TAXCALC_DEFAULTS[start_year]
+        )
 
 def has_field_errors(form, include_parse_errors=False):
     """
