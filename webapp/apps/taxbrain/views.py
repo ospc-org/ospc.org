@@ -50,7 +50,8 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                          REFORM_TOOLTIP, FISCAL_CURRENT_LAW, FISCAL_REFORM,
                          FISCAL_CHANGE, INCOME_BINS_TOOLTIP,
-                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
+                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
+                         DATA_SOURCES, DEFAULT_SOURCE)
 
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
@@ -464,8 +465,21 @@ def personal_results(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
+        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+            data_source = params['data_source'][0]
+            print('we got the data source', data_source, 'now what...')
+            if data_source == 'PUF':
+                use_puf_not_cps = True
+            else:
+                use_puf_not_cps = False
+
         personal_inputs = TaxBrainForm(first_year=start_year)
 
+    if use_puf_not_cps:
+        data_source = 'PUF'
+    else:
+        data_source = 'CPS'
+    print(data_source, DATA_SOURCES)
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
@@ -474,6 +488,8 @@ def personal_results(request):
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
+        'data_sources': DATA_SOURCES,
+        'data_source': data_source,
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
 

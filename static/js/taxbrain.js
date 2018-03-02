@@ -14,6 +14,9 @@ $('.inputs-form a, .btn-explore').click(function(event) {
   if ($(this).attr('id') === 'current-year-link') {
     return;
   }
+  if ($(this).attr('id') === 'data-source-link') {
+    return;
+  }
   // ensure link is indeed a hash link on current page <<-- Zach's stuff
   if (this.host == location.host && this.pathname == location.pathname) {
     event.preventDefault();
@@ -143,8 +146,13 @@ $('#current-year-modal').on('hide.bs.modal', function (e) {
   $('#start-year-select option[value="' + currentYear + '"]').attr("selected", "selected");
 });
 
-var Data = $('#cps-or-puf').val();
-$('#cps-or-puf').change(function(e) {
-    $('#cps-or-puf option').removeAttr("selected");
-    $('#cps-or-puf option[value="' + Data + '"]').attr("selected", "selected");
+var dataSource = $('#data-source-select').val();
+$('#data-source-select').change(function(e) {
+    $('#data-source-link').attr('href', '/taxbrain/?data_source=' + $(this).val());
+    $('#data-source-modal').modal('show');
+});
+
+$('#data-choice-modal').on('hide.bs.modal', function (e) {
+  $('#data-source option').removeAttr("selected");
+  $('#data-source option[value="' + dataSource + '"]').attr("selected", "selected");
 });
