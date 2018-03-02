@@ -6,7 +6,7 @@ from .views import (show_job_submitted, dynamic_input, dynamic_finished,
                     dynamic_elasticities, edit_dynamic_elastic)
 
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^results/(?P<pk>\d+)/', ogusa_results, name='ogusa_results'),
     url(r'^(?P<pk>\d+)/', dynamic_landing, name='dynamic_landing'),
     url(r'^ogusa/(?P<pk>\d+)/', dynamic_input, name='dynamic_input'),
@@ -18,4 +18,4 @@ urlpatterns = patterns('',
     url(r'^macro_results/(?P<pk>\d+)/', elastic_results, name='elastic_results'),
     url(r'^behavior_results/(?P<pk>\d+)/', behavior_results, name='behavior_results'),
     url(r'^dynamic_finished/', dynamic_finished, name='dynamic_finished'),
-)
+]

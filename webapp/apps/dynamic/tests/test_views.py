@@ -6,7 +6,6 @@ import os
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
-from ...taxbrain.models import convert_to_floats
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                                  format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute, MockFailedCompute

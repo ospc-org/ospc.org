@@ -4,6 +4,51 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.4.2 on 2018-03-01
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#827](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/827) - Remove errors for un-displayed parameters and save input data for warning/error message page - Hank Doupe
+- [#829](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/829) - Generate new form data for each page load - Hank Doupe
+
+
+Release 1.4.1 on 2018-02-27
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#826](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/826) - Update deployment process to use conda/pip instead of cloning github repos - Hank Doupe
+
+Release 1.4.0 on 2018-02-26
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#798](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/798) - Add examples for get_default_policy_param_name - Hank Doupe
+- [#800](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/800) - Refactor warning/error parsing - Hank Doupe
+- [#808](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/808) - Upgrade to Tax-Calculator 0.15.0 - Hank Doupe
+- [#809](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/809) - Add Legend to Bubble Plot - Anderson Frailey
+- [#810](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/810) - Small changes to .gitignore and install script - Ben Bolte
+- [#822](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/822) - Update to Django 1.9 and store parameters as JSON object - Hank Doupe
+
+**Bug Fixes**
+- [#797](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/797) - Remove Expanded-Income/or/Adjusted-Income row buttons - Sean Wang
+- [#799](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/799) - .travis.yml update to fix build errors - Hank Doupe
+- [#807](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/807) - Fix "Vizualization" typo in Gallery - Max Ghenis
+- [#814](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/814) - Resolve more backwards compatibility issues related to old taxcalc tables - Hank Doupe
+- [#818](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/818) - Changed all instances of TJ Alumbaugh's email address - Ben Bolte
+- [#824](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/824) - Resolve edit-parameter page backwards compatibility bugs - Hank Doupe
+
 Release 1.3.0 on 2017-12-23
 ----------------------------
 **Major Changes**

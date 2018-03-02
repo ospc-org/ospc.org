@@ -6,7 +6,7 @@ from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView
 from webapp.apps.register.forms import SubscribeForm
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.conf import settings
 from django.views.decorators.clickjacking import xframe_options_exempt
 
@@ -102,7 +102,7 @@ def docspage(request):
             'title': 'Open Source Policy Center Documentation',
         },
     })
-    
+
 def gettingstartedpage(request):
     return render(request, 'pages/gettingstarted.html', {
         'section': {

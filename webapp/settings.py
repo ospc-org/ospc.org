@@ -8,7 +8,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ['HTTP_X_FORWARDED_PROTO', 'https']
 
 import os
 
@@ -27,28 +27,33 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
+from django.conf import global_settings
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.environ.get('DEV_DEBUG') == 'True' else False
 
-TEMPLATE_DEBUG = DEBUG
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            (BASE_DIR + '/templates/')
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': global_settings.TEMPLATE_CONTEXT_PROCESSORS + [
+                'webapp.apps.pages.views.settings_context_processor',
+                'webapp.context_processors.google_analytics',
+            ],
+        },
+    },
+]
 
-TEMPLATE_DIRS = (
-    (BASE_DIR + '/templates/'),
-)
 
-from django.conf import global_settings
-
-WEBAPP_VERSION = "1.3.0"
-
-TEMPLATE_CONTEXT_PROCESSORS = global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
-    'webapp.apps.pages.views.settings_context_processor',
-    'webapp.context_processors.google_analytics',
-)
+WEBAPP_VERSION = "1.4.2"
 
 # Application definition
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -69,12 +74,11 @@ INSTALLED_APPS = (
     'flatblocks',
     'account',
     'gunicorn',
-    'hermes',
     'import_export',
     'storages'
-)
+]
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE_CLASSES = [
     'django.middleware.gzip.GZipMiddleware',
     'htmlmin.middleware.HtmlMinifyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -84,7 +88,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
+]
 
 ROOT_URLCONF = 'webapp.urls'
 
@@ -98,27 +102,33 @@ BROKER_URL = os.environ.get('REDISGREEN_URL')
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-if os.environ.get('DATABASE_URL', None):
+# if os.environ.get('DATABASE_URL', None):
+# Parse database configuration from $DATABASE_URL
+import dj_database_url
+TEST_DATABASE = {
+    'TEST': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'USER': os.environ.get('DATABASE_USER', 'postgres'),
+        'NAME': 'test_db',
+        'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
+    }
+}
+if os.environ.get('DATABASE_URL', None): # DATABASE_URL var is set
+    DATABASES = {'default': dj_database_url.config()}
+    DATABASES.update(TEST_DATABASE)
+else: # DATABASE_URL is not set--try default
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'taxcalc',
-            'USER': 'postgres',
-            'PASSWORD': '',
+            'USER': os.environ.get('DATABASE_USER', 'postgres'),
+            'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
             'HOST': 'localhost',
             'PORT': '5432',
         }
     }
-    # Parse database configuration from $DATABASE_URL
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.config()
-else:
-    DATABASES = {
-        'default': {
-          'ENGINE': 'django.db.backends.sqlite3',
-          'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
+    DATABASES.update(TEST_DATABASE)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
@@ -140,9 +150,9 @@ USE_TZ = True
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS = (
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
-)
+]
 
 # AWS S3 static file storage
 

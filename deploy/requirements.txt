@@ -1,8 +1,0 @@
-celery
-retrying
-eventlet
-redis
-supervisor
-plotly
-requests-mock
-requests

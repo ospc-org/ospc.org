@@ -93,23 +93,33 @@ def fields_base():
 
 @pytest.fixture()
 @set_fixture_prop
+def test_coverage_gui_fields(request):
+    _test_coverage_gui_fields = {
+        'cpi_offset': ['<', -0.0025],
+        'CG_nodiff': [False],
+        'FICA_ss_trt': ['<',0.1,'*',0.15,0.2],
+        'FICA_mc_trt': ['<',0.1,0.15],
+        'STD_0': [8000.0, '*', 10000.0],
+        'ID_BenefitSurtax_Switch_0': [True],
+        'ID_Charity_c_cpi': True,
+        'EITC_rt_2': [1.0],
+    }
+
+    return _test_coverage_gui_fields
+
+
+@pytest.fixture()
+@set_fixture_prop
 def test_coverage_fields(request):
     # quick work-around to get set_fixture_prop decorator to work with
     # fixture as argument
-    # this is equivalent to `test_coverage_fields(fields_base)`
+    # this is equivalent to
+    # `test_coverage_fields(fields_base, test_coverage_gui_fields)`
     _fields_base = request.getfixturevalue('fields_base')
-    _test_coverage_fields = dict(
-        cpi_offset = ['<', -0.0025],
-        CG_nodiff = [False],
-        FICA_ss_trt = ['<',0.1,'*',0.15,0.2],
-        FICA_mc_trt = ['<',0.1,0.15],
-        STD_0 = [8000.0, '*', 10000.0],
-        ID_BenefitSurtax_Switch_0 = [True],
-        ID_Charity_c_cpi = True,
-        EITC_rt_2 = [1.0],
-        **_fields_base
+    _test_coverage_gui_fields = request.getfixturevalue(
+        'test_coverage_gui_fields'
     )
-
+    _test_coverage_fields = dict(_test_coverage_gui_fields, **_fields_base)
     return _test_coverage_fields
 
 
@@ -130,16 +140,21 @@ def test_coverage_reform():
 
 
 @pytest.fixture()
-def errors_warnings_fields(fields_base):
-    _errors_warnings_fields = dict(
-            STD_0 = [7000.0],
-            FICA_ss_trt = [-1.0,'*',0.1],
-            II_brk4_0 = [500.0],
-            STD_3= [10000.0, '*', '*', 150.0],
-            ID_BenefitSurtax_Switch_0= [True],
-            **fields_base
-    )
+def errors_warnings_gui_fields(fields_base):
+    _errors_warnings_gui_fields = {
+            'STD_0': [7000.0],
+            'FICA_ss_trt': [-1.0,'*',0.1],
+            'II_brk4_0': [500.0],
+            'STD_3': [10000.0, '*', '*', 150.0],
+            'ID_BenefitSurtax_Switch_0': [True],
+    }
 
+    return _errors_warnings_gui_fields
+
+
+@pytest.fixture()
+def errors_warnings_fields(errors_warnings_gui_fields, fields_base):
+    _errors_warnings_fields = dict(errors_warnings_gui_fields, **fields_base)
     return _errors_warnings_fields
 
 
@@ -266,6 +281,36 @@ def exp_assumptions_text():
 
 
 @pytest.fixture()
+@set_fixture_prop
+def test_coverage_behavioral_gui_fields(request):
+    _test_coverage_behavoiral_gui_fields = {
+        u'BE_sub': [1.0],
+        u'BE_inc': [-0.6],
+        u'BE_cg': [-0.67]
+    }
+    return _test_coverage_behavoiral_gui_fields
+
+
+@pytest.fixture()
+@set_fixture_prop
+def test_coverage_behavioral_fields(request):
+    # quick work-around to get set_fixture_prop decorator to work with
+    # fixture as argument
+    # this is equivalent to
+    # `test_coverage_fields(fields_base, test_coverage_behavioral_gui_fields)`
+    _fields_base = request.getfixturevalue('fields_base')
+    _fields_base.pop('quick_calc', None)
+    _test_coverage_behavoiral_gui_fields = request.getfixturevalue(
+        'test_coverage_behavioral_gui_fields'
+    )
+    _test_coverage_behavoiral_fields = dict(
+        _test_coverage_behavoiral_gui_fields,
+        **_fields_base
+    )
+    return _test_coverage_behavoiral_fields
+
+
+@pytest.fixture()
 def no_assumptions_text():
     with open(os.path.join(CUR_PATH, 'no_assumptions_text.txt')) as f:
         return f.read()
@@ -274,3 +319,19 @@ def no_assumptions_text():
 @pytest.fixture()
 def no_assumptions_text_json(no_assumptions_text):
     return json.loads(no_assumptions_text)
+
+
+@pytest.fixture()
+@set_fixture_prop
+def skelaton_res_lt_0130(request):
+    _path = os.path.join(CUR_PATH, "skelaton_res_lt_0130.json")
+    with open(_path) as js:
+        return json.loads(js.read())
+
+
+@pytest.fixture()
+@set_fixture_prop
+def skelaton_res_gt_0130(request):
+    _path = os.path.join(CUR_PATH, "skelaton_res_gt_0130.json")
+    with open(_path) as js:
+        return json.loads(js.read())

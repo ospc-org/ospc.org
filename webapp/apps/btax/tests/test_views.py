@@ -4,7 +4,6 @@ import mock
 
 from ..models import BTaxSaveInputs, BTaxOutputUrl
 from ...taxbrain.models import WorkerNodesCounter
-from ..models import convert_to_floats
 from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
 import taxcalc

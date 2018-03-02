@@ -19,7 +19,7 @@ from urlparse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
 from django.core import serializers
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
@@ -31,8 +31,6 @@ from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
 from django import forms
 
-from djqscsv import render_to_csv_response
-
 from .forms import BTaxExemptionForm, has_field_errors
 from .models import BTaxSaveInputs, BTaxOutputUrl
 from .helpers import (get_btax_defaults,
@@ -42,8 +40,7 @@ from .helpers import (get_btax_defaults,
                       make_bool, convert_val)
 from ..taxbrain.helpers import (format_csv,
                                 is_wildcard)
-from ..taxbrain.views import (benefit_switch_fixup,
-                              denormalize, normalize)
+from ..taxbrain.views import denormalize, normalize
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
@@ -101,15 +98,18 @@ def btax_results(request):
     """
     no_inputs = False
     start_year = START_YEAR
-    REQUEST = request.REQUEST
     if request.method=='POST':
         print 'POST'
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
         has_errors = make_bool(request.POST['has_errors'])
-        start_year = REQUEST['start_year']
-        fields = dict(REQUEST)
+        fields = dict(request.GET)
+        fields.update(dict(request.POST))
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        start_year = fields.get('start_year', START_YEAR)
+        # TODO: migrate first_year to start_year to get rid of weird stuff like
+        # this
         fields['first_year'] = fields['start_year']
         btax_inputs = BTaxExemptionForm(start_year, fields)
         btax_inputs = make_bool_gds_ads(btax_inputs)
@@ -355,8 +355,8 @@ def output_detail(request, pk):
     if model.tax_result:
         exp_num_minutes = 0.25
         JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
-
-        tables = url.unique_inputs.tax_result[0]
+        tax_result = url.unique_inputs.tax_result
+        tables = json.loads(tax_result)[0]
         first_year = url.unique_inputs.first_year
         created_on = url.unique_inputs.creation_date
         tables["tooltips"] = {
@@ -365,7 +365,7 @@ def output_detail(request, pk):
             "coc": COC_TOOLTIP,
             "dprc": DPRC_TOOLTIP,
         }
-        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(model.tax_result[0]['dataframes'])
+        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(tables['dataframes'])
 
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
@@ -416,8 +416,8 @@ def output_detail(request, pk):
 
 
         if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.btax_get_results(normalize(job_ids))
-
+            tax_result = dropq_compute.btax_get_results(normalize(job_ids))
+            model.tax_result = json.dumps(tax_result)
             model.creation_date = datetime.datetime.now()
             print 'ready'
             model.save()

@@ -1,13 +1,23 @@
 name: aei_dropq
 dependencies:
 - python<=2.7.14,>=2.7.12
-- pandas>=0.22.0
-- flask
-- greenlet
+- numpy >=1.12.1
+- pandas >=0.22.0
+- taxcalc =0.15.2
+- btax =0.2.2
+- ogusa =0.5.8
+- numba
+- six
+- bokeh =0.12.7
+- mock
 - xlrd
-- redis
 - sphinx
+- nomkl
 - pip:
+  - flask
+  - redis
+  - greenlet
+  - toolz
   - fabric
   - boto
   - celery
@@ -16,8 +26,16 @@ dependencies:
   - plotly
   - sphinx-rtd-theme
   - sphinx-autobuild
+  - redis
+  - supervisor
+  - plotly
+  - requests-mock
+  - requests
+  - funcsigs
+  - xlrd >=0.9.0
 
 channels:
   - ospc
+  - ospc/label/dev
   - defaults
   - conda-forge

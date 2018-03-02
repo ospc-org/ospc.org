@@ -1,17 +1,11 @@
 from django.test import TestCase
-from django.test import Client
-import json
-import os
 import pytest
-import numpy as np
-from datetime import datetime
 
-from ..models import JSONReformTaxCalculator
-from ...test_assets.utils import get_taxbrain_model
+from ..models import JSONReformTaxCalculator, TaxSaveInputs
+from ..forms import TaxBrainForm
+from ...test_assets.utils import get_taxbrain_model, stringify_fields
+from ...test_assets.test_models import TaxBrainTableResults, TaxBrainFieldsTest
 
-START_YEAR = 2016
-
-CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 class TaxBrainJSONReformModelTest(TestCase):
     """Test taxbrain JSONReformTaxCalculator."""
@@ -28,50 +22,65 @@ class TaxBrainJSONReformModelTest(TestCase):
             raw_assumption_text=self.test_string
         )
 
-@pytest.mark.usefixtures("test_coverage_fields")
-class TaxBrainResultsTest(TestCase):
 
-    def setUp(self):
-        pass
+class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
 
+    def test_static_tc_lt_0130(self):
+        self.tc_lt_0130(self.test_coverage_fields)
 
-    def test_tc_lt_0130(self):
-        old_path = os.path.join(CURDIR, "skelaton_res_lt_0130.json")
-        with open(old_path) as js:
-            old_labels = json.loads(js.read())
-
-        new_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
-        with open(new_path) as js:
-            new_labels = json.loads(js.read())
-
-        unique_url = get_taxbrain_model(self.test_coverage_fields,
-                                        taxcalc_vers="0.10.2",
-                                        webapp_vers="1.1.1")
-
-        model = unique_url.unique_inputs
-        model.tax_result = old_labels
-        model.creation_date = datetime.now()
-        model.save()
-
-        np.testing.assert_equal(model.tax_result, new_labels)
+    def test_static_tc_gt_0130(self):
+        self.tc_gt_0130(self.test_coverage_fields)
 
 
-    def test_tc_gt_0130(self):
-        old_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
-        with open(old_path) as js:
-            old_labels = json.loads(js.read())
+class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
 
-        new_path = os.path.join(CURDIR, "skelaton_res_gt_0130.json")
-        with open(new_path) as js:
-            new_labels = json.loads(js.read())
+    def test_set_fields(self):
+        start_year = 2017
+        fields = self.test_coverage_gui_fields.copy()
+        fields['first_year'] = start_year
 
-        unique_url = get_taxbrain_model(self.test_coverage_fields,
-                                        taxcalc_vers="0.13.0",
-                                        webapp_vers="1.2.0")
+        self.parse_fields(start_year, fields, Form=TaxBrainForm)
 
-        model = unique_url.unique_inputs
-        model.tax_result = old_labels
-        model.creation_date = datetime.now()
-        model.save()
+    def test_old_runs(self):
+        """
+        Test that the fields JSON objects can be generated dyanamically
+        """
+        start_year = 2017
+        tsi = TaxSaveInputs(
+            ID_AmountCap_Switch_0='True',
+            FICA_ss_trt='0.10',
+            STD_cpi='True',
+            SS_Earnings_c_cpi=True,
+            first_year=start_year
+        )
+        tsi.save()
+        tsi.set_fields()
+        assert tsi.input_fields['_FICA_ss_trt'] == [0.10]
+        assert tsi.input_fields['_STD_cpi'] == True
+        assert tsi.input_fields['_SS_Earnings_c_cpi'] == True
+        assert tsi.input_fields['_ID_AmountCap_Switch_medical'] == [True]
 
-        np.testing.assert_equal(model.tax_result, new_labels)
+    def test_deprecated_fields(self):
+        """
+        Test that deprecated fields are added correctly
+        """
+        start_year = 2017
+        tsi = TaxSaveInputs(
+            raw_input_fields = {
+                'FICA_ss_trt': '0.10',
+                'ID_BenefitSurtax_Switch_0': 'True',
+                'STD_cpi': 'True',
+                'deprecated_param': '1000'
+            },
+            first_year=start_year
+        )
+        tsi.set_fields()
+        assert tsi.deprecated_fields == ['deprecated_param']
+        tsi.raw_input_fields['yet_another_deprecated_param'] = '1001'
+        tsi.set_fields()
+        assert tsi.deprecated_fields == ['deprecated_param',
+                                         'yet_another_deprecated_param']
+        assert tsi.raw_input_fields['deprecated_param'] == '1000'
+        assert tsi.raw_input_fields['yet_another_deprecated_param'] == '1001'
+        assert 'deprecated_param' not in tsi.input_fields
+        assert 'yet_another_deprecated_param' not in tsi.input_fields

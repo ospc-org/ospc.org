@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import jsonfield.fields
 import webapp.apps.taxbrain.models
 
 
@@ -13,10 +12,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='taxsaveinputs',
-            name='tax_result',
-        ),
         migrations.AddField(
             model_name='taxsaveinputs',
             name='CTC_new_for_all',
@@ -176,11 +171,6 @@ class Migration(migrations.Migration):
             model_name='taxsaveinputs',
             name='PT_wages_active_income',
             field=models.CharField(default=b'False', max_length=50, null=True, blank=True),
-        ),
-        migrations.AddField(
-            model_name='taxsaveinputs',
-            name='_tax_result',
-            field=jsonfield.fields.JSONField(default=None, null=True, db_column=b'tax_result', blank=True),
         ),
         migrations.AddField(
             model_name='taxsaveinputs',

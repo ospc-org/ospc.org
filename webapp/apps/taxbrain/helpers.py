@@ -13,7 +13,8 @@ import re
 from mock import Mock
 import sys
 
-from ..constants import START_YEAR
+from ..constants import (START_YEAR,
+                         TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE)
 
 import taxcalc
 from taxcalc import Policy
@@ -51,14 +52,14 @@ FALSE_REGEX = re.compile('(?i)false')
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
-        return x in ['*', u'*'] or x.strip() in ['*', u'*']
+        return x in ('*', u'*') or x.strip() in ('*', u'*')
     else:
         return False
 
 
 def is_reverse(x):
     if isinstance(x, six.string_types):
-        return x in ['<', u'<'] or x.strip() in ['<', u'<']
+        return x in ('<', u'<') or x.strip() in ('<', u'<')
     else:
         return False
 
@@ -104,18 +105,6 @@ def convert_val(x):
     except ValueError:
         return make_bool(x)
 
-def parse_fields(param_dict):
-    for k, v in param_dict.copy().items():
-        if v == u'' or v is None or v == []:
-            del param_dict[k]
-            continue
-        if isinstance(v, six.string_types):
-            if k in BOOL_PARAMS:
-                converter = make_bool
-            else:
-                converter = convert_val
-            param_dict[k] = [converter(x.strip()) for x in v.split(',') if x]
-    return param_dict
 
 def int_to_nth(x):
     if x < 1:
@@ -209,6 +198,12 @@ TAXCALC_HIDDEN_FIELDS = [
     '_KT_c_Age',
     '_LLC_Expense_c', '_FEI_ec_c'
 ]
+
+INPUTS_META = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
+          u'full_calc', u'quick_calc', 'first_year', '_state',
+          'creation_date', 'id', 'job_ids', 'jobs_not_ready',
+          'json_text_id', 'tax_result', 'reform_style',
+          '_micro_sim_cache', 'micro_sim_id', 'raw_fields',)
 
 #
 # Display TaxCalc result data
@@ -356,109 +351,9 @@ TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'combined_tax':'Combined Payroll and Individual Income Tax Liability Change',
 }
 
-
-def get_default_policy_param_name(param, default_params):
-    """
-    Map TaxBrain field name to Tax-Calculator parameter name
-    For example: STD_0 maps to _STD_single
-
-    returns: Tax-Calculator param name
-    """
-    if '_' + param in default_params: # ex. EITC_indiv --> _EITC_indiv
-        return '_' + param
-    param_pieces = param.split('_')
-    end_piece = param_pieces[-1]
-    no_suffix = '_' + '_'.join(param_pieces[:-1])
-    if end_piece == 'cpi': # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
-        if no_suffix in default_params:
-            return '_' + param
-        else:
-            msg = "Received unexpected parameter: {}"
-            raise ValueError(msg.format(param))
-    if no_suffix in default_params: # ex. STD_0 --> _STD_single
-        try:
-            ix = int(end_piece)
-        except ValueError:
-            msg = "Parsing {}: Expected integer for index but got {}"
-            raise ValueError(msg.format(param, end_piece))
-        num_columns = len(default_params[no_suffix]['col_label'])
-        if ix < 0 or ix >= num_columns:
-            msg = "Parsing {}: Index {} not in range ({}, {})"
-            raise IndexError(msg.format(param, ix, 0, num_columns))
-        col_label = default_params[no_suffix]['col_label'][ix]
-        return no_suffix + '_' + col_label
-    msg = "Received unexpected parameter: {}"
-    raise ValueError(msg.format(param))
-
-
-def to_json_reform(fields, start_year, cls=taxcalc.Policy):
-    """
-    Convert fields style dictionary to json reform style dictionary
-    For example:
-    fields = {'_state': <django.db.models.base.ModelState object at 0x10c764950>,
-              'creation_date': datetime.datetime(2015, 1, 1, 0, 0), 'id': 64,
-              'ID_ps_cpi': True, 'quick_calc': False,
-              'FICA_ss_trt': [u'*', 0.1, u'*', 0.2], 'first_year': 2017,
-              'ID_BenefitSurtax_Switch_0': [True], 'ID_Charity_c_cpi': True,
-              'EITC_rt_2': [1.0]}
-    to
-    reform = {'_CG_nodiff': {'2017': [False]},
-              '_FICA_ss_trt': {'2020': [0.2], '2018': [0.1]},
-              '_ID_Charity_c_cpi': {'2017': True},
-              '_EITC_rt_2kids': {'2017': [1.0]}}
-
-    returns json style reform
-    """
-    map_back_to_tb = {}
-    number_reverse_operators = 1
-    default_params = cls.default_data(start_year=start_year,
-                                      metadata=True)
-    ignore = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
-              u'full_calc', u'quick_calc', 'first_year', '_state',
-              'creation_date', 'id', 'job_ids', 'jobs_not_ready',
-              'json_text_id', 'tax_result', 'reform_style',
-              '_micro_sim_cache', 'micro_sim_id', )
-
-    reform = {}
-    for param in fields:
-        if param not in ignore:
-            param_name = get_default_policy_param_name(param, default_params)
-            map_back_to_tb[param_name] = param
-            reform[param_name] = {}
-            if not isinstance(fields[param], list):
-                assert isinstance(fields[param], bool) and param.endswith('_cpi')
-                reform[param_name][str(start_year)] = fields[param]
-                continue
-            i = 0
-            while i < len(fields[param]):
-                if is_wildcard(fields[param][i]):
-                    # may need to do something here
-                    pass
-                elif is_reverse(fields[param][i]):
-                    # only the first character can be a reverse char
-                    # and there must be a following character
-                    assert len(fields[param]) > 1
-                    # set value for parameter in start_year - 1
-                    assert (isinstance(fields[param][i + 1], (int, float)) or
-                            isinstance(fields[param][i + 1], bool))
-                    reform[param_name][str(start_year - 1)] = \
-                        [fields[param][i + 1]]
-
-                    # realign year and parameter indices
-                    for op in (0, number_reverse_operators + 1):
-                        fields[param].pop(0)
-                    continue
-                else:
-                    assert (isinstance(fields[param][i], (int, float)) or
-                            isinstance(fields[param][i], bool))
-                    reform[param_name][str(start_year + i)] = \
-                        [fields[param][i]]
-
-                i += 1
-
-    return reform, map_back_to_tb
-
-
+REORDER_LT_TC_0130_DIFF_LIST = [1, 3, 0, 5, 6, 4, 2, 7]
+DIFF_TABLE_IDs = ['diff_itax_xdec', 'diff_ptax_xdec', 'diff_comb_xdec',
+                  'diff_itax_xbin', 'diff_ptax_xbin', 'diff_comb_xbin']
 
 
 def expand_1D(x, num_years):
@@ -891,19 +786,8 @@ class TaxCalcParam(object):
                     first_budget_year
                 ))
 
-        # we assume we can CPI inflate if first value isn't a ratio
-        first_value = self.col_fields[0].values[0]
-        inflatable_params = SPECIAL_INFLATABLE_PARAMS
-        non_inflatable_params = SPECIAL_NON_INFLATABLE_PARAMS
-        if 'inflatable' in attributes:
-            self.inflatable = attributes['inflatable']
-        elif self.tc_id in inflatable_params:
-            self.inflatable = True
-        elif (self.tc_id in non_inflatable_params or
-              self.nice_id in BOOL_PARAMS):
-            self.inflatable = False
-        else:
-            self.inflatable = first_value > 1
+        # get attribute indicating whether parameter is cpi inflatable.
+        self.inflatable = attributes.get("cpi_inflatable", False)
 
         if self.inflatable:
             cpi_flag = attributes['cpi_inflated']
@@ -1009,53 +893,6 @@ def default_policy(first_budget_year):
         param = TaxCalcParam(k,v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
-    #Growth assumptions not in default data yet. Add in the appropriate info so that
-    #the params dictionary has the right info
-    # value, col_label, long_name, description, irs_ref, notes
-    growth_params = []
-    adj_long_name = ("Deviation from CBO forecast of baseline economic "
-                    "growth (percentage point)")
-    adj_descr = ("The data underlying this model are extrapolated to roughly "
-                "match the CBO's projection of the economy's development over "
-                "the 10-year federal budget window, with each type of economic "
-                "data extrapolated at a different growth rate. This parameter "
-                "allows a factor to be subtracted or added to those growth "
-                "rates for the construction of the economic baseline. For "
-                "example if you supply .02 (or 2%), then 0.02 will be added to "
-                "the wage and salary growth rate, interest income growth rate, "
-                "dividend growth rate, schedule E income growth rate, and all "
-                "other growth rates used to extrapolate the underlying dataset.")
-
-    factor_adjustment = {'value':[[0]], 'col_label':"", 'long_name': adj_long_name,
-                        'description': adj_descr, 'irs_ref':'', 'notes':''}
-    growth_params.append(('_factor_adjustment', factor_adjustment))
-
-    target_long_name = ("Replacement for CBO real GDP growth in economic baseline "
-                        "(percent)")
-
-    target_descr = ("The data underlying this model are extrapolated to roughly "
-                    "match the CBO's projection of the economy's development "
-                    "over the 10-year federal budget window, with each type of "
-                    "economic data extrapolated at a different growth rate. One "
-                    "of the growth rates taken from the CBO is GDP growth. This "
-                    "parameter allows you to specify a real GDP growth rate, and "
-                    "all other rates will be modified to maintain the distance "
-                    "between them and GDP growth in the CBO baseline. For example, "
-                    "if the CBO growth rate for one year is 0.02 and the user "
-                    "enters 0.018 for this parameter, then 0.002 will be "
-                    "subtracted from every growth rate in the construction of the "
-                    "economic baseline, including wage and salary growth, interest "
-                    "income growth, dividend growth, and many others.")
-
-    factor_target= {'value':[[0]], 'col_label':"", 'long_name': target_long_name,
-                        'description': target_descr, 'irs_ref':'', 'notes':''}
-
-    growth_params.append(('_factor_target', factor_target))
-
-    for k,v in growth_params:
-        param = TaxCalcParam(k,v, first_budget_year)
-        default_taxcalc_params[param.nice_id] = param
-
     TAXCALC_DEFAULT_PARAMS = default_taxcalc_params
 
     return TAXCALC_DEFAULT_PARAMS
@@ -1099,6 +936,30 @@ def rename_keys(rename_dict, map_dict):
                 new_label = k
             rename_dict[new_label] = rename_keys(rename_dict.pop(k), map_dict)
     return rename_dict
+
+
+def reorder_lists(results, reorder_ix_map, table_names):
+    """
+    Reorder lists in `results[table_id][bin_label]`. Required for difference
+    tables calculated with Tax-Calculator version <0.13.0
+
+    returns: results table with reordered lists in selected tables
+    """
+
+    def reorder(disordered):
+        reordered = disordered[:]
+        for ix in range(len(reorder_ix_map)):
+            reordered[reorder_ix_map[ix]] = disordered[ix]
+        return reordered
+
+    for table_name in table_names:
+        bins = list(results[table_name].keys())
+        for ix in range(len(bins)):
+            results[table_name][bins[ix]] = reorder(
+                results[table_name][bins[ix]]
+            )
+
+    return results
 
 
 def taxcalc_results_to_tables(results, first_budget_year):
