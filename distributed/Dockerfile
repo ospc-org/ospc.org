@@ -23,5 +23,4 @@ RUN pip install -r requirements.txt
 
 RUN python setup.py develop
 
-
 WORKDIR taxbrain_server/
