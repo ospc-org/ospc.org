@@ -98,7 +98,8 @@ class PolicyBrainForm:
         return (parsed_data,)
 
     def add_errors_on_extra_inputs(self):
-        ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken'}
+        ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken',
+                          'data_source'}
         all_inputs = set(self.data.keys())
         allowed_inputs= set(self.fields.keys())
         extra_inputs = all_inputs - allowed_inputs - ALLOWED_EXTRAS
@@ -113,7 +114,9 @@ class PolicyBrainForm:
         fields = self.cleaned_data['raw_input_fields']
         for param_name, value in fields.iteritems():
             # make sure the text parses OK
-            if isinstance(value, six.string_types) and len(value) > 0:
+            if param_name == 'data_source':
+                assert value in ('CPS', 'PUF')
+            elif isinstance(value, six.string_types) and len(value) > 0:
                 try:
                     INPUT.parseString(value)
                 except (ParseException, AssertionError):
@@ -279,7 +282,8 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         model = TaxSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
-        fields = ['first_year', 'raw_input_fields', 'input_fields']
+        fields = ['first_year', 'data_source', 'raw_input_fields',
+                  'input_fields']
         start_year = int(START_YEAR)
         if start_year not in TAXCALC_DEFAULTS:
             TAXCALC_DEFAULTS[start_year] = default_policy(start_year)

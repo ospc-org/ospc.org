@@ -158,8 +158,10 @@ def submit_reform(request, user=None, json_reform_id=None):
     request_files = request.FILES
 
     # which file to use, front-end not yet implemented
-    use_puf_not_cps = fields.get('use_puf_not_cps', True)
-    assert use_puf_not_cps
+    if fields.get('data_source', 'PUF') == 'PUF':
+        use_puf_not_cps = True
+    else:
+        use_puf_not_cps = False
 
     # declare a bunch of variables--TODO: clean this up
     no_inputs = False

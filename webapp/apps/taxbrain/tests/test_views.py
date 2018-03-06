@@ -48,6 +48,7 @@ class TaxBrainViewsTests(TestCase):
         """
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
+        data['data_source'] = ['CPS']
         do_micro_sim(self.client, data)
 
     def test_taxbrain_quick_calc_post(self):
