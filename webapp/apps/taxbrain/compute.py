@@ -96,6 +96,7 @@ class DropqCompute(object):
 
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
         print "hostnames: ", hostnames
+        print("submitting data: ", data)
         num_hosts = len(hostnames)
         job_ids = []
         hostname_idx = 0
