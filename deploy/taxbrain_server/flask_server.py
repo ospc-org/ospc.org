@@ -28,7 +28,7 @@ from celery_tasks import (celery_app, dropq_task_async,
 
 
 
-app = Flask('sampleapp')
+app = Flask(__name__)
 
 server_url = "http://localhost:5050"
 
@@ -371,6 +371,7 @@ def app_tracking_context(args=None):
     def checking_tickets_at_interval():
         return job_id_check()
     try:
+        print("trying to connect...")
         checker_thread = Thread(target=checking_tickets_at_interval)
         checker_thread.daemon = True
         checker_thread.start()
@@ -381,8 +382,10 @@ def app_tracking_context(args=None):
             print('Mock app')
             yield app
     except Exception as e:
+        print("some exception...")
         EXIT_EVENT.set()
         time.sleep(3)
+        print("exception: ", e)
         raise
     finally:
         # dump all the standing tickets no matter what
