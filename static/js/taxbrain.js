@@ -137,7 +137,7 @@ $('#id_factor_adjustment, #id_factor_target').focus(function() {
 
 var currentYear = $('#start-year-select').val();
 $('#start-year-select').change(function(e) {
-  $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val());
+  $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val() + '&data_source=' + $('#data-source-select').val());
   $('#current-year-modal').modal('show');
 });
 
@@ -148,7 +148,7 @@ $('#current-year-modal').on('hide.bs.modal', function (e) {
 
 var dataSource = $('#data-source-select').val();
 $('#data-source-select').change(function(e) {
-    $('#data-source-link').attr('href', '/taxbrain/?data_source=' + $(this).val());
+    $('#data-source-link').attr('href', '/taxbrain/?start_year=' + $('#start-year-select').val() + '&data_source=' + $(this).val());
     $('#data-source-modal').modal('show');
 });
 
