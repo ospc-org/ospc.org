@@ -1,4 +1,4 @@
-FROM deploybase:v3
+FROM deploybase:latest
 
 MAINTAINER Henry Doupe <henry.doupe@aei.org>
 
