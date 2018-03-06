@@ -33,10 +33,7 @@ app = Flask(__name__)
 server_url = "http://localhost:5050"
 
 queue_name = "celery"
-if not MOCK_CELERY:
-    client = redis.Redis(host="localhost", port=6379)
-else:
-    client = None
+client = redis.Redis(host="redis", port=6379)
 RUNNING_JOBS = {}
 TRACKING_TICKETS = {}
 SLEEP_INTERVAL_TICKET_CHECK = 30

@@ -1,24 +1,19 @@
-version: '2'
-
+version: '3'
 services:
+  web:
+    build:
+      context: ./
+      dockerfile: FlaskDockerfile
+    restart: always
+    ports:
+     - "5000:5000"
+    depends_on:
+      - redis
+  worker:
+    build:
+      context: ./
+      dockerfile: CeleryDockerfile
+    depends_on:
+      - redis
   redis:
-    image: 'redis:3.0-alpine'
-    command: redis-server
-    volumes:
-      - 'redis:/var/lib/redis/data'
-    ports:
-      - '6379:6379'
-
-  flask:
-    image: deploy:logg3
-    command: /bin/bash -c "source activate aei_dropq" &&
-      supervisord -c supervisord_local.conf
-    environment:
-      PYTHONUNBUFFERED: 'true'
-    volumes:
-      - '.:/taxbrain_server'
-    ports:
-      - '8000:8000'
-
-volumes:
-    redis:
+    image: redis

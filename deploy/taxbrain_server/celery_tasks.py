@@ -26,7 +26,7 @@ TEST_FAIL = False
 
 from utils import set_env
 globals().update(set_env())
-celery_app = Celery('tasks2', broker=REDISGREEN_URL, backend=REDISGREEN_URL)
+celery_app = Celery('tasks2', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 if MOCK_CELERY:
     CELERY_ALWAYS_EAGER = True
     BROKER_BACKEND = 'memory'

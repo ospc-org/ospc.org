@@ -1,23 +1,27 @@
-FROM continuumio/miniconda3
+FROM continuumio/miniconda
 
 MAINTAINER Henry Doupe <henry.doupe@aei.org>
 
-LABEL "component"="Deploy" "Iteration"="test1"
+LABEL "component"="Deploy"
 USER root
 RUN  apt-get update && apt install libgl1-mesa-glx --yes
 
 RUN mkdir home/deploy
 ADD ./ home/deploy
 
-RUN conda env create -f home/deploy/fab/dropq_environment.yml
 WORKDIR home/deploy
-RUN /bin/bash -c "source activate aei_dropq && python setup.py develop"
+
+RUN conda config --add channels ospc
+RUN conda config --add channels ospc/label/dev
+RUN conda config --append channels conda-forge
+
+RUN conda install python=2.7.14 numpy>=1.12.1 pandas>=0.22.0 taxcalc=0.15.2 \
+    btax=0.2.2 ogusa=0.5.8 matplotlib numba six bokeh=0.12.7 mock xlrd \
+    sphinx nomkl
+
+RUN pip install -r requirements.txt
+
+RUN python setup.py develop
+
 
 WORKDIR taxbrain_server/
-
-EXPOSE 80
-
-# needs to be set else Celery gives an error (because docker runs commands inside container as root)
-ENV C_FORCE_ROOT=1
-
-# run supervisord
