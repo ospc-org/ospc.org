@@ -22,6 +22,8 @@ RUN pip install -r requirements.txt
 COPY . /home/distributed
 WORKDIR /home/distributed/taxbrain_server
 
+# not safe. don't publish with token
+# see conversations like: https://github.com/moby/moby/issues/33343
 ARG PUF_TOKEN
 RUN if [ -z ${PUF_TOKEN+x} ]; \
         then echo PUF token not specified; \
