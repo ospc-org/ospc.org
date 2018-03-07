@@ -50,8 +50,7 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                          REFORM_TOOLTIP, FISCAL_CURRENT_LAW, FISCAL_REFORM,
                          FISCAL_CHANGE, INCOME_BINS_TOOLTIP,
-                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
-                         DATA_SOURCES, DEFAULT_SOURCE)
+                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
 
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
@@ -158,10 +157,8 @@ def submit_reform(request, user=None, json_reform_id=None):
     request_files = request.FILES
 
     # which file to use, front-end not yet implemented
-    if fields.get('data_source', 'PUF') == 'PUF':
-        use_puf_not_cps = True
-    else:
-        use_puf_not_cps = False
+    use_puf_not_cps = fields.get('use_puf_not_cps', True)
+    assert use_puf_not_cps
 
     # declare a bunch of variables--TODO: clean this up
     no_inputs = False
@@ -300,8 +297,7 @@ def submit_reform(request, user=None, json_reform_id=None):
         user_mods = dict({'policy': reform_dict}, **assumptions_dict)
         data = {'user_mods': json.dumps(user_mods),
                 'first_budget_year': int(start_year),
-                'start_budget_year': 0,
-                'use_puf_not_cps': use_puf_not_cps}
+                'start_budget_year': 0}
         if do_full_calc:
             data['num_budget_years'] = NUM_BUDGET_YEARS
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
@@ -468,21 +464,8 @@ def personal_results(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
-        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
-            data_source = params['data_source'][0]
-            print('we got the data source', data_source, 'now what...')
-            if data_source == 'PUF':
-                use_puf_not_cps = True
-            else:
-                use_puf_not_cps = False
-
         personal_inputs = TaxBrainForm(first_year=start_year)
 
-    if use_puf_not_cps:
-        data_source = 'PUF'
-    else:
-        data_source = 'CPS'
-    print(data_source, DATA_SOURCES)
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
@@ -491,8 +474,6 @@ def personal_results(request):
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
-        'data_sources': DATA_SOURCES,
-        'data_source': data_source,
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
 

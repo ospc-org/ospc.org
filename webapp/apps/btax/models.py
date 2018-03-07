@@ -114,8 +114,7 @@ class BTaxSaveInputs(models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
-    # data source for model
-    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
+
     # Result
     tax_result = models.TextField(default=None, blank=True, null=True)
     # Creation DateTime

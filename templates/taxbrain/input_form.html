@@ -125,7 +125,7 @@
         </div>
       </section>
     </div>
-    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}&data_source={{data_source}}">
+    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}">
       {% csrf_token %}
       <input type="hidden" name="has_errors" value="{{ has_errors }}" />
       <div class="container">
@@ -139,13 +139,6 @@
                   {% endfor %}
                 </select>
             </label>
-            <label class=""> Data Source:
-                <select id="data-source-select" class="form-control pull-right">
-                {% for data in data_sources %}
-                  <option value="{{data}}" {% if data == data_source %} selected {% endif %}>{{data}}</option>
-                {% endfor %}
-                </select>
-             </label>
               <div class="reset-button">
                 {% if is_edit_page %}
                   <a href="/taxbrain" class="btn btn-tertiary btn-block" style="background-color:#96000b">Reset Parameters</a>
@@ -264,22 +257,4 @@
       </div>
     </div>
   </div>
-  <div class="modal fade" id="data-source-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="myModalLabel">Change Data Source</h4>
-        </div>
-        <div class="modal-body">
-          Warning: This will clear your current inputs.
-        </div>
-        <div class="modal-footer">
-          <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
-          <a type="button" class="btn btn-primary" id="data-source-link">OK, go for it.</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
 {% endblock %}
