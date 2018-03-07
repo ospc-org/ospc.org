@@ -20,5 +20,13 @@ RUN conda install python=2.7.14 numpy>=1.12.1 pandas>=0.22.0 taxcalc=0.15.2 \
 RUN pip install -r requirements.txt
 
 COPY . /home/distributed
-
 WORKDIR /home/distributed/taxbrain_server
+
+ARG PUF_TOKEN
+RUN if [ -z ${PUF_TOKEN+x} ]; \
+        then echo PUF token not specified; \
+        else echo getting and writing PUF file && \
+            conda install taxpuf -c https://conda.anaconda.org/t/$PUF_TOKEN/opensourcepolicycenter && \
+            write-latest-taxpuf && \
+            gunzip -k puf.csv.gz; \
+        fi
