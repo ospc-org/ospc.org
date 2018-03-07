@@ -1,8 +1,6 @@
 FROM continuumio/miniconda
 
-MAINTAINER Henry Doupe <henry.doupe@aei.org>
-
-LABEL "component"="deploy"
+LABEL build="distributed" version="0.0.1" date="2018-03-07"
 USER root
 RUN  apt-get update && apt install libgl1-mesa-glx --yes
 

@@ -1,6 +1,6 @@
 FROM deploybase:latest
 
-MAINTAINER Henry Doupe <henry.doupe@aei.org>
+LABEL build="flask" version="0.0.1" date="2018-03-07"
 
 USER root
 
