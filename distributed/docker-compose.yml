@@ -1,18 +1,18 @@
 version: '3'
 services:
-  web:
+  flask:
     build:
       context: ./
-      dockerfile: FlaskDockerfile
+      dockerfile: Dockerfile.flask
     restart: always
     ports:
      - "5000:5000"
     depends_on:
       - redis
-  worker:
+  celery:
     build:
       context: ./
-      dockerfile: CeleryDockerfile
+      dockerfile: Dockerfile.celery
     depends_on:
       - redis
   redis:
