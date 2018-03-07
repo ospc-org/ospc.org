@@ -706,6 +706,9 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
 
+    # data source for model
+    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
+    
     # Record whether or not this was a quick calculation on a sample of data
     quick_calc = models.BooleanField(default=False)
 

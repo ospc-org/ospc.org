@@ -88,7 +88,7 @@ def check_posted_params(mock_compute, params_to_check, start_year):
             act = user_mods["policy"][str(year)][param]
             exp = params_to_check[year][param]
             # more extensive assertion statement
-            # catches: [['true', '2']] == [['true', '2']] 
+            # catches: [['true', '2']] == [['true', '2']]
             # as well as [['true', '2']] == [['1', '2.0']]
             if exp == act:
                 continue
@@ -103,6 +103,7 @@ def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False)
     """
     data = {u'has_errors': [u'False'],
             u'start_year': unicode(start_year),
+            'data_source': 'PUF',
             'csrfmiddlewaretoken':'abc123'}
     if _ID_BenefitSurtax_Switches:
         switches = {u'ID_BenefitSurtax_Switch_0': [u'True'],

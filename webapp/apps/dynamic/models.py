@@ -43,6 +43,8 @@ class DynamicSaveInputs(models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
+    # data source for model
+    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
@@ -85,6 +87,9 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
+    # data source for model
+    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
+
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
@@ -161,6 +166,8 @@ class DynamicElasticitySaveInputs(models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
+    # data source for model
+    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
