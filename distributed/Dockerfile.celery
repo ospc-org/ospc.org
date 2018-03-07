@@ -1,4 +1,4 @@
-FROM deploybase:latest
+FROM distributed:latest
 
 LABEL build="celery" version="0.0.1" date="2018-03-07"
 
