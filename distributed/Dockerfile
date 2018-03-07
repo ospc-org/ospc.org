@@ -4,10 +4,10 @@ LABEL build="distributed" version="0.0.1" date="2018-03-07"
 USER root
 RUN  apt-get update && apt install libgl1-mesa-glx --yes
 
-RUN mkdir home/distributed
-ADD ./ home/distributed
+RUN mkdir /home/distributed
+COPY requirements.txt home/distributed
 
-WORKDIR home/distributed
+WORKDIR /home/distributed
 
 RUN conda config --add channels ospc
 RUN conda config --add channels ospc/label/dev
@@ -19,4 +19,6 @@ RUN conda install python=2.7.14 numpy>=1.12.1 pandas>=0.22.0 taxcalc=0.15.2 \
 
 RUN pip install -r requirements.txt
 
-WORKDIR taxbrain_server/
+COPY . /home/distributed
+
+WORKDIR /home/distributed/taxbrain_server
