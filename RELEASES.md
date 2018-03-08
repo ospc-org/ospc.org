@@ -4,6 +4,17 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.4.4 on 2018-03-08
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#840](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/840) - Add column ID's back to PolicyBrain - Hank Doupe
+
 Release 1.4.3 on 2018-03-07
 ----------------------------
 **Major Changes**

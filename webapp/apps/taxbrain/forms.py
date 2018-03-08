@@ -158,14 +158,14 @@ class PolicyBrainForm:
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                     update_fields[field.id] = forms.BooleanField(
-                        label='',
+                        label=field.label,
                         widget=widgets[field.id],
                         required=False
                     )
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
                     update_fields[field.id] = forms.fields.CharField(
-                        label='',
+                        label=field.label,
                         widget=widgets[field.id],
                         required=False
                     )
@@ -184,7 +184,7 @@ class PolicyBrainForm:
 
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
                 update_fields[field.id] = forms.NullBooleanField(
-                    label='',
+                    label=field.label,
                     widget=widgets[field.id],
                     required=False
                 )
