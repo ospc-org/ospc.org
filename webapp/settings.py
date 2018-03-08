@@ -49,7 +49,7 @@ TEMPLATES = [
 ]
 
 
-WEBAPP_VERSION = "1.4.3"
+WEBAPP_VERSION = "1.4.4"
 
 # Application definition
 
