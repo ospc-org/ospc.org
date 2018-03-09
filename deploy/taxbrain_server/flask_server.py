@@ -66,15 +66,23 @@ def dropq_endpoint(dropq_task):
         year_n = request.form['year']
         user_mods = json.loads(request.form['user_mods'])
         first_budget_year = None if 'first_budget_year' not in request.form else request.form['first_budget_year']
+        use_puf_not_cps = None if 'use_puf_not_cps' not in request.form else request.form['use_puf_not_cps']
     else:
         year_n = request.args.get('year', '')
         first_budget_year = None
 
     year_n = int(year_n)
+    # use_puf_not_cps passed as string. If for some reason it is not supplied
+    # we default to True i.e. using the PUF file
+    if use_puf_not_cps in ('True', 'true') or use_puf_not_cps is None:
+        use_puf_not_cps = True
+    else:
+        use_puf_not_cps = False
     print("year_n", year_n)
     print("user_mods", user_mods)
     print("first_budget_year", first_budget_year)
-    raw_results = dropq_task.delay(year_n, user_mods, first_budget_year)
+    print("use_puf_not_cps", use_puf_not_cps)
+    raw_results = dropq_task.delay(year_n, user_mods, first_budget_year, use_puf_not_cps)
     RUNNING_JOBS[raw_results.id] = raw_results
     length = client.llen(queue_name) + 1
     results = {'job_id':str(raw_results), 'qlength':length}
