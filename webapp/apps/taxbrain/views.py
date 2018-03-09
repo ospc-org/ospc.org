@@ -227,7 +227,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
                 errors_warnings) = get_reform_from_file(request_files)
         else:
-            personal_inputs = TaxBrainForm(start_year, fields)
+            personal_inputs = TaxBrainForm(start_year, use_puf_not_cps, fields)
             # If an attempt is made to post data we don't accept
             # raise a 400
             if personal_inputs.non_field_errors():
@@ -271,6 +271,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             # with warnings/errors
             personal_inputs = TaxBrainForm(
                 start_year,
+                use_puf_not_cps,
                 initial=json.loads(personal_inputs.data['raw_input_fields'])
             )
             # TODO: parse warnings for file_input
@@ -476,7 +477,8 @@ def personal_results(request):
             else:
                 use_puf_not_cps = False
 
-        personal_inputs = TaxBrainForm(first_year=start_year)
+        personal_inputs = TaxBrainForm(first_year=start_year,
+                                       use_puf_not_cps=use_puf_not_cps)
 
     if use_puf_not_cps:
         data_source = 'PUF'

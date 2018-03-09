@@ -718,6 +718,9 @@ class TaxCalcParam(object):
                 (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or
                 (attributes["compatible_data"]["puf"] and use_puf_not_cps)
             )
+        else:
+            # if compatible_data is not specified do not gray out
+            self.gray_out = False
 
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
@@ -882,7 +885,7 @@ def default_behavior(first_budget_year):
 
 
 # Create a list of default policy
-def default_policy(first_budget_year):
+def default_policy(first_budget_year, use_puf_not_cps=True):
 
     TAXCALC_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.policy.Policy,
                                                        metadata=True,
@@ -890,7 +893,8 @@ def default_policy(first_budget_year):
 
     default_taxcalc_params = {}
     for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
-        param = TaxCalcParam(k,v, first_budget_year)
+        param = TaxCalcParam(k,v, first_budget_year,
+                             use_puf_not_cps=use_puf_not_cps)
         default_taxcalc_params[param.nice_id] = param
 
     TAXCALC_DEFAULT_PARAMS = default_taxcalc_params
