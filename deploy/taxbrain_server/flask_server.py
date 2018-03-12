@@ -123,7 +123,20 @@ def elastic_endpoint():
     elast_params = json.loads(request.form['gdp_elasticity'])
     first_budget_year = request.form['first_budget_year']
     print("elast params", elast_params, " user_mods: ", user_mods)
-    raw_results = elasticity_gdp_task_async.delay(year_n, user_mods, first_budget_year, elast_params)
+    use_puf_not_cps = request.form['use_puf_not_cps']
+    # use_puf_not_cps passed as string. If for some reason it is not supplied
+    # we default to True i.e. using the PUF file
+    if use_puf_not_cps in ('True', 'true') or use_puf_not_cps is None:
+        use_puf_not_cps = True
+    else:
+        use_puf_not_cps = False
+    raw_results = elasticity_gdp_task_async.delay(
+        year_n,
+        user_mods,
+        first_budget_year,
+        elast_params,
+        use_puf_not_cps=use_puf_not_cps
+    )
     RUNNING_JOBS[raw_results.id] = raw_results
     length = client.llen(queue_name) + 1
     results = {'job_id': str(raw_results), 'qlength': length}
