@@ -4,6 +4,17 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.4.5 on 2018-03-13
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/)[Gray out fields based on data-source selection] - Hank Doupe and Sean Wang
+
+**Bug Fixes**
+- None
+
 Release 1.4.4 on 2018-03-08
 ----------------------------
 **Major Changes**
