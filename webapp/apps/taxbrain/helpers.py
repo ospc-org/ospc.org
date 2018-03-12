@@ -200,10 +200,11 @@ TAXCALC_HIDDEN_FIELDS = [
 ]
 
 INPUTS_META = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
-          u'full_calc', u'quick_calc', 'first_year', '_state',
-          'creation_date', 'id', 'job_ids', 'jobs_not_ready',
-          'json_text_id', 'tax_result', 'reform_style',
-          '_micro_sim_cache', 'micro_sim_id', 'raw_fields',)
+               u'full_calc', u'quick_calc', 'first_year', '_state',
+               'creation_date', 'id', 'job_ids', 'jobs_not_ready',
+               'json_text_id', 'tax_result', 'reform_style',
+               '_micro_sim_cache', 'micro_sim_id', 'raw_fields',
+               'data_source', )
 
 #
 # Display TaxCalc result data
