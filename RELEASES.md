@@ -14,7 +14,7 @@ Release 1.5.0 on 2018-03-13
 - [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
 
 **Bug Fixes**
-- None
+- [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Pass start year to dynamic behavioral - Hank Doupe
 
 Release 1.4.4 on 2018-03-08
 ----------------------------

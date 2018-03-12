@@ -84,7 +84,7 @@ class DynamicBehavioralViewsTests(TestCase):
         assert user_mods["policy"]["2020"][u'_SS_Earnings_c'][0]  == 15000.0
         assert user_mods["behavior"]["2016"]["_BE_sub"][0] == 0.25
 
-    def test_behavioral_reform_cps(self):
+    def test_behavioral_reform_post_gui(self):
         # Do the microsim
         start_year = u'2016'
         data = get_post_data(start_year)
@@ -95,13 +95,15 @@ class DynamicBehavioralViewsTests(TestCase):
 
         # Do the partial equilibrium simulation based on the microsim
         pe_reform = {u'BE_sub': [u'0.25']}
-        pe_response = do_dynamic_sim(self.client, 'behavioral', micro1, pe_reform)
+        pe_response = do_dynamic_sim(self.client, 'behavioral', micro1,
+                                     pe_reform, start_year=start_year)
         orig_micro_model_num = micro1.url[-2:-1]
         from webapp.apps.dynamic import views
         post = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
         user_mods = json.loads(post['user_mods'])
+        assert post["first_budget_year"] == int(start_year)
         assert user_mods["policy"]["2020"][u'_SS_Earnings_c'][0]  == 15000.0
         assert user_mods["behavior"]["2016"]["_BE_sub"][0] == 0.25
         assert post['use_puf_not_cps'] == False
@@ -121,4 +123,5 @@ class DynamicBehavioralViewsTests(TestCase):
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
         user_mods = json.loads(post["user_mods"])
+        assert post["first_budget_year"] == int(START_YEAR)
         assert user_mods["behavior"][str(START_YEAR)]["_BE_sub"][0] == 0.25
