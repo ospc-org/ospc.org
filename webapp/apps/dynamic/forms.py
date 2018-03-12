@@ -183,7 +183,7 @@ class DynamicElasticityInputsModelForm(ModelForm):
 
     class Meta:
         model = DynamicElasticitySaveInputs
-        exclude = ['creation_date', 'raw_input_fields', 'input_fields']
+        exclude = ['creation_date']
         widgets = {}
         labels = {}
         for param in ELASTICITY_DEFAULT_PARAMS.values():
@@ -436,7 +436,7 @@ class DynamicInputsModelForm(ModelForm):
 
     class Meta:
         model = DynamicSaveInputs
-        exclude = ['creation_date', 'raw_input_fields', 'input_fields']
+        exclude = ['creation_date']
         widgets = {}
         labels = {}
         for param in OGUSA_DEFAULT_PARAMS.values():
