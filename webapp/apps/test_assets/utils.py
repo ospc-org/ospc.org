@@ -73,7 +73,8 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
             "pk": response.url[idx+1:-1]}
 
 
-def check_posted_params(mock_compute, params_to_check, start_year):
+def check_posted_params(mock_compute, params_to_check, start_year,
+                        use_puf_not_cps=True):
     """
     Make sure posted params match expected results
     user_mods: parameters that are actually passed to taxcalc
@@ -83,6 +84,7 @@ def check_posted_params(mock_compute, params_to_check, start_year):
     last_posted = mock_compute.last_posted
     user_mods = json.loads(last_posted["user_mods"])
     assert last_posted["first_budget_year"] == int(start_year)
+    assert last_posted["use_puf_not_cps"] == use_puf_not_cps
     for year in params_to_check:
         for param in params_to_check[year]:
             act = user_mods["policy"][str(year)][param]
@@ -141,14 +143,15 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
 def get_taxbrain_model(_fields, first_year=2017,
                        quick_calc=False, taxcalc_vers="0.13.0",
                        webapp_vers="1.2.0", exp_comp_datetime = "2017-10-10",
-                       Form=TaxBrainForm, UrlModel=OutputUrl):
+                       Form=TaxBrainForm, UrlModel=OutputUrl,
+                       use_puf_not_cps=True):
     fields = _fields.copy()
     fields.pop('_state', None)
     fields.pop('creation_date', None)
     fields.pop('id', None)
     fields = stringify_fields(fields)
 
-    personal_inputs = Form(first_year, fields)
+    personal_inputs = Form(first_year, use_puf_not_cps, fields)
     if not personal_inputs.is_valid():
         print(personal_inputs.errors)
     model = personal_inputs.save(commit=False)

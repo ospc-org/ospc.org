@@ -80,16 +80,17 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True, use_f
 
 
 @celery_app.task
-def dropq_task_async(year, user_mods, first_budget_year):
-    print('dropq_task_async', year, user_mods, first_budget_year)
+def dropq_task_async(year, user_mods, first_budget_year, use_puf_not_cps=True):
+    print('dropq_task_async', year, user_mods, first_budget_year, use_puf_not_cps)
     return dropq_task(year, user_mods, first_budget_year,
-                      use_puf_not_cps=True, use_full_sample=True)
+                      use_puf_not_cps=use_puf_not_cps, use_full_sample=True)
 
 
 @celery_app.task
-def dropq_task_small_async(year, user_mods, first_budget_year):
+def dropq_task_small_async(year, user_mods, first_budget_year, use_puf_not_cps=True):
+    print('dropq_task_small_async', year, user_mods, first_budget_year, use_puf_not_cps)
     return dropq_task(year, user_mods, first_budget_year,
-                      use_puf_not_cps=True, use_full_sample=False)
+                      use_puf_not_cps=use_puf_not_cps, use_full_sample=False)
 
 
 @celery_app.task

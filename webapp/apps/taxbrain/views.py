@@ -227,7 +227,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
                 errors_warnings) = get_reform_from_file(request_files)
         else:
-            personal_inputs = TaxBrainForm(start_year, fields)
+            personal_inputs = TaxBrainForm(start_year, use_puf_not_cps, fields)
             # If an attempt is made to post data we don't accept
             # raise a 400
             if personal_inputs.non_field_errors():
@@ -271,6 +271,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             # with warnings/errors
             personal_inputs = TaxBrainForm(
                 start_year,
+                use_puf_not_cps,
                 initial=json.loads(personal_inputs.data['raw_input_fields'])
             )
             # TODO: parse warnings for file_input
@@ -476,7 +477,8 @@ def personal_results(request):
             else:
                 use_puf_not_cps = False
 
-        personal_inputs = TaxBrainForm(first_year=start_year)
+        personal_inputs = TaxBrainForm(first_year=start_year,
+                                       use_puf_not_cps=use_puf_not_cps)
 
     if use_puf_not_cps:
         data_source = 'PUF'
@@ -547,7 +549,8 @@ def submit_micro(request, pk):
     data = {'user_mods': json.dumps(user_mods),
             'first_budget_year': int(start_year),
             'start_budget_year': 0,
-            'num_budget_years': NUM_BUDGET_YEARS}
+            'num_budget_years': NUM_BUDGET_YEARS,
+            'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
     submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
@@ -592,7 +595,11 @@ def edit_personal_results(request, pk):
 
     msg = ('Field {} has been deprecated. Refer to the Tax-Caclulator '
            'documentation for a sensible replacement.')
-    form_personal_exemp = TaxBrainForm(first_year=start_year, instance=model)
+    form_personal_exemp = TaxBrainForm(
+        first_year=start_year,
+        use_puf_not_cps=model.use_puf_not_cps,
+        instance=model
+    )
     form_personal_exemp.is_valid()
     if model.deprecated_fields is not None:
         for dep in model.deprecated_fields:
@@ -609,7 +616,9 @@ def edit_personal_results(request, pk):
         'start_years': START_YEARS,
         'start_year': str(form_personal_exemp._first_year),
         'is_edit_page': True,
-        'has_errors': False
+        'has_errors': False,
+        'data_sources': DATA_SOURCES,
+        'data_source': model.data_source
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)
