@@ -10,7 +10,8 @@ Release 1.5.0 on 2018-03-13
 - None
 
 **Minor Changes**
-- [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/)[Gray out fields based on data-source selection] - Hank Doupe and Sean Wang
+- [#835](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/835/) - Add button to allow CPS as input data source - Sean Wang, Anderson Frailey, and Hank Doupe
+- [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
 
 **Bug Fixes**
 - None
