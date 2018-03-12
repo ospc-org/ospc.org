@@ -17,7 +17,7 @@ import taxcalc
 import helpers
 import param_formatters
 
-from behaviors import Resultable, Fieldable
+from behaviors import Resultable, Fieldable, DataSourceable
 
 
 # digit or true/false (case insensitive)
@@ -86,7 +86,7 @@ class ErrorMessageTaxCalculator(models.Model):
     text = models.CharField(blank=True, null=False, max_length=4000)
 
 
-class TaxSaveInputs(Fieldable, Resultable, models.Model):
+class TaxSaveInputs(DataSourceable, Fieldable, Resultable, models.Model):
     """
     This model contains all the parameters for the tax model and the tax
     result.
@@ -706,9 +706,6 @@ class TaxSaveInputs(Fieldable, Resultable, models.Model):
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
 
-    # data source for model
-    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
-    
     # Record whether or not this was a quick calculation on a sample of data
     quick_calc = models.BooleanField(default=False)
 
