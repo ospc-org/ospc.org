@@ -22,7 +22,7 @@ ELASTICITY_DEFAULT_PARAMS = default_elasticity_parameters(int(START_YEAR))
 
 class DynamicElasticityInputsModelForm(ModelForm):
 
-    def __init__(self, first_year, *args, **kwargs):
+    def __init__(self, first_year, use_puf_not_cps, *args, **kwargs):
         self._first_year = int(first_year)
         self._default_params = default_elasticity_parameters(self._first_year)
         # Defaults are set in the Meta, but we need to swap
@@ -183,7 +183,7 @@ class DynamicElasticityInputsModelForm(ModelForm):
 
     class Meta:
         model = DynamicElasticitySaveInputs
-        exclude = ['creation_date']
+        exclude = ['creation_date', 'raw_input_fields', 'input_fields']
         widgets = {}
         labels = {}
         for param in ELASTICITY_DEFAULT_PARAMS.values():
@@ -217,7 +217,7 @@ class DynamicElasticityInputsModelForm(ModelForm):
 
 class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
 
-    def __init__(self, first_year, *args, **kwargs):
+    def __init__(self, first_year, use_puf_not_cps, *args, **kwargs):
         if first_year is None:
             first_year = START_YEAR
         self._first_year = int(first_year)
@@ -275,7 +275,7 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
 
 class DynamicInputsModelForm(ModelForm):
 
-    def __init__(self, first_year, *args, **kwargs):
+    def __init__(self, first_year, use_puf_not_cps, *args, **kwargs):
         self._first_year = int(first_year)
         self._default_params = default_parameters(self._first_year)
         # Defaults are set in the Meta, but we need to swap
@@ -436,7 +436,7 @@ class DynamicInputsModelForm(ModelForm):
 
     class Meta:
         model = DynamicSaveInputs
-        exclude = ['creation_date']
+        exclude = ['creation_date', 'raw_input_fields', 'input_fields']
         widgets = {}
         labels = {}
         for param in OGUSA_DEFAULT_PARAMS.values():
