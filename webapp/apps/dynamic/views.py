@@ -231,6 +231,7 @@ def dynamic_behavioral(request, pk):
                 )
                 json_reform.save()
                 taxbrain_model.json_text = json_reform
+                taxbrain_model.save()
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
 
