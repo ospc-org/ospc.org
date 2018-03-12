@@ -616,7 +616,9 @@ def edit_personal_results(request, pk):
         'start_years': START_YEARS,
         'start_year': str(form_personal_exemp._first_year),
         'is_edit_page': True,
-        'has_errors': False
+        'has_errors': False,
+        'data_sources': DATA_SOURCES,
+        'data_source': model.data_source
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)
