@@ -48,8 +48,27 @@ class TaxBrainViewsTests(TestCase):
         """
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
+        data['data_source'] = ['PUF']
+        result = do_micro_sim(self.client, data)
+
+        truth_mods = {}
+
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR), use_puf_not_cps=True)
+
+    def test_taxbrain_post_cps(self):
+        """
+        submit simple reform with CPS as data source
+        """
+        data = get_post_data(START_YEAR)
+        data[u'II_em'] = [u'4333']
         data['data_source'] = ['CPS']
-        do_micro_sim(self.client, data)
+        result = do_micro_sim(self.client, data)
+
+        truth_mods = {}
+
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR), use_puf_not_cps=False)
 
     def test_taxbrain_quick_calc_post(self):
         "Test quick calculation post and full post from quick_calc page"
@@ -97,6 +116,55 @@ class TaxBrainViewsTests(TestCase):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
+    def test_taxbrain_quick_calc_post_cps(self):
+        """
+        Test quick calculation post and full post from quick_calc page using
+        cps data
+        """
+        # switches 0, 4, 6 are False
+        data = get_post_data(START_YEAR, quick_calc=True)
+        data[u'ID_BenefitSurtax_Switch_0'] = ['False']
+        data[u'ID_BenefitSurtax_Switch_4'] = ['0']
+        data[u'ID_BenefitSurtax_Switch_6'] = ['0.0']
+        data[u'II_em'] = [u'4333']
+        data[u'ID_AmountCap_Switch_0'] = [u'0']
+        data['data_source'] = ['CPS']
+        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+        current_dropq_worker_offset = wnc.current_offset
+
+        result = do_micro_sim(self.client, data, compute_count=1)
+
+        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+        next_dropq_worker_offset = wnc.current_offset
+
+        # Check that quick calc does not advance the counter
+        self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
+
+        # Check that data was saved properly
+        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
+                                   [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
+                                   "_ID_AmountCap_Switch":
+                                   [[0, 1, 1, 1, 1, 1, True]],
+                                   "_II_em": [4333.0]}
+                      }
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR), use_puf_not_cps=False)
+
+        # reset worker node count without clearing MockCompute session
+        result['tb_dropq_compute'].reset_count()
+        post_url = '/taxbrain/submit/{0}/'.format(result['pk'])
+        submit_data = {'csrfmiddlewaretoken':'abc123'}
+
+        result = do_micro_sim(
+            self.client,
+            submit_data,
+            compute_count=NUM_BUDGET_YEARS,
+            post_url=post_url
+        )
+
+        # Check that data was saved properly
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR), use_puf_not_cps=False)
 
     def test_taxbrain_file_post_quick_calc(self):
         """

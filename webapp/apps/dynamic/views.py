@@ -202,7 +202,10 @@ def dynamic_behavioral(request, pk):
                       request.POST.get('start_year', None))
         assert start_year is not None
         fields['first_year'] = start_year
-        dyn_mod_form = DynamicBehavioralInputsModelForm(start_year, fields)
+        # use_puf_not_cps set to True by default--doesn't matter for dynamic
+        # input page. It is there for API consistency
+        dyn_mod_form = DynamicBehavioralInputsModelForm(start_year, True,
+                                                        fields)
 
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save(commit=False)
@@ -212,6 +215,8 @@ def dynamic_behavioral(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
+            model.data_source = taxbrain_model.data_source
+            model.save()
              # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
                 raise NotImplementedError("Backwards compatibility has not been implemented yet")
@@ -224,7 +229,8 @@ def dynamic_behavioral(request, pk):
             data = {'user_mods': json.dumps(user_mods),
                     'first_budget_year': int(start_year),
                     'start_budget_year': 0,
-                    'num_budget_years': NUM_BUDGET_YEARS}
+                    'num_budget_years': NUM_BUDGET_YEARS,
+                    'use_puf_not_cps': model.use_puf_not_cps}
 
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
                 data
@@ -268,7 +274,10 @@ def dynamic_behavioral(request, pk):
 
     else:
         # Probably a GET request, load a default form
-        form_personal_exemp = DynamicBehavioralInputsModelForm(first_year=start_year)
+        form_personal_exemp = DynamicBehavioralInputsModelForm(
+            first_year=start_year,
+            use_puf_not_cps=True
+        )
 
 
     behavior_default_params = default_behavior(int(start_year))
@@ -304,7 +313,10 @@ def dynamic_elasticities(request, pk):
         # TODO: migrate first_year to start_year to get rid of weird stuff like
         # this
         fields['first_year'] = fields['start_year']
-        dyn_mod_form = DynamicElasticityInputsModelForm(start_year, fields)
+        # use_puf_not_cps set to True by default--doesn't matter for dynamic
+        # input page. It is there for API consistency
+        dyn_mod_form = DynamicElasticityInputsModelForm(start_year, True,
+                                                        fields)
 
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
@@ -315,7 +327,8 @@ def dynamic_elasticities(request, pk):
             outputsurl = OutputUrl.objects.get(pk=pk)
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
-             # necessary for simulations before PR 641
+            model.data_source = taxbrain_model.data_source
+            # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
                 raise NotImplementedError("Backwards compatibility has not been implemented yet")
             else:
@@ -331,7 +344,8 @@ def dynamic_elasticities(request, pk):
                     'gdp_elasticity': gdp_elasticity,
                     'first_budget_year': int(start_year),
                     'start_budget_year': 0,
-                    'num_budget_years': NUM_BUDGET_YEARS}
+                    'num_budget_years': NUM_BUDGET_YEARS,
+                    'use_puf_not_cps': model.use_puf_not_cps}
 
             # start calc job
             submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
@@ -369,7 +383,6 @@ def dynamic_elasticities(request, pk):
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
-
                 return redirect('elastic_results', unique_url.pk)
 
         else:
@@ -382,7 +395,10 @@ def dynamic_elasticities(request, pk):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
-        form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year)
+        form_personal_exemp = DynamicElasticityInputsModelForm(
+            first_year=start_year,
+            use_puf_not_cps=True
+        )
 
     elasticity_default_params = default_elasticity_parameters(int(start_year))
 
@@ -417,7 +433,11 @@ def edit_dynamic_behavioral(request, pk):
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = DynamicBehavioralInputsModelForm(first_year=start_year, instance=model)
+    form_personal_exemp = DynamicBehavioralInputsModelForm(
+        first_year=start_year,
+        use_puf_not_cps=model.use_puf_not_cps,
+        instance=model
+    )
     behavior_default_params = default_behavior_parameters(int(start_year))
 
     taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
@@ -452,7 +472,11 @@ def edit_dynamic_elastic(request, pk):
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
 
-    form_personal_exemp = DynamicElasticityInputsModelForm(first_year=start_year, instance=model)
+    form_personal_exemp = DynamicElasticityInputsModelForm(
+        first_year=start_year,
+        use_puf_not_cps=model.use_puf_not_cps,
+        instance=model
+    )
     elasticity_default_params = default_elasticity_parameters(int(start_year))
 
     taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)

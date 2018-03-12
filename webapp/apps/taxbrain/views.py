@@ -549,7 +549,8 @@ def submit_micro(request, pk):
     data = {'user_mods': json.dumps(user_mods),
             'first_budget_year': int(start_year),
             'start_budget_year': 0,
-            'num_budget_years': NUM_BUDGET_YEARS}
+            'num_budget_years': NUM_BUDGET_YEARS,
+            'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
     submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
@@ -594,7 +595,11 @@ def edit_personal_results(request, pk):
 
     msg = ('Field {} has been deprecated. Refer to the Tax-Caclulator '
            'documentation for a sensible replacement.')
-    form_personal_exemp = TaxBrainForm(first_year=start_year, instance=model)
+    form_personal_exemp = TaxBrainForm(
+        first_year=start_year,
+        use_puf_not_cps=model.use_puf_not_cps,
+        instance=model
+    )
     form_personal_exemp.is_valid()
     if model.deprecated_fields is not None:
         for dep in model.deprecated_fields:
