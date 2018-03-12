@@ -89,7 +89,7 @@ class PolicyBrainForm:
         for k, v in args_data.items():
             if k not in INPUTS_META:
                 raw_fields[k] = v
-            elif k is 'first_year':
+            elif k in ('first_year', 'data_source'):
                 parsed_data[k] = v
             else:
                 pass
