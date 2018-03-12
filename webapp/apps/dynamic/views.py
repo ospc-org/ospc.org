@@ -342,7 +342,18 @@ def dynamic_elasticities(request, pk):
             model.data_source = taxbrain_model.data_source
             # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
-                raise NotImplementedError("Backwards compatibility has not been implemented yet")
+                taxbrain_model.set_fields()
+                (reform_dict, assumptions_dict, reform_text, assumptions_text,
+                    errors_warnings) = taxbrain_model.get_model_specs()
+                json_reform = JSONReformTaxCalculator(
+                    reform_text=json.dumps(reform_dict),
+                    assumption_text=json.dumps(assumptions_dict),
+                    raw_reform_text=reform_text,
+                    raw_assumption_text=assumptions_text
+                )
+                json_reform.save()
+                taxbrain_model.json_text = json_reform
+                taxbrain_model.save()
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
             # empty assumptions dictionary
