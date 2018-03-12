@@ -428,6 +428,7 @@ def edit_dynamic_behavioral(request, pk):
 
     model = DynamicBehaviorSaveInputs.objects.get(pk=url.model_pk)
     start_year = model.first_year
+    model.set_fields()
     #Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
     user_inputs = json.loads(ser_model)
