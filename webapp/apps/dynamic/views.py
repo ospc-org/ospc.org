@@ -189,20 +189,15 @@ def dynamic_behavioral(request, pk):
     """
     start_year = START_YEAR
     if request.method == 'POST':
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         fields = dict(request.GET)
         fields.update(dict(request.POST))
         fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
-        start_year = fields.get('start_year', START_YEAR)
+        start_year = fields['start_year']
         # TODO: migrate first_year to start_year to get rid of weird stuff like
         # this
         fields['first_year'] = fields['start_year']
-
-        # Client is attempting to send inputs, validate as form data
-        # save start_year
-        start_year = (request.GET.get('start_year', None) or
-                      request.POST.get('start_year', None))
-        assert start_year is not None
-        fields['first_year'] = start_year
         # use_puf_not_cps set to True by default--doesn't matter for dynamic
         # input page. It is there for API consistency
         dyn_mod_form = DynamicBehavioralInputsModelForm(start_year, True,
@@ -244,7 +239,6 @@ def dynamic_behavioral(request, pk):
                     'start_budget_year': 0,
                     'num_budget_years': NUM_BUDGET_YEARS,
                     'use_puf_not_cps': model.use_puf_not_cps}
-
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
                 data
             )
@@ -286,6 +280,12 @@ def dynamic_behavioral(request, pk):
             form_personal_exemp = dyn_mod_form
 
     else:
+        # Probably a GET request, load a default form
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
+        params = parse_qs(urlparse(request.build_absolute_uri()).query)
+        if 'start_year' in params and params['start_year'][0] in START_YEARS:
+            start_year = params['start_year'][0]
         # Probably a GET request, load a default form
         form_personal_exemp = DynamicBehavioralInputsModelForm(
             first_year=start_year,
