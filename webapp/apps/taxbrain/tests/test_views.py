@@ -1,4 +1,3 @@
-from django.test import TestCase
 from django.test import Client
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test.client import RequestFactory
@@ -23,24 +22,23 @@ from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_dropq_compute_from_module,
                                   get_taxbrain_model)
 
+CLIENT = Client()
+
 
 START_YEAR = 2016
 
 @pytest.mark.usefixtures("r1", "assumptions_text", "warning_reform",
                          "bad_reform", "test_coverage_fields")
-class TaxBrainViewsTests(TestCase):
+@pytest.mark.django_db
+class TestTaxBrainViews(object):
     ''' Test the views of this app. '''
-
-    def setUp(self):
-        # Every test needs a client.
-        self.client = Client()
 
     def test_taxbrain_get(self):
         # Issue a GET request.
-        response = self.client.get('/taxbrain/')
+        response = CLIENT.get('/taxbrain/')
 
         # Check that the response is 200 OK.
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
 
     def test_taxbrain_post(self):
         """
@@ -49,7 +47,7 @@ class TaxBrainViewsTests(TestCase):
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
         data['data_source'] = ['PUF']
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         truth_mods = {}
 
@@ -63,7 +61,7 @@ class TaxBrainViewsTests(TestCase):
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
         data['data_source'] = ['CPS']
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         truth_mods = {}
 
@@ -82,13 +80,13 @@ class TaxBrainViewsTests(TestCase):
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
-        result = do_micro_sim(self.client, data, compute_count=1)
+        result = do_micro_sim(CLIENT, data, compute_count=1)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         next_dropq_worker_offset = wnc.current_offset
 
         # Check that quick calc does not advance the counter
-        self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
+        assert current_dropq_worker_offset == next_dropq_worker_offset
 
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
@@ -106,7 +104,7 @@ class TaxBrainViewsTests(TestCase):
         submit_data = {'csrfmiddlewaretoken':'abc123'}
 
         result = do_micro_sim(
-            self.client,
+            CLIENT,
             submit_data,
             compute_count=NUM_BUDGET_YEARS,
             post_url=post_url
@@ -132,13 +130,13 @@ class TaxBrainViewsTests(TestCase):
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
-        result = do_micro_sim(self.client, data, compute_count=1)
+        result = do_micro_sim(CLIENT, data, compute_count=1)
 
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         next_dropq_worker_offset = wnc.current_offset
 
         # Check that quick calc does not advance the counter
-        self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
+        assert current_dropq_worker_offset == next_dropq_worker_offset
 
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
@@ -156,7 +154,7 @@ class TaxBrainViewsTests(TestCase):
         submit_data = {'csrfmiddlewaretoken':'abc123'}
 
         result = do_micro_sim(
-            self.client,
+            CLIENT,
             submit_data,
             compute_count=NUM_BUDGET_YEARS,
             post_url=post_url
@@ -166,20 +164,22 @@ class TaxBrainViewsTests(TestCase):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), use_puf_not_cps=False)
 
-    def test_taxbrain_file_post_quick_calc(self):
+    @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
+    def test_taxbrain_file_post_quick_calc(self, data_source):
         """
         Using file-upload interface, test quick calculation post and full
         post from quick_calc page
         """
         data = get_file_post_data(START_YEAR, self.r1, quick_calc=False)
-
+        data['data_source'] = data_source
+        use_puf_not_cps = True if data_source == 'PUF' else False
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
         post_url = '/taxbrain/file/'
 
         result = do_micro_sim(
-            self.client,
+            CLIENT,
             data,
             compute_count=1,
             post_url=post_url
@@ -189,7 +189,7 @@ class TaxBrainViewsTests(TestCase):
         next_dropq_worker_offset = wnc.current_offset
 
         # Check that quick calc does not advance the counter
-        self.assertEqual(current_dropq_worker_offset, next_dropq_worker_offset)
+        assert current_dropq_worker_offset == next_dropq_worker_offset
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
@@ -206,7 +206,7 @@ class TaxBrainViewsTests(TestCase):
         submit_data = {'csrfmiddlewaretoken':'abc123'}
 
         result = do_micro_sim(
-            self.client,
+            CLIENT,
             submit_data,
             compute_count=NUM_BUDGET_YEARS,
             post_url=post_url
@@ -226,7 +226,7 @@ class TaxBrainViewsTests(TestCase):
         data[u'ID_BenefitSurtax_Switch_6'] = ['0.0']
         data[u'II_em'] = [u'4333']
 
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
@@ -238,12 +238,12 @@ class TaxBrainViewsTests(TestCase):
 
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
                                                                  START_YEAR)
-        edit_page = self.client.get(edit_micro)
-        self.assertEqual(edit_page.status_code, 200)
+        edit_page = CLIENT.get(edit_micro)
+        assert edit_page.status_code == 200
 
         next_csrf = str(edit_page.context['csrf_token'])
         data['csrfmiddlewaretoken'] = next_csrf
-        result2 = do_micro_sim(self.client, data)
+        result2 = do_micro_sim(CLIENT, data)
 
         check_posted_params(result2['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
@@ -260,9 +260,9 @@ class TaxBrainViewsTests(TestCase):
         data = get_post_data(START_YEAR)
         data[u'BE_inc'] = [u'0.1']
 
-        response = self.client.post('/taxbrain/', data)
+        response = CLIENT.post('/taxbrain/', data)
         # Check that we get a 400
-        self.assertEqual(response.status_code, 400)
+        assert response.status_code == 400
 
 
     def test_taxbrain_nodes_down(self):
@@ -276,7 +276,7 @@ class TaxBrainViewsTests(TestCase):
         data[u'II_em'] = [u'4333']
 
         result = do_micro_sim(
-            self.client,
+            CLIENT,
             data,
             tb_dropq_compute=dropq_compute
         )
@@ -300,14 +300,14 @@ class TaxBrainViewsTests(TestCase):
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
 
-        response = self.client.post('/taxbrain/', data)
+        response = CLIENT.post('/taxbrain/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 302)
+        assert response.status_code == 302
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
-        response = self.client.get(response.url)
+        assert response.url[:link_idx+1].endswith("taxbrain/")
+        response = CLIENT.get(response.url)
         # Make sure the failure message is in the response
-        self.failUnless("Your calculation failed" in str(response))
+        assert "Your calculation failed" in str(response)
 
     @pytest.mark.xfail
     def test_taxbrain_has_growth_params(self):
@@ -318,7 +318,7 @@ class TaxBrainViewsTests(TestCase):
                   'has_errors': [u'False'],
                   'growth_choice': u'factor_adjustment'
                   }
-        do_micro_sim(self.client, reform)
+        do_micro_sim(CLIENT, reform)
 
 
     def test_taxbrain_edit_cpi_flags_show_correctly(self):
@@ -328,15 +328,15 @@ class TaxBrainViewsTests(TestCase):
         data[u'AMT_CG_brk2_cpi'] = u'False'
         data[u'AMEDT_ec_cpi'] = u'True'
 
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
                                                                  START_YEAR)
-        edit_page = self.client.get(edit_micro)
-        self.assertEqual(edit_page.status_code, 200)
+        edit_page = CLIENT.get(edit_micro)
+        assert edit_page.status_code == 200
         cpi_flag = edit_page.context['form']['AMT_CG_brk2_cpi'].field.widget.attrs['placeholder']
-        self.assertEqual(cpi_flag, False)
+        assert cpi_flag == False
         cpi_flag = edit_page.context['form']['AMEDT_ec_cpi'].field.widget.attrs['placeholder']
-        self.assertEqual(cpi_flag, True)
+        assert cpi_flag == True
 
 
 
@@ -347,7 +347,7 @@ class TaxBrainViewsTests(TestCase):
         data[u'II_em'] = [u'4333']
         data['ID_BenefitSurtax_Switch_3'] = [u'True']
 
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         out = OutputUrl.objects.get(pk=result["pk"])
         tsi = TaxSaveInputs.objects.get(pk=out.model_pk)
@@ -359,8 +359,8 @@ class TaxBrainViewsTests(TestCase):
         # Now edit this page
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
                                                                  START_YEAR)
-        edit_page = self.client.get(edit_micro)
-        self.assertEqual(edit_page.status_code, 200)
+        edit_page = CLIENT.get(edit_micro)
+        assert edit_page.status_code == 200
 
         # post some more data from the edit parameters page. Posting the
         # same data (switch_0) again looks a little funny, but this
@@ -374,7 +374,7 @@ class TaxBrainViewsTests(TestCase):
                'csrfmiddlewaretoken': next_csrf}
         data2.update(mod)
 
-        result2 = do_micro_sim(self.client, data2)
+        result2 = do_micro_sim(CLIENT, data2)
 
         out2 = OutputUrl.objects.get(pk=result2["pk"])
         tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
@@ -393,7 +393,7 @@ class TaxBrainViewsTests(TestCase):
         mod = {u'II_brk1_0': [u'*, *, 15000'],
                u'II_brk2_cpi': u'False'}
         data.update(mod)
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         # Check that data was saved properly
         truth_mods = {
@@ -421,9 +421,9 @@ class TaxBrainViewsTests(TestCase):
                u'II_brk2_cpi': u'False'}
         data.update(mod)
 
-        response = self.client.post('/taxbrain/', data)
+        response = CLIENT.post('/taxbrain/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
 
 
@@ -439,7 +439,7 @@ class TaxBrainViewsTests(TestCase):
                u'cpi_offset': [u'<,-0.0025'],
                u'FICA_ss_trt': [u'< ,0.1,*,0.15,0.2']}
         data.update(mod)
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         truth_mods = {
             START_YEAR - 1: {
@@ -462,7 +462,7 @@ class TaxBrainViewsTests(TestCase):
         """
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         data[u'STD_3'] = ['10000']
-        response = self.client.post('/taxbrain/', data)
+        response = CLIENT.post('/taxbrain/', data)
 
         assert response.status_code == 200
 
@@ -482,9 +482,9 @@ class TaxBrainViewsTests(TestCase):
                u'II_brk2_cpi': u'False'}
         data.update(mod)
 
-        response = self.client.post('/taxbrain/', data)
+        response = CLIENT.post('/taxbrain/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
 
 
@@ -499,9 +499,9 @@ class TaxBrainViewsTests(TestCase):
         mod = {u'cpi_offset': [u'<,']}
         data.update(mod)
 
-        response = self.client.post('/taxbrain/', data)
+        response = CLIENT.post('/taxbrain/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
 
     def test_taxbrain_improper_reverse_gives_error2(self):
@@ -515,9 +515,9 @@ class TaxBrainViewsTests(TestCase):
         mod = {u'cpi_offset': [u'-0.002,<,-0.001']}
         data.update(mod)
 
-        response = self.client.post('/taxbrain/', data)
+        response = CLIENT.post('/taxbrain/', data)
         # Check that redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
 
     def test_taxbrain_bool_separated_values(self):
@@ -528,7 +528,7 @@ class TaxBrainViewsTests(TestCase):
         data = get_post_data(2018, _ID_BenefitSurtax_Switches=False)
         data['DependentCredit_before_CTC'] = [u'True,*, FALSE,tRUe,*,0']
 
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         # Check that data was submitted properly
         truth_mods = {
@@ -555,7 +555,7 @@ class TaxBrainViewsTests(TestCase):
                'CG_brk2_2': [u'243475.0'], 'CG_brk2_3': [u'451000.0']}
         data.update(mod)
 
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         out2 = OutputUrl.objects.get(pk=result["pk"])
         tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
@@ -637,11 +637,11 @@ class TaxBrainViewsTests(TestCase):
         data.update(values6)
         data.update(values7)
         #TODO: check how values are saved
-        do_micro_sim(self.client, data)
+        do_micro_sim(CLIENT, data)
 
     def test_taxbrain_file_post_only_reform(self):
         data = get_file_post_data(START_YEAR, self.r1)
-        do_micro_sim(self.client, data, post_url="/taxbrain/file/")
+        do_micro_sim(CLIENT, data, post_url="/taxbrain/file/")
 
 
     def test_taxbrain_file_post_reform_and_assumptions(self):
@@ -649,7 +649,7 @@ class TaxBrainViewsTests(TestCase):
                                   self.r1,
                                   self.assumptions_text)
 
-        do_micro_sim(self.client, data, post_url="/taxbrain/file/")
+        do_micro_sim(CLIENT, data, post_url="/taxbrain/file/")
 
 
     def test_taxbrain_view_old_data_model(self):
@@ -690,8 +690,8 @@ class TaxBrainViewsTests(TestCase):
                u'II_brk2_0': [u'*, *, 39500']}
         data.update(mod)
 
-        response = self.client.post('/taxbrain/', data)
-        self.assertEqual(response.status_code, 200)
+        response = CLIENT.post('/taxbrain/', data)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
 
 
@@ -707,9 +707,9 @@ class TaxBrainViewsTests(TestCase):
         data = get_file_post_data(START_YEAR, self.bad_reform)
 
         #TODO: make sure still not allowed to submit on second submission
-        response = self.client.post('/taxbrain/file/', data)
+        response = CLIENT.post('/taxbrain/file/', data)
         # Check that no redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
         assert any(['_II_brk1_4' in msg and '2024' in msg
                     for msg in response.context['errors']])
@@ -728,7 +728,7 @@ class TaxBrainViewsTests(TestCase):
             'start_year': START_YEAR
         }
 
-        response = self.client.post('/taxbrain/file/', data2)
+        response = CLIENT.post('/taxbrain/file/', data2)
         assert response.status_code == 200
 
 
@@ -743,9 +743,9 @@ class TaxBrainViewsTests(TestCase):
 
         data = get_file_post_data(START_YEAR, self.warning_reform)
 
-        response = self.client.post('/taxbrain/file/', data)
+        response = CLIENT.post('/taxbrain/file/', data)
         # Check that no redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
         assert any(['_STD_0' in msg and '2023' in msg
                     for msg in response.context['errors']])
@@ -764,7 +764,7 @@ class TaxBrainViewsTests(TestCase):
             'start_year': START_YEAR
         }
 
-        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+        result = do_micro_sim(CLIENT, data2, post_url='/taxbrain/file/')
 
         truth_mods = {
             2020: {
@@ -786,9 +786,9 @@ class TaxBrainViewsTests(TestCase):
 
         data = get_file_post_data(start_year, self.warning_reform)
 
-        response = self.client.post('/taxbrain/file/', data)
+        response = CLIENT.post('/taxbrain/file/', data)
         # Check that no redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
         assert any(['_STD_0' in msg and '2023' in msg
                     for msg in response.context['errors']])
@@ -812,7 +812,7 @@ class TaxBrainViewsTests(TestCase):
         data2['docfile'] = data_file['docfile']
         data2['assumpfile'] = data_file['assumpfile']
 
-        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+        result = do_micro_sim(CLIENT, data2, post_url='/taxbrain/file/')
 
         dropq_compute = result['tb_dropq_compute']
         user_mods = json.loads(dropq_compute.last_posted["user_mods"])
@@ -833,9 +833,9 @@ class TaxBrainViewsTests(TestCase):
 
         data = get_file_post_data(start_year, self.warning_reform)
 
-        response = self.client.post('/taxbrain/file/', data)
+        response = CLIENT.post('/taxbrain/file/', data)
         # Check that no redirect happens
-        self.assertEqual(response.status_code, 200)
+        assert response.status_code == 200
         assert response.context['has_errors'] is True
         assert any(['_STD_0' in msg and '2023' in msg
                     for msg in response.context['errors']])
@@ -856,7 +856,7 @@ class TaxBrainViewsTests(TestCase):
         data_file = get_file_post_data(START_YEAR, self.r1)
         data2['docfile'] = data_file['docfile']
 
-        result = do_micro_sim(self.client, data2, post_url='/taxbrain/file/')
+        result = do_micro_sim(CLIENT, data2, post_url='/taxbrain/file/')
 
         dropq_compute = result['tb_dropq_compute']
         user_mods = json.loads(dropq_compute.last_posted["user_mods"])
@@ -870,7 +870,7 @@ class TaxBrainViewsTests(TestCase):
         mod = {u'II_brk1_0': [u'*, *, 15000'],
                u'II_brk2_cpi': u'False'}
         data.update(mod)
-        result = do_micro_sim(self.client, data)
+        result = do_micro_sim(CLIENT, data)
 
         # Check that data was saved properly
         truth_mods = {
@@ -887,7 +887,7 @@ class TaxBrainViewsTests(TestCase):
         post_url = '/taxbrain/file/'
 
         result = do_micro_sim(
-            self.client,
+            CLIENT,
             data,
             post_url=post_url
         )
@@ -927,7 +927,7 @@ class TaxBrainViewsTests(TestCase):
         pk = unique_url.pk
 
         edit_micro = "/taxbrain/edit/{}/?start_year={}".format(pk, start_year)
-        response = self.client.get(edit_micro)
+        response = CLIENT.get(edit_micro)
         assert response.status_code == 200
 
         assert response.context['has_errors'] is False
