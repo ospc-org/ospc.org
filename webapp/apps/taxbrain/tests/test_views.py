@@ -683,8 +683,8 @@ class TestTaxBrainViews(object):
         response = CLIENT.post('/taxbrain/file/', data2)
         assert response.status_code == 200
 
-
-    def test_taxbrain_warning_reform_file(self):
+    @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
+    def test_taxbrain_warning_reform_file(self, data_source):
         """
         POST a reform file that causes warnings and check that re-submission
         is allowed. See PB issue #630 and #761
@@ -694,11 +694,15 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_file_post_data(START_YEAR, self.warning_reform)
-
-        response = CLIENT.post('/taxbrain/file/', data)
+        data.pop('start_year')
+        data.pop('data_source')
+        url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
+        response = CLIENT.post(url, data)
         # Check that no redirect happens
         assert response.status_code == 200
         assert response.context['has_errors'] is True
+        assert response.context['start_year'] == str(START_YEAR)
+        assert response.context['data_source'] == data_source
         assert any(['_STD_0' in msg and '2023' in msg
                     for msg in response.context['errors']])
 
@@ -713,17 +717,17 @@ class TestTaxBrainViews(object):
             'csrfmiddlewaretoken': next_token,
             'form_id': form_id,
             'has_errors': [u'True'],
-            'start_year': START_YEAR
         }
 
-        result = do_micro_sim(CLIENT, data2, post_url='/taxbrain/file/')
+        result = do_micro_sim(CLIENT, data2, post_url=url)
 
         truth_mods = {
             2020: {
                 "_STD":  [[1000, 24981.84, 12490.92, 18736.38, 24981.84]]
             }
         }
-        check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
+        check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR,
+                            data_source=data_source)
 
     @pytest.mark.parametrize(
         'data_source,use_assumptions',
