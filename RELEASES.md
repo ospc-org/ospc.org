@@ -4,6 +4,40 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.5.0 on 2018-03-13
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#835](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/835/) - Add button to allow CPS as input data source - Sean Wang, Anderson Frailey, and Hank Doupe
+- [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
+
+**Bug Fixes**
+- [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Pass start year to dynamic behavioral - Hank Doupe
+
+Release 1.4.4 on 2018-03-08
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#840](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/840) - Add column ID's back to PolicyBrain - Hank Doupe
+
+Release 1.4.3 on 2018-03-07
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#834](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/834) - Remove presets and add notice/explanation - Hank Doupe
+
+**Bug Fixes**
+- None
+
 Release 1.4.2 on 2018-03-01
 ----------------------------
 **Major Changes**
@@ -15,7 +49,6 @@ Release 1.4.2 on 2018-03-01
 **Bug Fixes**
 - [#827](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/827) - Remove errors for un-displayed parameters and save input data for warning/error message page - Hank Doupe
 - [#829](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/829) - Generate new form data for each page load - Hank Doupe
-
 
 Release 1.4.1 on 2018-02-27
 ----------------------------

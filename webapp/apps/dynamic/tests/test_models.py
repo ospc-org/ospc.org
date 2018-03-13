@@ -27,6 +27,17 @@ class TaxBrainDynamicFieldsTest(TaxBrainFieldsTest, TestCase):
     def test_set_fields(self):
         start_year = 2017
         fields = self.test_coverage_behavioral_gui_fields.copy()
-        fields["first_year"] = start_year
+        fields['first_year'] = start_year
         self.parse_fields(start_year, fields,
                           Form=DynamicBehavioralInputsModelForm)
+
+    def test_data_source_puf(self):
+        start_year = 2017
+        fields = self.test_coverage_behavioral_gui_fields.copy()
+        fields['first_year'] = start_year
+        fields['data_source'] = 'PUF'
+        model = self.parse_fields(start_year, fields,
+                                  Form=DynamicBehavioralInputsModelForm,
+                                  use_puf_not_cps=True)
+
+        assert model.use_puf_not_cps

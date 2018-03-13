@@ -113,3 +113,23 @@ class Fieldable(models.Model):
         Stub to remind that this part of the API is needed
         """
         raise NotImplementedError()
+
+
+class DataSourceable(models.Model):
+    """
+    Mix-in for providing data_source field and methods that access it
+    """
+
+    class Meta:
+        abstract = True
+
+    # data source for model
+    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
+
+    @property
+    def use_puf_not_cps(self):
+        # which file to use, front-end not yet implemented
+        if self.data_source == 'PUF':
+            return True
+        else:
+            return False

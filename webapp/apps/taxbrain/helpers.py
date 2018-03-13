@@ -200,10 +200,11 @@ TAXCALC_HIDDEN_FIELDS = [
 ]
 
 INPUTS_META = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
-          u'full_calc', u'quick_calc', 'first_year', '_state',
-          'creation_date', 'id', 'job_ids', 'jobs_not_ready',
-          'json_text_id', 'tax_result', 'reform_style',
-          '_micro_sim_cache', 'micro_sim_id', 'raw_fields',)
+               u'full_calc', u'quick_calc', 'first_year', '_state',
+               'creation_date', 'id', 'job_ids', 'jobs_not_ready',
+               'json_text_id', 'tax_result', 'reform_style',
+               '_micro_sim_cache', 'micro_sim_id', 'raw_fields',
+               'data_source', )
 
 #
 # Display TaxCalc result data
@@ -718,6 +719,9 @@ class TaxCalcParam(object):
                 (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or
                 (attributes["compatible_data"]["puf"] and use_puf_not_cps)
             )
+        else:
+            # if compatible_data is not specified do not gray out
+            self.gray_out = False
 
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
@@ -882,7 +886,7 @@ def default_behavior(first_budget_year):
 
 
 # Create a list of default policy
-def default_policy(first_budget_year):
+def default_policy(first_budget_year, use_puf_not_cps=True):
 
     TAXCALC_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.policy.Policy,
                                                        metadata=True,
@@ -890,7 +894,8 @@ def default_policy(first_budget_year):
 
     default_taxcalc_params = {}
     for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
-        param = TaxCalcParam(k,v, first_budget_year)
+        param = TaxCalcParam(k,v, first_budget_year,
+                             use_puf_not_cps=use_puf_not_cps)
         default_taxcalc_params[param.nice_id] = param
 
     TAXCALC_DEFAULT_PARAMS = default_taxcalc_params

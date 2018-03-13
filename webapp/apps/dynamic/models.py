@@ -15,14 +15,14 @@ import taxcalc
 
 from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
                                TaxSaveInputs, OutputUrl)
-from ..taxbrain.behaviors import Resultable, Fieldable
+from ..taxbrain.behaviors import Resultable, Fieldable, DataSourceable
 from ..taxbrain import helpers as taxbrain_helpers
 from ..taxbrain import param_formatters
 
 import datetime
 
 
-class DynamicSaveInputs(models.Model):
+class DynamicSaveInputs(DataSourceable, models.Model):
     """
     This model contains all the parameters for the dynamic tax model and the tax
     result.
@@ -60,7 +60,8 @@ class DynamicSaveInputs(models.Model):
         )
 
 
-class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
+class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
+                                models.Model):
     """
     This model contains all the parameters for the dynamic behavioral tax
     model and the tax result.
@@ -85,6 +86,7 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
+
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
@@ -146,7 +148,7 @@ class DynamicBehaviorSaveInputs(Fieldable, Resultable, models.Model):
         )
 
 
-class DynamicElasticitySaveInputs(models.Model):
+class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
     This model contains all the parameters for the dynamic elasticity
     wrt GDP dynamic macro model and tax result

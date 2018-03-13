@@ -59,10 +59,10 @@ class TaxBrainTableResults(TaxBrainModelsTest):
 class TaxBrainFieldsTest(TaxBrainModelsTest):
 
     def parse_fields(self, start_year, fields, Form=TaxBrainForm,
-                     exp_result=None):
+                     exp_result=None, use_puf_not_cps=True):
         start_year = 2017
         fields = stringify_fields(fields)
-        form = Form(start_year, fields)
+        form = Form(start_year, use_puf_not_cps, fields)
 
         # returns model object but does not save to the database
         model = form.save(commit=False)
@@ -74,3 +74,5 @@ class TaxBrainFieldsTest(TaxBrainModelsTest):
         # get formatted model specifications
         results = model.get_model_specs()
         # do some kind of check here using `exp_result`
+
+        return model

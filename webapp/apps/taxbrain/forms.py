@@ -89,7 +89,7 @@ class PolicyBrainForm:
         for k, v in args_data.items():
             if k not in INPUTS_META:
                 raw_fields[k] = v
-            elif k is 'first_year':
+            elif k in ('first_year', 'data_source'):
                 parsed_data[k] = v
             else:
                 pass
@@ -98,7 +98,8 @@ class PolicyBrainForm:
         return (parsed_data,)
 
     def add_errors_on_extra_inputs(self):
-        ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken'}
+        ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken',
+                          'data_source'}
         all_inputs = set(self.data.keys())
         allowed_inputs= set(self.fields.keys())
         extra_inputs = all_inputs - allowed_inputs - ALLOWED_EXTRAS
@@ -113,7 +114,9 @@ class PolicyBrainForm:
         fields = self.cleaned_data['raw_input_fields']
         for param_name, value in fields.iteritems():
             # make sure the text parses OK
-            if isinstance(value, six.string_types) and len(value) > 0:
+            if param_name == 'data_source':
+                assert value in ('CPS', 'PUF')
+            elif isinstance(value, six.string_types) and len(value) > 0:
                 try:
                     INPUT.parseString(value)
                 except (ParseException, AssertionError):
@@ -147,7 +150,6 @@ class PolicyBrainForm:
                     'class': 'form-control',
                     'placeholder': field.default_value,
                 }
-
                 if param.coming_soon:
                     attrs['disabled'] = True
 
@@ -155,16 +157,18 @@ class PolicyBrainForm:
                     checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                     update_fields[field.id] = forms.BooleanField(
-                        label='',
+                        label=field.label,
                         widget=widgets[field.id],
-                        required=False
+                        required=False,
+                        disabled=param.gray_out
                     )
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
                     update_fields[field.id] = forms.fields.CharField(
-                        label='',
+                        label=field.label,
                         widget=widgets[field.id],
-                        required=False
+                        required=False,
+                        disabled=param.gray_out
                     )
 
                 labels[field.id] = field.label
@@ -176,31 +180,32 @@ class PolicyBrainForm:
                     'placeholder': bool(field.default_value),
                 }
 
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
                 update_fields[field.id] = forms.NullBooleanField(
-                    label='',
+                    label=field.label,
                     widget=widgets[field.id],
-                    required=False
+                    required=False,
+                    disabled=param.gray_out
                 )
         return widgets, labels, update_fields
 
 
-TAXCALC_DEFAULTS = {int(START_YEAR): default_policy(int(START_YEAR))}
+TAXCALC_DEFAULTS = {
+    (int(START_YEAR), True): default_policy(int(START_YEAR),
+                                            use_puf_not_cps=True)
+}
 
 
 class TaxBrainForm(PolicyBrainForm, ModelForm):
 
-    def __init__(self, first_year, *args, **kwargs):
+    def __init__(self, first_year, use_puf_not_cps, *args, **kwargs):
         if first_year is None:
             first_year = START_YEAR
         self._first_year = int(first_year)
 
         # reset form data; form data from the `Meta` class is not updated each
         # time a new `TaxBrainForm` instance is created
-        self.set_form_data(self._first_year)
+        self.set_form_data(self._first_year, use_puf_not_cps)
         # move parameter fields into `raw_fields` JSON object
         args = self.add_fields(args)
         # Override `initial` with `instance`. The only relevant field
@@ -268,10 +273,11 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             self.cleaned_data = {}
         ModelForm.add_error(self, field, error)
 
-    def set_form_data(self, start_year):
-        if start_year not in TAXCALC_DEFAULTS:
-            TAXCALC_DEFAULTS[start_year] = default_policy(start_year)
-        defaults = TAXCALC_DEFAULTS[start_year]
+    def set_form_data(self, start_year, use_puf_not_cps):
+        defaults_key = (start_year, use_puf_not_cps)
+        if defaults_key not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[defaults_key] = default_policy(start_year, use_puf_not_cps)
+        defaults = TAXCALC_DEFAULTS[defaults_key]
         (self.widgets, self.labels,
             self.update_fields) = PolicyBrainForm.set_form(defaults)
 
@@ -279,13 +285,18 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         model = TaxSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
-        fields = ['first_year', 'raw_input_fields', 'input_fields']
+        fields = ['first_year', 'data_source', 'raw_input_fields',
+                  'input_fields']
         start_year = int(START_YEAR)
-        if start_year not in TAXCALC_DEFAULTS:
-            TAXCALC_DEFAULTS[start_year] = default_policy(start_year)
+        defaults_key = (start_year, True)
+        if defaults_key not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[defaults_key] = default_policy(
+                start_year,
+                use_puf_not_cps=True
+            )
         (widgets, labels,
             update_fields) = PolicyBrainForm.set_form(
-            TAXCALC_DEFAULTS[start_year]
+            TAXCALC_DEFAULTS[defaults_key]
         )
 
 def has_field_errors(form, include_parse_errors=False):

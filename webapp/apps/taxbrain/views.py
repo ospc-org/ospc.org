@@ -50,7 +50,8 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                          REFORM_TOOLTIP, FISCAL_CURRENT_LAW, FISCAL_REFORM,
                          FISCAL_CHANGE, INCOME_BINS_TOOLTIP,
-                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
+                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
+                         DATA_SOURCES, DEFAULT_SOURCE)
 
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
@@ -157,8 +158,10 @@ def submit_reform(request, user=None, json_reform_id=None):
     request_files = request.FILES
 
     # which file to use, front-end not yet implemented
-    use_puf_not_cps = fields.get('use_puf_not_cps', True)
-    assert use_puf_not_cps
+    if fields.get('data_source', 'PUF') == 'PUF':
+        use_puf_not_cps = True
+    else:
+        use_puf_not_cps = False
 
     # declare a bunch of variables--TODO: clean this up
     no_inputs = False
@@ -224,7 +227,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
                 errors_warnings) = get_reform_from_file(request_files)
         else:
-            personal_inputs = TaxBrainForm(start_year, fields)
+            personal_inputs = TaxBrainForm(start_year, use_puf_not_cps, fields)
             # If an attempt is made to post data we don't accept
             # raise a 400
             if personal_inputs.non_field_errors():
@@ -268,6 +271,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             # with warnings/errors
             personal_inputs = TaxBrainForm(
                 start_year,
+                use_puf_not_cps,
                 initial=json.loads(personal_inputs.data['raw_input_fields'])
             )
             # TODO: parse warnings for file_input
@@ -297,7 +301,8 @@ def submit_reform(request, user=None, json_reform_id=None):
         user_mods = dict({'policy': reform_dict}, **assumptions_dict)
         data = {'user_mods': json.dumps(user_mods),
                 'first_budget_year': int(start_year),
-                'start_budget_year': 0}
+                'start_budget_year': 0,
+                'use_puf_not_cps': use_puf_not_cps}
         if do_full_calc:
             data['num_budget_years'] = NUM_BUDGET_YEARS
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
@@ -464,8 +469,22 @@ def personal_results(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
-        personal_inputs = TaxBrainForm(first_year=start_year)
+        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+            data_source = params['data_source'][0]
+            print('we got the data source', data_source, 'now what...')
+            if data_source == 'PUF':
+                use_puf_not_cps = True
+            else:
+                use_puf_not_cps = False
 
+        personal_inputs = TaxBrainForm(first_year=start_year,
+                                       use_puf_not_cps=use_puf_not_cps)
+
+    if use_puf_not_cps:
+        data_source = 'PUF'
+    else:
+        data_source = 'CPS'
+    print(data_source, DATA_SOURCES)
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
@@ -474,6 +493,8 @@ def personal_results(request):
         'start_years': START_YEARS,
         'start_year': start_year,
         'has_errors': has_errors,
+        'data_sources': DATA_SOURCES,
+        'data_source': data_source,
         'enable_quick_calc': ENABLE_QUICK_CALC
     }
 
@@ -528,7 +549,8 @@ def submit_micro(request, pk):
     data = {'user_mods': json.dumps(user_mods),
             'first_budget_year': int(start_year),
             'start_budget_year': 0,
-            'num_budget_years': NUM_BUDGET_YEARS}
+            'num_budget_years': NUM_BUDGET_YEARS,
+            'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
     submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
@@ -573,7 +595,11 @@ def edit_personal_results(request, pk):
 
     msg = ('Field {} has been deprecated. Refer to the Tax-Caclulator '
            'documentation for a sensible replacement.')
-    form_personal_exemp = TaxBrainForm(first_year=start_year, instance=model)
+    form_personal_exemp = TaxBrainForm(
+        first_year=start_year,
+        use_puf_not_cps=model.use_puf_not_cps,
+        instance=model
+    )
     form_personal_exemp.is_valid()
     if model.deprecated_fields is not None:
         for dep in model.deprecated_fields:
@@ -590,7 +616,9 @@ def edit_personal_results(request, pk):
         'start_years': START_YEARS,
         'start_year': str(form_personal_exemp._first_year),
         'is_edit_page': True,
-        'has_errors': False
+        'has_errors': False,
+        'data_sources': DATA_SOURCES,
+        'data_source': model.data_source
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)

@@ -84,3 +84,23 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
         assert tsi.raw_input_fields['yet_another_deprecated_param'] == '1001'
         assert 'deprecated_param' not in tsi.input_fields
         assert 'yet_another_deprecated_param' not in tsi.input_fields
+
+    def test_data_source_puf(self):
+        start_year = 2017
+        fields = self.test_coverage_gui_fields.copy()
+        fields['first_year'] = start_year
+        fields['data_source'] = 'PUF'
+        model = self.parse_fields(start_year, fields,
+                                  use_puf_not_cps=True)
+
+        assert model.use_puf_not_cps
+
+    def test_data_source_cps(self):
+        start_year = 2017
+        fields = self.test_coverage_gui_fields.copy()
+        fields['first_year'] = start_year
+        fields['data_source'] = 'CPS'
+        model = self.parse_fields(start_year, fields,
+                                  use_puf_not_cps=False)
+
+        assert not model.use_puf_not_cps
