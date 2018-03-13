@@ -68,7 +68,8 @@ class TestTaxBrainViews(object):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), use_puf_not_cps=False)
 
-    def test_taxbrain_quick_calc_post(self):
+    @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
+    def test_taxbrain_quick_calc_post(self, data_source):
         "Test quick calculation post and full post from quick_calc page"
         # switches 0, 4, 6 are False
         data = get_post_data(START_YEAR, quick_calc=True)
@@ -77,6 +78,7 @@ class TestTaxBrainViews(object):
         data[u'ID_BenefitSurtax_Switch_6'] = ['0.0']
         data[u'II_em'] = [u'4333']
         data[u'ID_AmountCap_Switch_0'] = [u'0']
+        data['data_source'] = data_source
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
@@ -96,7 +98,7 @@ class TestTaxBrainViews(object):
                                    "_II_em": [4333.0]}
                       }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR))
+                            str(START_YEAR), data_source=data_source)
 
         # reset worker node count without clearing MockCompute session
         result['tb_dropq_compute'].reset_count()
@@ -112,7 +114,7 @@ class TestTaxBrainViews(object):
 
         # Check that data was saved properly
         check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR))
+                            str(START_YEAR), data_source=data_source)
 
     def test_taxbrain_quick_calc_post_cps(self):
         """
