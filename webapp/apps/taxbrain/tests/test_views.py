@@ -47,8 +47,10 @@ class TestTaxBrainViews(object):
         """
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
-        data['data_source'] = data_source
-        result = do_micro_sim(CLIENT, data)
+        data.pop('start_year')
+        data.pop('data_source')
+        url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
+        result = do_micro_sim(CLIENT, data, post_url=url)
 
         truth_mods = {}
 
@@ -579,17 +581,27 @@ class TestTaxBrainViews(object):
         #TODO: check how values are saved
         do_micro_sim(CLIENT, data)
 
-    def test_taxbrain_file_post_only_reform(self):
-        data = get_file_post_data(START_YEAR, self.r1)
-        do_micro_sim(CLIENT, data, post_url="/taxbrain/file/")
-
-
-    def test_taxbrain_file_post_reform_and_assumptions(self):
+    @pytest.mark.parametrize(
+        'data_source,use_assumptions',
+        [('PUF', True), ('CPS', False)]
+    )
+    def test_taxbrain_post_file(self, data_source, use_assumptions):
+        if use_assumptions:
+            assumptions_text = self.assumptions_text
+        else:
+            assumptions_text = None
         data = get_file_post_data(START_YEAR,
                                   self.r1,
-                                  self.assumptions_text)
+                                  assumptions_text)
+        data.pop('start_year')
+        data.pop('data_source')
+        url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
+        result = do_micro_sim(CLIENT, data, post_url=url)
 
-        do_micro_sim(CLIENT, data, post_url="/taxbrain/file/")
+        truth_mods = {}
+
+        check_posted_params(result['tb_dropq_compute'], truth_mods,
+                            str(START_YEAR), data_source=data_source)
 
 
     def test_taxbrain_view_old_data_model(self):
