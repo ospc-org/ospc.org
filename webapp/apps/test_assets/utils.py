@@ -129,6 +129,7 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
     data = {u'docfile': tc_file,
             u'has_errors': [u'False'],
             u'start_year': unicode(start_year),
+            'data_source': 'PUF',
             u'quick_calc': quick_calc,
             'csrfmiddlewaretoken':'abc123'}
 
