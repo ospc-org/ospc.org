@@ -9,7 +9,7 @@ services:
           cpus: "0.25"
           memory: 3000m
     ports:
-      - "5000:5000"
+      - 5050:5050
     depends_on:
       - redis
   celery:
@@ -18,8 +18,8 @@ services:
       replicas: 1
       resources:
         limits:
-          cpus: "0.9"
-          memory: 8000m
+          cpus: "0.95"
+          memory: 10000m
     depends_on:
       - redis
   redis:
