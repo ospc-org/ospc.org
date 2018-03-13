@@ -40,33 +40,20 @@ class TestTaxBrainViews(object):
         # Check that the response is 200 OK.
         assert response.status_code == 200
 
-    def test_taxbrain_post(self):
+    @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
+    def test_taxbrain_post(self, data_source):
         """
         submit simple reform
         """
         data = get_post_data(START_YEAR)
         data[u'II_em'] = [u'4333']
-        data['data_source'] = ['PUF']
+        data['data_source'] = data_source
         result = do_micro_sim(CLIENT, data)
 
         truth_mods = {}
 
         check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR), use_puf_not_cps=True)
-
-    def test_taxbrain_post_cps(self):
-        """
-        submit simple reform with CPS as data source
-        """
-        data = get_post_data(START_YEAR)
-        data[u'II_em'] = [u'4333']
-        data['data_source'] = ['CPS']
-        result = do_micro_sim(CLIENT, data)
-
-        truth_mods = {}
-
-        check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR), use_puf_not_cps=False)
+                            str(START_YEAR), data_source=data_source)
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_quick_calc_post(self, data_source):
@@ -115,56 +102,6 @@ class TestTaxBrainViews(object):
         # Check that data was saved properly
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
-
-    def test_taxbrain_quick_calc_post_cps(self):
-        """
-        Test quick calculation post and full post from quick_calc page using
-        cps data
-        """
-        # switches 0, 4, 6 are False
-        data = get_post_data(START_YEAR, quick_calc=True)
-        data[u'ID_BenefitSurtax_Switch_0'] = ['False']
-        data[u'ID_BenefitSurtax_Switch_4'] = ['0']
-        data[u'ID_BenefitSurtax_Switch_6'] = ['0.0']
-        data[u'II_em'] = [u'4333']
-        data[u'ID_AmountCap_Switch_0'] = [u'0']
-        data['data_source'] = ['CPS']
-        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
-        current_dropq_worker_offset = wnc.current_offset
-
-        result = do_micro_sim(CLIENT, data, compute_count=1)
-
-        wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
-        next_dropq_worker_offset = wnc.current_offset
-
-        # Check that quick calc does not advance the counter
-        assert current_dropq_worker_offset == next_dropq_worker_offset
-
-        # Check that data was saved properly
-        truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
-                                   [[0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0]],
-                                   "_ID_AmountCap_Switch":
-                                   [[0, 1, 1, 1, 1, 1, True]],
-                                   "_II_em": [4333.0]}
-                      }
-        check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR), use_puf_not_cps=False)
-
-        # reset worker node count without clearing MockCompute session
-        result['tb_dropq_compute'].reset_count()
-        post_url = '/taxbrain/submit/{0}/'.format(result['pk'])
-        submit_data = {'csrfmiddlewaretoken':'abc123'}
-
-        result = do_micro_sim(
-            CLIENT,
-            submit_data,
-            compute_count=NUM_BUDGET_YEARS,
-            post_url=post_url
-        )
-
-        # Check that data was saved properly
-        check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR), use_puf_not_cps=False)
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_file_post_quick_calc(self, data_source):
@@ -218,8 +155,8 @@ class TestTaxBrainViews(object):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR))
 
-
-    def test_back_to_back_quickcalc(self):
+    @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
+    def test_back_to_back_quickcalc(self, data_source):
         "Test back to back quick  calc posts"
         # switches 0, 4, 6 are False
         data = get_post_data(START_YEAR, quick_calc=True)
@@ -227,6 +164,7 @@ class TestTaxBrainViews(object):
         data[u'ID_BenefitSurtax_Switch_4'] = ['0']
         data[u'ID_BenefitSurtax_Switch_6'] = ['0.0']
         data[u'II_em'] = [u'4333']
+        data['data_source'] = data_source
 
         result = do_micro_sim(CLIENT, data)
 
@@ -236,7 +174,7 @@ class TestTaxBrainViews(object):
                                    "_II_em": [4333.0]}
                       }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR))
+                            str(START_YEAR), data_source=data_source)
 
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
                                                                  START_YEAR)
@@ -248,7 +186,7 @@ class TestTaxBrainViews(object):
         result2 = do_micro_sim(CLIENT, data)
 
         check_posted_params(result2['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR))
+                            str(START_YEAR), data_source=data_source)
 
     @pytest.mark.xfail
     def test_taxbrain_post_no_behavior_entries(self):
@@ -775,8 +713,11 @@ class TestTaxBrainViews(object):
         }
         check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR)
 
-
-    def test_taxbrain_reform_file_file_swap(self):
+    @pytest.mark.parametrize(
+        'data_source,use_assumptions',
+        [('PUF', True), ('CPS', False)]
+    )
+    def test_taxbrain_reform_file_file_swap(self, data_source, use_assumptions):
         """
         POST a reform file that causes warnings, swap files, and make sure
         swapped files are used. See PB issue #630 and #761
@@ -785,8 +726,13 @@ class TestTaxBrainViews(object):
         from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        if use_assumptions:
+            assumptions_text = self.assumptions_text
+        else:
+            assumptions_text = None
 
-        data = get_file_post_data(start_year, self.warning_reform)
+        data = get_file_post_data(start_year, self.warning_reform,
+                                  assumptions_text)
 
         response = CLIENT.post('/taxbrain/file/', data)
         # Check that no redirect happens
@@ -810,61 +756,18 @@ class TestTaxBrainViews(object):
         }
         data_file = get_file_post_data(START_YEAR,
                                        self.r1,
-                                       self.assumptions_text)
-        data2['docfile'] = data_file['docfile']
-        data2['assumpfile'] = data_file['assumpfile']
-
-        result = do_micro_sim(CLIENT, data2, post_url='/taxbrain/file/')
-
-        dropq_compute = result['tb_dropq_compute']
-        user_mods = json.loads(dropq_compute.last_posted["user_mods"])
-        assert user_mods["behavior"][str(2018)]["_BE_sub"][0] == 1.0
-        truth_mods = {2018: {'_II_em': [8000.0]}}
-        check_posted_params(dropq_compute, truth_mods, start_year)
-
-
-    def test_taxbrain_reform_file_file_swap_no_assump(self):
-        """
-        POST a reform file that causes warnings, swap files, and make sure
-        swapped files are used. See PB issue #630 and #761
-        """
-        start_year = 2017
-        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
-        #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
-
-        data = get_file_post_data(start_year, self.warning_reform)
-
-        response = CLIENT.post('/taxbrain/file/', data)
-        # Check that no redirect happens
-        assert response.status_code == 200
-        assert response.context['has_errors'] is True
-        assert any(['_STD_0' in msg and '2023' in msg
-                    for msg in response.context['errors']])
-
-        # get most recent object
-        objects = js.objects.order_by('id')
-        obj = objects[len(objects) - 1]
-
-        next_token = str(response.context['csrf_token'])
-
-        form_id = obj.id
-        data2 = {
-            'csrfmiddlewaretoken': next_token,
-            'form_id': form_id,
-            'has_errors': [u'True'],
-            'start_year': start_year
-        }
-        data_file = get_file_post_data(START_YEAR, self.r1)
+                                       assumptions_text)
         data2['docfile'] = data_file['docfile']
 
         result = do_micro_sim(CLIENT, data2, post_url='/taxbrain/file/')
 
         dropq_compute = result['tb_dropq_compute']
         user_mods = json.loads(dropq_compute.last_posted["user_mods"])
+        if use_assumptions:
+            assert user_mods["behavior"][str(2018)]["_BE_sub"][0] == 1.0
         truth_mods = {2018: {'_II_em': [8000.0]}}
-        check_posted_params(dropq_compute, truth_mods, start_year)
-
+        check_posted_params(dropq_compute, truth_mods, start_year,
+                            data_source=data_source)
 
     def test_taxbrain_up_to_2018(self):
         start_year = 2018
