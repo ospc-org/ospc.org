@@ -97,7 +97,7 @@ def normalize(x):
 def save_model(url, request, model, json_reform, has_errors, start_year,
                do_full_calc, is_file, reform_dict, assumptions_dict,
                reform_text, assumptions_text, submitted_ids,
-               max_q_length, user):
+               max_q_length, user, data_source):
     """
     Save user input data
     returns OutputUrl object
@@ -108,6 +108,7 @@ def save_model(url, request, model, json_reform, has_errors, start_year,
     model.job_ids = denormalize(submitted_ids)
     model.json_text = json_reform
     model.first_year = int(start_year)
+    model.data_source = data_source
     model.quick_calc = not do_full_calc
     model.save()
 
@@ -158,7 +159,8 @@ def submit_reform(request, user=None, json_reform_id=None):
     request_files = request.FILES
 
     # which file to use, front-end not yet implemented
-    if fields.get('data_source', 'PUF') == 'PUF':
+    data_source = fields.get('data_source', 'PUF')
+    if data_source == 'PUF':
         use_puf_not_cps = True
     else:
         use_puf_not_cps = False
@@ -322,6 +324,7 @@ def submit_reform(request, user=None, json_reform_id=None):
                                no_inputs, not is_valid]),
             'errors_warnings': errors_warnings,
             'start_year': start_year,
+            'data_source': data_source,
             'do_full_calc': do_full_calc,
             'is_file': is_file,
             'reform_dict': reform_dict,
@@ -371,16 +374,21 @@ def file_input(request):
         form_id = None
 
     start_year = START_YEAR
+    data_source = DEFAULT_SOURCE
     errors = []
     has_errors = False
-    print('post', request.POST)
-    print('get', request.GET)
     print('files', request.FILES)
     if request.method == 'POST':
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         # save start_year
         start_year = (request.GET.get('start_year', None) or
                       request.POST.get('start_year', None))
         assert start_year is not None
+        data_source = (request.GET.get('data_source', None) or
+                       request.POST.get('start_year', None))
+        assert data_source is not None
+
         # File is not submitted
         if 'docfile' not in dict(request.FILES) and form_id is None:
             errors = ["Please specify a tax-law change before submitting."]
@@ -412,10 +420,15 @@ def file_input(request):
             else:
                 return redirect(unique_url)
     else:
-        # GET request, load a default form
+        # Probably a GET request, load a default form
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
+
+        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+            data_source = params['data_source'][0]
 
         json_reform = None
 
@@ -428,6 +441,8 @@ def file_input(request):
         'params': None,
         'start_years': START_YEARS,
         'start_year': start_year,
+        'data_sources': DATA_SOURCES,
+        'data_source': data_source,
         'enable_quick_calc': ENABLE_QUICK_CALC,
         'input_type': "file"
     }
@@ -546,6 +561,7 @@ def submit_micro(request, pk):
         assumptions_dict = json.loads(model.json_text.assumption_text)
 
     user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+    print('data source', model.data_source)
     data = {'user_mods': json.dumps(user_mods),
             'first_budget_year': int(start_year),
             'start_budget_year': 0,
@@ -563,6 +579,7 @@ def submit_micro(request, pk):
             'json_reform': json_reform,
             'has_errors': False,
             'start_year': start_year,
+            'data_source': model.data_source,
             'do_full_calc': True,
             'is_file': is_file,
             'reform_dict': reform_dict,
