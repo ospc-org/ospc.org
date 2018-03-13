@@ -646,8 +646,8 @@ class TestTaxBrainViews(object):
         assert response.status_code == 200
         assert response.context['has_errors'] is True
 
-
-    def test_taxbrain_error_reform_file(self):
+    @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
+    def test_taxbrain_error_reform_file(self, data_source):
         """
         POST a reform file that causes errors. See PB issue #630
         """
@@ -657,12 +657,15 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_file_post_data(START_YEAR, self.bad_reform)
-
-        #TODO: make sure still not allowed to submit on second submission
-        response = CLIENT.post('/taxbrain/file/', data)
+        data.pop('start_year')
+        data.pop('data_source')
+        url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
+        response = CLIENT.post(url, data)
         # Check that no redirect happens
         assert response.status_code == 200
         assert response.context['has_errors'] is True
+        assert response.context['data_source'] == data_source
+        assert response.context['start_year'] == str(START_YEAR)
         assert any(['_II_brk1_4' in msg and '2024' in msg
                     for msg in response.context['errors']])
 
@@ -677,11 +680,12 @@ class TestTaxBrainViews(object):
             'csrfmiddlewaretoken': next_token,
             'form_id': form_id,
             'has_errors': [u'True'],
-            'start_year': START_YEAR
         }
 
-        response = CLIENT.post('/taxbrain/file/', data2)
+        response = CLIENT.post(url, data2)
         assert response.status_code == 200
+        assert response.context['data_source'] == data_source
+        assert response.context['start_year'] == str(START_YEAR)
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_warning_reform_file(self, data_source):
