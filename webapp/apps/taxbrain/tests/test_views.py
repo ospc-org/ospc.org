@@ -112,12 +112,12 @@ class TestTaxBrainViews(object):
         post from quick_calc page
         """
         data = get_file_post_data(START_YEAR, self.r1, quick_calc=False)
-        data['data_source'] = data_source
-        use_puf_not_cps = True if data_source == 'PUF' else False
+        data.pop('data_source')
+        data.pop('start_year')
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
 
-        post_url = '/taxbrain/file/'
+        post_url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
 
         result = do_micro_sim(
             CLIENT,
@@ -139,7 +139,7 @@ class TestTaxBrainViews(object):
         )
         truth_mods = truth_mods["policy"]
         check_posted_params(result["tb_dropq_compute"], truth_mods,
-                            str(START_YEAR))
+                            str(START_YEAR), data_source=data_source)
 
         # reset worker node count without clearing MockCompute session
         result['tb_dropq_compute'].reset_count()
@@ -155,7 +155,7 @@ class TestTaxBrainViews(object):
 
         # Check that data was saved properly
         check_posted_params(result['tb_dropq_compute'], truth_mods,
-                            str(START_YEAR))
+                            str(START_YEAR), data_source=data_source)
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_back_to_back_quickcalc(self, data_source):
@@ -745,11 +745,15 @@ class TestTaxBrainViews(object):
 
         data = get_file_post_data(start_year, self.warning_reform,
                                   assumptions_text)
-
-        response = CLIENT.post('/taxbrain/file/', data)
+        data.pop('start_year')
+        data.pop('data_source')
+        url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(start_year, data_source)
+        response = CLIENT.post(url, data)
         # Check that no redirect happens
         assert response.status_code == 200
         assert response.context['has_errors'] is True
+        assert response.context['data_source'] == data_source
+        assert response.context['start_year'] == str(start_year)
         assert any(['_STD_0' in msg and '2023' in msg
                     for msg in response.context['errors']])
 
@@ -764,14 +768,13 @@ class TestTaxBrainViews(object):
             'csrfmiddlewaretoken': next_token,
             'form_id': form_id,
             'has_errors': [u'True'],
-            'start_year': start_year
         }
         data_file = get_file_post_data(START_YEAR,
                                        self.r1,
                                        assumptions_text)
         data2['docfile'] = data_file['docfile']
 
-        result = do_micro_sim(CLIENT, data2, post_url='/taxbrain/file/')
+        result = do_micro_sim(CLIENT, data2, post_url=url)
 
         dropq_compute = result['tb_dropq_compute']
         user_mods = json.loads(dropq_compute.last_posted["user_mods"])
