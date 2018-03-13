@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import ast
+import six
 
 from ..taxbrain.compute import MockCompute
 
@@ -74,7 +75,7 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
 
 
 def check_posted_params(mock_compute, params_to_check, start_year,
-                        use_puf_not_cps=True):
+                        use_puf_not_cps=True, data_source=None):
     """
     Make sure posted params match expected results
     user_mods: parameters that are actually passed to taxcalc
@@ -84,6 +85,8 @@ def check_posted_params(mock_compute, params_to_check, start_year,
     last_posted = mock_compute.last_posted
     user_mods = json.loads(last_posted["user_mods"])
     assert last_posted["first_budget_year"] == int(start_year)
+    if data_source is not None:
+        use_puf_not_cps = True if data_source == 'PUF' else False
     assert last_posted["use_puf_not_cps"] == use_puf_not_cps
     for year in params_to_check:
         for param in params_to_check[year]:
