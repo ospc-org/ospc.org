@@ -245,22 +245,26 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],    # "Total Tax Difference",
     [         1,   '%', 1],       # "Share of Overall Change"
 ]
-TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.WEBBIN_ROW_NAMES
+TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.STANDARD_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
-    '<$10K':'Less than 10',
-    '$10-20K':'10-20',
-    '$20-30K':'20-30',
-    '$30-40K':'30-40',
-    '$40-50K':'40-50',
-    '$50-75K':'50-75',
-    '$75-100K':'75-100',
-    '$100-200K':'100-200',
-    '$200-500K':'200-500',
-    '$500-1000K':'500-1000',
-    '>$1000K':'1000+',
-    'all':'All'
+    k: k for k in taxcalc.STANDARD_ROW_NAMES
 }
-TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES[:-3]
+#     '<$0K': 'Negative',
+#     '=$0k': '0',
+#     '$0-10K':'0-10',
+#     '$10-20K':'10-20',
+#     '$20-30K':'20-30',
+#     '$30-40K':'30-40',
+#     '$40-50K':'40-50',
+#     '$50-75K':'50-75',
+#     '$75-100K':'75-100',
+#     '$100-200K':'100-200',
+#     '$200-500K':'200-500',
+#     '$500-1000K':'500-1000',
+#     '>$1000K':'1000+',
+#     'all':'All'
+# }
+TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES
 # -DEC_ROW_NAMES = ['perc0-10', 'perc10-20', 'perc20-30', 'perc30-40',
 # -                 'perc40-50', 'perc50-60', 'perc60-70', 'perc70-80',
 # -                 'perc80-90', 'perc90-100', 'all']
@@ -317,17 +321,7 @@ PRE_TC_0130_RES_MAP = {
 }
 
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
-    '0-10':'0-10%',
-    '10-20':'10-20%',
-    '20-30':'20-30%',
-    '30-40':'30-40%',
-    '40-50':'40-50%',
-    '50-60':'50-60%',
-    '60-70':'60-70%',
-    '70-80':'70-80%',
-    '80-90':'80-90%',
-    '90-100':'90-100%',
-    'all':'All'
+    k: k for k in taxcalc.DECILE_ROW_NAMES
 }
 TAXCALC_RESULTS_TABLE_LABELS = {
     'diff_comb_xbin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
