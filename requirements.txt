@@ -25,3 +25,4 @@ boto
 django-storages
 django-htmlmin
 pyparsing
+dateutil
