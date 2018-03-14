@@ -245,26 +245,21 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],    # "Total Tax Difference",
     [         1,   '%', 1],       # "Share of Overall Change"
 ]
+#TODO: apply these labels to the rows displayed on the output page
 TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.STANDARD_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
     k: k for k in taxcalc.STANDARD_ROW_NAMES
 }
-#     '<$0K': 'Negative',
-#     '=$0k': '0',
-#     '$0-10K':'0-10',
-#     '$10-20K':'10-20',
-#     '$20-30K':'20-30',
-#     '$30-40K':'30-40',
-#     '$40-50K':'40-50',
-#     '$50-75K':'50-75',
-#     '$75-100K':'75-100',
-#     '$100-200K':'100-200',
-#     '$200-500K':'200-500',
-#     '$500-1000K':'500-1000',
-#     '>$1000K':'1000+',
-#     'all':'All'
-# }
+# TODO:
 TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES
+# use our own PolicyBrain names for the first three items
+POLICYBRAIN_DEC_ROW_LABELS = (
+    ['0-10: <$0', '0-10: =$0', '0-10 >$0'] +
+    taxcalc.DECILE_ROW_NAMES[3:]
+)
+TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
+    v: k for k, v in zip(POLICYBRAIN_DEC_ROW_LABELS, taxcalc.DECILE_ROW_NAMES)
+}
 # -DEC_ROW_NAMES = ['perc0-10', 'perc10-20', 'perc20-30', 'perc30-40',
 # -                 'perc40-50', 'perc50-60', 'perc60-70', 'perc70-80',
 # -                 'perc80-90', 'perc90-100', 'all']
@@ -320,9 +315,6 @@ PRE_TC_0130_RES_MAP = {
     'fiscal_tot_ref': 'aggr_2'
 }
 
-TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
-    k: k for k in taxcalc.DECILE_ROW_NAMES
-}
 TAXCALC_RESULTS_TABLE_LABELS = {
     'diff_comb_xbin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
     'diff_comb_xdec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',

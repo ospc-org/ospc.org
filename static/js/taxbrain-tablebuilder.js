@@ -104,6 +104,7 @@ $(function() {
 
         rowLabels: function() {
             if (this.get('grouping') == 'bin') {
+                // TODO: retrieve labels from the context and display them instead of hardcode labels here
                 return [
                     '<$0K',
                     '=$0K',
@@ -122,9 +123,9 @@ $(function() {
                 ];
             } else if (this.get('grouping') == 'dec') {
                 return [
-                    '0-10n',
-                    '0-10z',
-                    '0-10p',
+                    '0-10: <$0',
+                    '0-10: =$0',
+                    '0-10: >$0',
                     '10-20',
                     '20-30',
                     '30-40',
