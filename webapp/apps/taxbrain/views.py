@@ -454,7 +454,6 @@ def personal_results(request):
         print('method=POST get', request.GET)
         print('method=POST post', request.POST)
         obj, post_meta = process_reform(request)
-        print(type(obj), post_meta.__dict__)
         # case where validation failed in forms.TaxBrainForm
         # TODO: assert HttpResponse status is 404
         if isinstance(post_meta, BadPost):
