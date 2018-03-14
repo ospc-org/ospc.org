@@ -210,7 +210,7 @@ INPUTS_META = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
 # Display TaxCalc result data
 #
 TAXCALC_RESULTS_START_YEAR = START_YEAR
-TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.DIST_TABLE_LABELS[:-2]
+TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.DIST_TABLE_LABELS[:]
 TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS[:-2]
 TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     #   divisor,   unit,   decimals
@@ -233,7 +233,8 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'Individual Income Liabilities',
     [1000000000, 'Dollars', 1],  # 'Payroll Tax Liablities',
     [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities'
-
+    [1000000000, 'Dollars', 1],  # 'Expanded Income'
+    [1000000000, 'Dollars', 1],  # 'After-Tax Expanded Income'
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [      1000,      None, 0],    # "Count", --> All Tax Units
