@@ -56,7 +56,7 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
                                to_json_reform, append_errors_warnings)
-from submit_data import PostMeta, BadPost
+from .submit_data import PostMeta, BadPost
 
 from django.conf import settings
 WEBAPP_VERSION = settings.WEBAPP_VERSION
