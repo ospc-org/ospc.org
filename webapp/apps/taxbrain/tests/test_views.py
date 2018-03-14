@@ -403,12 +403,18 @@ class TestTaxBrainViews(object):
         Test case where error is added on undisplayed parameter
         """
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        data.pop('start_year')
+        data.pop('data_source')
+        url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, 'PUF')
         data[u'STD_3'] = ['10000']
-        response = CLIENT.post('/taxbrain/', data)
+        response = CLIENT.post(url, data)
 
         assert response.status_code == 200
+        assert response.context['start_year'] == str(START_YEAR)
+        assert response.context['data_source'] == 'PUF'
 
-    def test_taxbrain_wildcard_in_validation_params_gives_error(self):
+    @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
+    def test_taxbrain_wildcard_in_validation_params_gives_error(self, data_source):
         """
         Set upper threshold for income tax bracket 1 to *, 38000
         Set upper threshold for income tax bracket 2 to *, *, 39500
@@ -419,15 +425,20 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
+        data.pop('start_year')
+        data.pop('data_source')
+        url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
         mod = {u'II_brk1_0': [u'*, 38000'],
                u'II_brk2_0': [u'*, *, 39500'],
                u'II_brk2_cpi': u'False'}
         data.update(mod)
 
-        response = CLIENT.post('/taxbrain/', data)
+        response = CLIENT.post(url, data)
         # Check that redirect happens
         assert response.status_code == 200
         assert response.context['has_errors'] is True
+        assert response.context['start_year'] == str(START_YEAR)
+        assert response.context['data_source'] == data_source
 
 
     def test_taxbrain_improper_reverse_gives_error1(self):
