@@ -232,8 +232,8 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'Refundable Credits',
     [1000000000, 'Dollars', 1],  # 'Individual Income Liabilities',
     [1000000000, 'Dollars', 1],  # 'Payroll Tax Liablities',
-    [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities'
-    [1000000000, 'Dollars', 1],  # 'Expanded Income'
+    [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities',
+    [1000000000, 'Dollars', 1],  # 'Expanded Income',
     [1000000000, 'Dollars', 1],  # 'After-Tax Expanded Income'
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
