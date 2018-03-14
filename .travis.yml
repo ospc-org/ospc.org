@@ -10,6 +10,7 @@ install:
   - export PATH="$HOME/miniconda/bin:$PATH"
   - python -c 'import os,sys,fcntl; flags = fcntl.fcntl(sys.stdout, fcntl.F_GETFL); fcntl.fcntl(sys.stdout, fcntl.F_SETFL, flags&~os.O_NONBLOCK);'
   - pushd deploy
+  - conda clean --all -y
   - ./install_taxbrain_server.sh
   - popd
   - source activate aei_dropq
