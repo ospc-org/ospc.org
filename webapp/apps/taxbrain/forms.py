@@ -199,6 +199,8 @@ TAXCALC_DEFAULTS = {
 class TaxBrainForm(PolicyBrainForm, ModelForm):
 
     def __init__(self, first_year, use_puf_not_cps, *args, **kwargs):
+        # the start year and the data source form object for later access.
+        # This should be refactored into `process_model`
         if first_year is None:
             first_year = START_YEAR
         self._first_year = int(first_year)
