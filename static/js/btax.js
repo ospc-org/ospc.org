@@ -31,7 +31,13 @@ $.each(asset_yr_str, function(index, value){
   });
 });
 
-$('#start-year-select').change(function() {
-  $('#current-year-link').attr('href', '/ccc/?start_year=' + $(this).val());
-  $('#current-year-alert').removeClass('hidden');
+var currentYear = $('#start-year-select').val();
+$('#start-year-select').change(function(e) {
+  $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val());
+  $('#current-year-modal').modal('show');
+});
+
+$('#current-year-modal').on('hide.bs.modal', function (e) {
+  $('#start-year-select option').removeAttr("selected");
+  $('#start-year-select option[value="' + currentYear + '"]').attr("selected", "selected");
 });
