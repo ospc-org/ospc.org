@@ -13,6 +13,7 @@ Release 1.5.0 on 2018-03-14
 - [#835](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/835/) - Add button to allow CPS as input data source - Sean Wang, Anderson Frailey, and Hank Doupe
 - [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
 - [#847](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/847) - Adds data source to file input page, refactors reform submission, and improves tests - Hank Doupe
+- [#849](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/849) - Add CCC start year drop-down - Hank Doupe
 
 **Bug Fixes**
 - [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Pass start year to dynamic behavioral - Hank Doupe
