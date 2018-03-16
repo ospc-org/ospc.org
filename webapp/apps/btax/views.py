@@ -99,7 +99,8 @@ def btax_results(request):
     no_inputs = False
     start_year = START_YEAR
     if request.method=='POST':
-        print 'POST'
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
@@ -169,7 +170,7 @@ def btax_results(request):
                 print "BEGIN DROPQ WORK FROM: unknown IP"
 
             # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data)
+            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data, start_year)
 
             print 'submitted_ids', submitted_ids, max_q_length
             if not submitted_ids:
@@ -212,7 +213,8 @@ def btax_results(request):
             form_btax_input = btax_inputs
 
     else:
-        print 'GET'
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]

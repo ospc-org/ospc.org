@@ -60,7 +60,7 @@ class DropqComputeBtax(DropqCompute):
     num_budget_years = 1
     package_up_vars = package_up_vars
 
-    def submit_btax_calculation(self, user_mods, first_budget_year=2015):
+    def submit_btax_calculation(self, user_mods, first_budget_year):
         url_template = "http://{hn}/btax_start_job"
         data = {}
         user_mods = self.package_up_vars(user_mods, first_budget_year)
@@ -71,6 +71,7 @@ class DropqComputeBtax(DropqCompute):
         data['first_budget_year'] = str(first_budget_year)
         data['start_budget_year'] = '0'
         data['num_budget_years'] = 1
+        print('submitting btax data:', data)
         return self.submit_calculation(data, url_template,
                                        workers=BTAX_WORKERS,
                                        increment_counter=False,

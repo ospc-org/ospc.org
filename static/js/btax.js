@@ -33,7 +33,7 @@ $.each(asset_yr_str, function(index, value){
 
 var currentYear = $('#start-year-select').val();
 $('#start-year-select').change(function(e) {
-  $('#current-year-link').attr('href', '/taxbrain/?start_year=' + $(this).val());
+  $('#current-year-link').attr('href', '/ccc/?start_year=' + $(this).val());
   $('#current-year-modal').modal('show');
 });
 
