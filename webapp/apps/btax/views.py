@@ -224,7 +224,6 @@ def btax_results(request):
         form_btax_input = BTaxExemptionForm(first_year=start_year)
 
     btax_default_params = get_btax_defaults(start_year)
-    print('corp', btax_default_params['btax_betr_corp'].col_fields[0].__dict__)
     has_errors = False
     if has_field_errors(form_btax_input):
         msg = ("Some fields have errors. Values outside of suggested ranges "
@@ -234,7 +233,7 @@ def btax_results(request):
     asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
     form_btax_input = make_bool_gds_ads(form_btax_input)
     hover_notes = hover_args_to_btax_depr()
-    print(form_btax_input.fields['btax_betr_corp'].widget.__dict__)
+
     init_context = {
         'form': form_btax_input,
         'make_bool':  make_bool,

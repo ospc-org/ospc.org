@@ -69,7 +69,6 @@ class BTaxParam(object):
         # TaxCalcParam for changes to
         # make here
         self.start_year = first_budget_year = start_year
-        print(start_year, self.start_year)
         values_by_year = attributes['value']
         col_labels = attributes['col_label']
 
