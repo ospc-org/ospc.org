@@ -20,6 +20,7 @@ from ..taxbrain.helpers import (make_bool, convert_val,
                                 round_gt_one_to_nearest_int, expand_1D,
                                 expand_2D, expand_list, leave_name_in,
                                 TaxCalcField)
+from ..constants import START_YEAR
 
 import btax
 from btax.util import read_from_egg
@@ -58,17 +59,17 @@ class BTaxParam(object):
     """
     coming_soon = False
     inflatable = False
-    def __init__(self, param_id, attributes):
-        self.__load_from_json(param_id, attributes)
+    def __init__(self, param_id, attributes, start_year=START_YEAR):
+        self.__load_from_json(param_id, attributes, int(start_year))
 
-    def __load_from_json(self, param_id, attributes):
+    def __load_from_json(self, param_id, attributes, start_year):
         # TODO does /ccc need to handle
         # budget year /start year logic
         # as in /taxbrain. If so, see
         # TaxCalcParam for changes to
         # make here
-        self.start_year = first_budget_year = 2015
-
+        self.start_year = first_budget_year = start_year
+        print(start_year, self.start_year)
         values_by_year = attributes['value']
         col_labels = attributes['col_label']
 
@@ -89,11 +90,12 @@ class BTaxParam(object):
 
         # create col params
         self.col_fields = []
-
+        # get value for appropriate year
+        ix = min(start_year - 2015, len(values_by_col) - 1)
         self.col_fields.append(TaxCalcField(
             self.nice_id,
             attributes['description'],
-            values_by_col[0],
+            values_by_col[ix],
             self,
             first_budget_year
         ))
@@ -127,7 +129,7 @@ class BTaxParam(object):
                         self.min = self.min[1:]
 
 
-def get_btax_defaults():
+def get_btax_defaults(start_year=START_YEAR):
     from btax import DEFAULTS
     defaults = dict(DEFAULTS)
     # Set Bogus default for now
@@ -137,16 +139,16 @@ def get_btax_defaults():
     BTAX_DEFAULTS = {}
 
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
-        param = BTaxParam(k,defaults[k])
+        param = BTaxParam(k,defaults[k], start_year)
         BTAX_DEFAULTS[param.nice_id] = param
     for k in BTAX_DEPREC:
         fields = ['{}_{}_Switch'.format(k, tag)
                      for tag in ('gds', 'ads',  'tax')]
         for field in fields:
-            param = BTaxParam(field, defaults[field])
+            param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
         for field in ['{}_{}'.format(k, 'exp')]:
-            param = BTaxParam(field, defaults[field])
+            param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
     return BTAX_DEFAULTS
 

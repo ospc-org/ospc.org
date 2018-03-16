@@ -682,9 +682,11 @@ class TaxCalcField(object):
         for i, value in enumerate(values):
             year = param.start_year + i
             self.values_by_year[year] = value
+            print(year, i, value)
 
         self.default_value = self.values_by_year[first_budget_year]
-
+        print('field', self.id, first_budget_year)
+        print(self.default_value)
 
 class TaxCalcParam(object):
     """
