@@ -241,8 +241,8 @@ TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
     [      1000,      None, 0],    # "Tax Units with Tax Cut",
     [         1,        '%',1],    # "Percent Tax Decrease" --> "Percent with Tax Cut"
     [      1000,      None, 0],    # "Tax Units with Tax Cut",
-    [         1,       '%', 1],    # "Percent Tax Increase" --> "Percent with Tax Increase"
-    [         1, 'Dollars', 0],    # "Average Tax Change"
+    [         1,       '%', 1],    # "Percent Tax Increase" --> "Percent with Tax Increase",
+    [         1, 'Dollars', 0],    # "Average Tax Change",
     [1000000000, 'Dollars', 1],    # "Total Tax Difference",
     [         1,   '%', 1],       # "Share of Overall Change"
 ]
