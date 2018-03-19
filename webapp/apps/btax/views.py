@@ -44,7 +44,8 @@ from ..taxbrain.views import denormalize, normalize
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
-                        START_YEAR, START_YEARS)
+                        START_YEAR)
+from .constants import START_YEARS
 
 from ..formatters import get_version
 from django.conf import settings
@@ -99,7 +100,8 @@ def btax_results(request):
     no_inputs = False
     start_year = START_YEAR
     if request.method=='POST':
-        print 'POST'
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
@@ -169,7 +171,7 @@ def btax_results(request):
                 print "BEGIN DROPQ WORK FROM: unknown IP"
 
             # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data)
+            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data, start_year)
 
             print 'submitted_ids', submitted_ids, max_q_length
             if not submitted_ids:
@@ -212,7 +214,8 @@ def btax_results(request):
             form_btax_input = btax_inputs
 
     else:
-        print 'GET'
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
@@ -220,8 +223,7 @@ def btax_results(request):
         # Probably a GET request, load a default form
         form_btax_input = BTaxExemptionForm(first_year=start_year)
 
-    btax_default_params = get_btax_defaults()
-
+    btax_default_params = get_btax_defaults(start_year)
     has_errors = False
     if has_field_errors(form_btax_input):
         msg = ("Some fields have errors. Values outside of suggested ranges "
@@ -231,6 +233,7 @@ def btax_results(request):
     asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
     form_btax_input = make_bool_gds_ads(form_btax_input)
     hover_notes = hover_args_to_btax_depr()
+
     init_context = {
         'form': form_btax_input,
         'make_bool':  make_bool,
