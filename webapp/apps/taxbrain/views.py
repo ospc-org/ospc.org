@@ -56,6 +56,7 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
                                to_json_reform, append_errors_warnings)
+from .submit_data import PostMeta, BadPost
 
 from django.conf import settings
 WEBAPP_VERSION = settings.WEBAPP_VERSION
@@ -94,32 +95,31 @@ def normalize(x):
     ans = [i.split('#') for i in x]
     return ans
 
-def save_model(url, request, model, json_reform, has_errors, start_year,
-               do_full_calc, is_file, reform_dict, assumptions_dict,
-               reform_text, assumptions_text, submitted_ids,
-               max_q_length, user):
+def save_model(post_meta):
     """
     Save user input data
     returns OutputUrl object
     """
+    model = post_meta.model
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
-    model.job_ids = denormalize(submitted_ids)
-    model.json_text = json_reform
-    model.first_year = int(start_year)
-    model.quick_calc = not do_full_calc
+    model.job_ids = denormalize(post_meta.submitted_ids)
+    model.json_text = post_meta.json_reform
+    model.first_year = int(post_meta.start_year)
+    model.data_source = post_meta.data_source
+    model.quick_calc = not post_meta.do_full_calc
     model.save()
 
     # create OutputUrl object
-    if url is None:
+    if post_meta.url is None:
         unique_url = OutputUrl()
     else:
-        unique_url = url
-    if user:
-        unique_url.user = user
-    elif request and request.user.is_authenticated():
-        current_user = User.objects.get(pk=request.user.id)
+        unique_url = post_meta.url
+    if post_meta.user:
+        unique_url.user = post_meta.user
+    elif post_meta.request and post_meta.request.user.is_authenticated():
+        current_user = User.objects.get(pk=post_meta.request.user.id)
         unique_url.user = current_user
 
     if unique_url.taxcalc_vers is None:
@@ -130,7 +130,7 @@ def save_model(url, request, model, json_reform, has_errors, start_year,
     unique_url.unique_inputs = model
     unique_url.model_pk = model.pk
     cur_dt = datetime.datetime.utcnow()
-    future_offset_seconds = ((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS)
+    future_offset_seconds = ((2 + post_meta.max_q_length) * JOB_PROC_TIME_IN_SECONDS)
     future_offset = datetime.timedelta(seconds=future_offset_seconds)
     expected_completion = cur_dt + future_offset
     unique_url.exp_comp_datetime = expected_completion
@@ -158,7 +158,8 @@ def submit_reform(request, user=None, json_reform_id=None):
     request_files = request.FILES
 
     # which file to use, front-end not yet implemented
-    if fields.get('data_source', 'PUF') == 'PUF':
+    data_source = fields.get('data_source', 'PUF')
+    if data_source == 'PUF':
         use_puf_not_cps = True
     else:
         use_puf_not_cps = False
@@ -191,10 +192,10 @@ def submit_reform(request, user=None, json_reform_id=None):
             json_reform = JSONReformTaxCalculator.objects.get(id=int(json_reform_id))
         except Exception as e:
             msg = "ID {} is not in JSON reform database".format(json_reform_id)
-            http_response = HttpResponse(msg, status=400)
-            return {'HttpResponse': http_response,
-                    'has_errors': True}
-
+            return BadPost(
+                       http_response_404=HttpResponse(msg, status=400),
+                       has_errors= True
+                   )
         reform_dict = json.loads(json_reform.reform_text)
         assumptions_dict = json.loads(json_reform.assumption_text)
         reform_text = json_reform.raw_reform_text
@@ -231,8 +232,10 @@ def submit_reform(request, user=None, json_reform_id=None):
             # If an attempt is made to post data we don't accept
             # raise a 400
             if personal_inputs.non_field_errors():
-                return {'HttpResponse': HttpResponse("Bad Input!", status=400),
-                        'has_errors': True}
+                return BadPost(
+                           http_response_404=HttpResponse("Bad Input!", status=400),
+                           has_errors= True
+                       )
             is_valid = personal_inputs.is_valid()
             if is_valid:
                 model = personal_inputs.save(commit=False)
@@ -314,22 +317,28 @@ def submit_reform(request, user=None, json_reform_id=None):
                 data
             )
 
-    return {'personal_inputs': personal_inputs,
-            'json_reform': json_reform,
-            'model': model,
-            'stop_submission': stop_submission,
-            'has_errors': any([taxcalc_errors, taxcalc_warnings,
+    return PostMeta(
+               request=request,
+               personal_inputs=personal_inputs,
+               json_reform=json_reform,
+               model=model,
+               stop_submission=stop_submission,
+               has_errors=any([taxcalc_errors, taxcalc_warnings,
                                no_inputs, not is_valid]),
-            'errors_warnings': errors_warnings,
-            'start_year': start_year,
-            'do_full_calc': do_full_calc,
-            'is_file': is_file,
-            'reform_dict': reform_dict,
-            'assumptions_dict': assumptions_dict,
-            'reform_text': reform_text,
-            'assumptions_text': assumptions_text,
-            'submitted_ids': submitted_ids,
-            'max_q_length': max_q_length}
+               errors_warnings=errors_warnings,
+               start_year=start_year,
+               data_source=data_source,
+               do_full_calc=do_full_calc,
+               is_file=is_file,
+               reform_dict=reform_dict,
+               assumptions_dict=assumptions_dict,
+               reform_text=reform_text,
+               assumptions_text=assumptions_text,
+               submitted_ids=submitted_ids,
+               max_q_length=max_q_length,
+               user=user,
+               url=None
+           )
 
 
 def process_reform(request, user=None, **kwargs):
@@ -343,22 +352,16 @@ def process_reform(request, user=None, **kwargs):
             boolean variable indicating whether this reform has errors or not
 
     """
-    args = submit_reform(request, user=user, **kwargs)
-    if 'HttpResponse' in args:
-        return args['HttpResponse'], None, args['has_errors'], None
+    post_meta = submit_reform(request, user=user, **kwargs)
+    if isinstance(post_meta, BadPost):
+        return None, post_meta
 
-    args['request'] = request
-    args['user'] = user
-    args['url'] = None
-    errors_warnings = args.pop("errors_warnings")
-    if args['stop_submission']:
-        return (args['personal_inputs'], args['json_reform'], args['has_errors'],
-                errors_warnings)
+    if post_meta.stop_submission:
+        return None, post_meta#(args['personal_inputs'], args['json_reform'], args['has_errors'],
+                #errors_warnings)
     else:
-        del args['stop_submission']
-        del args['personal_inputs']
-        url = save_model(**args)
-        return url, args['json_reform'], args['has_errors'], errors_warnings
+        url = save_model(post_meta)
+        return url, post_meta
 
 
 def file_input(request):
@@ -371,39 +374,36 @@ def file_input(request):
         form_id = None
 
     start_year = START_YEAR
+    data_source = DEFAULT_SOURCE
     errors = []
     has_errors = False
-    print('post', request.POST)
-    print('get', request.GET)
     print('files', request.FILES)
     if request.method == 'POST':
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         # save start_year
         start_year = (request.GET.get('start_year', None) or
                       request.POST.get('start_year', None))
         assert start_year is not None
+        data_source = (request.GET.get('data_source', None) or
+                       request.POST.get('start_year', None))
+        assert data_source is not None
+
         # File is not submitted
         if 'docfile' not in dict(request.FILES) and form_id is None:
             errors = ["Please specify a tax-law change before submitting."]
             json_reform = None
         else:
-            (obj, json_reform, has_errors,
-                errors_warnings) = process_reform(
-                request,
-                json_reform_id=form_id
-            )
-            if has_errors and isinstance(obj, HttpResponse):
-                return obj
+            obj, post_meta = process_reform(request, json_reform_id=form_id)
+            if isinstance(post_meta, BadPost):
+                return post_meta.http_response_404
             else:
                 unique_url = obj
 
-            # Case 1: has_errors is True and there are warning/error messages
-            #         --> display errors
-            # Case 2: has_errors is False and there are warning messages
-            #         --> run model (user has already seen warning messages)
-            # Case 3: has_errors is False and there are no warning/error messages
-            #         --> run model
-            if (has_errors and
-               (errors_warnings['warnings'] or errors_warnings['errors'])):
+            if post_meta.stop_submission:
+                errors_warnings = post_meta.errors_warnings
+                json_reform = post_meta.json_reform
+                has_errors = post_meta.has_errors
                 errors.append(OUT_OF_RANGE_ERROR_MSG)
                 append_errors_warnings(
                     errors_warnings,
@@ -412,10 +412,15 @@ def file_input(request):
             else:
                 return redirect(unique_url)
     else:
-        # GET request, load a default form
+        # Probably a GET request, load a default form
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
+
+        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+            data_source = params['data_source'][0]
 
         json_reform = None
 
@@ -428,6 +433,8 @@ def file_input(request):
         'params': None,
         'start_years': START_YEARS,
         'start_year': start_year,
+        'data_sources': DATA_SOURCES,
+        'data_source': data_source,
         'enable_quick_calc': ENABLE_QUICK_CALC,
         'input_type': "file"
     }
@@ -442,24 +449,29 @@ def personal_results(request):
     """
     start_year = START_YEAR
     has_errors = False
-    use_puf_not_cps = True
+    data_source = DEFAULT_SOURCE
     if request.method=='POST':
         print('method=POST get', request.GET)
         print('method=POST post', request.POST)
-        obj, _, has_errors, _ = process_reform(request)
-
+        obj, post_meta = process_reform(request)
         # case where validation failed in forms.TaxBrainForm
         # TODO: assert HttpResponse status is 404
-        if has_errors and isinstance(obj, HttpResponse):
-            return obj
+        if isinstance(post_meta, BadPost):
+            return post_meta.http_response_404
 
         # No errors--submit to model
-        if not has_errors:
+        if not post_meta.stop_submission:
             return redirect(obj)
         # Errors from taxcalc.tbi.reform_warnings_errors
         else:
             personal_inputs = obj
-            start_year = personal_inputs._first_year
+            start_year = post_meta.start_year
+            data_source = post_meta.data_source
+            if data_source == 'PUF':
+                use_puf_not_cps = True
+            else:
+                use_puf_not_cps = False
+            has_errors = post_meta.has_errors
 
     else:
         # Probably a GET request, load a default form
@@ -469,22 +481,16 @@ def personal_results(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
+        # use puf by default
+        use_puf_not_cps = True
         if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
             data_source = params['data_source'][0]
-            print('we got the data source', data_source, 'now what...')
-            if data_source == 'PUF':
-                use_puf_not_cps = True
-            else:
+            if data_source != 'PUF':
                 use_puf_not_cps = False
 
         personal_inputs = TaxBrainForm(first_year=start_year,
                                        use_puf_not_cps=use_puf_not_cps)
 
-    if use_puf_not_cps:
-        data_source = 'PUF'
-    else:
-        data_source = 'CPS'
-    print(data_source, DATA_SOURCES)
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
@@ -546,6 +552,7 @@ def submit_micro(request, pk):
         assumptions_dict = json.loads(model.json_text.assumption_text)
 
     user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+    print('data source', model.data_source)
     data = {'user_mods': json.dumps(user_mods),
             'first_budget_year': int(start_year),
             'start_budget_year': 0,
@@ -557,25 +564,29 @@ def submit_micro(request, pk):
         data
     )
 
-    args = {'url': url,
-            'request': request,
-            'model': model,
-            'json_reform': json_reform,
-            'has_errors': False,
-            'start_year': start_year,
-            'do_full_calc': True,
-            'is_file': is_file,
-            'reform_dict': reform_dict,
-            'assumptions_dict': assumptions_dict,
-            'reform_text': (model.json_text.raw_reform_text
+    post_meta = PostMeta(url=url,
+            request=request,
+            model=model,
+            json_reform=json_reform,
+            has_errors=False,
+            start_year=start_year,
+            data_source=model.data_source,
+            do_full_calc=True,
+            is_file=is_file,
+            reform_dict=reform_dict,
+            assumptions_dict=assumptions_dict,
+            reform_text=(model.json_text.raw_reform_text
                             if model.json_text else ""),
-            'assumptions_text': (model.json_text.raw_assumption_text
+            assumptions_text=(model.json_text.raw_assumption_text
                                  if model.json_text else ""),
-            'submitted_ids': submitted_ids,
-            'max_q_length': max_q_length,
-            'user': None}
+            submitted_ids=submitted_ids,
+            max_q_length=max_q_length,
+            user=None,
+            personal_inputs=None,
+            stop_submission=False,
+            errors_warnings=None)
 
-    url = save_model(**args)
+    url = save_model(post_meta)
 
     return redirect(url)
 
