@@ -717,7 +717,8 @@ def get_result_context(model, request, url):
     tables['cdf_bin'] = tables.pop('diff_comb_xbin')
 
     json_table = json.dumps(tables)
-
+    # TODO: Add row labels for decile and income bin tables to the context here
+    # and display these instead of hardcode in the javascript
     context = {
         'locals':locals(),
         'unique_url':url,
