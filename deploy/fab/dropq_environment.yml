@@ -3,7 +3,7 @@ dependencies:
 - python<=2.7.14,>=2.7.12
 - numpy >=1.12.1
 - pandas >=0.22.0
-- taxcalc =0.15.2
+- taxcalc =0.17.0
 - btax =0.2.2
 - ogusa =0.5.8
 - numba
