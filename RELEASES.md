@@ -4,7 +4,7 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
-Release 1.5.0 on 2018-03-14
+Release 1.5.0 on 2018-03-2?
 ----------------------------
 **Major Changes**
 - None
