@@ -104,8 +104,11 @@ $(function() {
 
         rowLabels: function() {
             if (this.get('grouping') == 'bin') {
+                // TODO: retrieve labels from the context and display them instead of hardcode labels here
                 return [
-                    '<$10K',
+                    '<$0K',
+                    '=$0K',
+                    '$0-10K',
                     '$10-20K',
                     '$20-30K',
                     '$30-40K',
@@ -116,11 +119,13 @@ $(function() {
                     '$200-500K',
                     '$500-1000K',
                     '>$1000K',
-                    'All'
+                    'ALL'
                 ];
             } else if (this.get('grouping') == 'dec') {
                 return [
-                    '0-10',
+                    '0-10: <$0',
+                    '0-10: =$0',
+                    '0-10: >$0',
                     '10-20',
                     '20-30',
                     '30-40',
@@ -130,8 +135,10 @@ $(function() {
                     '70-80',
                     '80-90',
                     '90-100',
-                    'All'
-                ];
+                    'ALL',
+                    '90-95',
+                    '95-99',
+                    'Top 1%'                ];
             }
         }
     });
