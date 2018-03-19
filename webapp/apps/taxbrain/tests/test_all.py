@@ -86,6 +86,7 @@ class TaxInputTests(TestCase):
         exp = [[1, 2, 3], [4, 5, 6], [None, None, None]]
         assert expand_list(x, 3) == exp
 
+    @pytest.mark.xfail
     def test_format_csv(self):
         c = cycler(40)
         tab_types = ["dist2_xdec", "dist1_xdec", "diff_itax_xdec", "diff_ptax_xdec",
