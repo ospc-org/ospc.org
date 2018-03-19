@@ -4,19 +4,21 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
-Release 1.5.0 on 2018-03-14
+Release 1.5.0 on 2018-03-2?
 ----------------------------
 **Major Changes**
 - None
 
 **Minor Changes**
-- [#835](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/835/) - Add button to allow CPS as input data source - Sean Wang, Anderson Frailey, and Hank Doupe
-- [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
+- [#835](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/835) - Add button to allow CPS as input data source - Sean Wang, Anderson Frailey, and Hank Doupe
+- [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
 - [#847](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/847) - Adds data source to file input page, refactors reform submission, and improves tests - Hank Doupe
+- [#848](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/848) - Add missing variables to distribution table (with update to TC 0.17.0) - Sean Wang and Hank Doupe
 - [#849](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/849) - Add CCC start year drop-down - Hank Doupe
 
 **Bug Fixes**
-- [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842/) - Pass start year to dynamic behavioral - Hank Doupe
+- [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Pass start year to dynamic behavioral - Hank Doupe
+- [#851](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/851) - Update update CSV builder test labels and un-xfail the CSV test - Hank Doupe
 
 Release 1.4.4 on 2018-03-08
 ----------------------------
