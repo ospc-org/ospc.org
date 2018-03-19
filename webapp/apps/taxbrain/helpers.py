@@ -671,7 +671,6 @@ class TaxCalcField(object):
 
         self.default_value = self.values_by_year[first_budget_year]
 
-
 class TaxCalcParam(object):
     """
     A collection of TaxCalcFields that represents all configurable details
