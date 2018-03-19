@@ -253,13 +253,8 @@ TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
 # TODO:
 TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES
 # use our own PolicyBrain names for the first three items
-POLICYBRAIN_DEC_ROW_LABELS = (
-    ['0-10: <$0', '0-10: =$0', '0-10 >$0'] +
-    taxcalc.DECILE_ROW_NAMES[3:]
-)
-TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {
-    v: k for k, v in zip(POLICYBRAIN_DEC_ROW_LABELS, taxcalc.DECILE_ROW_NAMES)
-}
+POLICYBRAIN_DEC_ROW_LABELS = taxcalc.DECILE_ROW_NAMES
+TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {k: k for k in taxcalc.DECILE_ROW_NAMES}
 # -DEC_ROW_NAMES = ['perc0-10', 'perc10-20', 'perc20-30', 'perc30-40',
 # -                 'perc40-50', 'perc50-60', 'perc60-70', 'perc70-80',
 # -                 'perc80-90', 'perc90-100', 'all']
