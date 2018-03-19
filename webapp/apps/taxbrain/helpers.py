@@ -259,22 +259,6 @@ TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
 }
 TAXCALC_RESULTS_DEC_ROW_KEYS = taxcalc.DECILE_ROW_NAMES
 TAXCALC_RESULTS_DEC_ROW_KEY_LABELS = {k: k for k in taxcalc.DECILE_ROW_NAMES}
-# -DEC_ROW_NAMES = ['perc0-10', 'perc10-20', 'perc20-30', 'perc30-40',
-# -                 'perc40-50', 'perc50-60', 'perc60-70', 'perc70-80',
-# -                 'perc80-90', 'perc90-100', 'all']
-# -
-# -BIN_ROW_NAMES = ['less_than_10', 'ten_twenty', 'twenty_thirty', 'thirty_forty',
-# -                 'forty_fifty', 'fifty_seventyfive', 'seventyfive_hundred',
-# -                 'hundred_twohundred', 'twohundred_fivehundred',
-# -                 'fivehundred_thousand', 'thousand_up', 'all']
-# +DEC_ROW_NAMES = ['0-10', '10-20', '20-30', '30-40',
-# +                 '40-50', '50-60', '60-70', '70-80',
-# +                 '80-90', '90-100', 'all']
-# +
-# +BIN_ROW_NAMES = ['<$10K', '$10-20K', '$20-30K', '$30-40K',
-# +                 '$40-50K', '$50-75K', '$75-100K',
-# +                 '$100-200K', '$200-500K',
-# +                 '$500-1000K', '>$1000K', 'all']
 
 PRE_TC_0130_RES_MAP = {
     'all': 'all',
