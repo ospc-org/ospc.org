@@ -188,9 +188,14 @@ class DropqCompute(object):
         results = {name: {} for name in names}
 
         for result in ans:
+            year = result['diff_ptax_xdec'].keys()[0][-1]
+            curdir = os.path.abspath(os.path.dirname(__file__))
+            out = os.path.join(curdir, 'tests/response_year_{}.json'.format(year))
+            with open(out, 'w') as w:
+                w.write(json.dumps(result))
             for name in results:
                 results[name].update(result[name])
-
+                
         if ENFORCE_REMOTE_VERSION_CHECK:
             versions = [r.get('taxcalc_version', None) for r in ans]
             if not all([ver==taxcalc_version for ver in versions]):
