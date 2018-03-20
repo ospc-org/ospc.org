@@ -361,9 +361,9 @@ $(function() {
                 <br>\
                 <br>\
                 <ul id="age" class="nav nav-pills nav-justified">\
-                  <li class="active" data-under65="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.under %>" href="#">Under Age 65</a></li>\
+                  <li class="active" data-under65="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.under_65 %>" href="#">Under Age 65</a></li>\
                   <li><h1 class="text-center" style="margin:0">+</h1></li>\
-                  <li class="active" data-above65="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.above %>" href="#">Age 65 & Above</a></li>\
+                  <li class="active" data-above65="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.above_65 %>" href="#">Age 65 & Above</a></li>\
                 </ul>\
               </div>\
             </div>'),
