@@ -56,7 +56,8 @@ dynamic_compute = DynamicCompute()
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                           PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                           REFORM_TOOLTIP, INCOME_BINS_TOOLTIP,
-                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
+                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
+                          UBI_UNDER_TOOLTIP, UBI_ABOVE_TOOLTIP)
 
 from ..formatters import format_dynamic_params, get_version
 
@@ -786,7 +787,9 @@ def behavior_results(request, pk):
             'base': BASE_TOOLTIP,
             'reform': REFORM_TOOLTIP,
             'bins': INCOME_BINS_TOOLTIP,
-            'deciles': INCOME_DECILES_TOOLTIP
+            'deciles': INCOME_DECILES_TOOLTIP,
+            'under_65': UBI_UNDER_TOOLTIP,
+            'above_65': UBI_ABOVE_TOOLTIP
         }
         is_registered = True if request.user.is_authenticated() else False
         hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')

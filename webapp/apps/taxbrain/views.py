@@ -683,7 +683,7 @@ def get_result_context(model, request, url):
         'fiscal_reform': FISCAL_REFORM,
         'fiscal_change': FISCAL_CHANGE,
         'under_65': UBI_UNDER_TOOLTIP,
-        'above_65': UBI_ABOVE_TOOLTIP,
+        'above_65': UBI_ABOVE_TOOLTIP
     }
 
     if (model.json_text is not None and (model.json_text.raw_reform_text or
