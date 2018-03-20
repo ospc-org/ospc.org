@@ -358,6 +358,13 @@ $(function() {
                   <li class="active" data-grouping="bin"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.bins %>" href="#">Income Bins</a></li>\
                   <li data-grouping="dec"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.deciles %>" href="#">Income Deciles</a></li>\
                 </ul>\
+                <br>\
+                <br>\
+                <ul id="age" class="nav nav-pills nav-justified">\
+                  <li class="active" data-under65="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.under_65 %>" href="#">Under Age 65</a></li>\
+                  <li><h1 class="text-center" style="margin:0">+</h1></li>\
+                  <li class="active" data-above65="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.above_65 %>" href="#">Age 65 & Above</a></li>\
+                </ul>\
               </div>\
             </div>'),
 
@@ -385,6 +392,20 @@ $(function() {
                 var incometax = $el.data('incometax')
                 this.model.set('income_tax', incometax);
                 $el.data('incometax', !incometax);
+                $el.toggleClass('active');
+            },
+            'click [data-under65]': function(e) {
+                var $el = $(e.currentTarget);
+                var under65 = $el.data('under65');
+                this.model.set('under65', under65);
+                $el.data('under65', !under65);
+                $el.toggleClass('active');
+            },
+            'click [data-above65]': function(e) {
+                var $el = $(e.currentTarget);
+                var above65 = $el.data('above65')
+                this.model.set('above65', above65);
+                $el.data('above65', !above65);
                 $el.toggleClass('active');
             },
             'click [data-difference]': function(e) {

@@ -15,6 +15,8 @@ METR_TOOLTIP = "Marginal effective tax rate on new investments. The METR include
 METTR_TOOLTIP = "Marginal effective total tax rate on new investments. The METTR includes the impact of all levels of taxation (both on business entities and savers) on the incentives to invest."
 COC_TOOLTIP = "The cost of capital is calculated as the net-of-depreciation, before-tax rate of return."
 DPRC_TOOLTIP = "Net present value of depreciation deductions."
+UBI_UNDER_TOOLTIP = "Include tax units under age 65."
+UBI_ABOVE_TOOLTIP = " Include tax units aged 65 and above."
 
 START_YEARS = ('2013', '2014', '2015', '2016', '2017', '2018')
 START_YEAR = os.environ.get('START_YEAR', '2017')

@@ -51,7 +51,8 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          REFORM_TOOLTIP, FISCAL_CURRENT_LAW, FISCAL_REFORM,
                          FISCAL_CHANGE, INCOME_BINS_TOOLTIP,
                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
-                         DATA_SOURCES, DEFAULT_SOURCE)
+                         DATA_SOURCES, DEFAULT_SOURCE, UBI_UNDER_TOOLTIP,
+                         UBI_ABOVE_TOOLTIP)
 
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
@@ -681,6 +682,8 @@ def get_result_context(model, request, url):
         'fiscal_current_law': FISCAL_CURRENT_LAW,
         'fiscal_reform': FISCAL_REFORM,
         'fiscal_change': FISCAL_CHANGE,
+        'under_65': UBI_UNDER_TOOLTIP,
+        'above_65': UBI_ABOVE_TOOLTIP
     }
 
     if (model.json_text is not None and (model.json_text.raw_reform_text or
