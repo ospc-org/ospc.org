@@ -358,6 +358,13 @@ $(function() {
                   <li class="active" data-grouping="bin"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.bins %>" href="#">Income Bins</a></li>\
                   <li data-grouping="dec"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.deciles %>" href="#">Income Deciles</a></li>\
                 </ul>\
+                <br>\
+                <br>\
+                <ul id="age" class="nav nav-pills nav-justified">\
+                  <li class="active" data-under65="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Under Age 65</a></li>\
+                  <li><h1 class="text-center" style="margin:0">+</h1></li>\
+                  <li class="active" data-65andabove="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Age 65 & Above</a></li>\
+                </ul>\
               </div>\
             </div>'),
 
