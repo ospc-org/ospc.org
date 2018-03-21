@@ -22,7 +22,7 @@ Local Deployment Setup
 First, if you plan on contributing to PolicyBrain, then fork PolicyBrain and work off of that fork.  If you do not plan to contribute, then you can clone the main repo.
 
 Make sure that the local Postgres Server is running. Then, open a terminal
-window and run the following commands:
+window and run the following commands using bash:
 ```
 # swap out YOURUSERNAME with OpenSourcePolicyCenter if you did not fork this project and
 # your user name if you did
@@ -39,7 +39,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 Now, the Django app should be up and running.  You can access the local instance of https://www.ospc.org/ at http://localhost:8000.  Next, set up Redis, Flask, and Celery.  This step allows you to submit and run jobs.
-In another terminal, run the following commands
+In another terminal, run the following commands using bash:
 ```
 # Go to the PolicyBrain directory
 cd PolicyBrain/
