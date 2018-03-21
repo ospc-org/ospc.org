@@ -35,3 +35,22 @@ want to run some tests on the production or test app database, for example.
 - Check that you can roll back your migrations
 - Check how long it will take to run a migration (most of ours are fairly
   quick)
+
+
+** Database Backup Policy **
+
+Heroku keeps a back up of our databases for up to five days. We should be able to roll back 
+further if needed. Below is the procedure that we should use to maintain at least one
+accurate, uncorrupted (if not up to date) database:
+- Production database stays up and is the production database until it needs to be rolled back
+- Back-up 1 is the previous version of the database where a version is defined by the
+  database schema. If the schema is changed (i.e. migrations are run), the version is bumped up.
+- Back-up 2 is the version preceding Back-up 1. 
+
+The Production database and the Back-up 1 database are stored on Heroku. In order to keep costs down
+Back-up 2 is stored at a separate location. I am actively exploring different options for storage. 
+
+This procedure is not completely infallible. We could realize that the data is corrupted four versions
+after a change was made. However, this procedure gives us a at least a month or two to realize that
+something is wrong. Further, versions that precede large scale or complex migrations are saved for 
+longer periods of time. For example, the databases from before [#738]([https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/738) and [#822](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/822) were both stored.
