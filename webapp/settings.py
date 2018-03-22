@@ -110,7 +110,7 @@ TEST_DATABASE = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': os.environ.get('DATABASE_USER', 'postgres'),
         'NAME': 'test_db',
-        'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
+        'PASSWORD': os.environ.get('DATABASE_PW', ''),
     }
 }
 if os.environ.get('DATABASE_URL', None): # DATABASE_URL var is set
@@ -122,7 +122,7 @@ else: # DATABASE_URL is not set--try default
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': 'taxcalc',
             'USER': os.environ.get('DATABASE_USER', 'postgres'),
-            'PASSWORD': os.environ.get('TESTDBPASSWORD', ''),
+            'PASSWORD': os.environ.get('DATABASE_PW', ''),
             'HOST': 'localhost',
             'PORT': '5432',
         }

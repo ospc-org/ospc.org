@@ -98,13 +98,12 @@ def dropq_endpoint_small():
 
 @app.route("/btax_start_job", methods=['POST'])
 def btax_endpoint():
-    year = request.form['year']
     # TODO: this assumes a single year is the key at highest
     # level.
     user_mods = tuple(json.loads(request.form['user_mods']).values())[0]
     print('user_mods', user_mods)
-    year = int(year)
-    raw_results = btax_async.delay(user_mods)
+    start_year = int(request.form['first_budget_year'])
+    raw_results = btax_async.delay(user_mods, start_year)
     RUNNING_JOBS[raw_results.id] = raw_results
     length = client.llen(queue_name) + 1
     results = {'job_id': str(raw_results), 'qlength':length}

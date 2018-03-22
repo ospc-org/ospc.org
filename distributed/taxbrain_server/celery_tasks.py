@@ -154,8 +154,10 @@ def ogusa_async(user_mods, ogusa_params, guid):
 
 
 @celery_app.task
-def btax_async(user_mods):
+def btax_async(user_mods, start_year):
     print("user mods: ", user_mods)
+    user_mods['start_year'] = start_year
+    print("submitting btax data: ", user_mods)
     results = {}
     tables = json.loads(runner_json_tables(**user_mods))
     if tables.get("json_table"):

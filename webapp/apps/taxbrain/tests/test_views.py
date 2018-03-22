@@ -614,7 +614,7 @@ class TestTaxBrainViews(object):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
 
-
+    @pytest.mark.xfail
     def test_taxbrain_view_old_data_model(self):
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')

@@ -97,6 +97,13 @@
         <div class="row">
           <div class="col-xs-3">
             <div class="inputs-sidebar" data-spy="affix" data-offset-top="435" data-offset-bottom="245">
+            <label class="">Start Year:
+              <select id="start-year-select" class="form-control pull-right">
+                {% for year in start_years %}
+                  <option value="{{year}}" {% if year == start_year %} selected {% endif %}>{{year}}</option>
+                {% endfor %}
+              </select>
+            </label>
               <ul class="nav sidebar-nav">
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                 <li><a href="#taxes">Business Income Tax Rates</a></li>
@@ -150,7 +157,7 @@
 
                       <h1>Effective Tax Rate Calculations</h1>
 
-                      <p>The Cost of Capital Calculator produces estimates of the marginal effective tax rates on new investment under the baseline tax policy and user-specified tax reforms. These effective rate calculations take two forms. The marginal effective tax rate (METR) provides the tax wedge on new investment at the level of the business entity. The marginal effective total tax rate (METTR) includes individual level taxes in the measure of the tax wedge on new investment. One can think of the former as indicating the effect of taxes on incentives to invest from the perspective of the firm and the latter as representing effect of taxes on incentives to invest from the perspective of the saver.  For more detail on the calculations and assumptions underlying this model, please see the <a href = "https://github.com/open-source-economics/B-Tax/blob/master/Notes_and_Guides/CCC_Guide.pdf" target = "_blank"> CCC Guide</a>.</p>
+                      <p>The Cost of Capital Calculator produces estimates of the marginal effective tax rates on new investment under the baseline tax policy and user-specified tax reforms. These effective rate calculations take two forms. The marginal effective tax rate (METR) provides the tax wedge on new investment at the level of the business entity. The marginal effective total tax rate (METTR) includes individual level taxes in the measure of the tax wedge on new investment. One can think of the former as indicating the effect of taxes on incentives to invest from the perspective of the firm and the latter as representing effect of taxes on incentives to invest from the perspective of the saver.  For more detail on the calculations and assumptions underlying this model, please see the <a href = "https://github.com/open-source-economics/B-Tax/blob/master/Guides/CCC_Guide.pdf" target = "_blank"> CCC Guide</a>.</p>
 
                       <p><strong>Accuracy notes</strong></p>
 
@@ -165,7 +172,6 @@
                       Core Maintainers (static modeling)*:
                       <ul style = "list-style-type:none">
                       <li>- <a href = "http://www.jasondebacker.com" target = "blank" >Jason DeBacker, University of South Carolina</a></li>
-                      <li>- <a href = "https://github.com/bfgard" target = "blank" >Benjamin Gardner, Brigham Young University</a></li>
                       </ul>
                       </strong></p>
                       <p> These members have "write access" to the core modeling repositories, B-Tax, and work as a team to determine which open source contributions are accepted.</p>
@@ -189,4 +195,22 @@
     </form> <!-- form -->
     <div class="push"></div>
   </div> <!-- /wrapper -->
+  <div class="modal fade" id="current-year-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Change Start Year</h4>
+        </div>
+        <div class="modal-body">
+          Warning: This will clear your current inputs.
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
+          <a type="button" class="btn btn-primary" id="current-year-link">OK, go for it.</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% endblock %}
