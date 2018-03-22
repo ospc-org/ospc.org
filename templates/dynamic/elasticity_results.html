@@ -141,7 +141,16 @@
     <script>
     function printByID() {
         var tab = document.getElementById("printTable").innerHTML;
-        alert(tab);
+        var win = window.open('', 'Print', 'height=600,width=800');
+
+        win.document.write(tab);
+
+
+        win.document.close();
+        win.focus()
+        win.print();
+        win.close();
+        return true;
     }
     </script>
     <div class="push"></div>
