@@ -126,31 +126,24 @@
       <a href="/dynamic/macro/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
     </div>
 
-    <div class="result-table">
       <div class="result-table-controls">
         <div class="controls-tools">
-          <div class="btn-group">
-            <button type="button" class="btn btn-text btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-              Save As <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu" role="menu">
-              <li><a href="/taxbrain/pdf">PDF Report</a></li>
-              <li><a href="/taxbrain/{{ unique_url.pk }}/output.csv/">Outputs as CSV</a></li>
-              <li><a href="/taxbrain/{{ unique_url.pk }}/input.csv/">Inputs as CSV</a></li>
-            </ul>
-          </div>
-          <button class="btn btn-share btn-sm">Share</button>
-          <button class="btn btn-text btn-sm">Print</button>
+          <button onclick="printByID()" class="btn btn-text btn-sm">Print</button>
         </div>
       </div>
 
+    <div class="result-table" id="printTable">
       {% include 'taxbrain/includes/results/elasticity_table.html' with table=tables.elasticity_gdp %}
-
     </div>
 
     <div class="result-info"></div>
 
-
+    <script>
+    function printByID() {
+        var tab = document.getElementById("printTable").innerHTML;
+        alert(tab);
+    }
+    </script>
     <div class="push"></div>
 </div> <!-- /wrapper -->
 
