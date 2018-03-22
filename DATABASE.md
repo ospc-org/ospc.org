@@ -1,4 +1,5 @@
-** Database Setup **
+Database Setup
+---------------------
 
 Due to our reliance on the Postgres JSON field, a local Postgres installation
 is required to run the app and its tests locally. We recommend that you follow
@@ -24,7 +25,8 @@ to point to other Postgres databases such as some other database named
 want to run some tests on the production or test app database, for example.
 
 
-** Database Migrations **
+Database Migrations
+---------------------
 
 - Be very careful with data related to the results column
 - Do a monthly database back up and keep the previous two months of production
@@ -37,7 +39,8 @@ want to run some tests on the production or test app database, for example.
   quick)
 
 
-** Database Backup Policy **
+Database Backup Policy
+-------------------------
 
 Heroku keeps a back up of our databases for up to five days. We should be able to roll back 
 further if needed. Below is the procedure that we should use to maintain at least one
