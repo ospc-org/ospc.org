@@ -11,6 +11,7 @@ Release 1.5.0 on 2018-03-2?
 
 **Minor Changes**
 - [#830](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/830) - Add database docs - Hank Doupe
+- [#832](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/832) - Containerize worker nodes - Hank Doupe
 - [#835](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/835) - Add button to allow CPS as input data source - Sean Wang, Anderson Frailey, and Hank Doupe
 - [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
 - [#847](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/847) - Adds data source to file input page, refactors reform submission, and improves tests - Hank Doupe
