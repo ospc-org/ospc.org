@@ -1,4 +1,4 @@
-FROM opensourcepolicycenter/distributed:latest
+FROM opensourcepolicycenter/distributed:v1.5.0
 
 LABEL build="flask" version="0.0.1" date="2018-03-22"
 
