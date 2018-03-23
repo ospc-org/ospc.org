@@ -65,7 +65,7 @@ tcversion_info = taxcalc._version.get_versions()
 
 TAXCALC_VERSION = tcversion_info['version']
 
-JOB_PROC_TIME_IN_SECONDS = 30
+JOB_PROC_TIME_IN_SECONDS = 90
 
 OUT_OF_RANGE_ERROR_MSG = ("Some fields have warnings or errors. Values "
                           "outside of suggested ranges will be accepted if "
