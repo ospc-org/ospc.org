@@ -9,7 +9,6 @@ install:
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - python -c 'import os,sys,fcntl; flags = fcntl.fcntl(sys.stdout, fcntl.F_GETFL); fcntl.fcntl(sys.stdout, fcntl.F_SETFL, flags&~os.O_NONBLOCK);'
-  - conda update --prefix /home/travis/miniconda/envs/base anaconda
   - conda clean --all -y
   - ./python_env_build.sh
   - source activate pb_env
