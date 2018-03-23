@@ -1,6 +1,3 @@
-echo 'updating conda'
-conda update -n base -c defaults
-
 echo 'appending channels'
 conda config --append channels ospc/label/dev
 conda config --append channels ospc
