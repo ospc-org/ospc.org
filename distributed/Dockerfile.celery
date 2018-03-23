@@ -1,9 +1,9 @@
-FROM distributed:latest
+FROM opensourcepolicycenter/distributed:latest
 
-LABEL build="celery" version="0.0.1" date="2018-03-07"
+LABEL build="celery" version="0.0.1" date="2018-03-22"
 
 ENV CELERY_BROKER_URL redis://redis:6379/0
 ENV CELERY_RESULT_BACKEND redis://redis:6379/0
 ENV C_FORCE_ROOT true
 
-ENTRYPOINT celery -A celery_tasks worker --loglevel=info
+ENTRYPOINT celery -A celery_tasks worker --loglevel=info --concurrency=1
