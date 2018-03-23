@@ -40,6 +40,7 @@ class DropqCompute(object):
 
 
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
+        print(theurl, data)
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
 

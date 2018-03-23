@@ -26,3 +26,4 @@ django-storages
 django-htmlmin
 pyparsing
 python-dateutil
+toolz
