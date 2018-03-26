@@ -17,16 +17,17 @@ Release 1.5.0 on 2018-03-2?
 - [#847](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/847) - Adds data source to file input page, refactors reform submission, and improves tests - Hank Doupe
 - [#848](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/848) - Add missing variables to distribution table (with update to TC 0.17.0) - Sean Wang and Hank Doupe
 - [#849](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/849) - Add CCC start year drop-down - Hank Doupe
-- [#854](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/854) - Change "About _ remaining" to "Estimated time remaining: _" - Max Ghenis
+- [#854](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/854) - Change "About _ remaining" to "Estimated time remaining: _ " - Max Ghenis
 - [#856](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/856) - Add link to data document - Anderson Frailey
 - [#857](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Update link to CCC guide - Jason DeBacker
-- [#863](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Updates job time and adds version to docker files - Hank Doupe
+- [#863](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/863) - Updates job time and adds version to docker files - Hank Doupe
 - [#867](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Display parameter data type as indicated by Tax-Calculator specifications - Hank Doupe
 
 **Bug Fixes**
 - [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Pass start year to dynamic behavioral - Hank Doupe
 - [#851](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/851) - Update update CSV builder test labels and un-xfail the CSV test - Hank Doupe
 - [#865](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/865) - Extend tests and fix warning/error handling regression - Hank Doupe
+- [#868](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/868) - Remove special processing for AMT parameters - Hank Doupe
 
 Release 1.4.4 on 2018-03-08
 ----------------------------
