@@ -21,6 +21,7 @@ Release 1.5.0 on 2018-03-2?
 - [#856](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/856) - Add link to data document - Anderson Frailey
 - [#857](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Update link to CCC guide - Jason DeBacker
 - [#863](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Updates job time and adds version to docker files - Hank Doupe
+- [#867](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Display parameter data type as indicated by Tax-Calculator specifications - Hank Doupe
 
 **Bug Fixes**
 - [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Pass start year to dynamic behavioral - Hank Doupe

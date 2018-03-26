@@ -12,7 +12,8 @@ MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-from ..taxbrain.helpers import TaxCalcParam, package_up_vars, default_taxcalc_data
+from ..taxbrain.helpers import package_up_vars, default_taxcalc_data
+from ..taxbrain.param_displayers import TaxCalcParam
 from ..taxbrain.compute import GDP_ELAST_ROW_NAMES
 from django.core.mail import send_mail
 import requests

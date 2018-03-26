@@ -2,8 +2,8 @@ from django.test import TestCase
 
 from ..models import TaxSaveInputs, WorkerNodesCounter
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                     format_csv, arrange_totals_by_row, default_taxcalc_data,
-                     default_policy)
+                     format_csv, arrange_totals_by_row, default_taxcalc_data)
+from ..param_displayers import default_policy
 from ...taxbrain import compute as compute
 from ..views import convert_val
 import taxcalc
