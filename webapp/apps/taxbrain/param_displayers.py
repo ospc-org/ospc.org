@@ -21,7 +21,6 @@ class TaxCalcField(object):
             year = param.start_year + i
             if meta_param is not None:
                 value = parse_value(str(value), meta_param)
-                print(label, value, type(value))
             self.values_by_year[year] = str(value)
 
         self.default_value = self.values_by_year[first_budget_year]
