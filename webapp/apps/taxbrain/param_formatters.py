@@ -14,23 +14,6 @@ from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
 MetaParam = namedtuple("MetaParam", ["param_name", "param_meta"])
 CPI_WIDGET = NullBooleanSelect()
 
-def amt_fixup(fields):
-    """
-    Take the regular tax captial gains parameters from the user reform
-    and set them as the equivalent Alternative Minimum Tax capital
-    gains parameters
-    """
-    cap_gains_params = ["CG_rt1", "CG_brk1_0", "CG_brk1_1",
-                        "CG_brk1_2", "CG_brk1_3", "CG_brk1_cpi",
-                        "CG_rt2", "CG_brk2_0", "CG_brk2_1",
-                        "CG_brk2_2", "CG_brk2_3", "CG_brk2_cpi",
-                        "CG_rt3"]
-
-    for cgparam in cap_gains_params:
-        if cgparam in fields:
-            fields['AMT_' + cgparam] = fields[cgparam]
-
-
 def parse_value(value, meta_param):
     """
     Parse the value to the type that the upstream package specification

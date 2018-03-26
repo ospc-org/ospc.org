@@ -497,53 +497,6 @@ class TestTaxBrainViews(object):
                             str(2018))
 
 
-    def test_taxbrain_rt_capital_gain_goes_to_amt(self):
-        """
-        Transfer over the regular tax capital gains to AMT
-        """
-
-        data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {'CG_rt1': [0.25], 'CG_rt3': [u'0.25'], 'CG_rt2': [u'0.18'],
-               'CG_brk1_cpi': [u'True'], 'CG_brk2_cpi': [u'True'],
-               'CG_brk1_0': [u'38659.0'], 'CG_brk1_1': [u'76300.0'],
-               'CG_brk1_2': [u'38650.0'], 'CG_brk1_3': [u'51400.0'],
-               'CG_brk2_0': [u'425050.0'], 'CG_brk2_1': [u'476950.0'],
-               'CG_brk2_2': [u'243475.0'], 'CG_brk2_3': [u'451000.0']}
-        data.update(mod)
-
-        result = do_micro_sim(CLIENT, data)
-
-        out2 = OutputUrl.objects.get(pk=result["pk"])
-        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
-        assert tsi2.raw_input_fields['CG_rt1'] == u'0.25'
-        assert tsi2.raw_input_fields['CG_rt2'] == u'0.18'
-        assert tsi2.raw_input_fields['CG_rt3'] == u'0.25'
-        assert tsi2.raw_input_fields['CG_brk1_cpi'] == 'True'
-        assert tsi2.raw_input_fields['CG_brk1_0'] == u'38659.0'
-        assert tsi2.raw_input_fields['CG_brk1_1'] == u'76300.0'
-        assert tsi2.raw_input_fields['CG_brk1_2'] == u'38650.0'
-        assert tsi2.raw_input_fields['CG_brk1_3'] == u'51400.0'
-        assert tsi2.raw_input_fields['CG_brk2_cpi'] == 'True'
-        assert tsi2.raw_input_fields['CG_brk2_0'] == u'425050.0'
-        assert tsi2.raw_input_fields['CG_brk2_1'] == u'476950.0'
-        assert tsi2.raw_input_fields['CG_brk2_2'] == u'243475.0'
-        assert tsi2.raw_input_fields['CG_brk2_3'] == u'451000.0'
-
-        assert tsi2.raw_input_fields['AMT_CG_rt1'] == u'0.25'
-        assert tsi2.raw_input_fields['AMT_CG_rt2'] == u'0.18'
-        assert tsi2.raw_input_fields['AMT_CG_rt3'] == u'0.25'
-        assert tsi2.raw_input_fields['AMT_CG_brk1_cpi'] == 'True'
-        assert tsi2.raw_input_fields['AMT_CG_brk1_0'] == u'38659.0'
-        assert tsi2.raw_input_fields['AMT_CG_brk1_1'] == u'76300.0'
-        assert tsi2.raw_input_fields['AMT_CG_brk1_2'] == u'38650.0'
-        assert tsi2.raw_input_fields['AMT_CG_brk1_3'] == u'51400.0'
-        assert tsi2.raw_input_fields['AMT_CG_brk2_cpi'] == 'True'
-        assert tsi2.raw_input_fields['AMT_CG_brk2_0'] == u'425050.0'
-        assert tsi2.raw_input_fields['AMT_CG_brk2_1'] == u'476950.0'
-        assert tsi2.raw_input_fields['AMT_CG_brk2_2'] == u'243475.0'
-        assert tsi2.raw_input_fields['AMT_CG_brk2_3'] == u'451000.0'
-
-
     def test_taxbrain_rt_to_passthrough(self):
         """
         Transfer over the ind. income tax params to passthrough
