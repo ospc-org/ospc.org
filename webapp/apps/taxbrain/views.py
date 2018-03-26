@@ -464,7 +464,7 @@ def personal_results(request):
             return redirect(obj)
         # Errors from taxcalc.tbi.reform_warnings_errors
         else:
-            personal_inputs = obj
+            personal_inputs = post_meta.personal_inputs
             start_year = post_meta.start_year
             data_source = post_meta.data_source
             if data_source == 'PUF':
