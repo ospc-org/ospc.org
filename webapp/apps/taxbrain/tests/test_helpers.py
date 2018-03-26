@@ -3,9 +3,11 @@ import json
 import numpy as np
 import taxcalc
 import pyparsing as pp
-from ..helpers import (nested_form_parameters, rename_keys, INPUT, make_bool,
-                       is_reverse, TaxCalcParam,
+from ..helpers import (rename_keys, INPUT, make_bool,
+                       is_reverse,
                        reorder_lists)
+from ..param_formatters import parse_value, MetaParam
+from ..param_displayers import TaxCalcParam, TaxCalcField, nested_form_parameters
 
 
 CURRENT_LAW_POLICY = """
@@ -191,54 +193,22 @@ def test_make_bool_fail(item):
 def test_is_reverse(item, exp):
     assert is_reverse(item) is exp
 
-
-def test_make_taxcalc_param():
+def test_taxbrain_TaxCalcParam():
     """
-    Test creation of taxcalc param from comma separated boolean value
+    Test creation of TaxCalcParam objects.
+
+    Strategy: treat the result from `parse_value` as the truth and test
+    to make sure that the values are set correctly for display to
+    the user.
     """
-    name =  u'_DependentCredit_before_CTC'
-    attr = {
-        u'integer_value': True,
-        u'start_year': 2017,
-        u'description': 'test',
-        u'out_of_range_action': u'stop',
-        u'col_var': u'',
-        u'long_name': u'test',
-        u'out_of_range_maxmsg': u'',
-        u'row_var': u'FLPDYR',
-        u'cpi_inflated': False,
-        u'boolean_value': True,
-        u'col_label': u'',
-        u'out_of_range_minmsg': u'',
-        u'notes': u'',
-        u'value': [0],
-        u'section_1': u'Nonrefundable Credits',
-        u'irs_ref': u'',
-        u'range': {u'min': False, u'max': True},
-        u'section_2': u'Child Tax Credit',
-        u'row_label': ['2017']
-    }
-    budget_year = 2017
-    use_puf_not_cps = True
+    dd = taxcalc.Policy.default_data(metadata=True, start_year=2017)
 
-    param = TaxCalcParam(name, attr, budget_year, use_puf_not_cps)
-    field = param.col_fields[0]
-    assert field.values == ['False']
-
-    attr['value'] = [0, 0, 1]
-    param = TaxCalcParam(name, attr, budget_year, use_puf_not_cps)
-    fields = param.col_fields
-    for field, exp in zip(fields, ['False', 'False', 'True']):
-        assert field.values == [exp]
-
-    attr['value'] = [0, 0, 1]
-    param = TaxCalcParam(name, attr, budget_year, use_puf_not_cps)
-    fields = param.col_fields
-    for field, exp in zip(fields, ['False', 'False', 'True']):
-        assert field.values == [exp]
-
-    attr['value'] = [[0, 0, 1]]
-    param = TaxCalcParam(name, attr, budget_year, use_puf_not_cps)
-    fields = param.col_fields
-    for field, exp in zip(fields, ['False', 'False', 'True']):
-        assert field.values == [exp]
+    for param_name in dd:
+        tc_param = TaxCalcParam(param_name, dd[param_name], 2017)
+        meta_param = MetaParam(
+            param_name=param_name,
+            param_meta=dd[param_name]
+        )
+        for field in tc_param.col_fields:
+            for value in field.values_by_year:
+                assert value == parse_value(str(value), meta_param)

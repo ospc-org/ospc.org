@@ -9,10 +9,11 @@ import json
 from ..constants import START_YEAR
 
 from .models import TaxSaveInputs
-from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
+from .helpers import (is_number,
                       int_to_nth, is_string, string_to_float_array, check_wildcards,
                       default_taxcalc_data, expand_list, propagate_user_list,
                       convert_val, INPUT, INPUTS_META)
+from .param_displayers import TaxCalcField, TaxCalcParam, default_policy
 import taxcalc
 
 
