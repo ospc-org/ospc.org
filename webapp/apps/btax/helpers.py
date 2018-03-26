@@ -18,8 +18,8 @@ from ..taxbrain.helpers import (make_bool, convert_val,
                                 string_to_float, string_to_float_array,
                                 same_version, arrange_totals_by_row,
                                 round_gt_one_to_nearest_int, expand_1D,
-                                expand_2D, expand_list, leave_name_in,
-                                TaxCalcField)
+                                expand_2D, expand_list, leave_name_in)
+from ..taxbrain.param_displayers import TaxCalcField
 from ..constants import START_YEAR
 
 import btax

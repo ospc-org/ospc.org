@@ -38,9 +38,10 @@ from django import forms
 
 from .forms import TaxBrainForm, has_field_errors
 from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
-from .helpers import (default_policy, taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool, nested_form_parameters,
+from .helpers import (taxcalc_results_to_tables, format_csv,
+                      is_wildcard, convert_val, make_bool,
                       )
+from .param_displayers import nested_form_parameters
 from .compute import (DropqCompute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
                       NUM_BUDGET_YEARS_QUICK)
 

@@ -39,9 +39,9 @@ from ..taxbrain.views import (make_bool, dropq_compute,
                               add_summary_column)
 from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
                                          parse_fields)
-from ..taxbrain.helpers import (default_policy, taxcalc_results_to_tables, default_behavior,
+from ..taxbrain.helpers import (taxcalc_results_to_tables,
                                 convert_val)
-
+from ..taxbrain.param_displayers import default_behavior
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
