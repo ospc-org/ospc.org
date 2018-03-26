@@ -7,8 +7,7 @@ from django.forms import NullBooleanSelect
 
 import taxcalc
 
-from helpers import (INPUTS_META, BOOL_PARAMS, is_reverse, is_wildcard,
-                     make_bool, convert_val, TRUE_REGEX, FALSE_REGEX)
+from .helpers import is_wildcard, is_reverse
 
 
 MetaParam = namedtuple("MetaParam", ["param_name", "param_meta"])
@@ -201,7 +200,6 @@ def to_json_reform(start_year, fields):
     returns: json style reform
     """
     number_reverse_operators = 1
-    ignore = INPUTS_META
 
     reform = {}
     for param in fields:
