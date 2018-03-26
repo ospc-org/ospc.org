@@ -412,6 +412,7 @@ class TestTaxBrainViews(object):
         assert response.status_code == 200
         assert response.context['start_year'] == str(START_YEAR)
         assert response.context['data_source'] == 'PUF'
+        assert response.context['form'] is not None
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_wildcard_in_validation_params_gives_error(self, data_source):
@@ -456,6 +457,7 @@ class TestTaxBrainViews(object):
         # Check that redirect happens
         assert response.status_code == 200
         assert response.context['has_errors'] is True
+        assert response.context['form'] is not None
 
     def test_taxbrain_improper_reverse_gives_error2(self):
         """
@@ -472,6 +474,7 @@ class TestTaxBrainViews(object):
         # Check that redirect happens
         assert response.status_code == 200
         assert response.context['has_errors'] is True
+        assert response.context['form'] is not None
 
     def test_taxbrain_bool_separated_values(self):
         """
