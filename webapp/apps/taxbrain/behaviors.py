@@ -78,7 +78,6 @@ class Fieldable(models.Model):
                         raw_val = str(raw_val)
                     self.raw_input_fields[field.name] = raw_val
 
-        param_formatters.amt_fixup(self.raw_input_fields)
         input_fields, failed_lookups = param_formatters.parse_fields(
             self.raw_input_fields,
             default_data
