@@ -19,9 +19,6 @@
           {% for col in table.cols %}
             <th>
               {{col.label}}
-              <div class="units">
-                {{ col.divisor|scales_of_units:col.units }}
-              </div>
             </th>
           {% endfor %}
         </tr>
