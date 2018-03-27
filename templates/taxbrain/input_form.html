@@ -139,7 +139,7 @@
                   {% endfor %}
                 </select>
             </label>
-            <label class=""> Data Source:
+            <label class=""> Principal Data Source:
                 <select id="data-source-select" class="form-control pull-right">
                 {% for data in data_sources %}
                   <option value="{{data}}" {% if data == data_source %} selected {% endif %}>{{data}}</option>
@@ -204,7 +204,7 @@
                   <li> <a href = "//docs.google.com/forms/d/e/1FAIpQLSfvKEsQZNe9_16FhKNZcEyv3C8qXZhBfrqLxSd4VR97w92moQ/viewform" target="_blank">Leave Feedback</a> </li>
                   </ul>
                   <h3>Datasets</h3>
-                  <p>TaxBrain now offers users two data options: CPS and PUF. Both datasets contain tax unit level data, but they do not have all of the same variables. As a result, you will not be able to change some policy parameters, depending on which dataset you choose. A more detailed breakdown of the differences between the file can be found <a href="https://github.com/open-source-economics/taxdata/blob/master/datasets.md">here</a>.</p>
+                  <p>TaxBrain now offers users two data options: CPS and PUF. Both datasets contain tax unit level data, but they do not have all of the same variables. As a result, you will not be able to change some policy parameters, depending on which dataset you choose. A more detailed breakdown of the differences between the file can be found <a href="https://github.com/open-source-economics/taxdata/blob/master/datasets.md">here</a>. The CPS-based file is still young relative to the PUF-based file, and we would appreciate your feedback as it matures.</p>
                   <h3>Presets: key provisions from newsworthy proposals</h3>
                   <ul>
                   <li>The policy parameter presets are under review given the change in baseline parameters caused by the passage of the Tax Cuts and Jobs Act (TCJA).</li>
