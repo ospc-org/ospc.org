@@ -26,8 +26,10 @@ Release 1.5.0 on 2018-03-2?
 **Bug Fixes**
 - [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Pass start year to dynamic behavioral - Hank Doupe
 - [#851](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/851) - Update update CSV builder test labels and un-xfail the CSV test - Hank Doupe
+- [#860](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/860) - Restore "Print" button for elasticity output page - Sean Wang
 - [#865](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/865) - Extend tests and fix warning/error handling regression - Hank Doupe
 - [#868](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/868) - Remove special processing for AMT parameters - Hank Doupe
+- [#870](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/870) - Update RELEASES.md and increase compute time to 100 seconds - Hank Doupe
 
 Release 1.4.4 on 2018-03-08
 ----------------------------
