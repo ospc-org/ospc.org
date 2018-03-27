@@ -832,7 +832,7 @@ def output_detail(request, pk):
             else:
                 context = {'eta': '100'}
                 context.update(context_vers_disp)
-                return render_to_response('500.html', context, context_instance=RequestContext(request))
+                return render_to_response('taxbrain/not_ready.html', context, context_instance=RequestContext(request))
 
 
 @permission_required('taxbrain.view_inputs')
