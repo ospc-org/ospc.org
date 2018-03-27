@@ -22,6 +22,8 @@ Release 1.5.0 on 2018-03-2?
 - [#857](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Update link to CCC guide - Jason DeBacker
 - [#863](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/863) - Updates job time and adds version to docker files - Hank Doupe
 - [#867](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Display parameter data type as indicated by Tax-Calculator specifications - Hank Doupe
+- [#871](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/871) - Change Data Related Text - Anderson Frailey
+- [#872](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/872) - Change Dropdown Order - Anderson Frailey
 
 **Bug Fixes**
 - [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Pass start year to dynamic behavioral - Hank Doupe
