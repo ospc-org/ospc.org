@@ -1,0 +1,26 @@
+{% extends 'taxbrain/input_base.html' %}
+{% block content %}
+{% include 'taxbrain/header.html' %}
+<div class="container">
+
+<h3>
+    We are unable to display the results for model run #XXX. We apologize for the inconvenience and are working to
+    provide a satisfactory solution for displaying and/or recovering results created using older versions of
+    PolicyBrain. Here is one option for re-creating your results:
+</h2>
+
+<h3>
+    Go to the <a href=http://www.ospc.org/taxbrain/edit/{{ unique_url.pk }}/?start_year={{fill_in_start_year}}>input page</a> and
+    re-submit your parameters using the current version of PolicyBrain. Note that for older runs
+    some parameters may have been deprecated. We recommend
+    <a href="https://github.com/open-source-economics/Tax-Calculator/tree/{{taxcalc_version}}"> Tax-Calculator's</a> documentation for alternative parameter choices.
+</h3>
+
+<h3>
+    The Tax-Calculator package may have more options for re-creating results with the exact version of
+    the package used in this run. For more details, please contact the OSPC team.
+</h3>
+
+</div>
+
+{% endblock %}

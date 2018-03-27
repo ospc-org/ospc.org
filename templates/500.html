@@ -1,13 +1,5 @@
-{% extends 'taxbrain/input_base.html' %}
-{{block.super}}
+{% extends 'pages/home.html' %}
+
 {% block content %}
-{% include 'taxbrain/header.html' %}
-<div class="container">
-
-<h1>We are unable to display the results for model run #XXX. We apologize for the inconvenience and are working to provide a satisfactory solution for displaying and/or recovering results created using older versions of PolicyBrain. Here is one option for recreating your results:</h1>
-
-<a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" /a>
-
-</div>
-
+<h1>500 Internal Server Error!</h1>
 {% endblock %}
