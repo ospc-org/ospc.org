@@ -6,6 +6,7 @@ import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
+import traceback
 MOCK_MODULES = []
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
@@ -766,50 +767,62 @@ def behavior_results(request, pk):
 
     model = url.unique_inputs
     if model.tax_result:
+        # try to render table; if failure render not available page
+        try:
+            output = model.get_tax_result()
+            first_year = model.first_year
+            created_on = model.creation_date
+            if 'fiscal_tots' in output:
+                # Use new key/value pairs for old data
+                output['aggr_d'] = output['fiscal_tots']
+                output['aggr_1'] = output['fiscal_tots']
+                output['aggr_2'] = output['fiscal_tots']
+                del output['fiscal_tots']
 
-        output = model.get_tax_result()
-        first_year = model.first_year
-        created_on = model.creation_date
-        if 'fiscal_tots' in output:
-            # Use new key/value pairs for old data
-            output['aggr_d'] = output['fiscal_tots']
-            output['aggr_1'] = output['fiscal_tots']
-            output['aggr_2'] = output['fiscal_tots']
-            del output['fiscal_tots']
+            tables = taxcalc_results_to_tables(output, first_year)
+            tables["tooltips"] = {
+                'distribution': DISTRIBUTION_TOOLTIP,
+                'difference': DIFFERENCE_TOOLTIP,
+                'payroll': PAYROLL_TOOLTIP,
+                'income': INCOME_TOOLTIP,
+                'base': BASE_TOOLTIP,
+                'reform': REFORM_TOOLTIP,
+                'bins': INCOME_BINS_TOOLTIP,
+                'deciles': INCOME_DECILES_TOOLTIP
+            }
+            is_registered = True if request.user.is_authenticated() else False
+            hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
+            microsim_url = hostname + "/taxbrain/" + str(model.micro_sim.pk)
 
-        tables = taxcalc_results_to_tables(output, first_year)
-        tables["tooltips"] = {
-            'distribution': DISTRIBUTION_TOOLTIP,
-            'difference': DIFFERENCE_TOOLTIP,
-            'payroll': PAYROLL_TOOLTIP,
-            'income': INCOME_TOOLTIP,
-            'base': BASE_TOOLTIP,
-            'reform': REFORM_TOOLTIP,
-            'bins': INCOME_BINS_TOOLTIP,
-            'deciles': INCOME_DECILES_TOOLTIP
-        }
-        is_registered = True if request.user.is_authenticated() else False
-        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-        microsim_url = hostname + "/taxbrain/" + str(model.micro_sim.pk)
+            # TODO: Fix the java script mapping problem.  There exists somewhere in
+            # the taxbrain javascript code a mapping to the old table names.  As
+            # soon as this is changed to accept the new table names, this code NEEDS
+            # to be removed.
+            tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
+            tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
+            tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
+            tables['mY_dec'] = tables.pop('dist2_xdec')
+            tables['mX_dec'] = tables.pop('dist1_xdec')
+            tables['df_dec'] = tables.pop('diff_itax_xdec')
+            tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
+            tables['cdf_dec'] = tables.pop('diff_comb_xdec')
+            tables['mY_bin'] = tables.pop('dist2_xbin')
+            tables['mX_bin'] = tables.pop('dist1_xbin')
+            tables['df_bin'] = tables.pop('diff_itax_xbin')
+            tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
+            tables['cdf_bin'] = tables.pop('diff_comb_xbin')
+            json_table = json.dumps(tables)
 
-        # TODO: Fix the java script mapping problem.  There exists somewhere in
-        # the taxbrain javascript code a mapping to the old table names.  As
-        # soon as this is changed to accept the new table names, this code NEEDS
-        # to be removed.
-        tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
-        tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
-        tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
-        tables['mY_dec'] = tables.pop('dist2_xdec')
-        tables['mX_dec'] = tables.pop('dist1_xdec')
-        tables['df_dec'] = tables.pop('diff_itax_xdec')
-        tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
-        tables['cdf_dec'] = tables.pop('diff_comb_xdec')
-        tables['mY_bin'] = tables.pop('dist2_xbin')
-        tables['mX_bin'] = tables.pop('dist1_xbin')
-        tables['df_bin'] = tables.pop('diff_itax_xbin')
-        tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
-        tables['cdf_bin'] = tables.pop('diff_comb_xbin')
-        json_table = json.dumps(tables)
+        except Exception as e:
+            print('Exception rendering pk', pk, e)
+            traceback.print_exc()
+            edit_href = '/dynamic/behavioral/edit/{}/?start_year={}'.format(
+                pk,
+                model.start_year
+            )
+            not_avail_context = dict(edit_href=edit_href,
+                                     **context_vers_disp)
+            return render(request, 'taxbrain/not_avail.html', not_avail_context)
 
         context = {
             'locals':locals(),

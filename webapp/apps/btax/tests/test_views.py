@@ -3,6 +3,7 @@ from django.test import Client
 import mock
 
 from ..models import BTaxSaveInputs, BTaxOutputUrl
+from ..forms import BTaxExemptionForm
 from ...taxbrain.models import WorkerNodesCounter
 from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
@@ -161,3 +162,31 @@ class BTaxViewsTests(TestCase):
         bsi = BTaxSaveInputs.objects.get(pk=out.model_pk)
         assert bsi.btax_depr_5yr == u'btax_depr_5yr_ads_Switch'
         assert bsi.btax_depr_5yr_ads_Switch == 'True'
+
+    def test_get_not_avail_page_renders(self):
+        """
+        Make sure not_avail.html page is rendered if exception is thrown
+        while parsing results
+        """
+        start_year = 2018
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.btax import views as webapp_views
+        webapp_views.dropq_compute = MockComputeBtax()
+        fields = {'first_year': str(start_year),
+                  'btax_depr_5yr': 'btax_depr_5yr_ads_Switch'}
+        form = BTaxExemptionForm(str(start_year), fields)
+        model = form.save()
+        model.tax_result = "unrenderable"
+        model.save()
+        unique_url = BTaxOutputUrl()
+        unique_url.unique_inputs = model
+        unique_url.save()
+
+        pk = unique_url.pk
+        url = '/ccc/{}/'.format(pk)
+        response = self.client.get(url)
+        assert any([t.name == 'btax/not_avail.html'
+                    for t in response.templates])
+        edit_exp = '/ccc/edit/{}/?start_year={}'.format(pk, start_year)
+        assert response.context['edit_href'] == edit_exp
