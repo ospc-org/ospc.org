@@ -11,8 +11,7 @@ import taxcalc
 from taxcalc import Policy
 from ...btax import views
 
-
-START_YEAR = 2016
+from ...constants import START_YEAR
 
 OK_POST_DATA = {u'btax_betr_pass': 0.33,
                 u'btax_depr_5yr': u'btax_depr_5yr_gds_Switch',
@@ -178,6 +177,35 @@ class BTaxViewsTests(TestCase):
         form = BTaxExemptionForm(str(start_year), fields)
         model = form.save()
         model.tax_result = "unrenderable"
+        model.save()
+        unique_url = BTaxOutputUrl()
+        unique_url.unique_inputs = model
+        unique_url.save()
+
+        pk = unique_url.pk
+        url = '/ccc/{}/'.format(pk)
+        response = self.client.get(url)
+        assert any([t.name == 'btax/not_avail.html'
+                    for t in response.templates])
+        edit_exp = '/ccc/edit/{}/?start_year={}'.format(pk, start_year)
+        assert response.context['edit_href'] == edit_exp
+
+    def test_get_not_avail_page_renders_start_year_is_none(self):
+        """
+        Make sure not_avail.html page is rendered if exception is thrown
+        while parsing results
+        """
+        start_year = START_YEAR
+        #Monkey patch to mock out running of compute jobs
+        import sys
+        from webapp.apps.btax import views as webapp_views
+        webapp_views.dropq_compute = MockComputeBtax()
+        fields = {'first_year': str(start_year),
+                  'btax_depr_5yr': 'btax_depr_5yr_ads_Switch'}
+        form = BTaxExemptionForm(str(start_year), fields)
+        model = form.save()
+        model.tax_result = "unrenderable"
+        model.first_year = None
         model.save()
         unique_url = BTaxOutputUrl()
         unique_url.unique_inputs = model

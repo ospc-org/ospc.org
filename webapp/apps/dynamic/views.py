@@ -451,7 +451,7 @@ def edit_dynamic_behavioral(request, pk):
     except:
         raise Http404
 
-    model = DynamicBehaviorSaveInputs.objects.get(pk=url.model_pk)
+    model = url.unique_inputs
     start_year = model.first_year
     model.set_fields()
     #Get the user-input from the model in a way we can render
@@ -491,7 +491,7 @@ def edit_dynamic_elastic(request, pk):
     except:
         raise Http404
 
-    model = DynamicElasticitySaveInputs.objects.get(pk=url.model_pk)
+    model = url.unique_inputs
     start_year = model.first_year
     #Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
@@ -818,7 +818,7 @@ def behavior_results(request, pk):
             traceback.print_exc()
             edit_href = '/dynamic/behavioral/edit/{}/?start_year={}'.format(
                 pk,
-                model.start_year
+                model.first_year or START_YEAR # sometimes first_year is None
             )
             not_avail_context = dict(edit_href=edit_href,
                                      **context_vers_disp)

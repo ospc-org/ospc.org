@@ -521,7 +521,7 @@ def submit_micro(request, pk):
     except:
         raise Http404
 
-    model = TaxSaveInputs.objects.get(pk=url.model_pk)
+    model = url.unique_inputs
     start_year = model.start_year
     # This will be a new model instance so unset the primary key
     model.pk = None
@@ -602,7 +602,7 @@ def edit_personal_results(request, pk):
     except:
         raise Http404
 
-    model = TaxSaveInputs.objects.get(pk=url.model_pk)
+    model = url.unique_inputs
     start_year = model.first_year
     model.set_fields()
 
@@ -767,7 +767,7 @@ def output_detail(request, pk):
             traceback.print_exc()
             edit_href = '/taxbrain/edit/{}/?start_year={}'.format(
                 pk,
-                model.start_year
+                model.first_year or START_YEAR # sometimes first_year is None
             )
             not_avail_context = dict(edit_href=edit_href,
                                      **context_vers_disp)

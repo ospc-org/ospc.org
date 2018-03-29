@@ -265,7 +265,7 @@ def edit_btax_results(request, pk):
     except:
         raise Http404
 
-    model = BTaxSaveInputs.objects.get(pk=url.model_pk)
+    model = url.unique_inputs
     start_year = model.first_year
     #Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
@@ -376,7 +376,7 @@ def output_detail(request, pk):
             traceback.print_exc()
             edit_href = '/ccc/edit/{}/?start_year={}'.format(
                 pk,
-                model.first_year
+                model.first_year or START_YEAR # sometimes first_year is None
             )
             print('edit_href', edit_href, pk, model.first_year)
             not_avail_context = dict(edit_href=edit_href,

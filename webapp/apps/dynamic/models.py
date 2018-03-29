@@ -118,8 +118,7 @@ class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
 
     NONPARAM_FIELDS = set(["job_ids", "jobs_not_ready", "first_year",
                            "tax_result", "raw_input_fields", "input_fields",
-                           "creation_date", "id", "raw_input_fields",
-                           "input_fields"])
+                           "creation_date", "id", "data_source"])
 
     def set_fields(self):
         """

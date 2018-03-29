@@ -34,6 +34,7 @@ Release 1.5.0 on 2018-03-2?
 - [#870](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/870) - Update RELEASES.md and increase compute time to 100 seconds - Hank Doupe
 - [#874](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/874) - Add special HTML pages for when a model result is not found or is incompatible - Sean Wang
 - [#875](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/875) - Back-end for not_avail.html page - Hank Doupe
+- [#876](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/876) - Use current default start year if start year was not saved - Hank Doupe
 
 Release 1.4.4 on 2018-03-08
 ----------------------------
