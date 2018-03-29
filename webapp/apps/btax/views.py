@@ -265,7 +265,7 @@ def edit_btax_results(request, pk):
     except:
         raise Http404
 
-    model = BTaxSaveInputs.objects.get(pk=url.model_pk)
+    model = url.unique_inputs
     start_year = model.first_year
     #Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
