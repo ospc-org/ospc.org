@@ -376,7 +376,7 @@ def output_detail(request, pk):
             traceback.print_exc()
             edit_href = '/ccc/edit/{}/?start_year={}'.format(
                 pk,
-                model.first_year
+                model.first_year or START_YEAR # sometimes first_year is None
             )
             print('edit_href', edit_href, pk, model.first_year)
             not_avail_context = dict(edit_href=edit_href,

@@ -128,12 +128,15 @@ class TestDynamicBehavioralViews(object):
         assert post["first_budget_year"] == int(START_YEAR)
         assert user_mods["behavior"][str(START_YEAR)]["_BE_sub"][0] == 0.25
 
-    def test_get_not_avail_page_renders(self):
+    @pytest.mark.parametrize(
+        'start_year,start_year_is_none',
+        [(2018, False), (2017, True)]
+    )
+    def test_get_not_avail_page_renders(self, start_year, start_year_is_none):
         """
         Make sure not_avail.html page is rendered if exception is thrown
         while parsing results
         """
-        start_year = 2018
         fields = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
         fields['BE_sub'] = ['0.25']
         fields["first_year"] = start_year
@@ -149,6 +152,8 @@ class TestDynamicBehavioralViews(object):
         model.input_fields = None
         model.deprecated_fields = None
         model.tax_result = "unrenderable"
+        if start_year_is_none:
+            model.first_year = None
         model.save()
         unique_url.unique_inputs = model
         unique_url.save()

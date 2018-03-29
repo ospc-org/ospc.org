@@ -782,13 +782,15 @@ class TestTaxBrainViews(object):
                       "PT_exclusion_wage_limit"]:
             assert msg.format(param) in str(response.context["form"].errors)
 
-    def test_get_not_avail_page_renders(self):
+    @pytest.mark.parametrize(
+        'start_year,start_year_is_none',
+        [(2018, False), (2017, True)]
+    )
+    def test_get_not_avail_page_renders(self, start_year, start_year_is_none):
         """
         Make sure not_avail.html page is rendered if exception is thrown
         while parsing results
         """
-
-        start_year = 2018
         fields = get_post_data(start_year)
         fields["first_year"] = start_year
         unique_url = get_taxbrain_model(fields,
@@ -800,6 +802,8 @@ class TestTaxBrainViews(object):
         model.input_fields = None
         model.deprecated_fields = None
         model.tax_result = "unrenderable"
+        if start_year_is_none:
+            model.first_year = None
         model.save()
         unique_url.unique_inputs = model
         unique_url.save()

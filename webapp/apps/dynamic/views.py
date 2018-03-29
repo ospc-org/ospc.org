@@ -818,7 +818,7 @@ def behavior_results(request, pk):
             traceback.print_exc()
             edit_href = '/dynamic/behavioral/edit/{}/?start_year={}'.format(
                 pk,
-                model.start_year
+                model.first_year or START_YEAR # sometimes first_year is None
             )
             not_avail_context = dict(edit_href=edit_href,
                                      **context_vers_disp)
