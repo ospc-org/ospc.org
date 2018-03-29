@@ -16,7 +16,10 @@ from taxcalc import Policy
 
 from .utils import do_dynamic_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
-                                  get_post_data, get_file_post_data)
+                                  get_post_data, get_file_post_data,
+                                  get_taxbrain_model)
+from ..models import DynamicBehaviorOutputUrl
+from ..forms import DynamicBehavioralInputsModelForm
 
 @pytest.mark.usefixtures("r1")
 class DynamicBehavioralViewsTests(TestCase):
@@ -125,3 +128,39 @@ class DynamicBehavioralViewsTests(TestCase):
         user_mods = json.loads(post["user_mods"])
         assert post["first_budget_year"] == int(START_YEAR)
         assert user_mods["behavior"][str(START_YEAR)]["_BE_sub"][0] == 0.25
+
+    def test_get_not_avail_page_renders(self):
+        """
+        Make sure not_avail.html page is rendered if exception is thrown
+        while parsing results
+        """
+        start_year = 2018
+        fields = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
+        fields['BE_sub'] = ['0.25']
+        fields["first_year"] = start_year
+        unique_url = get_taxbrain_model(fields,
+                                        first_year=start_year,
+                                        taxcalc_vers="0.14.2",
+                                        webapp_vers="1.3.0",
+                                        Form=DynamicBehavioralInputsModelForm,
+                                        UrlModel=DynamicBehaviorOutputUrl)
+
+        model = unique_url.unique_inputs
+        model.raw_input_fields = None
+        model.input_fields = None
+        model.deprecated_fields = None
+        model.tax_result = "unrenderable"
+        model.save()
+        unique_url.unique_inputs = model
+        unique_url.save()
+
+        pk = unique_url.pk
+        url = '/dynamic/behavior_results/{}/'.format(pk)
+        response = self.client.get(url)
+        assert any([t.name == 'taxbrain/not_avail.html'
+                    for t in response.templates])
+        edit_exp = '/dynamic/behavioral/edit/{}/?start_year={}'.format(
+            pk,
+            start_year
+        )
+        assert response.context['edit_href'] == edit_exp

@@ -6,6 +6,7 @@ import pytz
 import os
 import tempfile
 import re
+import traceback
 
 
 #Mock some module for imports because we can't fit them on Heroku slugs
@@ -758,7 +759,20 @@ def output_detail(request, pk):
     context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
                          'webapp_version': webapp_vers_disp}
     if model.tax_result:
-        context = get_result_context(model, request, url)
+        # try to render table; if failure render not available page
+        try:
+            context = get_result_context(model, request, url)
+        except Exception as e:
+            print('Exception rendering pk', pk, e)
+            traceback.print_exc()
+            edit_href = '/taxbrain/edit/{}/?start_year={}'.format(
+                pk,
+                model.start_year
+            )
+            not_avail_context = dict(edit_href=edit_href,
+                                     **context_vers_disp)
+            return render(request, 'taxbrain/not_avail.html', not_avail_context)
+
         context.update(context_vers_disp)
         context["raw_reform_text"] = model.json_text.raw_reform_text if model.json_text else ""
         context["raw_assumption_text"] = model.json_text.raw_assumption_text if model.json_text else ""

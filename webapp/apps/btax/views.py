@@ -2,7 +2,7 @@ import csv
 import pdfkit
 import json
 import pytz
-
+import traceback
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
@@ -356,19 +356,33 @@ def output_detail(request, pk):
 
     model = url.unique_inputs
     if model.tax_result:
-        exp_num_minutes = 0.25
-        JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
-        tax_result = url.unique_inputs.tax_result
-        tables = json.loads(tax_result)[0]
-        first_year = url.unique_inputs.first_year
-        created_on = url.unique_inputs.creation_date
-        tables["tooltips"] = {
-            "metr": METR_TOOLTIP,
-            "mettr": METTR_TOOLTIP,
-            "coc": COC_TOOLTIP,
-            "dprc": DPRC_TOOLTIP,
-        }
-        bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(tables['dataframes'])
+        # try to render table; if failure render not available page
+        try:
+            exp_num_minutes = 0.25
+            JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
+            tax_result = url.unique_inputs.tax_result
+            tables = json.loads(tax_result)[0]
+            first_year = url.unique_inputs.first_year
+            created_on = url.unique_inputs.creation_date
+            tables["tooltips"] = {
+                "metr": METR_TOOLTIP,
+                "mettr": METTR_TOOLTIP,
+                "coc": COC_TOOLTIP,
+                "dprc": DPRC_TOOLTIP,
+            }
+            bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(tables['dataframes'])
+        except Exception as e:
+            print('Exception rendering pk', pk, e)
+            traceback.print_exc()
+            edit_href = '/ccc/edit/{}/?start_year={}'.format(
+                pk,
+                model.first_year
+            )
+            print('edit_href', edit_href, pk, model.first_year)
+            not_avail_context = dict(edit_href=edit_href,
+                                     is_btax=True,
+                                     **context_vers_disp)
+            return render(request, 'btax/not_avail.html', not_avail_context)
 
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
