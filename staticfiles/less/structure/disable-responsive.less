@@ -1,0 +1,30 @@
+// Disable responsive
+
+// http://getbootstrap.com/getting-started/#disable-responsive
+// http://coderpills.wordpress.com/2014/05/11/how-to-use-twitter-bootstrap-3-for-non-responsive-site/
+
+// Step 1: Remove the viewport from HTML
+// <meta name="viewport" content="width=device-width, initial-scale=1">
+
+// Step 2: Remove the max-width on the .container class
+
+.container {
+  max-width: none !important;
+  width: 1050px;
+}
+
+// Step 3: Fixing the navbars
+
+// Open variables.less and set the variables:
+@grid-float-breakpoint: 0;
+@screen-xs-max: 0;
+
+// Step 4: Using the grid
+
+// For grid layouts, make use of .col-xs-* classes in addition to or in place of the medium/large ones.
+// Don’t worry, the extra-small device grid scales up to all resolutions, so you’re set there.
+
+// Step 5: IE8 (optional)
+
+// You’ll still need Respond.js for IE8 (since our media queries are still there and need to be processed).
+// This disables the “mobile site” aspects of Bootstrap.

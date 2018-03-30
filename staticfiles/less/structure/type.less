@@ -1,0 +1,107 @@
+// Type
+
+// Fonts
+@font-default: 'VerbMedium', Arial, sans-serif;
+@font-fallback: Tahoma, Arial, sans-serif;
+
+@font-verb: 'VerbMedium', Arial, sans-serif;
+@font-verb-bold: 'VerbRegular-Bold', Arial, sans-serif;
+@font-verb-cond: 'VerbCondLight', Arial, sans-serif;
+@font-museo-rounded: 'MuseoSansRounded-700', Arial, sans-serif;
+
+// body
+body {
+    color: @gray-dark;
+    font-family: @font-verb;
+    font-style: normal;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+}
+
+// headers
+h1, .h1 {
+  font-family: @font-museo-rounded;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 32px;
+}
+
+h2, .h2 {
+  font-family: @font-verb-bold;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  line-height: 26px;
+  text-transform: uppercase;
+}
+
+h3, .h3 {
+	font-family: @font-museo-rounded;
+	font-size: 16px;
+  font-weight: 400;
+  // letter-spacing: 0.05em;
+  line-height: 21px;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+// lead
+.lead {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 32px;
+}
+
+.bump {
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 32px;
+}
+
+.light {
+  font-family: @font-verb-cond;
+  font-weight: 400;
+}
+
+// caps
+.caps {
+	text-transform: uppercase;
+}
+
+// section
+.section-header {
+	h2, h3 {
+    color: @gray-light;
+		margin: 0 0 1em 0;
+		text-align: center;
+		text-transform: uppercase;
+	}
+}
+
+// links
+a {
+  color: @link;
+  &:hover {
+  	color: #000;
+  	text-decoration: none;
+  }
+  // left arrow
+  &.back-to {
+    &:before {
+      .icon-font;
+      &:extend(.icon-left-arrow:before);
+      color: @gray-light;
+      padding-right: 3px;
+      position: relative;
+      top: 1px;
+    }
+    &:hover {
+      color: #000;
+      &:after {
+        color: #000;
+      }
+    }
+  }
+}

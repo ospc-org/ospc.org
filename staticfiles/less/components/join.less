@@ -1,0 +1,69 @@
+// Join
+
+.join {
+	padding: 100px 0;
+	h2 {
+		color: @lime;
+		text-align: center;
+	}
+	.input-container {
+		border-bottom: 3px solid #d9ecc3;
+		margin-bottom: 28px;
+	}
+	.input-group {
+		margin: 0 auto -31px auto;
+		max-width: 700px;
+	}
+	.form-control {
+		.placeholder(@color: #b2b2b2);
+		border: 3px solid #dbebd0;
+		border-right: 0;
+		color: @gray-dark;
+		font-size: 21px;
+		height: 60px;
+		outline: 0;
+	}
+	.input-group-btn {}
+	.btn-join {
+		background-color: #f7f9f9;
+		border: 3px solid #dbebd0;
+		border-left: 0;
+		color: @gray;
+		height: 60px;
+		outline: 0;
+		padding-left: 25px;
+		padding-right: 25px;
+		text-transform: uppercase;
+	}
+	.join-info {
+		color: @gray;
+		font-size: 17px;
+		padding: 10px;
+		text-align: center;
+	}
+}
+
+.join-active {
+	.form-control {
+		border-color: #8cc63f;
+	}
+	.btn-join {
+		background-color: #8cc63f;
+		border-color: #8cc63f;
+		color: white;
+	}
+}
+
+.join-complete {
+	.form-control {
+		border-color: #bddd99;
+	}
+	.btn-join {
+		background-color: @section-bg;
+		border-color: #bddd99;
+		color: @lime;
+	}
+	.join-info {
+		color: @lime;
+	}
+}

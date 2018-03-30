@@ -1,0 +1,110 @@
+// Navigation
+
+.navbar-ospc {
+	background-color: @section-bg;
+	border: 0;
+	border-radius: 0;
+	min-height: 88px;
+	margin: 0 0 10px 0;
+	padding: 25px 0 0 0;
+	@media (min-width: @screen-sm) {
+    margin-bottom: 30px;
+  }
+
+	.navbar-nav {
+		li {
+			display: block;
+			margin: 0 15px;
+			padding: 0;
+			text-align: center;
+			a {
+				color: #3D4343;
+				display: inline-block;
+				font-family: @font-museo-rounded;
+				letter-spacing: 0.05em;
+				line-height: 31px;
+				padding: 5px 0 0 0;
+				// text-align: center;
+				text-decoration: none;
+				text-transform: uppercase;
+				&:hover {
+					background-color: transparent;
+					color: #000;
+				}
+				&:active,
+				&:focus {
+					background-color: transparent;
+				}
+			}
+			&.current {
+				a {
+					border-bottom: 3px solid #bed62f;
+					&:hover {
+						color: @gray-base;
+					}
+				}
+			}
+		}
+		.nav-dropdown {
+			position: relative;
+    		display: inline-block;
+    			&:hover ul {
+					display: block;
+				}
+    		@media (max-width: @screen-sm) {
+    			display: block;
+    		}
+
+			ul {
+				display: none;
+    			position: absolute;
+    			z-index: 1;
+    			padding-left: 10px;
+    			background-color: white;
+    			border: 2px solid #eff4f4;
+    			@media (max-width: @screen-sm) {
+    				position: relative;
+    				width: 60%;
+    				margin: 0 auto;
+    				padding: 0px;
+    			}
+    			@media (max-width: @screen-xs) {
+					width: 90%;
+    			}
+
+    			li {
+    				margin: 0px;
+				    text-align: left;
+				    width: 250px;
+				    @media (max-width: @screen-sm) {
+				    	text-align: center;
+				    	width: auto;
+				    }
+				    a {
+				    	border-bottom: 0px;
+				    }
+    			}
+			}
+
+		}
+	}
+	.navbar-toggle {
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+}
+
+.navbar-brand {
+	display: block;
+	float: left;
+	height: 41px;
+	margin: 0 0 0 15px;
+	padding: 0 0 0 0;
+	text-decoration: none;
+	&:hover {
+		text-decoration: none;
+	}
+	img {
+		display: block;
+	}
+}

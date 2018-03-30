@@ -1,0 +1,144 @@
+// Shell
+
+// small screen
+@media (max-width: @screen-sm) {}
+
+// medium screen
+@media (max-width: @screen-md) {}
+
+// large screen
+@media (max-width: @screen-sm) {}
+
+// body
+body {
+	background-color: @site-bg;
+}
+
+/* Default structure */
+
+// wrapper
+.wrapper {
+  //min-width: 1050px;
+}
+
+// header
+.page-header {
+  border: 0;
+  margin: 0 0 50px 0;
+  padding: 0;
+}
+
+// footer
+footer {
+  background-color: @footer-bg;
+  margin: 0;
+  min-width: 1050px;
+  padding: 0;
+
+  .copyright {
+    margin: 0;
+  }
+}
+
+.footer-main {
+  background-color: @gray-dark;
+  padding: 65px 0 60px 0;
+
+  .footer-main-logo {
+    float: left;
+    img {
+      display: block;
+      margin: -46px 10px 10px 0;
+      width: 110px;
+      @media (min-width: @screen-xs) {
+        margin-right: 60px;
+      }
+    }
+  }
+  .footer-main-text {
+    color: white;
+    float: left;
+    font-size: 16px;
+    line-height: 26px;
+    width: 100%;
+    @media (min-width: @screen-xs) {
+      margin-top: -2px;
+      width: 50%;
+    }
+  }
+  .footer-main-links {
+    float: right;
+  }
+
+  ul {
+    font-weight: 700;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-align: right;
+    li {
+      display: inline-block;
+      margin-left: 10px;
+      @media (min-width: @screen-xs) {
+        margin-left: 30px;
+      }
+      a {
+        color: @link-footer;
+        &:hover {
+          color: @link-hover;
+        }
+      }
+    }
+  }
+  // hide on print
+  @media print {
+    display: none !important;
+  }
+}
+
+.footer-sub {
+  .clearfix();
+  // border-top: 1px solid #d6dede;
+  font-size: 11px;
+  line-height: 16px;
+  padding: 20px 0;
+  position: relative;
+
+  a {
+    color: @gray-dark;
+    &:hover {
+      border-bottom: 1px solid @gray-dark;
+      text-decoration: none;
+    }
+  }
+
+  .footer-sub-address {
+    text-transform: uppercase;
+    @media (min-width: @screen-xs) {
+      float: left;
+    }
+    @media (max-width: @screen-xs) {
+      .adr {
+        display: block;
+      }
+    }
+  }
+  .footer-sub-logo {
+    img {
+      margin-bottom: 10px;
+      width: 88px;
+    }
+    @media (min-width: @screen-xs) {
+      left: 50%;
+      margin-bottom: 0;
+      margin-left: -44px;
+      position: absolute;
+      top: 18px;
+    }
+  }
+  .footer-sub-u {
+    @media (min-width: @screen-xs) {
+      float: right;
+    }
+  }
+}

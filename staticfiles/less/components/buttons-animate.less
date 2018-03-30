@@ -1,0 +1,31 @@
+// Buttons animate
+
+.btn-animate {
+  .background-image(linear-gradient(to bottom, #00968b 50%,#00877d 50%));
+  background-position: left top;
+  background-size: 100% 200%;
+  position: relative;
+  transition:all 2s ease;
+
+  &:after {
+    .icon-font;
+    &:extend(.icon-checkmark:before);
+    color: white;
+    left: 50%;
+    margin-left: -10px;
+    opacity: 0;
+    position: absolute;
+    top: 20px;
+    -webkit-transition: opacity 3s;
+    transition: opacity 3s;
+  }
+
+  &:active,
+  &:focus {
+    background-position: left bottom;
+    color: #00877d;
+    &:after  {
+      opacity: 1;
+    }
+  }
+}

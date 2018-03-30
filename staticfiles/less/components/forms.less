@@ -1,0 +1,153 @@
+// Forms
+
+form {
+  .form-group {
+    input.form-control {
+      color: @gray-dark;
+    }
+  }
+}
+fieldset {}
+legend {}
+
+label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 400;
+	padding-right: 10px;
+	position: relative;
+
+	// optional
+	.optional {
+		margin-left: 5px;
+		color: #C6CBCF;
+		font-size: 11px;
+	}
+	// tooltip
+	.input-tooltip {
+		color: #95d3eb;
+		display: inline-block;
+		margin-left: 5px;
+
+
+		&:before {
+			.icon-font;
+	     &:extend(.icon-info:before);
+	     font-size: 12px;
+	     position: relative;
+	     top: 0;
+	  }
+	  &:hover {
+	  	color: #2ca8d7;
+		}
+	}
+	.btn {
+		margin-left: 5px;
+
+
+	}
+}
+
+// tooltip window size
+.tooltip {
+    min-width: 180px !important;
+    max-width: 100% !important;
+}
+
+.form-group {
+	margin-bottom: 25px;
+}
+
+.form-control {
+	.placeholder(@color: #b2b2b2);
+	color: #000;
+	border-color: #cccccc;
+	font-size: 21px;
+	height: 42px;
+	line-height: 1.5238;
+	padding: 6px 12px;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+	margin: 3px 0 0;
+}
+
+.default {
+	color: @gray-light;
+	display: none;
+	font-size: 11px;
+	margin-top: 7px;
+	margin-bottom: 15px;
+}
+
+.default-inline {
+	color: @gray-light;
+	display: none;
+	font-size: 11px;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+.input-group-addon {
+	&.addon-select {
+		&:last-child {
+			border: 1px solid #cccccc;
+			border-bottom-left-radius: 4px;
+			border-top-left-radius: 4px;
+		}
+	}
+}
+
+// highlight edited fields
+.form-group.edited {
+	.form-control {
+		background-color: #e8faf9;
+	}
+	.default {
+		display: block;
+	}
+	.default-inline {
+		display: inline-block;
+	}
+}
+
+// states
+.has-warning {
+	.control-label {
+		color: @orange-dark;
+	}
+	.form-control {
+		background-color: @orange-light;
+		border-color: @orange;
+	}
+	.help-block {
+		color: @orange-dark;
+		display: block;
+	}
+	.input-group-addon {
+		color: #bdc9c9;
+		border-color: #cccccc;
+		background-color: #eeeeee;
+	}
+}
+
+.has-error {
+	.control-label {}
+	.form-control {}
+}
+
+.has-statuses {
+	.form-group {
+		label {
+			font-family: @font-verb-cond;
+			font-size: 13px;
+			padding: 0;
+		}
+	}
+}
+
+.coming-soon {
+	font-style: italic;
+	color: @gray-light;
+}
