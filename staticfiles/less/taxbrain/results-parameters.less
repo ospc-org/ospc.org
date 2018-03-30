@@ -1,0 +1,155 @@
+// Parameters
+
+.result-parameters {
+  background-color: @section-bg;
+  border-top: 2px solid #bdc9c9;
+  padding: 50px 0;
+
+  .result-parameters-header {
+    margin-bottom: 50px;
+    text-align: center;
+    p {
+      color: #869191;
+      font-family: @font-verb-cond;
+      font-size: 17px;
+      span {
+        color: #000;
+      }
+    }
+  }
+  // adjust on print
+  @media print {
+    border-top: 0 !important;
+    padding-top: 25px !important;
+  }
+}
+
+.parameter-block {
+  background-color: white;
+  float: left;
+  margin: 0 -15px 30px -15px;
+  padding: 0;
+  width: 500px;
+  // height: 330px;
+
+  &:nth-of-type(even) {
+    clear: left;
+    float: left;
+  }
+  &:nth-of-type(odd) {
+    clear: right;
+    float: right;
+  }
+}
+
+.parameter-block-header {
+  border-bottom: 1px solid @section-bg;
+  padding: 20px 60px 20px 20px;
+  position: relative;
+  h3 {
+    color: #00968b;
+    font-family: @font-museo-rounded;
+    font-size: 21px;
+    line-height: 26px;
+    margin: 0;
+  }
+  a {
+    font-size: 17px;
+    line-height: 26px;
+    position: absolute;
+    right: 15px;
+    top: 20px;
+    // hide on print
+    @media print {
+      display: none !important;
+    }
+  }
+}
+
+.parameter-block-content {
+  padding: 20px;
+
+  .input {
+    display: block;
+    font-size: 13px;
+  }
+  .value {
+    color: #000000;
+    display: block;
+    font-size: 19px;
+    margin-bottom: 0;
+    opacity: .3;
+    &.edited {
+      opacity: 1;
+    }
+  }
+  hr {
+    margin: 10px 0;
+  }
+}
+
+.table-params {
+  border-bottom: 0;
+  > thead {
+    > tr {
+      > th {
+        background-color: transparent;
+        border-bottom: 0;
+        border-color: #eff4f4;
+        border-top: 0;
+        color: #3d4444;
+        font-family: @font-default;
+        font-size: 11px;
+        font-weight: 400;
+        padding: 15px 10px 10px 10px;
+        text-align: center;
+        text-transform: uppercase;
+        width: 100px;
+        &:first-child {
+          color: #000;
+          font-size: 14px;
+          text-align: left;
+          text-transform: none;
+          width: auto;
+        }
+        // adjust on print
+        @media print {
+          border-color: #dddddd !important;
+        }
+      }
+    }
+  }
+  > tbody {
+    > tr {
+      > th {
+        border-color: #eff4f4;
+        font-family: @font-default;
+        font-size: 13px;
+        font-weight: 400;
+        padding: 10px;
+        // adjust on print
+        @media print {
+          border-color: #dddddd !important;
+        }
+      }
+      > td {
+        border-color: #eff4f4;
+        color: #000000;
+        font-size: 15px;
+        opacity: .3;
+        padding: 10px;
+        text-align: center;
+        &.edited {
+          background-color: #e8faf9;
+          opacity: 1;
+        }
+        // adjust on print
+        @media print {
+          border-color: #dddddd !important;
+          color: #3d4444 !important;
+          opacity: 1 !important;
+        }
+      }
+    }
+  }
+}
