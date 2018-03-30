@@ -24,6 +24,7 @@ Release 1.5.0 on 2018-03-2?
 - [#867](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Display parameter data type as indicated by Tax-Calculator specifications - Hank Doupe
 - [#871](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/871) - Change Data Related Text - Anderson Frailey
 - [#872](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/872) - Change Dropdown Order - Anderson Frailey
+- [#877](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/877) - Update to Tax-Calculator 0.18.0 - Hank Doupe
 
 **Bug Fixes**
 - [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Pass start year to dynamic behavioral - Hank Doupe
