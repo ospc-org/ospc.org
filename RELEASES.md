@@ -4,6 +4,17 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.5.1 on 2018-03-30
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#879](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/879) - Add back static files - Hank Doupe
+
 Release 1.5.0 on 2018-03-30
 ----------------------------
 **Major Changes**
