@@ -1,6 +1,6 @@
-FROM opensourcepolicycenter/distributed:v1.5.0
+FROM opensourcepolicycenter/distributed:v1.5.0.1
 
-LABEL build="celery" version="0.0.1" date="2018-03-22"
+LABEL build="celery" date="2018-03-30"
 
 ENV CELERY_BROKER_URL redis://redis:6379/0
 ENV CELERY_RESULT_BACKEND redis://redis:6379/0
