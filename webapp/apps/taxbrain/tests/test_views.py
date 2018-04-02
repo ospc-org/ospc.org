@@ -12,7 +12,7 @@ from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
-                       NodeDownCompute)
+                       NodeDownCompute, MockFailedComputeOnOldHost)
 from ..views import get_result_context
 import taxcalc
 from taxcalc import Policy
@@ -815,3 +815,31 @@ class TestTaxBrainViews(object):
                     for t in response.templates])
         edit_exp = '/taxbrain/edit/{}/?start_year={}'.format(pk, start_year)
         assert response.context['edit_href'] == edit_exp
+
+    def test_get_failed_sim(self, monkeypatch):
+        start_year = 2018
+        data = get_post_data(start_year)
+        data['first_year'] = start_year
+
+        result = do_micro_sim(CLIENT, data)
+
+        pk = result['pk']
+        url = OutputUrl.objects.filter(pk=pk)
+        assert len(url) == 1
+        model = url[0].unique_inputs
+        model.job_ids = [
+            u'abc#1.1.1.1',
+            u'def#2.2.2.2',
+            u'ghi#3.3.3.3',
+            u'jkl#4.4.4.4',
+        ]
+        model.jobs_not_ready = model.job_ids[:2]
+        model.tax_result = None
+        model.save()
+        from ...taxbrain import views
+        monkeypatch.setattr(views, 'dropq_compute', MockFailedComputeOnOldHost())
+        results_url = '/taxbrain/{}/'.format(pk)
+        response = CLIENT.get(results_url)
+
+        assert any([t.name == 'taxbrain/failed.html'
+                    for t in response.templates])

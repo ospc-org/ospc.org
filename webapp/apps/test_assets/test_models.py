@@ -7,7 +7,10 @@ import numpy as np
 from datetime import datetime
 
 from ..taxbrain.models import (JSONReformTaxCalculator,
-                               OutputUrl)
+                               OutputUrl, TaxSaveInputs)
+from ..dynamic.models import (DynamicBehaviorSaveInputs,
+                              DynamicElasticitySaveInputs)
+from ..btax.models import BTaxSaveInputs
 from utils import get_taxbrain_model, stringify_fields
 from ..taxbrain.forms import TaxBrainForm
 
@@ -76,3 +79,47 @@ class TaxBrainFieldsTest(TaxBrainModelsTest):
         # do some kind of check here using `exp_result`
 
         return model
+
+@pytest.mark.django_db
+class TestHostNames:
+
+    @pytest.mark.parametrize(
+        'Inputs',
+        [TaxSaveInputs, DynamicBehaviorSaveInputs, DynamicElasticitySaveInputs,
+         BTaxSaveInputs]
+    )
+    def test_check_hostnames(self, Inputs):
+        inputs = Inputs()
+        inputs.job_ids = []
+        inputs.job_ids = [
+            u'abc#1.1.1.1',
+            u'def#2.2.2.2',
+            u'ghi#3.3.3.3',
+            u'jkl#4.4.4.4',
+        ]
+        inputs.jobs_not_ready = inputs.job_ids[:2]
+        inputs.save()
+        assert inputs.check_hostnames(['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4'])
+
+
+    @pytest.mark.parametrize(
+        'Inputs',
+        [TaxSaveInputs, DynamicBehaviorSaveInputs, DynamicElasticitySaveInputs,
+         BTaxSaveInputs]
+    )
+    def test_check_hostnames_false(self, Inputs):
+        inputs = Inputs()
+        inputs.job_ids = [
+            u'abc#1.1.1.1',
+            u'def#2.2.2.2',
+            u'ghi#3.3.3.3',
+            u'jkl#4.4.4.4',
+        ]
+        inputs.jobs_not_ready = inputs.job_ids[:2]
+        inputs.save()
+        assert not inputs.check_hostnames(['5.5.5.5'])
+
+    def test_check_hostnames_none(self):
+        inputs = TaxSaveInputs()
+        inputs.jobs_not_ready = None
+        assert inputs.check_hostnames([])

@@ -41,7 +41,7 @@ from .helpers import (get_btax_defaults,
 from ..taxbrain.helpers import (format_csv,
                                 is_wildcard)
 from ..taxbrain.views import denormalize, normalize
-from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
+from .compute import DropqComputeBtax, MockComputeBtax, JobFailError, BTAX_WORKERS
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
                         START_YEAR)
@@ -403,7 +403,10 @@ def output_detail(request, pk):
         return render(request, 'btax/results.html', context)
 
     else:
-
+        if not model.check_hostnames(BTAX_WORKERS):
+            print('bad hostname', model.jobs_not_ready, BTAX_WORKERS)
+            return render_to_response('taxbrain/failed.html',
+                                      context={'is_btax': True})
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
