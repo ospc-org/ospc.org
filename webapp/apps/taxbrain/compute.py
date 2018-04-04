@@ -318,12 +318,13 @@ class MockFailedCompute(MockCompute):
             return DropqCompute.remote_results_ready(self, theurl, params)
 
 class MockFailedComputeOnOldHost(MockCompute):
-
+    """
+    Simulate requesting results from a host IP that is no longer used. This
+    action should raise a `ConnectionError`
+    """
     def remote_results_ready(self, theurl, params):
-        print 'MockFailedCompute remote_results_ready', theurl, params
-        with requests_mock.Mocker() as mock:
-            mock.register_uri('GET', '/dropq_query_result', text='FAIL')
-            raise requests.ConnectionError()
+        print 'MockFailedComputeOnOldHost remote_results_ready', theurl, params
+        raise requests.ConnectionError()
 
 
 class NodeDownCompute(MockCompute):
