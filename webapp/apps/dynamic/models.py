@@ -61,8 +61,8 @@ class DynamicSaveInputs(DataSourceable, models.Model):
         )
 
 
-class DynamicBehaviorSaveInputs(DataSourceable, Fieldable,
-                                Resultable, Hostnameable, models.Model):
+class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
+                                Hostnameable, models.Model):
     """
     This model contains all the parameters for the dynamic behavioral tax
     model and the tax result.
