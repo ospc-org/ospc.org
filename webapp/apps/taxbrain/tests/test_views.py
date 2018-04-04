@@ -816,28 +816,38 @@ class TestTaxBrainViews(object):
         edit_exp = '/taxbrain/edit/{}/?start_year={}'.format(pk, start_year)
         assert response.context['edit_href'] == edit_exp
 
-    def test_get_failed_sim(self, monkeypatch):
+    def test_get_failed_sim_on_old_host(self, monkeypatch):
+        """
+        Simulate retrieving results from a host that is no longer used. Prior
+        to fix this raised a `requests.ConnectionError`
+        """
         start_year = 2018
         data = get_post_data(start_year)
         data['first_year'] = start_year
 
         result = do_micro_sim(CLIENT, data)
-
+        # get DB object
         pk = result['pk']
         url = OutputUrl.objects.filter(pk=pk)
         assert len(url) == 1
         model = url[0].unique_inputs
+        # swap out the job_ids to an IP address that is not
+        # used anymore,
         model.job_ids = [
             u'abc#1.1.1.1',
             u'def#2.2.2.2',
             u'ghi#3.3.3.3',
             u'jkl#4.4.4.4',
         ]
+        # simulate having some unfinished jobs and no result
         model.jobs_not_ready = model.job_ids[:2]
         model.tax_result = None
         model.save()
+
         from ...taxbrain import views
         monkeypatch.setattr(views, 'dropq_compute', MockFailedComputeOnOldHost())
+
+        # try to get the bad results page
         results_url = '/taxbrain/{}/'.format(pk)
         response = CLIENT.get(results_url)
 
