@@ -14,9 +14,10 @@ import datetime
 from ..taxbrain.models import (SeparatedValuesField,
                                CommaSeparatedField)
 
+from ..taxbrain.behaviors import Hostnameable
 
 
-class BTaxSaveInputs(models.Model):
+class BTaxSaveInputs(Hostnameable, models.Model):
     """
     This model contains all the parameters for the tax model and the tax
     result.

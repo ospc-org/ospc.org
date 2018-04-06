@@ -7,6 +7,7 @@ import os
 import tempfile
 import re
 import traceback
+import requests
 
 
 #Mock some module for imports because we can't fit them on Heroku slugs
@@ -44,7 +45,7 @@ from .helpers import (taxcalc_results_to_tables, format_csv,
                       )
 from .param_displayers import nested_form_parameters
 from .compute import (DropqCompute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
-                      NUM_BUDGET_YEARS_QUICK)
+                      NUM_BUDGET_YEARS_QUICK, DROPQ_WORKERS)
 
 dropq_compute = DropqCompute()
 
@@ -780,7 +781,9 @@ def output_detail(request, pk):
     elif model.error_text:
         return render(request, 'taxbrain/failed.html', {"error_msg": model.error_text.text})
     else:
-
+        if not model.check_hostnames(DROPQ_WORKERS):
+            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+            return render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:

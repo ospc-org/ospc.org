@@ -43,6 +43,7 @@ from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
 from ..taxbrain.helpers import (taxcalc_results_to_tables,
                                 convert_val)
 from ..taxbrain.param_displayers import default_behavior
+from ..taxbrain.compute import JobFailError, DROPQ_WORKERS
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
@@ -650,7 +651,9 @@ def elastic_results(request, pk):
         return render(request, 'dynamic/elasticity_results.html', context)
 
     else:
-
+        if not model.check_hostnames(DROPQ_WORKERS):
+            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+            raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
@@ -839,7 +842,9 @@ def behavior_results(request, pk):
         return render(request, 'taxbrain/results.html', context)
 
     else:
-
+        if not model.check_hostnames(DROPQ_WORKERS):
+            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+            raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:

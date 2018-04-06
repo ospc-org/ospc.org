@@ -4,7 +4,7 @@ from .models import WorkerNodesCounter
 import json
 import requests
 import taxcalc
-from requests.exceptions import Timeout, RequestException
+from requests.exceptions import Timeout, RequestException, ConnectionError
 from .helpers import arrange_totals_by_row
 from ..constants import START_YEAR
 import requests_mock
@@ -316,6 +316,16 @@ class MockFailedCompute(MockCompute):
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_query_result', text='FAIL')
             return DropqCompute.remote_results_ready(self, theurl, params)
+
+class MockFailedComputeOnOldHost(MockCompute):
+    """
+    Simulate requesting results from a host IP that is no longer used. This
+    action should raise a `ConnectionError`
+    """
+    def remote_results_ready(self, theurl, params):
+        print 'MockFailedComputeOnOldHost remote_results_ready', theurl, params
+        raise requests.ConnectionError()
+
 
 class NodeDownCompute(MockCompute):
 

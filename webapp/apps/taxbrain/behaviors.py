@@ -132,3 +132,24 @@ class DataSourceable(models.Model):
             return True
         else:
             return False
+
+
+class Hostnameable(models.Model):
+    """
+    Mix-in for providing functionality around hostnames
+    """
+    class Meta:
+        abstract = True
+
+    def check_hostnames(self, current_hostnames):
+        """
+        Make sure all hostnames are valid before posting to/getting data from
+        them
+        """
+        if self.jobs_not_ready is None:
+            return True
+        for id in self.jobs_not_ready:
+            hn = id.split('#')[1]
+            if hn not in current_hostnames:
+                return False
+        return True
