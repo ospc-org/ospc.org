@@ -7,22 +7,22 @@ Make sure the docker app is running. You should see a whale icon in your
 toolbar. If you are not on a Mac, see the [docker-compose installation page](https://docs.docker.com/compose/install/)
 for information on how to set this up on your operating system.
 2. Get the docker image:
-  a. Pull them from docker hub
-    i. The docker image contains sensitive data and thus, it cannot be
-    pulled freely. Contact me ([email](henry.doupe@aei.org)) if you think that
+  - Pull them from docker hub
+    1. The docker image contains sensitive data and thus, it cannot be
+    pulled freely. Contact me (henry.doupe@aei.org) if you think that
     you need this image. If approved, I will grant your docker hub account
     access to this repository.
-    ii. Next, login to docker at the command line with the command
+    2. Next, login to docker at the command line with the command
     `docker login`, and enter your information.
-    iii. You can start the service by running:
+    3. You can start the service by running:
     `cd PolicyBrain/distributed && docker-compose up -d`
     This will pull the required images, configure them, and run them in a
     detached state. Remove the `-d` flag to run them in the foreground.
-  b. Build them locally
+  - Build them locally
     This may be useful if you do not have access to the sensitive data. With
     this process, you can run PolicyBrain using only non-sensitive data.
-    i. go to the `distributed` directory.
-    ii. run
+    1. go to the `distributed` directory.
+    2. run
     ```
     export PB_VERSION='type current PolicyBrain version here'
     docker build -t distributed:$PB_VERSION ./
