@@ -4,7 +4,8 @@ Instructions for Setting Up Docker
 1. Install the stable community edition of Docker. Install the version that
 corresponds to your operating system from this [page](https://docs.docker.com/install/).
 Make sure the docker app is running. You should see a whale icon in your
-toolbar.
+toolbar. If you are not on a Mac, see the [docker-compose installation page](https://docs.docker.com/compose/install/)
+for information on how to set this up on your operating system.
 2. Get the docker image:
   a. Pull them from docker hub
     i. The docker image contains sensitive data and thus, it cannot be
