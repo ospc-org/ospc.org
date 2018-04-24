@@ -278,8 +278,14 @@ def read_json_reform(reform, assumptions):
         assumptions,
     )
     # get errors and warnings on parameters that do not cause ValueErrors
-    errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
-    errors_warnings = parse_errors_warnings(errors_warnings)
+    tc_errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
+    # errors_warnings contains warnings and errors separated by each
+    # project/project module
+    errors_warnings = {'warnings': '', 'errors': ''}
+    for project in tc_errors_warnings:
+        errors_warnings['warnings'] += tc_errors_warnings[project]['warnings']
+        errors_warnings['errors'] += tc_errors_warnings[project]['errors']
+    errors_warnings = parse_errors_warnings(errors_warnings[project])
     # separate reform and assumptions
     reform_dict = policy_dict["policy"]
     assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
