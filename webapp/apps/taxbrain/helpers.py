@@ -657,7 +657,7 @@ def rename_keys(rename_dict, map_dict):
     returns: dict with new keys
     """
     if isinstance(rename_dict, dict):
-        for k in rename_dict:
+        for k in list(rename_dict.keys()):
             if k in map_dict:
                 new_label = map_dict[k]
             elif k[:-2] in map_dict:
