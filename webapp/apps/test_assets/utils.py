@@ -128,7 +128,7 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
     """
     Convenience function for posting file input data
     """
-    tc_file = SimpleUploadedFile("test_reform.json", reform_text)
+    tc_file = SimpleUploadedFile("test_reform.json", reform_text.encode('utf-8'))
     data = {'docfile': tc_file,
             'has_errors': ['False'],
             'start_year': str(start_year),
@@ -138,7 +138,7 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
 
     if assumptions_text is not None:
         tc_file2 = SimpleUploadedFile("test_assumptions.json",
-                                      assumptions_text)
+                                      assumptions_text.encode('utf-8'))
         data['assumpfile'] = tc_file2
 
     return data

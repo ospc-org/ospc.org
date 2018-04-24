@@ -183,4 +183,5 @@ class DynamicViewsTests(TestCase):
         self.assertTrue(response.url[:-2].endswith("macro_results/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
-        self.assertTrue("Your calculation failed" in str(response))
+        self.assertTrue("Your calculation failed"
+                        in response.content.decode('utf-8'))

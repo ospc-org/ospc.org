@@ -300,11 +300,10 @@ def get_reform_from_file(request_files, reform_text=None,
     """
     if "docfile" in request_files:
         inmemfile_reform = request_files['docfile']
-        reform_text = inmemfile_reform.read()
+        reform_text = inmemfile_reform.read().decode('utf-8')
     if 'assumpfile' in request_files:
         inmemfile_assumption = request_files['assumpfile']
-        assumptions_text = inmemfile_assumption.read()
-
+        assumptions_text = inmemfile_assumption.read().decode('utf-8')
     (reform_dict, assumptions_dict,
         errors_warnings) = read_json_reform(reform_text,
                                             assumptions_text)

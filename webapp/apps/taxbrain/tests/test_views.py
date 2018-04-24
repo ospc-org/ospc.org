@@ -249,7 +249,7 @@ class TestTaxBrainViews(object):
         assert response.url[:link_idx+1].endswith("taxbrain/")
         response = CLIENT.get(response.url)
         # Make sure the failure message is in the response
-        assert "Your calculation failed" in str(response)
+        assert "Your calculation failed" in response.content.decode('utf-8')
 
     @pytest.mark.xfail
     def test_taxbrain_has_growth_params(self):

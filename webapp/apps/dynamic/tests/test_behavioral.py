@@ -56,7 +56,7 @@ class TestDynamicBehavioralViews(object):
         # load page
         response = CLIENT.get(dynamic_behavior_edit)
         assert response.status_code == 200
-        page = response.content
+        page = response.content.decode('utf-8')
         # Read the page to find the linked microsim. It should be the third
         # microsim above
         idx = page.find('dynamic/behavioral')

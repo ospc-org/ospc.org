@@ -79,7 +79,7 @@ class DynamicOGUSAViewsTests(TestCase):
                                       start_year, exp_status_code=ogusa_status_code)
 
         msg = 'Dynamic simulation must have an email address to send notification to!'
-        assert ogusa_response["response"].content == msg
+        assert ogusa_response["response"].content.decode('utf-8') == msg
 
 
     def test_ogusa_not_logged_with_email_succeeds(self):
