@@ -106,18 +106,18 @@ def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False)
     """
     Convenience function for posting GUI data
     """
-    data = {u'has_errors': [u'False'],
-            u'start_year': unicode(start_year),
+    data = {'has_errors': ['False'],
+            'start_year': str(start_year),
             'data_source': 'PUF',
             'csrfmiddlewaretoken':'abc123'}
     if _ID_BenefitSurtax_Switches:
-        switches = {u'ID_BenefitSurtax_Switch_0': [u'True'],
-                    u'ID_BenefitSurtax_Switch_1': [u'True'],
-                    u'ID_BenefitSurtax_Switch_2': [u'True'],
-                    u'ID_BenefitSurtax_Switch_3': [u'True'],
-                    u'ID_BenefitSurtax_Switch_4': [u'True'],
-                    u'ID_BenefitSurtax_Switch_5': [u'True'],
-                    u'ID_BenefitSurtax_Switch_6': [u'True']}
+        switches = {'ID_BenefitSurtax_Switch_0': ['True'],
+                    'ID_BenefitSurtax_Switch_1': ['True'],
+                    'ID_BenefitSurtax_Switch_2': ['True'],
+                    'ID_BenefitSurtax_Switch_3': ['True'],
+                    'ID_BenefitSurtax_Switch_4': ['True'],
+                    'ID_BenefitSurtax_Switch_5': ['True'],
+                    'ID_BenefitSurtax_Switch_6': ['True']}
         data.update(switches)
     if quick_calc:
         data['quick_calc'] = 'Quick Calculation!'
@@ -129,11 +129,11 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
     Convenience function for posting file input data
     """
     tc_file = SimpleUploadedFile("test_reform.json", reform_text)
-    data = {u'docfile': tc_file,
-            u'has_errors': [u'False'],
-            u'start_year': unicode(start_year),
+    data = {'docfile': tc_file,
+            'has_errors': ['False'],
+            'start_year': str(start_year),
             'data_source': 'PUF',
-            u'quick_calc': quick_calc,
+            'quick_calc': quick_calc,
             'csrfmiddlewaretoken':'abc123'}
 
     if assumptions_text is not None:
@@ -157,7 +157,7 @@ def get_taxbrain_model(_fields, first_year=2017,
 
     personal_inputs = Form(first_year, use_puf_not_cps, fields)
     if not personal_inputs.is_valid():
-        print(personal_inputs.errors)
+        print((personal_inputs.errors))
     model = personal_inputs.save(commit=False)
     model.set_fields()
     model.save()

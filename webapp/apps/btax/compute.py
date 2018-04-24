@@ -21,10 +21,10 @@ BTAX_WORKERS = btax_workers.split(",")
 
 def package_up_vars(self, user_mods, first_budget_year):
     # TODO - is first_budget_year important here?
-    user_mods = {k: v for k, v in user_mods.iteritems()
+    user_mods = {k: v for k, v in user_mods.items()
                  if k.startswith(('btax_', 'start_year'))}
     user_mods = {k: (v[0] if hasattr(v, '__getitem__') else v)
-                 for k, v in user_mods.iteritems()}
+                 for k, v in user_mods.items()}
     return user_mods
 
 
@@ -71,7 +71,7 @@ class DropqComputeBtax(DropqCompute):
         data['first_budget_year'] = str(first_budget_year)
         data['start_budget_year'] = '0'
         data['num_budget_years'] = 1
-        print('submitting btax data:', data)
+        print(('submitting btax data:', data))
         return self.submit_calculation(data, url_template,
                                        workers=BTAX_WORKERS,
                                        increment_counter=False,

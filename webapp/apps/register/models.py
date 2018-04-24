@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 
 import os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import uuid
 
 
@@ -18,12 +18,12 @@ class Subscriber(models.Model):
       return "{host}{path}?{params}".format(
             host = hostname,
             path = reverse('register_user'),
-            params = urllib.urlencode({'k': self.confirm_key})
+            params = urllib.parse.urlencode({'k': self.confirm_key})
         )
 
     def send_subscribe_confirm_email(self):
         hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-        print(self.email)
+        print((self.email))
         send_mail(subject="Thank you for joining the conversation on American tax policy",
             message = """Welcome!
 

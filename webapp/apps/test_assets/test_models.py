@@ -11,7 +11,7 @@ from ..taxbrain.models import (JSONReformTaxCalculator,
 from ..dynamic.models import (DynamicBehaviorSaveInputs,
                               DynamicElasticitySaveInputs)
 from ..btax.models import BTaxSaveInputs
-from utils import get_taxbrain_model, stringify_fields
+from .utils import get_taxbrain_model, stringify_fields
 from ..taxbrain.forms import TaxBrainForm
 
 START_YEAR = 2016
@@ -92,10 +92,10 @@ class TestHostNames:
         inputs = Inputs()
         inputs.job_ids = []
         inputs.job_ids = [
-            u'abc#1.1.1.1',
-            u'def#2.2.2.2',
-            u'ghi#3.3.3.3',
-            u'jkl#4.4.4.4',
+            'abc#1.1.1.1',
+            'def#2.2.2.2',
+            'ghi#3.3.3.3',
+            'jkl#4.4.4.4',
         ]
         inputs.jobs_not_ready = inputs.job_ids[:2]
         inputs.save()
@@ -110,10 +110,10 @@ class TestHostNames:
     def test_check_hostnames_false(self, Inputs):
         inputs = Inputs()
         inputs.job_ids = [
-            u'abc#1.1.1.1',
-            u'def#2.2.2.2',
-            u'ghi#3.3.3.3',
-            u'jkl#4.4.4.4',
+            'abc#1.1.1.1',
+            'def#2.2.2.2',
+            'ghi#3.3.3.3',
+            'jkl#4.4.4.4',
         ]
         inputs.jobs_not_ready = inputs.job_ids[:2]
         inputs.save()

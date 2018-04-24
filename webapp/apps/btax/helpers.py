@@ -133,7 +133,7 @@ def get_btax_defaults(start_year=START_YEAR):
     defaults = dict(DEFAULTS)
     # Set Bogus default for now
     defaults['btax_betr_pass']['value'] = [0.0]
-    for k,v in defaults.items():
+    for k,v in list(defaults.items()):
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
 

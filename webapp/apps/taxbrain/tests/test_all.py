@@ -46,15 +46,15 @@ def test_compute():
 
 
 def test_convert_val():
-    field = u'*,*,130000'
+    field = '*,*,130000'
     out = [convert_val(x) for x in field.split(',')]
     exp = ['*', '*', 130000.0]
     assert out == exp
-    field = u'False'
+    field = 'False'
     out = [convert_val(x) for x in field.split(',')]
     exp = [False]
     assert out == exp
-    field = u'0.12,0.13,0.14'
+    field = '0.12,0.13,0.14'
     out = [convert_val(x) for x in field.split(',')]
     exp = [0.12, 0.13, 0.14]
     assert out == exp
@@ -189,18 +189,18 @@ class TaxInputTests(TestCase):
             'ALL_2'
         ]
 
-        tot_keys = [u'combined_tax', u'ind_tax', u'payroll_tax']
+        tot_keys = ['combined_tax', 'ind_tax', 'payroll_tax']
 
         tax_results = {}
-        tax_results[u'aggr_d'] = {k:[1,2,3] for k in tot_keys}
-        tax_results[u'dist2_xbin'] = { k:[next(c)] for k in bin_keys}
-        tax_results[u'dist1_xbin'] = { k:[next(c)] for k in bin_keys}
-        tax_results[u'diff_itax_bin'] = { k:[next(c)] for k in bin_keys}
-        tax_results[u'dist2_xdec'] = { k:[next(c)] for k in dec_keys}
-        tax_results[u'dist1_xdec'] = { k:[next(c)] for k in dec_keys}
-        tax_results[u'diff_itax_xdec'] = { k:[next(c)] for k in dec_keys}
+        tax_results['aggr_d'] = {k:[1,2,3] for k in tot_keys}
+        tax_results['dist2_xbin'] = { k:[next(c)] for k in bin_keys}
+        tax_results['dist1_xbin'] = { k:[next(c)] for k in bin_keys}
+        tax_results['diff_itax_bin'] = { k:[next(c)] for k in bin_keys}
+        tax_results['dist2_xdec'] = { k:[next(c)] for k in dec_keys}
+        tax_results['dist1_xdec'] = { k:[next(c)] for k in dec_keys}
+        tax_results['diff_itax_xdec'] = { k:[next(c)] for k in dec_keys}
 
-        ans = format_csv(tax_results, u'42', first_budget_year=FBY)
+        ans = format_csv(tax_results, '42', first_budget_year=FBY)
         assert ans[0] == ['#URL: http://www.ospc.org/taxbrain/42/']
 
 

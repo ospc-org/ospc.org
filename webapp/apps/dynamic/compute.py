@@ -41,20 +41,20 @@ class DynamicCompute(DropqCompute):
     def submit_ogusa_calculation(self, ogusa_mods, first_budget_year, microsim_data,
                                  pack_up_user_mods=True):
 
-        print "mods is ", ogusa_mods
+        print("mods is ", ogusa_mods)
         ogusa_params = filter_ogusa_only(ogusa_mods)
         data = {}
         if pack_up_user_mods:
             microsim_params = package_up_vars(microsim_data, first_budget_year)
             microsim_params = {first_budget_year:microsim_params}
-            print "microsim data is", microsim_params
+            print("microsim data is", microsim_params)
         else:
             data['taxio_format'] = True
             data['first_budget_year'] = first_budget_year
             microsim_params = microsim_data
 
 
-        print "submit dynamic work"
+        print("submit dynamic work")
 
         hostnames = OGUSA_WORKERS
 
@@ -75,7 +75,7 @@ class DynamicCompute(DropqCompute):
         onc.current_idx = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
         onc.save()
         hostname_idx = ogusa_worker_idx
-        print "hostname_idx is", hostname_idx
+        print("hostname_idx is", hostname_idx)
         submitted = False
         registered = False
         attempts = 0
@@ -84,28 +84,28 @@ class DynamicCompute(DropqCompute):
             try:
                 response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
                 if response.status_code == 200:
-                    print "submitted: ", hostnames[hostname_idx]
+                    print("submitted: ", hostnames[hostname_idx])
                     submitted = True
                     resp_data = json.loads(response.text)
                     job_ids.append((resp_data['job_id'], hostnames[hostname_idx]))
                     guids.append((resp_data['job_id'], resp_data.get('guid', 'None')))
                 else:
-                    print "FAILED: ", hostnames[hostname_idx]
+                    print("FAILED: ", hostnames[hostname_idx])
                     attempts += 1
             except Timeout:
-                print "Couldn't submit to: ", hostnames[hostname_idx]
+                print("Couldn't submit to: ", hostnames[hostname_idx])
                 # Increment to next ogusa node
                 onc.current_offset = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
                 onc.save()
                 attempts += 1
             except RequestException as re:
-                print "Something unexpected happened: ", re
+                print("Something unexpected happened: ", re)
                 # Increment to next ogusa node
                 onc.current_offset = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
                 onc.save()
                 attempts += 1
             if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
-                print "Exceeded max attempts. Bailing out."
+                print("Exceeded max attempts. Bailing out.")
                 # Increment to next ogusa node
                 onc.current_offset = (ogusa_worker_idx + 1) % len(OGUSA_WORKERS)
                 onc.save()
@@ -124,19 +124,19 @@ class DynamicCompute(DropqCompute):
 
                 register = self.remote_register_job(reg_url, data=params, timeout=TIMEOUT_IN_SECONDS)
                 if response.status_code == 200:
-                    print "registered: ", hostnames[hostname_idx]
+                    print("registered: ", hostnames[hostname_idx])
                     registered = True
                 else:
-                    print "FAILED: ", hostnames[hostname_idx]
+                    print("FAILED: ", hostnames[hostname_idx])
                     attempts += 1
             except Timeout:
-                print "Couldn't submit to: ", hostnames[hostname_idx]
+                print("Couldn't submit to: ", hostnames[hostname_idx])
                 attempts += 1
             except RequestException as re:
-                print "Something unexpected happened: ", re
+                print("Something unexpected happened: ", re)
                 attempts += 1
             if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
-                print "Exceeded max attempts. Bailing out."
+                print("Exceeded max attempts. Bailing out.")
                 raise IOError()
 
         return job_ids, guids
@@ -169,12 +169,12 @@ class DynamicCompute(DropqCompute):
             versions = [r.get('ogusa_version', None) for r in ans]
             if not all([ver==ogusa_version for ver in versions]):
                 msg ="Got different taxcalc versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
             versions = [r.get('dropq_version', None) for r in ans]
             if not all([same_version(ver, dropq_version) for ver in versions]):
                 msg ="Got different dropq versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
 
         return results

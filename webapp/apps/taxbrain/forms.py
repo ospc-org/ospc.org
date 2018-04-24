@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
@@ -87,7 +87,7 @@ class PolicyBrainForm:
         parsed_data = {}
         args_data = args[0]
         raw_fields = {}
-        for k, v in args_data.items():
+        for k, v in list(args_data.items()):
             if k not in INPUTS_META:
                 raw_fields[k] = v
             elif k in ('first_year', 'data_source'):
@@ -113,7 +113,7 @@ class PolicyBrainForm:
         malicious input
         """
         fields = self.cleaned_data['raw_input_fields']
-        for param_name, value in fields.iteritems():
+        for param_name, value in fields.items():
             # make sure the text parses OK
             if param_name == 'data_source':
                 assert value in ('CPS', 'PUF')
@@ -145,7 +145,7 @@ class PolicyBrainForm:
         update_fields = {}
         boolean_fields = []
 
-        for param in defaults.values():
+        for param in list(defaults.values()):
             for field in param.col_fields:
                 attrs = {
                     'class': 'form-control',
@@ -228,7 +228,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         # 2. if `instance` is specified and `initial` is added above
         #    (edit parameters page)
         if kwargs.get("initial", False):
-            for k, v in kwargs["initial"].iteritems():
+            for k, v in kwargs["initial"].items():
                 if k.endswith("cpi") and v:
                     # raw data is stored as choices 1, 2, 3 with the following
                     # mapping:

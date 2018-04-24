@@ -13,12 +13,12 @@ from ...btax import views
 
 from ...constants import START_YEAR
 
-OK_POST_DATA = {u'btax_betr_pass': 0.33,
-                u'btax_depr_5yr': u'btax_depr_5yr_gds_Switch',
-                u'btax_depr_27_5yr_exp': 0.4,
-                u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR),
-                u'csrfmiddlewaretoken': u'abc123'}
+OK_POST_DATA = {'btax_betr_pass': 0.33,
+                'btax_depr_5yr': 'btax_depr_5yr_gds_Switch',
+                'btax_depr_27_5yr_exp': 0.4,
+                'has_errors': ['False'],
+                'start_year': str(START_YEAR),
+                'csrfmiddlewaretoken': 'abc123'}
 
 class BTaxViewsTests(TestCase):
     ''' Test the views of this app. '''
@@ -58,7 +58,7 @@ class BTaxViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("ccc/"))
 
     def test_btax_nodes_down(self):
         #Monkey patch to mock out running of compute jobs
@@ -72,9 +72,9 @@ class BTaxViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("ccc/"))
         # One more redirect
-        print(dir(response))
+        print((dir(response)))
         response = self.client.get(response.url)
         self.assertEqual(response.status_code, 200)
 
@@ -88,13 +88,13 @@ class BTaxViewsTests(TestCase):
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         link_idx = response.url[:-1].rfind('/')
-        print '302 response info', response.url, link_idx, str(response), response.url[:link_idx + 1]
-        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
+        print('302 response info', response.url, link_idx, str(response), response.url[:link_idx + 1])
+        self.assertTrue(response.url[:link_idx+1].endswith("ccc/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
         response = str(response)
-        print 'test_btax_failed_job response', response
-        self.failUnless("Your calculation failed" in response)
+        print('test_btax_failed_job response', response)
+        self.assertTrue("Your calculation failed" in response)
 
     def test_mocked_results_table(self):
         response = self.client.post('/ccc/mock-ccc-results')
@@ -125,7 +125,7 @@ class BTaxViewsTests(TestCase):
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("ccc/"))
 
         # Submit another job, which would error if we incremented dropq_offset
         # with the submit
@@ -140,17 +140,17 @@ class BTaxViewsTests(TestCase):
         from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = MockComputeBtax()
 
-        data = { u'has_errors': [u'False'],
-                u'start_year': unicode(START_YEAR),
-                u'btax_depr_5yr': u'btax_depr_5yr_ads_Switch',
-                'csrfmiddlewaretoken':'abc123', u'start_year': u'2016'}
+        data = { 'has_errors': ['False'],
+                'start_year': str(START_YEAR),
+                'btax_depr_5yr': 'btax_depr_5yr_ads_Switch',
+                'csrfmiddlewaretoken':'abc123', 'start_year': '2016'}
 
         response = self.client.post('/ccc/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("ccc/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("ccc/"))
         model_num = response.url[link_idx+1:-1]
         edit_ccc = '/ccc/edit/{0}/?start_year={1}'.format(model_num, START_YEAR)
         edit_page = self.client.get(edit_ccc)
@@ -159,7 +159,7 @@ class BTaxViewsTests(TestCase):
         # Get results model
         out = BTaxOutputUrl.objects.get(pk=model_num)
         bsi = BTaxSaveInputs.objects.get(pk=out.model_pk)
-        assert bsi.btax_depr_5yr == u'btax_depr_5yr_ads_Switch'
+        assert bsi.btax_depr_5yr == 'btax_depr_5yr_ads_Switch'
         assert bsi.btax_depr_5yr_ads_Switch == 'True'
 
     def test_get_not_avail_page_renders(self):

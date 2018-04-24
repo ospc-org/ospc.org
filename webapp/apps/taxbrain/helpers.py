@@ -50,14 +50,14 @@ FALSE_REGEX = re.compile('(?i)false')
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):
-        return x in ('*', u'*') or x.strip() in ('*', u'*')
+        return x in ('*', '*') or x.strip() in ('*', '*')
     else:
         return False
 
 
 def is_reverse(x):
     if isinstance(x, six.string_types):
-        return x in ('<', u'<') or x.strip() in ('<', u'<')
+        return x in ('<', '<') or x.strip() in ('<', '<')
     else:
         return False
 
@@ -118,7 +118,7 @@ def is_number(x):
 
 def is_string(x):
     if PYTHON_MAJOR_VERSION == 2:
-        return isinstance(x, basestring)
+        return isinstance(x, str)
     elif PYTHON_MAJOR_VERSION == 3:
         return isinstance(x, str)
 
@@ -155,9 +155,9 @@ def round_gt_one_to_nearest_int(values):
         else:
             return x
     try:
-        rounded = map(round_gt_one, values)
+        rounded = list(map(round_gt_one, values))
     except TypeError:
-        rounded = [map(round_gt_one, val) for val in values]
+        rounded = [list(map(round_gt_one, val)) for val in values]
 
     return rounded
 
@@ -197,8 +197,8 @@ TAXCALC_HIDDEN_FIELDS = [
     '_LLC_Expense_c', '_FEI_ec_c'
 ]
 
-INPUTS_META = (u'has_errors', u'csrfmiddlewaretoken', u'start_year',
-               u'full_calc', u'quick_calc', 'first_year', '_state',
+INPUTS_META = ('has_errors', 'csrfmiddlewaretoken', 'start_year',
+               'full_calc', 'quick_calc', 'first_year', '_state',
                'creation_date', 'id', 'job_ids', 'jobs_not_ready',
                'json_text_id', 'tax_result', 'reform_style',
                '_micro_sim_cache', 'micro_sim_id', 'raw_fields',
@@ -466,7 +466,7 @@ def convert_to_floats(tsi):
             return numberfy_one(x)
 
     attrs = vars(tsi)
-    return { k:numberfy(v) for k,v in attrs.items() if v}
+    return { k:numberfy(v) for k,v in list(attrs.items()) if v}
 
 
 def leave_name_in(key, val, dd):
@@ -492,7 +492,7 @@ def leave_name_in(key, val, dd):
     elif key in ["elastic_gdp"]:
         return True
     else:
-        print "Don't have this pair: ", key, val
+        print("Don't have this pair: ", key, val)
         underscore_name_in_defaults = "_" + key in dd
         is_cpi_name = key.endswith("_cpi")
         is_array_name = (key.endswith("_0") or key.endswith("_1") or
@@ -524,9 +524,9 @@ def package_up_vars(user_values, first_budget_year):
     dd_meta.update(default_taxcalc_data(taxcalc.growdiff.Growdiff,
                                         start_year=first_budget_year,
                                         metadata=True))
-    for k, v in user_values.items():
+    for k, v in list(user_values.items()):
         if not leave_name_in(k, v, dd):
-            print "Removing ", k, v
+            print("Removing ", k, v)
             del user_values[k]
 
     def discover_cpi_flag(param):
@@ -548,7 +548,7 @@ def package_up_vars(user_values, first_budget_year):
     name_stems = {}
     ans = {}
     #Find the 'broken out' array values, these have special treatment
-    for k, v in user_values.items():
+    for k, v in list(user_values.items()):
         if (k.endswith("_0") or k.endswith("_1") or k.endswith("_2")
                 or k.endswith("_3")):
             vals = name_stems.setdefault(k[:-2], [])
@@ -557,7 +557,7 @@ def package_up_vars(user_values, first_budget_year):
     #For each array value, expand as necessary based on default data
     #then add user values. It is acceptable to leave 'blanks' as None.
     #This is handled on the taxcalc side
-    for k, vals in name_stems.items():
+    for k, vals in list(name_stems.items()):
         if k in dd:
             default_data = dd[k]
             param = k
@@ -594,7 +594,7 @@ def package_up_vars(user_values, first_budget_year):
         ans[param] = expnded_defaults
 
     #Process remaining values set by user
-    for k, vals in user_values.items():
+    for k, vals in list(user_values.items()):
         if k in dd:
             param = k
         elif k.endswith("_cpi"):
@@ -776,14 +776,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = False
         else:
-            raise(ValueError("{} not in expected list of names {}".
-                  format(table_id, ','.join(["dist2_xdec", "dist1_xdec",
-                                             "diff_itax_xdec", "diff_ptax_xdec",
-                                             "diff_comb_xdec", "dist2_xbin",
-                                             "dist1_xbin", "diff_itax_xbin",
-                                             "diff_itax_xbin", "diff_ptax_xbin",
-                                             "diff_comb_xbin", "aggr_d",
-                                             "aggr_1", "aggr_2"]))))
+            raise ValueError
         table = {
             'col_labels': col_labels,
             'cols': [],

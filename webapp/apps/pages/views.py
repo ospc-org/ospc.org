@@ -129,7 +129,7 @@ def widgetpage(request, widget_id):
 
     widgets = _discover_widgets()
 
-    if widget_id not in widgets.keys():
+    if widget_id not in list(widgets.keys()):
         raise ValueError('Invalid Widget Id {0}'.format(widget_id))
 
     widget = widgets[widget_id]
@@ -179,7 +179,7 @@ def embedpage(request, widget_id, layout='landscape'):
 
     widgets = _discover_widgets()
 
-    if widget_id not in widgets.keys():
+    if widget_id not in list(widgets.keys()):
         raise ValueError('Invalid Widget Id {0}'.format(widget_id))
 
     widget = widgets[widget_id]

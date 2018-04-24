@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 import json
 
 from django import template
@@ -35,7 +35,7 @@ https://code.djangoproject.com/attachment/ticket/17419/jsonfilter.py
 class SafeJSONEncoder(DjangoJSONEncoder):
     def _recursive_escape(self, o, esc=conditional_escape):
         if isinstance(o, dict):
-            return type(o)((esc(k), self._recursive_escape(v)) for (k, v) in o.iteritems())
+            return type(o)((esc(k), self._recursive_escape(v)) for (k, v) in o.items())
         if isinstance(o, (list, tuple)):
             return type(o)(self._recursive_escape(v) for v in o)
         try:
