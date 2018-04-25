@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 
-from views import (homepage, aboutpage, newspage, gallerypage, hellopage,
+from .views import (homepage, aboutpage, newspage, gallerypage, hellopage,
                    embedpage, widgetpage, newsdetailpage,
                    apps_landing_page, border_adjustment_plot, docspage, gettingstartedpage)
 

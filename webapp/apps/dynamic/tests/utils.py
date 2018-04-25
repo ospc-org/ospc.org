@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from django.test import TestCase
 from django.test import Client
 import mock
@@ -17,7 +17,7 @@ from taxcalc import Policy
 from ...test_assets import *
 from ...test_assets.utils import get_dropq_compute_from_module, do_micro_sim
 
-START_YEAR = u'2016'
+START_YEAR = '2016'
 
 
 def do_dynamic_sim(client, base_name, microsim_response, pe_reform, start_year=START_YEAR):

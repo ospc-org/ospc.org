@@ -5,7 +5,6 @@ dj-static==0.0.6
 django-toolbelt==0.0.1
 waitress
 static3==0.5.1
-wsgiref==0.1.2
 -e git+https://github.com/funkybob/django-flatblocks.git#egg=django-flatblocks
 sendgrid-django
 psycopg2>=2.5.4

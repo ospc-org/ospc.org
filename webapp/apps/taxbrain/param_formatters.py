@@ -87,7 +87,7 @@ def parse_fields(param_dict, default_params):
     """
     parsed = {}
     failed_lookups = []
-    for k, v in param_dict.items():
+    for k, v in list(param_dict.items()):
         # user did not specify a value for this param
         if not v:
             continue
@@ -229,7 +229,7 @@ def append_errors_warnings(errors_warnings, append_func):
     for action in ['warnings', 'errors']:
         for param in errors_warnings[action]:
             for year in sorted(
-                errors_warnings[action][param].keys(),
+                list(errors_warnings[action][param].keys()),
                 key=lambda x: int(x)
             ):
                 msg = errors_warnings[action][param][year]
@@ -282,7 +282,7 @@ def read_json_reform(reform, assumptions):
     errors_warnings = parse_errors_warnings(errors_warnings)
     # separate reform and assumptions
     reform_dict = policy_dict["policy"]
-    assumptions_dict = {k: v for k, v in policy_dict.items() if k != "policy"}
+    assumptions_dict = {k: v for k, v in list(policy_dict.items()) if k != "policy"}
 
     return reform_dict, assumptions_dict, errors_warnings
 
@@ -300,11 +300,10 @@ def get_reform_from_file(request_files, reform_text=None,
     """
     if "docfile" in request_files:
         inmemfile_reform = request_files['docfile']
-        reform_text = inmemfile_reform.read()
+        reform_text = inmemfile_reform.read().decode('utf-8')
     if 'assumpfile' in request_files:
         inmemfile_assumption = request_files['assumpfile']
-        assumptions_text = inmemfile_assumption.read()
-
+        assumptions_text = inmemfile_assumption.read().decode('utf-8')
     (reform_dict, assumptions_dict,
         errors_warnings) = read_json_reform(reform_text,
                                             assumptions_text)

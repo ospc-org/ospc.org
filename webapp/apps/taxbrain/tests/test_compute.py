@@ -15,7 +15,7 @@ import requests_mock
 class MockComputeTests(MockCompute):
 
     def remote_submit_job(self, theurl, data, timeout):
-        assert "first_budget_year" in data.keys()
+        assert "first_budget_year" in list(data.keys())
         return super(MockComputeTests, self).remote_submit_job(theurl, data, timeout)
 
 
@@ -31,16 +31,16 @@ class ComputeTests(TestCase):
     def test_submit_calculation(self):
         reform_dict = {
             2018: {
-                u'_SS_Earnings_c': [400000],
-                u'_II_em_cpi': False,
-                u'_II_em': [8000]
+                '_SS_Earnings_c': [400000],
+                '_II_em_cpi': False,
+                '_II_em': [8000]
             },
             2019: {
-                u'_SS_Earnings_c': [500000],
-                u'_ALD_InvInc_ec_rt': [0.2]},
+                '_SS_Earnings_c': [500000],
+                '_ALD_InvInc_ec_rt': [0.2]},
             2020: {
-                u'_SS_Earnings_c': [600000],
-                u'_II_em_cpi': True
+                '_SS_Earnings_c': [600000],
+                '_II_em_cpi': True
             }
         }
         assumptions_dict = {

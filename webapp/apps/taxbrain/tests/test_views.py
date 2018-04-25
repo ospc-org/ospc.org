@@ -46,7 +46,7 @@ class TestTaxBrainViews(object):
         submit simple reform
         """
         data = get_post_data(START_YEAR)
-        data[u'II_em'] = [u'4333']
+        data['II_em'] = ['4333']
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
@@ -62,11 +62,11 @@ class TestTaxBrainViews(object):
         "Test quick calculation post and full post from quick_calc page"
         # switches 0, 4, 6 are False
         data = get_post_data(START_YEAR, quick_calc=True)
-        data[u'ID_BenefitSurtax_Switch_0'] = ['False']
-        data[u'ID_BenefitSurtax_Switch_4'] = ['0']
-        data[u'ID_BenefitSurtax_Switch_6'] = ['0.0']
-        data[u'II_em'] = [u'4333']
-        data[u'ID_AmountCap_Switch_0'] = [u'0']
+        data['ID_BenefitSurtax_Switch_0'] = ['False']
+        data['ID_BenefitSurtax_Switch_4'] = ['0']
+        data['ID_BenefitSurtax_Switch_6'] = ['0.0']
+        data['II_em'] = ['4333']
+        data['ID_AmountCap_Switch_0'] = ['0']
         data['data_source'] = data_source
         wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
         current_dropq_worker_offset = wnc.current_offset
@@ -162,10 +162,10 @@ class TestTaxBrainViews(object):
         "Test back to back quick  calc posts"
         # switches 0, 4, 6 are False
         data = get_post_data(START_YEAR, quick_calc=True)
-        data[u'ID_BenefitSurtax_Switch_0'] = ['False']
-        data[u'ID_BenefitSurtax_Switch_4'] = ['0']
-        data[u'ID_BenefitSurtax_Switch_6'] = ['0.0']
-        data[u'II_em'] = [u'4333']
+        data['ID_BenefitSurtax_Switch_0'] = ['False']
+        data['ID_BenefitSurtax_Switch_4'] = ['0']
+        data['ID_BenefitSurtax_Switch_6'] = ['0.0']
+        data['II_em'] = ['4333']
         data['data_source'] = data_source
 
         result = do_micro_sim(CLIENT, data)
@@ -200,7 +200,7 @@ class TestTaxBrainViews(object):
 
         # Provide behavioral input
         data = get_post_data(START_YEAR)
-        data[u'BE_inc'] = [u'0.1']
+        data['BE_inc'] = ['0.1']
 
         response = CLIENT.post('/taxbrain/', data)
         # Check that we get a 400
@@ -215,7 +215,7 @@ class TestTaxBrainViews(object):
         )
 
         data = get_post_data(START_YEAR)
-        data[u'II_em'] = [u'4333']
+        data['II_em'] = ['4333']
 
         result = do_micro_sim(
             CLIENT,
@@ -240,7 +240,7 @@ class TestTaxBrainViews(object):
         )
 
         data = get_post_data(START_YEAR)
-        data[u'II_em'] = [u'4333']
+        data['II_em'] = ['4333']
 
         response = CLIENT.post('/taxbrain/', data)
         # Check that redirect happens
@@ -249,16 +249,16 @@ class TestTaxBrainViews(object):
         assert response.url[:link_idx+1].endswith("taxbrain/")
         response = CLIENT.get(response.url)
         # Make sure the failure message is in the response
-        assert "Your calculation failed" in str(response)
+        assert "Your calculation failed" in response.content.decode('utf-8')
 
     @pytest.mark.xfail
     def test_taxbrain_has_growth_params(self):
 
-        reform = {'factor_adjustment': [u'0.03'],
-                  'FICA_ss_trt': [u'0.11'],
-                  'start_year': unicode(START_YEAR),
-                  'has_errors': [u'False'],
-                  'growth_choice': u'factor_adjustment'
+        reform = {'factor_adjustment': ['0.03'],
+                  'FICA_ss_trt': ['0.11'],
+                  'start_year': str(START_YEAR),
+                  'has_errors': ['False'],
+                  'growth_choice': 'factor_adjustment'
                   }
         do_micro_sim(CLIENT, reform)
 
@@ -266,9 +266,9 @@ class TestTaxBrainViews(object):
     def test_taxbrain_edit_cpi_flags_show_correctly(self):
 
         data = get_post_data(START_YEAR)
-        data[u'II_em'] = [u'4333']
-        data[u'AMT_CG_brk2_cpi'] = u'False'
-        data[u'AMEDT_ec_cpi'] = u'True'
+        data['II_em'] = ['4333']
+        data['AMT_CG_brk2_cpi'] = 'False'
+        data['AMEDT_ec_cpi'] = 'True'
 
         result = do_micro_sim(CLIENT, data)
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
@@ -286,8 +286,8 @@ class TestTaxBrainViews(object):
         # This post has no BenefitSurtax flags, so the model
         # sets them to False
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        data[u'II_em'] = [u'4333']
-        data['ID_BenefitSurtax_Switch_3'] = [u'True']
+        data['II_em'] = ['4333']
+        data['ID_BenefitSurtax_Switch_3'] = ['True']
 
         result = do_micro_sim(CLIENT, data)
 
@@ -309,10 +309,10 @@ class TestTaxBrainViews(object):
         # is how it looks to the backend
         next_csrf = str(edit_page.context['csrf_token'])
         data2 = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {u'II_em': [u'4333'],
-               u'ID_BenefitSurtax_Switch_0': [u'False'],
-               u'ID_BenefitSurtax_Switch_1': [u'False,*,True'],
-               u'ID_BenefitSurtax_Switch_3': [u'True'],
+        mod = {'II_em': ['4333'],
+               'ID_BenefitSurtax_Switch_0': ['False'],
+               'ID_BenefitSurtax_Switch_1': ['False,*,True'],
+               'ID_BenefitSurtax_Switch_3': ['True'],
                'csrfmiddlewaretoken': next_csrf}
         data2.update(mod)
 
@@ -320,9 +320,9 @@ class TestTaxBrainViews(object):
 
         out2 = OutputUrl.objects.get(pk=result2["pk"])
         tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_0'] == u'False'
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_1'] == u'False,*,True'
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_3'] == u'True'
+        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_0'] == 'False'
+        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_1'] == 'False,*,True'
+        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_3'] == 'True'
 
 
     def test_taxbrain_wildcard_params_with_validation_is_OK(self):
@@ -332,8 +332,8 @@ class TestTaxBrainViews(object):
         no error
         """
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {u'II_brk1_0': [u'*, *, 15000'],
-               u'II_brk2_cpi': u'False'}
+        mod = {'II_brk1_0': ['*, *, 15000'],
+               'II_brk2_cpi': 'False'}
         data.update(mod)
         result = do_micro_sim(CLIENT, data)
 
@@ -359,8 +359,8 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {u'II_brk1_0': [u'*, *, 38000'],
-               u'II_brk2_cpi': u'False'}
+        mod = {'II_brk1_0': ['*, *, 38000'],
+               'II_brk2_cpi': 'False'}
         data.update(mod)
 
         response = CLIENT.post('/taxbrain/', data)
@@ -376,10 +376,10 @@ class TestTaxBrainViews(object):
         should be OK
         """
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {u'II_brk1_0': [u'*, *, 38000'],
-               u'II_brk2_0': [u'*, *, 39500'],
-               u'cpi_offset': [u'<,-0.0025'],
-               u'FICA_ss_trt': [u'< ,0.1,*,0.15,0.2']}
+        mod = {'II_brk1_0': ['*, *, 38000'],
+               'II_brk2_0': ['*, *, 39500'],
+               'cpi_offset': ['<,-0.0025'],
+               'FICA_ss_trt': ['< ,0.1,*,0.15,0.2']}
         data.update(mod)
         result = do_micro_sim(CLIENT, data)
 
@@ -406,7 +406,7 @@ class TestTaxBrainViews(object):
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, 'PUF')
-        data[u'STD_3'] = ['10000']
+        data['STD_3'] = ['10000']
         response = CLIENT.post(url, data)
 
         assert response.status_code == 200
@@ -429,9 +429,9 @@ class TestTaxBrainViews(object):
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, data_source)
-        mod = {u'II_brk1_0': [u'*, 38000'],
-               u'II_brk2_0': [u'*, *, 39500'],
-               u'II_brk2_cpi': u'False'}
+        mod = {'II_brk1_0': ['*, 38000'],
+               'II_brk2_0': ['*, *, 39500'],
+               'II_brk2_cpi': 'False'}
         data.update(mod)
 
         response = CLIENT.post(url, data)
@@ -450,7 +450,7 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {u'cpi_offset': [u'<,']}
+        mod = {'cpi_offset': ['<,']}
         data.update(mod)
 
         response = CLIENT.post('/taxbrain/', data)
@@ -467,7 +467,7 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {u'cpi_offset': [u'-0.002,<,-0.001']}
+        mod = {'cpi_offset': ['-0.002,<,-0.001']}
         data.update(mod)
 
         response = CLIENT.post('/taxbrain/', data)
@@ -482,7 +482,7 @@ class TestTaxBrainViews(object):
         string
         """
         data = get_post_data(2018, _ID_BenefitSurtax_Switches=False)
-        data['DependentCredit_before_CTC'] = [u'True,*, FALSE,tRUe,*,0']
+        data['DependentCredit_before_CTC'] = ['True,*, FALSE,tRUe,*,0']
 
         result = do_micro_sim(CLIENT, data)
 
@@ -553,8 +553,8 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {u'II_brk1_0': [u'XTOT*4500'],
-               u'II_brk2_0': [u'*, *, 39500']}
+        mod = {'II_brk1_0': ['XTOT*4500'],
+               'II_brk2_0': ['*, *, 39500']}
         data.update(mod)
 
         response = CLIENT.post('/taxbrain/', data)
@@ -594,7 +594,7 @@ class TestTaxBrainViews(object):
         data2 = {
             'csrfmiddlewaretoken': next_token,
             'form_id': form_id,
-            'has_errors': [u'True'],
+            'has_errors': ['True'],
         }
 
         response = CLIENT.post(url, data2)
@@ -635,7 +635,7 @@ class TestTaxBrainViews(object):
         data2 = {
             'csrfmiddlewaretoken': next_token,
             'form_id': form_id,
-            'has_errors': [u'True'],
+            'has_errors': ['True'],
         }
 
         result = do_micro_sim(CLIENT, data2, post_url=url)
@@ -690,7 +690,7 @@ class TestTaxBrainViews(object):
         data2 = {
             'csrfmiddlewaretoken': next_token,
             'form_id': form_id,
-            'has_errors': [u'True'],
+            'has_errors': ['True'],
         }
         data_file = get_file_post_data(START_YEAR,
                                        self.r1,
@@ -710,8 +710,8 @@ class TestTaxBrainViews(object):
     def test_taxbrain_up_to_2018(self):
         start_year = 2018
         data = get_post_data(start_year, _ID_BenefitSurtax_Switches=False)
-        mod = {u'II_brk1_0': [u'*, *, 15000'],
-               u'II_brk2_cpi': u'False'}
+        mod = {'II_brk1_0': ['*, *, 15000'],
+               'II_brk2_cpi': 'False'}
         data.update(mod)
         result = do_micro_sim(CLIENT, data)
 
@@ -834,10 +834,10 @@ class TestTaxBrainViews(object):
         # swap out the job_ids to an IP address that is not
         # used anymore,
         model.job_ids = [
-            u'abc#1.1.1.1',
-            u'def#2.2.2.2',
-            u'ghi#3.3.3.3',
-            u'jkl#4.4.4.4',
+            'abc#1.1.1.1',
+            'def#2.2.2.2',
+            'ghi#3.3.3.3',
+            'jkl#4.4.4.4',
         ]
         # simulate having some unfinished jobs and no result
         model.jobs_not_ready = model.job_ids[:2]

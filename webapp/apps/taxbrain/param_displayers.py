@@ -169,7 +169,7 @@ def parse_sub_category(field_section, budget_year, use_puf_not_cps=True):
     output = []
     free_fields = []
     for x in field_section:
-        for y, z in x.iteritems():
+        for y, z in x.items():
             section_name = dict(z).get("section_2")
             new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year,
                                                             use_puf_not_cps)}
@@ -187,7 +187,7 @@ def parse_sub_category(field_section, budget_year, use_puf_not_cps=True):
 
 def parse_top_level(ordered_dict):
     output = []
-    for x, y in ordered_dict.iteritems():
+    for x, y in ordered_dict.items():
         section_name = dict(y).get("section_1")
         if section_name:
             section = next((item for item in output if section_name in item), None)
@@ -206,7 +206,7 @@ def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
                                                start_year=budget_year)
     groups = parse_top_level(defaults)
     for x in groups:
-        for y, z in x.iteritems():
+        for y, z in x.items():
             x[y] = parse_sub_category(z, budget_year, use_puf_not_cps)
     return groups
 
@@ -218,7 +218,7 @@ def default_behavior(first_budget_year):
                                                         metadata=True,
                                                         start_year=first_budget_year)
 
-    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.iteritems():
+    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
         param = TaxCalcParam(k,v, first_budget_year)
         default_behavior_params[param.nice_id] = param
 
@@ -233,7 +233,7 @@ def default_policy(first_budget_year, use_puf_not_cps=True):
                                                        start_year=first_budget_year)
 
     default_taxcalc_params = {}
-    for k,v in TAXCALC_DEFAULT_PARAMS_JSON.iteritems():
+    for k,v in TAXCALC_DEFAULT_PARAMS_JSON.items():
         param = TaxCalcParam(k,v, first_budget_year,
                              use_puf_not_cps=use_puf_not_cps)
         default_taxcalc_params[param.nice_id] = param

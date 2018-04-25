@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 import csv
 import pdfkit
 import json
@@ -22,7 +22,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import taxcalc
 import datetime
 import logging
-from urlparse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
 from django.core import serializers
@@ -150,7 +150,7 @@ def submit_reform(request, user=None, json_reform_id=None):
     """
     fields = dict(request.GET)
     fields.update(dict(request.POST))
-    fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+    fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
     start_year = fields.get('start_year', START_YEAR)
     # TODO: migrate first_year to start_year to get rid of weird stuff like
     # this
@@ -289,7 +289,7 @@ def submit_reform(request, user=None, json_reform_id=None):
                     lambda param, msg: personal_inputs.add_error(param, msg)
                 )
             has_parse_errors = any(['Unrecognize value' in e[0]
-                                    for e in personal_inputs.errors.values()])
+                                    for e in list(personal_inputs.errors.values())])
             if no_inputs:
                 personal_inputs.add_error(
                     None,
@@ -649,11 +649,11 @@ def add_summary_column(table):
             row_total += float(y["value"])
         x["cells"].append({
             'format': {
-                u'decimals': 1,
-                u'divisor': 1000000000
+                'decimals': 1,
+                'divisor': 1000000000
             },
-            u'value': unicode(row_total),
-            u'year_values': {}
+            'value': str(row_total),
+            'year_values': {}
         })
     return table
 
