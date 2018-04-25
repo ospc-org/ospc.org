@@ -29,44 +29,32 @@ window and run the following commands using bash:
 git clone https://github.com/YOURUSERNAME/PolicyBrain.git
 cd PolicyBrain
 git remote add upstream https://github.com/OpenSourcePolicyCenter/PolicyBrain
-pushd deploy
-./install_taxbrain_server.sh
-popd
+./python_env_build.sh
 export DATABASE_USER=YOUR_POSTGRES_USERNAME DATABASE_PW=YOUR_POSTGRES_PASSWORD
-source activate aei_dropq && source webapp_env.sh
+source activate pb_env && source webapp_env.sh
 python manage.py collectstatic
 python manage.py migrate
 python manage.py runserver
 ```
 Now, the Django app should be up and running.  You can access the local instance of https://www.ospc.org/ at http://localhost:8000.  Next, set up Redis, Flask, and Celery.  This step allows you to submit and run jobs.
-In another terminal, run the following commands using bash:
+These services are configured via Docker in a docker-compose file. You need access to these images for the following commands to work. See DOCKER.md for more information.
 ```
-# Go to the PolicyBrain directory
-cd PolicyBrain/
-source activate aei_dropq && source webapp_env.sh
-cd deploy/taxbrain_server
-
-# ignore the following block if you do not have access to the taxpuf package
-conda config --add channels 'https://conda.anaconda.org/t/YOUR_TOKEN_HERE/opensourcepolicycenter'
-conda install taxpuf
-write-latest-taxpuf
-gunzip -c puf.csv.gz > puf.csv
-
-supervisord -c supervisord_local.conf
-
+# Login to docker with `docker login`
+# Go to the PolicyBrain/distributed directory
+cd PolicyBrain/distributed
+docker-compose up -d
 ```
 
 Now, that the server has been installed, you can start it up simply by running:
 
 ```
 export DATABASE_USER=YOUR_POSTGRES_USERNAME DATABASE_PW=YOUR_POSTGRES_PASSWORD
-source activate aei_dropq && source webapp_env.sh
+source activate pb_env && source webapp_env.sh
 python manage.py runserver
 ```
 
 and in another terminal window, run:
 
 ```
-source activate aei_dropq && source webapp_env.sh
-cd deploy/taxbrain_server && supervisord -c supervisord_local.conf
+docker-compose up -d
 ```
