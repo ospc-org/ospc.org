@@ -23,7 +23,7 @@ class Subscriber(models.Model):
 
     def send_subscribe_confirm_email(self):
         hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-        print((self.email))
+        print(self.email)
         send_mail(subject="Thank you for joining the conversation on American tax policy",
             message = """Welcome!
 

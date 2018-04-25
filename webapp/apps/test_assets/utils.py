@@ -157,7 +157,7 @@ def get_taxbrain_model(_fields, first_year=2017,
 
     personal_inputs = Form(first_year, use_puf_not_cps, fields)
     if not personal_inputs.is_valid():
-        print((personal_inputs.errors))
+        print(personal_inputs.errors)
     model = personal_inputs.save(commit=False)
     model.set_fields()
     model.save()

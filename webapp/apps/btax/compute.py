@@ -71,7 +71,7 @@ class DropqComputeBtax(DropqCompute):
         data['first_budget_year'] = str(first_budget_year)
         data['start_budget_year'] = '0'
         data['num_budget_years'] = 1
-        print(('submitting btax data:', data))
+        print('submitting btax data:', data)
         return self.submit_calculation(data, url_template,
                                        workers=BTAX_WORKERS,
                                        increment_counter=False,

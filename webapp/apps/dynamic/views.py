@@ -191,8 +191,8 @@ def dynamic_behavioral(request, pk):
     """
     start_year = START_YEAR
     if request.method == 'POST':
-        print(('method=POST get', request.GET))
-        print(('method=POST post', request.POST))
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         fields = dict(request.GET)
         fields.update(dict(request.POST))
         fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
@@ -283,8 +283,8 @@ def dynamic_behavioral(request, pk):
 
     else:
         # Probably a GET request, load a default form
-        print(('method=GET get', request.GET))
-        print(('method=GET post', request.POST))
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
@@ -652,7 +652,7 @@ def elastic_results(request, pk):
 
     else:
         if not model.check_hostnames(DROPQ_WORKERS):
-            print(('bad hostname', model.jobs_not_ready, DROPQ_WORKERS))
+            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
             raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
@@ -817,7 +817,7 @@ def behavior_results(request, pk):
             json_table = json.dumps(tables)
 
         except Exception as e:
-            print(('Exception rendering pk', pk, e))
+            print('Exception rendering pk', pk, e)
             traceback.print_exc()
             edit_href = '/dynamic/behavioral/edit/{}/?start_year={}'.format(
                 pk,
@@ -843,7 +843,7 @@ def behavior_results(request, pk):
 
     else:
         if not model.check_hostnames(DROPQ_WORKERS):
-            print(('bad hostname', model.jobs_not_ready, DROPQ_WORKERS))
+            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
             raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready

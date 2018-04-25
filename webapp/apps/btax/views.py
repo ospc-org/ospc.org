@@ -100,8 +100,8 @@ def btax_results(request):
     no_inputs = False
     start_year = START_YEAR
     if request.method=='POST':
-        print(('method=POST get', request.GET))
-        print(('method=POST post', request.POST))
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
@@ -214,8 +214,8 @@ def btax_results(request):
             form_btax_input = btax_inputs
 
     else:
-        print(('method=GET get', request.GET))
-        print(('method=GET post', request.POST))
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
@@ -372,13 +372,13 @@ def output_detail(request, pk):
             }
             bubble_js, bubble_div, cdn_js, cdn_css = bubble_plot_tabs(tables['dataframes'])
         except Exception as e:
-            print(('Exception rendering pk', pk, e))
+            print('Exception rendering pk', pk, e)
             traceback.print_exc()
             edit_href = '/ccc/edit/{}/?start_year={}'.format(
                 pk,
                 model.first_year or START_YEAR # sometimes first_year is None
             )
-            print(('edit_href', edit_href, pk, model.first_year))
+            print('edit_href', edit_href, pk, model.first_year)
             not_avail_context = dict(edit_href=edit_href,
                                      is_btax=True,
                                      **context_vers_disp)
@@ -404,7 +404,7 @@ def output_detail(request, pk):
 
     else:
         if not model.check_hostnames(BTAX_WORKERS):
-            print(('bad hostname', model.jobs_not_ready, BTAX_WORKERS))
+            print('bad hostname', model.jobs_not_ready, BTAX_WORKERS)
             return render_to_response('taxbrain/failed.html',
                                       context={'is_btax': True})
         job_ids = model.job_ids
