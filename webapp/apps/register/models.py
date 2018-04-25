@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 
 import os
-import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 import uuid
 
 
