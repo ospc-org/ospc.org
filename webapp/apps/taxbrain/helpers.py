@@ -776,7 +776,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = False
         else:
-            raise ValueError
+            raise ValueError(f'{table_id} not in expected list of table names')
         table = {
             'col_labels': col_labels,
             'cols': [],
