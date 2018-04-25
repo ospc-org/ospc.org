@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from django.test import TestCase
 from django.test import Client
 import mock
@@ -12,7 +12,7 @@ from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute, M
 import taxcalc
 from taxcalc import Policy
 
-START_YEAR = u'2016'
+START_YEAR = '2016'
 
 
 class DynamicViewsTests(TestCase):
@@ -40,22 +40,22 @@ class DynamicViewsTests(TestCase):
         dynamic_views.dropq_compute = MockCompute(num_times_to_wait=2)
 
         # Do the microsim
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
+        data = {'ID_BenefitSurtax_Switch_1': ['True'],
+                'ID_BenefitSurtax_Switch_0': ['True'],
+                'ID_BenefitSurtax_Switch_3': ['True'],
+                'ID_BenefitSurtax_Switch_2': ['True'],
+                'ID_BenefitSurtax_Switch_5': ['True'],
+                'ID_BenefitSurtax_Switch_4': ['True'],
+                'ID_BenefitSurtax_Switch_6': ['True'],
+                'has_errors': ['False'], 'II_em': ['4333'],
+                'start_year': '2016', 'csrfmiddlewaretoken': 'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("taxbrain/"))
 
         # Link to dynamic simulation
         model_num = response.url[link_idx+1:-1]
@@ -69,7 +69,7 @@ class DynamicViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Do the partial equilibrium job submission
-        pe_data = {u'BE_inc': [u'-0.4']}
+        pe_data = {'BE_inc': ['-0.4']}
         response = self.client.post(dynamic_behavior, pe_data)
         self.assertEqual(response.status_code, 302)
         print(response)
@@ -78,7 +78,7 @@ class DynamicViewsTests(TestCase):
         response_success = self.client.get(response.url)
         self.assertEqual(response_success.status_code, 200)
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("behavior_results/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("behavior_results/"))
 
 
     def test_elastic_post(self):
@@ -92,22 +92,22 @@ class DynamicViewsTests(TestCase):
         dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
         # Do the microsim
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
+        data = {'ID_BenefitSurtax_Switch_1': ['True'],
+                'ID_BenefitSurtax_Switch_0': ['True'],
+                'ID_BenefitSurtax_Switch_3': ['True'],
+                'ID_BenefitSurtax_Switch_2': ['True'],
+                'ID_BenefitSurtax_Switch_5': ['True'],
+                'ID_BenefitSurtax_Switch_4': ['True'],
+                'ID_BenefitSurtax_Switch_6': ['True'],
+                'has_errors': ['False'], 'II_em': ['4333'],
+                'start_year': '2016', 'csrfmiddlewaretoken': 'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("taxbrain/"))
 
         # Link to dynamic simulation
         model_num = response.url[link_idx+1:-1]
@@ -121,7 +121,7 @@ class DynamicViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Do the elasticity job submission
-        el_data = {'elastic_gdp': [u'0.55']}
+        el_data = {'elastic_gdp': ['0.55']}
         response = self.client.post(dynamic_egdp, el_data)
         self.assertEqual(response.status_code, 302)
         print(response)
@@ -129,7 +129,7 @@ class DynamicViewsTests(TestCase):
         #Check that we get success this time
         response_success = self.client.get(response.url)
         self.assertEqual(response_success.status_code, 200)
-        self.failUnless(response.url[:-2].endswith("macro_results/"))
+        self.assertTrue(response.url[:-2].endswith("macro_results/"))
 
     def test_elastic_failed_job(self):
         #Monkey patch to mock out running of compute jobs
@@ -143,22 +143,22 @@ class DynamicViewsTests(TestCase):
         dynamic_views.dropq_compute = MockFailedCompute(num_times_to_wait=1)
 
         # Do the microsim
-        data = {u'ID_BenefitSurtax_Switch_1': [u'True'],
-                u'ID_BenefitSurtax_Switch_0': [u'True'],
-                u'ID_BenefitSurtax_Switch_3': [u'True'],
-                u'ID_BenefitSurtax_Switch_2': [u'True'],
-                u'ID_BenefitSurtax_Switch_5': [u'True'],
-                u'ID_BenefitSurtax_Switch_4': [u'True'],
-                u'ID_BenefitSurtax_Switch_6': [u'True'],
-                u'has_errors': [u'False'], u'II_em': [u'4333'],
-                u'start_year': u'2016', 'csrfmiddlewaretoken': 'abc123'}
+        data = {'ID_BenefitSurtax_Switch_1': ['True'],
+                'ID_BenefitSurtax_Switch_0': ['True'],
+                'ID_BenefitSurtax_Switch_3': ['True'],
+                'ID_BenefitSurtax_Switch_2': ['True'],
+                'ID_BenefitSurtax_Switch_5': ['True'],
+                'ID_BenefitSurtax_Switch_4': ['True'],
+                'ID_BenefitSurtax_Switch_6': ['True'],
+                'has_errors': ['False'], 'II_em': ['4333'],
+                'start_year': '2016', 'csrfmiddlewaretoken': 'abc123'}
 
         response = self.client.post('/taxbrain/', data)
         # Check that redirect happens
         self.assertEqual(response.status_code, 302)
         # Go to results page
         link_idx = response.url[:-1].rfind('/')
-        self.failUnless(response.url[:link_idx+1].endswith("taxbrain/"))
+        self.assertTrue(response.url[:link_idx+1].endswith("taxbrain/"))
 
         # Link to dynamic simulation
         model_num = response.url[link_idx+1:-1]
@@ -172,7 +172,7 @@ class DynamicViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Do the elasticity job submission
-        el_data = {'elastic_gdp': [u'0.55']}
+        el_data = {'elastic_gdp': ['0.55']}
         response = self.client.post(dynamic_egdp, el_data)
         self.assertEqual(response.status_code, 302)
         print(response)
@@ -180,7 +180,8 @@ class DynamicViewsTests(TestCase):
         #Check that we get success this time
         response_success = self.client.get(response.url)
         self.assertEqual(response_success.status_code, 200)
-        self.failUnless(response.url[:-2].endswith("macro_results/"))
+        self.assertTrue(response.url[:-2].endswith("macro_results/"))
         response = self.client.get(response.url)
         # Make sure the failure message is in the response
-        self.failUnless("Your calculation failed" in str(response))
+        self.assertTrue("Your calculation failed"
+                        in response.content.decode('utf-8'))

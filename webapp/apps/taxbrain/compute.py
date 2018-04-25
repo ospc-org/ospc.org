@@ -96,7 +96,7 @@ class DropqCompute(object):
             dropq_worker_offset = 0
 
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
-        print "hostnames: ", hostnames
+        print("hostnames: ", hostnames)
         print("submitting data: ", data)
         num_hosts = len(hostnames)
         job_ids = []
@@ -111,7 +111,7 @@ class DropqCompute(object):
                 try:
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
                     if response.status_code == 200:
-                        print "submitted: ", hostnames[hostname_idx]
+                        print("submitted: ", hostnames[hostname_idx])
                         year_submitted = True
                         response_d = response.json()
                         job_ids.append((response_d['job_id'], hostnames[hostname_idx]))
@@ -119,19 +119,19 @@ class DropqCompute(object):
                         if response_d['qlength'] > max_queue_length:
                             max_queue_length = response_d['qlength']
                     else:
-                        print "FAILED: ", str(y), hostnames[hostname_idx]
+                        print("FAILED: ", str(y), hostnames[hostname_idx])
                         hostname_idx = (hostname_idx + 1) % num_hosts
                         attempts += 1
                 except Timeout:
-                    print "Couldn't submit to: ", hostnames[hostname_idx]
+                    print("Couldn't submit to: ", hostnames[hostname_idx])
                     hostname_idx = (hostname_idx + 1) % num_hosts
                     attempts += 1
                 except RequestException as re:
-                    print "Something unexpected happened: ", re
+                    print("Something unexpected happened: ", re)
                     hostname_idx = (hostname_idx + 1) % num_hosts
                     attempts += 1
                 if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
-                    print "Exceeded max attempts. Bailing out."
+                    print("Exceeded max attempts. Bailing out.")
                     raise IOError()
 
         return job_ids, max_queue_length
@@ -154,7 +154,7 @@ class DropqCompute(object):
                 rep = job_response.text
                 jobs_done[idx] = rep
             else:
-                print 'did not expect response with status_code', job_response.status_code
+                print('did not expect response with status_code', job_response.status_code)
                 raise JobFailError(msg)
         return jobs_done
 
@@ -196,12 +196,12 @@ class DropqCompute(object):
             versions = [r.get('taxcalc_version', None) for r in ans]
             if not all([ver==taxcalc_version for ver in versions]):
                 msg ="Got different taxcalc versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
             versions = [r.get('dropq_version', None) for r in ans]
             if not all([same_version(ver, dropq_version) for ver in versions]):
                 msg ="Got different dropq versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
 
         results['aggr_d'] = arrange_totals_by_row(results['aggr_d'],
@@ -233,15 +233,15 @@ class DropqCompute(object):
             versions = [r.get('taxcalc_version', None) for r in ans]
             if not all([ver==taxcalc_version for ver in versions]):
                 msg ="Got different taxcalc versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
             versions = [r.get('dropq_version', None) for r in ans]
             if not all([same_version(ver, dropq_version) for ver in versions]):
                 msg ="Got different dropq versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
 
-        elasticity_gdp[u'gdp_elasticity_0'] = u'NA'
+        elasticity_gdp['gdp_elasticity_0'] = 'NA'
         elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
                                             GDP_ELAST_ROW_NAMES)
 
@@ -301,7 +301,7 @@ class ElasticMockCompute(MockCompute):
 
     def remote_retrieve_results(self, theurl, params):
         self.count += 1
-        text = (u'{"elasticity_gdp": {"gdp_elasticity_1": "0.00310"}, '
+        text = ('{"elasticity_gdp": {"gdp_elasticity_1": "0.00310"}, '
                 '"dropq_version": "0.6.a96303", "taxcalc_version": '
                 '"0.6.10d462"}')
         with requests_mock.Mocker() as mock:
@@ -312,7 +312,7 @@ class ElasticMockCompute(MockCompute):
 class MockFailedCompute(MockCompute):
 
     def remote_results_ready(self, theurl, params):
-        print 'MockFailedCompute remote_results_ready', theurl, params
+        print('MockFailedCompute remote_results_ready', theurl, params)
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_query_result', text='FAIL')
             return DropqCompute.remote_results_ready(self, theurl, params)
@@ -323,7 +323,7 @@ class MockFailedComputeOnOldHost(MockCompute):
     action should raise a `ConnectionError`
     """
     def remote_results_ready(self, theurl, params):
-        print 'MockFailedComputeOnOldHost remote_results_ready', theurl, params
+        print('MockFailedComputeOnOldHost remote_results_ready', theurl, params)
         raise requests.ConnectionError()
 
 

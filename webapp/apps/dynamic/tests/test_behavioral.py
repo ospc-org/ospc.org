@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from django.test import TestCase
 from django.test import Client
 import mock
@@ -30,22 +30,22 @@ class TestDynamicBehavioralViews(object):
 
     def test_behavioral_edit(self):
         # Do the microsim
-        start_year = u'2016'
+        start_year = '2016'
         data = get_post_data(start_year)
-        data[u'II_em'] = [u'4333']
+        data['II_em'] = ['4333']
 
         micro1 = do_micro_sim(CLIENT, data)["response"]
 
         # Do another microsim
-        data[u'II_em'] += [u'4334']
+        data['II_em'] += ['4334']
         micro2 = do_micro_sim(CLIENT, data)["response"]
 
         # Do a third microsim
-        data[u'II_em'] += [u'4335']
+        data['II_em'] += ['4335']
         micro3 = do_micro_sim(CLIENT, data)["response"]
 
         # Do the partial equilibrium simulation based on the third microsim
-        pe_reform = {u'BE_inc': [u'-0.4']}
+        pe_reform = {'BE_inc': ['-0.4']}
         pe_response = do_dynamic_sim(CLIENT, 'behavioral', micro3, pe_reform)
         orig_micro_model_num = micro3.url[-2:-1]
 
@@ -56,7 +56,7 @@ class TestDynamicBehavioralViews(object):
         # load page
         response = CLIENT.get(dynamic_behavior_edit)
         assert response.status_code == 200
-        page = response.content
+        page = response.content.decode('utf-8')
         # Read the page to find the linked microsim. It should be the third
         # microsim above
         idx = page.find('dynamic/behavioral')
@@ -68,14 +68,14 @@ class TestDynamicBehavioralViews(object):
 
     def test_behavioral_reform_with_wildcard(self):
         # Do the microsim
-        start_year = u'2016'
+        start_year = '2016'
         data = get_post_data(start_year)
-        data[u'SS_Earnings_c'] = [u'*,*,*,*,15000']
+        data['SS_Earnings_c'] = ['*,*,*,*,15000']
 
         micro1 = do_micro_sim(CLIENT, data)["response"]
 
         # Do the partial equilibrium simulation based on the microsim
-        pe_reform = {u'BE_sub': [u'0.25']}
+        pe_reform = {'BE_sub': ['0.25']}
         pe_response = do_dynamic_sim(CLIENT, 'behavioral', micro1, pe_reform)
         orig_micro_model_num = micro1.url[-2:-1]
         from webapp.apps.dynamic import views
@@ -83,20 +83,20 @@ class TestDynamicBehavioralViews(object):
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
         user_mods = json.loads(post['user_mods'])
-        assert user_mods["policy"]["2020"][u'_SS_Earnings_c'][0]  == 15000.0
+        assert user_mods["policy"]["2020"]['_SS_Earnings_c'][0]  == 15000.0
         assert user_mods["behavior"]["2016"]["_BE_sub"][0] == 0.25
 
     def test_behavioral_reform_post_gui(self):
         # Do the microsim
-        start_year = u'2016'
+        start_year = '2016'
         data = get_post_data(start_year)
-        data[u'SS_Earnings_c'] = [u'*,*,*,*,15000']
+        data['SS_Earnings_c'] = ['*,*,*,*,15000']
         data['data_source'] = 'CPS'
 
         micro1 = do_micro_sim(CLIENT, data)["response"]
 
         # Do the partial equilibrium simulation based on the microsim
-        pe_reform = {u'BE_sub': [u'0.25']}
+        pe_reform = {'BE_sub': ['0.25']}
         pe_response = do_dynamic_sim(CLIENT, 'behavioral', micro1,
                                      pe_reform, start_year=start_year)
         orig_micro_model_num = micro1.url[-2:-1]
@@ -106,7 +106,7 @@ class TestDynamicBehavioralViews(object):
         # SS_Earnings_c with wildcards filled in properly
         user_mods = json.loads(post['user_mods'])
         assert post["first_budget_year"] == int(start_year)
-        assert user_mods["policy"]["2020"][u'_SS_Earnings_c'][0]  == 15000.0
+        assert user_mods["policy"]["2020"]['_SS_Earnings_c'][0]  == 15000.0
         assert user_mods["behavior"]["2016"]["_BE_sub"][0] == 0.25
         assert post['use_puf_not_cps'] == False
 
@@ -117,7 +117,7 @@ class TestDynamicBehavioralViews(object):
         micro1 = micro1["response"]
 
         # Do the partial equilibrium simulation based on the microsim
-        be_reform = {u'BE_sub': [u'0.25']}
+        be_reform = {'BE_sub': ['0.25']}
         be_response = do_dynamic_sim(CLIENT, 'behavioral', micro1, be_reform)
         orig_micro_model_num = micro1.url[-2:-1]
         from webapp.apps.dynamic import views

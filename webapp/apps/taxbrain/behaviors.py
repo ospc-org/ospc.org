@@ -13,7 +13,7 @@ from distutils.version import LooseVersion
 from .helpers import (rename_keys, reorder_lists, PRE_TC_0130_RES_MAP,
                       REORDER_LT_TC_0130_DIFF_LIST, DIFF_TABLE_IDs)
 from ..constants import TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
-import param_formatters
+from . import param_formatters
 
 class Resultable(models.Model):
     """

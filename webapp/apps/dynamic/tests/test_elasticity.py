@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 from django.test import TestCase
 from django.test import Client
 import mock
@@ -35,18 +35,18 @@ class DynamicElasticityViewsTests(TestCase):
         webapp_views.dropq_compute = MockCompute()
 
         # Do the microsim
-        start_year = u'2016'
+        start_year = '2016'
         data = get_post_data(start_year)
-        data[u'II_em'] = [u'4333']
+        data['II_em'] = ['4333']
 
         micro1 = do_micro_sim(self.client, data)["response"]
 
         # Do another microsim
-        data[u'II_em'] += [u'4334']
+        data['II_em'] += ['4334']
         micro2 = do_micro_sim(self.client, data)["response"]
 
         # Do a third microsim
-        data[u'II_em'] += [u'4335']
+        data['II_em'] += ['4335']
         micro3 = do_micro_sim(self.client, data)["response"]
 
         from webapp.apps.dynamic import views
@@ -54,7 +54,7 @@ class DynamicElasticityViewsTests(TestCase):
         dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
         # Do the elasticity of GDP simulation based on the third microsim
-        egdp_reform = {u'elastic_gdp': [u'0.4']}
+        egdp_reform = {'elastic_gdp': ['0.4']}
         egdp_response = do_dynamic_sim(self.client, 'macro', micro3, egdp_reform)
         orig_micro_model_num = micro3.url[-2:-1]
 
@@ -65,7 +65,7 @@ class DynamicElasticityViewsTests(TestCase):
         # get edit page.
         response = self.client.get(dynamic_macro_edit)
         self.assertEqual(response.status_code, 200)
-        page = response.content
+        page = response.content.decode('utf-8')
         # Read the page to find the linked microsim. It should be the third
         # microsim above
         idx = page.find('dynamic/macro')
@@ -77,9 +77,9 @@ class DynamicElasticityViewsTests(TestCase):
 
     def test_elasticity_cps(self):
         # Do the microsim
-        start_year = u'2016'
+        start_year = '2016'
         data = get_post_data(start_year)
-        data[u'II_em'] = [u'4333']
+        data['II_em'] = ['4333']
         data['data_source'] = ['CPS']
 
         micro1 = do_micro_sim(self.client, data)
@@ -89,7 +89,7 @@ class DynamicElasticityViewsTests(TestCase):
         dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
         # Do the elasticity of GDP simulation based on the third microsim
-        egdp_reform = {u'elastic_gdp': [u'0.4']}
+        egdp_reform = {'elastic_gdp': ['0.4']}
         egdp_response = do_dynamic_sim(self.client,'macro', micro1['response'],
                                           egdp_reform)
         from webapp.apps.dynamic import views
@@ -117,7 +117,7 @@ class DynamicElasticityViewsTests(TestCase):
         dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
         # Do the partial equilibrium simulation based on the microsim
-        el_reform = {u'elastic_gdp': [u'0.4']}
+        el_reform = {'elastic_gdp': ['0.4']}
         el_response = do_dynamic_sim(self.client, 'macro', micro1, el_reform)
         orig_micro_model_num = micro1.url[-2:-1]
         from webapp.apps.dynamic import views

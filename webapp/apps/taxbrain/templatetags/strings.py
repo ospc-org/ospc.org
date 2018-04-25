@@ -8,8 +8,8 @@ def make_id(name):
 
 @register.filter
 def block_param_title(dict):
-    return dict.keys()[0].title()
+    return list(dict.keys())[0].title()
 
 @register.filter
 def block_param_id(dict):
-    return "-".join(dict.keys()[0].split())
+    return "-".join(list(dict.keys())[0].split())

@@ -1,7 +1,7 @@
 import json
 import pytz
 import datetime
-from urlparse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 import os
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -98,11 +98,11 @@ def dynamic_input(request, pk):
                return HttpResponse(msg, status=403)
 
             curr_dict = dict(model.__dict__)
-            for key, value in curr_dict.items():
-                print "got this ", key, value
+            for key, value in list(curr_dict.items()):
+                print("got this ", key, value)
 
             # get macrosim data from form
-            worker_data = {k:v for k, v in curr_dict.items() if v not in (u'', None, [])}
+            worker_data = {k:v for k, v in list(curr_dict.items()) if v not in ('', None, [])}
 
             #get microsim data
             outputsurl = OutputUrl.objects.get(pk=pk)
@@ -112,17 +112,17 @@ def dynamic_input(request, pk):
 
             if not taxbrain_model.json_text:
                 taxbrain_dict = dict(taxbrain_model.__dict__)
-                for key, value in taxbrain_dict.items():
-                    if type(value) == type(unicode()):
+                for key, value in list(taxbrain_dict.items()):
+                    if type(value) == type(str()):
                         try:
                             taxbrain_dict[key] = [float(x) for x in value.split(',') if x]
                         except ValueError:
                             taxbrain_dict[key] = [make_bool(x) for x in value.split(',') if x]
                     else:
-                        print "missing this: ", key
+                        print("missing this: ", key)
 
 
-                microsim_data = {k:v for k, v in taxbrain_dict.items() if not (v == [] or v == None)}
+                microsim_data = {k:v for k, v in list(taxbrain_dict.items()) if not (v == [] or v == None)}
 
                 #Don't need to pass around the microsim results
                 if 'tax_result' in microsim_data:
@@ -195,7 +195,7 @@ def dynamic_behavioral(request, pk):
         print('method=POST post', request.POST)
         fields = dict(request.GET)
         fields.update(dict(request.POST))
-        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
         start_year = fields['start_year']
         # TODO: migrate first_year to start_year to get rid of weird stuff like
         # this
@@ -322,7 +322,7 @@ def dynamic_elasticities(request, pk):
         # Client is attempting to send inputs, validate as form data
         fields = dict(request.GET)
         fields.update(dict(request.POST))
-        fields = {k: v[0] if isinstance(v, list) else v for k, v in fields.items()}
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
         start_year = fields.get('start_year', START_YEAR)
         print(fields)
         # TODO: migrate first_year to start_year to get rid of weird stuff like
@@ -664,7 +664,7 @@ def elastic_results(request, pk):
         try:
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
         except JobFailError as jfe:
-            print jfe
+            print(jfe)
             return render_to_response('taxbrain/failed.html')
 
         if any([j == 'FAIL' for j in jobs_ready]):
@@ -711,7 +711,7 @@ def elastic_results(request, pk):
                     return JsonResponse({'eta': exp_num_minutes}, status=200)
 
             else:
-                print "rendering not ready yet"
+                print("rendering not ready yet")
                 context = {'eta': '100'}
                 context.update(context_vers_disp)
                 return render_to_response('dynamic/not_ready.html', context, context_instance=RequestContext(request))
@@ -855,7 +855,7 @@ def behavior_results(request, pk):
         try:
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
         except JobFailError as jfe:
-            print jfe
+            print(jfe)
             return render_to_response('taxbrain/failed.html')
 
         if all([job == 'YES' for job in jobs_ready]):
@@ -885,7 +885,7 @@ def behavior_results(request, pk):
                     return JsonResponse({'eta': exp_num_minutes}, status=200)
 
             else:
-                print "rendering not ready yet"
+                print("rendering not ready yet")
                 context = {'eta': '100'}
                 context.update(context_vers_disp)
                 return render_to_response('dynamic/not_ready.html', context, context_instance=RequestContext(request))

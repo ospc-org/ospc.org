@@ -14,8 +14,8 @@ from bokeh.embed import components
 from bokeh.resources import CDN
 
 # import styles and callback
-from styles import (PLOT_FORMATS, TITLE_FORMATS, RED, BLUE)
-from controls_callback_script import CONTROLS_CALLBACK_SCRIPT
+from .styles import (PLOT_FORMATS, TITLE_FORMATS, RED, BLUE)
+from .controls_callback_script import CONTROLS_CALLBACK_SCRIPT
 
 
 def bubble_plot_tabs(dataframes):
