@@ -124,6 +124,36 @@ def test_coverage_fields(request):
 
 
 @pytest.fixture()
+@set_fixture_prop
+def test_coverage_behavioral_gui_fields(request):
+    _test_coverage_behavoiral_gui_fields = {
+        'BE_sub': [1.0],
+        'BE_inc': [-0.6],
+        'BE_cg': [-0.67]
+    }
+    return _test_coverage_behavoiral_gui_fields
+
+
+@pytest.fixture()
+@set_fixture_prop
+def test_coverage_behavioral_fields(request):
+    # quick work-around to get set_fixture_prop decorator to work with
+    # fixture as argument
+    # this is equivalent to
+    # `test_coverage_fields(fields_base, test_coverage_behavioral_gui_fields)`
+    _fields_base = request.getfixturevalue('fields_base')
+    _fields_base.pop('quick_calc', None)
+    _test_coverage_behavoiral_gui_fields = request.getfixturevalue(
+        'test_coverage_behavioral_gui_fields'
+    )
+    _test_coverage_behavoiral_fields = dict(
+        _test_coverage_behavoiral_gui_fields,
+        **_fields_base
+    )
+    return _test_coverage_behavoiral_fields
+
+
+@pytest.fixture()
 def test_coverage_reform():
     _test_coverage_reform = {
         '_cpi_offset': {'2016': [-0.0025]},
@@ -324,36 +354,6 @@ def exp_assumptions_text():
     }
 
     return _exp_assumptions_text
-
-
-@pytest.fixture()
-@set_fixture_prop
-def test_coverage_behavioral_gui_fields(request):
-    _test_coverage_behavoiral_gui_fields = {
-        'BE_sub': [1.0],
-        'BE_inc': [-0.6],
-        'BE_cg': [-0.67]
-    }
-    return _test_coverage_behavoiral_gui_fields
-
-
-@pytest.fixture()
-@set_fixture_prop
-def test_coverage_behavioral_fields(request):
-    # quick work-around to get set_fixture_prop decorator to work with
-    # fixture as argument
-    # this is equivalent to
-    # `test_coverage_fields(fields_base, test_coverage_behavioral_gui_fields)`
-    _fields_base = request.getfixturevalue('fields_base')
-    _fields_base.pop('quick_calc', None)
-    _test_coverage_behavoiral_gui_fields = request.getfixturevalue(
-        'test_coverage_behavioral_gui_fields'
-    )
-    _test_coverage_behavoiral_fields = dict(
-        _test_coverage_behavoiral_gui_fields,
-        **_fields_base
-    )
-    return _test_coverage_behavoiral_fields
 
 
 @pytest.fixture()

@@ -225,6 +225,7 @@ def dynamic_behavioral(request, pk):
                     assumption_text=json.dumps(assumptions_dict),
                     raw_reform_text=reform_text,
                     raw_assumption_text=assumptions_text
+                    errors_warnings=json.dumps(errors_warnings)
                 )
                 json_reform.save()
                 taxbrain_model.json_text = json_reform
