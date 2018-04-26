@@ -192,20 +192,21 @@ def errors_warnings_json_reform():
 @pytest.fixture()
 def test_coverage_exp_read_json_reform():
     _test_coverage_exp_read_json_reform = {
-        2018: {
-            '_EITC_rt': [[0.0765, 0.34, 1.0, 0.45]],
-            '_NIIT_PT_taxed': [False],
-            '_ID_BenefitCap_Switch': [[0, 0, 0, 0, 0, 0, 0]],
-            '_ALD_InvInc_ec_base_RyanBrady': [False],
-            '_EITC_indiv': [False],
-            '_ID_BenefitSurtax_Switch': [[1, 0, 0, 0, 0, 0, 0]],
-            '_STD': [[15000.0, 24000.0, 12000.0, 18000.0, 24000.0]],
-            '_II_no_em_nu18': [False],
-            '_ID_Charity_c_cpi': True,
-            '_CG_nodiff': [False],
-            '_CTC_new_refund_limited': [False]},
-        2019: {'_FICA_ss_trt': [0.1]},
-        2020: {'_FICA_ss_trt': [0.2]}
+        2018: {'_ALD_InvInc_ec_base_RyanBrady': [False],
+               '_EITC_indiv': [False],
+               '_II_no_em_nu18': [False],
+               '_CG_nodiff': [False],
+               '_ID_Charity_c_cpi': True,
+               '_NIIT_PT_taxed': [False],
+               '_CTC_new_refund_limited': [False],
+               '_ID_BenefitSurtax_Switch': [[True,False,False, False,
+                                             False, False, False]],
+               '_ID_BenefitCap_Switch': [[False, False, False, False,
+                                          False, False, False]],
+               '_STD': [[15000.0, 24000.0, 12000.0, 18000.0, 24000.0]],
+               '_EITC_rt': [[0.0765, 0.34, 1.0, 0.45]]},
+         2020: {'_FICA_ss_trt': [0.2]},
+         2019: {'_FICA_ss_trt': [0.1]}
     }
 
     return _test_coverage_exp_read_json_reform
@@ -215,15 +216,17 @@ def test_coverage_exp_read_json_reform():
 def errors_warnings_exp_read_json_reform():
     _errors_warnings_exp_read_json_reform = {
         2018: {
-            '_STD': [[7000.0, 24000.0, 12000.0, 20000.0, 24000.0]],
-            '_ID_BenefitSurtax_Switch': [[True, 1, 1, 1, 1, 1, 1]],
-            '_FICA_ss_trt': [-1.0]
+            '_FICA_ss_trt': [-1.0],
+            '_ID_BenefitSurtax_Switch': [[True, True, True, True,
+                                          True, True, False]],
+            '_STD': [[10000.0, 24000.0, 12000.0, 20000.0, 24000.0]]
         },
         2019: {
-            '_II_brk4': [[500.0, 321268.5, 160634.25, 160634.25, 321268.5]],
-            '_FICA_ss_trt': [0.1]},
+            '_FICA_ss_trt': [0.1],
+            '_II_brk4': [[500.0, 321268.5, 160634.25, 160634.25, 321268.5]]
+        },
         2020: {
-            '_STD': [[7286.37, 24981.84, 12490.92, 150.0, 24981.84]]
+            '_STD': [[10409.1, 24981.84, 12490.92, 150.0, 24981.84]]
         }
     }
     return _errors_warnings_exp_read_json_reform
@@ -231,13 +234,25 @@ def errors_warnings_exp_read_json_reform():
 
 @pytest.fixture()
 def errors():
-    with open(os.path.join(CUR_PATH, 'errors.txt')) as f:
+    with open(os.path.join(CUR_PATH, 'policy_errors.txt')) as f:
         return f.read()
 
 
 @pytest.fixture()
 def warnings():
-    with open(os.path.join(CUR_PATH, 'warnings.txt')) as f:
+    with open(os.path.join(CUR_PATH, 'policy_warnings.txt')) as f:
+        return f.read()
+
+
+@pytest.fixture()
+def warnings_behavior():
+    with open(os.path.join(CUR_PATH, 'behavior_warnings.txt')) as f:
+        return f.read()
+
+
+@pytest.fixture()
+def errors_behavior():
+    with open(os.path.join(CUR_PATH, 'behavior_errors.txt')) as f:
         return f.read()
 
 
@@ -247,12 +262,43 @@ def errors_warnings(warnings, errors):
 
 
 @pytest.fixture()
+def errors_warnings_policy_behavior(errors, warnings, warnings_behavior,
+                                    errors_behavior):
+    return {
+        'policy':{
+            'errors': errors,
+            'warnings': warnings
+        },
+        'behavior': {
+            'errors': errors_behavior,
+            'warnings': warnings_behavior
+        }
+    }
+
+
+def policy_errors_warnings(errors_warnings, empty_errors_warnings):
+    return {'policy': errors_warnings, 'behavior': empty_errors_warnings}
+
+
+@pytest.fixture()
 def empty_errors_warnings():
     return {'errors': {}, 'warnings': {}}
 
+
+@pytest.fixture()
+def empty_errors_warnings_policy_behavior(empty_errors_warnings):
+    return {'policy': empty_errors_warnings, 'behavior': empty_errors_warnings}
+
+
 @pytest.fixture()
 def exp_errors_warnings():
-    with open(os.path.join(CUR_PATH, 'exp_errors_warnings.json')) as f:
+    with open(os.path.join(CUR_PATH, 'exp_errors_warnings_policy.json')) as f:
+        return json.loads(f.read())
+
+@pytest.fixture()
+def exp_errors_warnings_policy_behavior():
+    with open(os.path.join(CUR_PATH,
+                           'exp_errors_warnings_policy_behavior.json')) as f:
         return json.loads(f.read())
 
 
@@ -320,6 +366,24 @@ def no_assumptions_text():
 def no_assumptions_text_json(no_assumptions_text):
     return json.loads(no_assumptions_text)
 
+
+@pytest.fixture()
+def errors_warnings_json_assumptions():
+    with open(os.path.join(CUR_PATH, 'errors_warnings_json_assumptions.json')) as f:
+        return f.read()
+
+
+@pytest.fixture()
+def errors_warnings_exp_read_json_assumptions():
+    _ew_assumptions = {
+        'consumption': {},
+        'behavior': {
+            2018: {'_BE_sub': [-0.8], '_BE_inc': [0.6]}},
+        'growdiff_baseline': {},
+        'growdiff_response': {}
+    }
+
+    return _ew_assumptions
 
 @pytest.fixture()
 @set_fixture_prop

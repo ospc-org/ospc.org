@@ -281,11 +281,10 @@ def read_json_reform(reform, assumptions):
     tc_errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
     # errors_warnings contains warnings and errors separated by each
     # project/project module
-    errors_warnings = {'warnings': '', 'errors': ''}
+    errors_warnings = {}
     for project in tc_errors_warnings:
-        errors_warnings['warnings'] += tc_errors_warnings[project]['warnings']
-        errors_warnings['errors'] += tc_errors_warnings[project]['errors']
-    errors_warnings = parse_errors_warnings(errors_warnings[project])
+        errors_warnings[project] = parse_errors_warnings(tc_errors_warnings[project])
+
     # separate reform and assumptions
     reform_dict = policy_dict["policy"]
     assumptions_dict = {k: v for k, v in list(policy_dict.items()) if k != "policy"}

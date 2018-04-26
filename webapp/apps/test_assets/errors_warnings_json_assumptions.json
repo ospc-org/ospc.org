@@ -1,0 +1,9 @@
+{
+    "behavior": {
+        "_BE_sub": {"2018": [-0.8]},
+        "_BE_inc": {"2018": [0.6]}
+    },
+    "growdiff_response": {},
+    "consumption": {},
+    "growdiff_baseline": {}
+}

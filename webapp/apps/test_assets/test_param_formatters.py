@@ -157,10 +157,14 @@ def test_to_json_reform(request, _fields, _exp_reform, default_params_Policy):
 
 ###############################################################################
 # Test parse_errors_warnings
-def test_parse_errors_warnings(errors_warnings,
-                               exp_errors_warnings):
-    act = parse_errors_warnings(errors_warnings)
-    np.testing.assert_equal(act, exp_errors_warnings)
+def test_parse_errors_warnings(errors_warnings_policy_behavior,
+                               exp_errors_warnings_policy_behavior):
+    for project in ['policy', 'behavior']:
+        act = parse_errors_warnings(errors_warnings_policy_behavior[project])
+        np.testing.assert_equal(
+            act,
+            exp_errors_warnings_policy_behavior[project]
+        )
 
 
 def test_append_ew_file_input():
@@ -222,11 +226,11 @@ def test_append_ew_personal_inputs():
     [("test_coverage_json_reform", "no_assumptions_text",
       "test_coverage_exp_read_json_reform",
       "no_assumptions_text_json",
-      "empty_errors_warnings"),
+      "empty_errors_warnings_policy_behavior"),
      ("test_coverage_json_reform", "assumptions_text",
       "test_coverage_exp_read_json_reform",
       "exp_assumptions_text",
-      "empty_errors_warnings"),
+      "empty_errors_warnings_policy_behavior"),
      ("errors_warnings_json_reform", "no_assumptions_text",
       "errors_warnings_exp_read_json_reform",
       "no_assumptions_text_json", "exp_errors_warnings")
@@ -251,45 +255,70 @@ def test_read_json_reform(request, _test_reform, _test_assump,
 
 
 ###############################################################################
-# Update test data
+# Update test data -- if the test data is in a text or JSON file, it will be
+# updated automatically. If not, you need to copy, paste, and format it in the
+# fixtures in conftest.py
 #
-# def test_update_errors_warnings(errors_warnings_json_reform, map_back_to_tb):
+#
+#
+# def test_update_errors_warnings(errors_warnings_json_reform,
+#                                 errors_warnings_json_assumptions):
 #     import taxcalc
 #     policy_dict = taxcalc.Calculator.read_json_param_objects(
 #         errors_warnings_json_reform,
-#         None
+#         errors_warnings_json_assumptions
 #     )
 #     pol = taxcalc.Policy()
-#     pol.implement_reform(policy_dict['policy'])
-#     print('warnings', pol.reform_warnings)
-#     print('errors', pol.reform_errors)
+#     # pol.ignore_reform_errors()
+#     pol.implement_reform(policy_dict['policy'], raise_errors=False)
+#     print('warnings', pol.parameter_warnings)
+#     print('errors', pol.parameter_errors)
 #
+#     behv = taxcalc.Behavior()
+#     # behv._ignore_errors = True
+#     behv.update_behavior(policy_dict['behavior'], raise_errors=False)
 #
-#     with open(os.path.join(CUR_PATH, 'warnings.txt'), 'w') as f:
-#         f.write(pol.reform_warnings)
-#     with open(os.path.join(CUR_PATH, 'errors.txt'), 'w') as f:
-#         f.write(pol.reform_errors)
+#     with open(os.path.join(CUR_PATH, 'policy_warnings.txt'), 'w') as f:
+#         f.write(pol.parameter_warnings)
+#     with open(os.path.join(CUR_PATH, 'policy_errors.txt'), 'w') as f:
+#         f.write(pol.parameter_errors)
 #
-#     _errors_warnings = {'errors': pol.reform_errors,
-#                         'warnings': pol.reform_warnings}
+#     with open(os.path.join(CUR_PATH, 'behavior_warnings.txt'), 'w') as f:
+#         f.write('')
+#     with open(os.path.join(CUR_PATH, 'behavior_errors.txt'), 'w') as f:
+#         f.write(behv.parameter_errors)
 #
-#     act = parse_errors_warnings(_errors_warnings, map_back_to_tb)
+#     _errors_warnings = {
+#         'policy':{
+#             'errors': pol.parameter_errors,
+#             'warnings': pol.parameter_warnings
+#         },
+#         'behavior': {
+#             'errors': behv.parameter_errors,
+#             'warnings': ''
+#         }
+#     }
+#
+#     act = {}
+#     for project in ['policy', 'behavior']:
+#         act[project] = parse_errors_warnings(_errors_warnings[project])
 #     print('errors_warnings', act)
 #
-#     with open(os.path.join(CUR_PATH, 'exp_errors_warnings'), 'w') as f:
+#     with open(os.path.join(CUR_PATH, 'exp_errors_warnings_policy_behavior.json'), 'w') as f:
 #         f.write(json.dumps(act, indent=4))
+#
+#     with open(os.path.join(CUR_PATH, 'exp_errors_warnings_policy.json'), 'w') as f:
+#         f.write(json.dumps({'policy': act['policy'],
+#                             'behavior': {'warnings': {}, 'errors': {}}},
+#                            indent=4))
 #
 #
 # def test_update_test_data_read_json_reform1(test_coverage_json_reform,
-#                                             no_assumptions_text, map_back_to_tb,
-#                                             test_coverage_exp_read_json_reform,
-#                                             no_assumptions_text_json,
-#                                             empty_errors_warnings):
+#                                             no_assumptions_text):
 #
 #     act_reform, act_assump, act_errors_warnings = read_json_reform(
 #         test_coverage_json_reform,
 #         no_assumptions_text,
-#         map_back_to_tb
 #     )
 #     print('act_reform', act_reform)
 #     print('act_assump', act_assump)
@@ -297,16 +326,11 @@ def test_read_json_reform(request, _test_reform, _test_assump,
 #
 #
 # def test_update_test_data_read_json_reform2(test_coverage_json_reform,
-#                                             assumptions_text,
-#                                             map_back_to_tb,
-#                                             test_coverage_exp_read_json_reform,
-#                                             exp_assumptions_text,
-#                                             empty_errors_warnings):
+#                                             assumptions_text):
 #
 #     act_reform, act_assump, act_errors_warnings = read_json_reform(
 #         test_coverage_json_reform,
 #         assumptions_text,
-#         map_back_to_tb
 #     )
 #     print('act_reform', act_reform)
 #     print('act_assump', act_assump)
@@ -314,16 +338,11 @@ def test_read_json_reform(request, _test_reform, _test_assump,
 #
 #
 # def test_update_test_data_read_json_reform3(errors_warnings_json_reform,
-#                                             no_assumptions_text,
-#                                             map_back_to_tb,
-#                                             errors_warnings_exp_read_json_reform,
-#                                             no_assumptions_text_json,
-#                                             exp_errors_warnings):
+#                                             errors_warnings_json_assumptions):
 #
 #     act_reform, act_assump, act_errors_warnings = read_json_reform(
 #         errors_warnings_json_reform,
-#         no_assumptions_text,
-#         map_back_to_tb
+#         errors_warnings_json_assumptions
 #     )
 #     print('act_reform', act_reform)
 #     print('act_assump', act_assump)
