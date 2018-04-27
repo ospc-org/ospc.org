@@ -100,11 +100,12 @@ class Fieldable(models.Model):
         """
         Removes errors on extra parameters
         """
-        for action in ['warnings', 'errors']:
-            params = list(errors_warnings[action].keys())
-            for param in params:
-                if param not in self.raw_input_fields:
-                    errors_warnings[action].pop(param)
+        for project in errors_warnings:
+            for action in ['warnings', 'errors']:
+                params = list(errors_warnings[project][action].keys())
+                for param in params:
+                    if param not in self.raw_input_fields:
+                        errors_warnings[project][action].pop(param)
 
 
     def get_model_specs(self):
