@@ -56,6 +56,6 @@ class TaxBrainDynamicFieldsTest(TaxBrainFieldsTest, TestCase):
             errors_warnings) = model.get_model_specs()
 
         assert len(errors_warnings['behavior']['errors']) > 0
-        assert len(errors_warnings['behavior']['warnings'])
+        assert len(errors_warnings['behavior']['warnings']) == 0
         assert len(errors_warnings['policy']['errors']) == 0
         assert len(errors_warnings['policy']['warnings']) == 0

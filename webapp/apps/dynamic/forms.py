@@ -263,6 +263,15 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
         (self.widgets, self.labels,
             self.update_fields) = PolicyBrainForm.set_form(defaults)
 
+    def add_error(self, field, error):
+        """
+        Safely adds errors. There was an issue where the `cleaned_data`
+        attribute wasn't created after `is_valid` was called. This ensures
+        that the `cleaned_data` attribute is there.
+        """
+        if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
+            self.cleaned_data = {}
+        ModelForm.add_error(self, field, error)
 
     class Meta:
         model = DynamicBehaviorSaveInputs

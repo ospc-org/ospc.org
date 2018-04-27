@@ -168,3 +168,57 @@ class TestDynamicBehavioralViews(object):
             start_year
         )
         assert response.context['edit_href'] == edit_exp
+
+    def test_post_behavior_with_errors(self):
+        """
+        Do microsim. Post to behavioral page with bad inputs, post with one
+        input fixed, post again with both fixed, and check that data was posted
+        correctly.
+        """
+
+        # Do the microsim
+        start_year = '2018'
+        data = get_post_data(start_year)
+        data['SS_Earnings_c'] = ['*,*,*,*,15000']
+        data['data_source'] = 'CPS'
+
+        microsim_response = do_micro_sim(CLIENT, data)["response"]
+
+        # Do the partial equilibrium simulation based on the microsim
+        pe_reform = {'BE_sub': ['-0.25'], 'BE_inc': ['0.1']}
+
+        idx = microsim_response.url[:-1].rfind('/')
+        model_num = microsim_response.url[idx+1:-1]
+        dynamic_behavior = f'/dynamic/behavioral/{model_num}/?start_year={start_year}'
+        response = CLIENT.post(dynamic_behavior, pe_reform)
+
+        assert response.status_code == 200
+        print(response.context.keys())
+        assert response.context['has_errors'] == True
+
+        print(dir(response))
+
+        next_token = str(response.context['csrf_token'])
+
+        data2 = {
+            'csrfmiddlewaretoken': next_token,
+            'BE_sub': ['0.3'],
+            'BE_inc': ['0.1'],
+            'has_errors': ['True']
+        }
+
+        response = CLIENT.post(dynamic_behavior, data2)
+        assert response.status_code == 200
+        assert response.context['has_errors'] == True
+
+        next_token = str(response.context['csrf_token'])
+
+        data3 = {
+            'csrfmiddlewaretoken': next_token,
+            'BE_sub': ['0.3'],
+            'BE_inc': ['-0.1'],
+            'has_errors': ['True']
+        }
+
+        pe_response = do_dynamic_sim(CLIENT, 'behavioral', microsim_response,
+                                     data3, start_year=start_year)
