@@ -173,7 +173,8 @@ def submit_reform(request, user=None, json_reform_id=None):
     taxcalc_warnings = False
     is_valid = True
     has_parse_errors = False
-    errors_warnings = {'warnings': {}, 'errors': {}}
+    _ew = {'warnings': {}, 'errors': {}}
+    errors_warnings = {'policy': _ew.copy(), 'behavior': _ew.copy()}
     reform_dict = {}
     assumptions_dict = {}
     reform_text = ""
