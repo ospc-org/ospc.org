@@ -13,7 +13,7 @@ RUN conda config --add channels ospc
 RUN conda config --add channels ospc/label/dev
 RUN conda config --append channels conda-forge
 
-RUN conda install python=2.7.14 numpy>=1.12.1 pandas>=0.22.0 taxcalc=0.19.0 \
+RUN conda install python=2.7.14 numpy>=1.12.1 pandas>=0.22.0 taxcalc=0.20.0 \
     btax=0.2.2 ogusa=0.5.8 matplotlib numba six bokeh=0.12.7 mock xlrd \
     sphinx nomkl
 
