@@ -798,6 +798,7 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable, Hostnameable,
             errors_warnings) = param_formatters.get_reform_from_gui(
             self.start_year,
             taxbrain_fields=self.input_fields,
+            use_puf_not_cps=self.use_puf_not_cps
         )
         Fieldable.pop_extra_errors(self, errors_warnings)
         return (reform_dict, assumptions_dict, reform_text, assumptions_text,

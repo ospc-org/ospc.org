@@ -17,30 +17,20 @@
             }
         },
         "warnings": {
-            "STD_0": {
-                "2018": "WARNING: _STD_0 value 10000.0 < min value 11900.0 for 2018",
-                "2019": "WARNING: _STD_0 value 10199.0 < min value 12138.8 for 2019",
-                "2020": "WARNING: _STD_0 value 10409.1 < min value 12390.92 for 2020",
-                "2021": "WARNING: _STD_0 value 10630.81 < min value 12656.98 for 2021",
-                "2022": "WARNING: _STD_0 value 10862.56 < min value 12935.08 for 2022",
-                "2023": "WARNING: _STD_0 value 11092.85 < min value 13211.42 for 2023",
-                "2024": "WARNING: _STD_0 value 11331.35 < min value 13497.62 for 2024",
-                "2025": "WARNING: _STD_0 value 11572.71 < min value 13787.25 for 2025"
-            },
             "STD_3": {
-                "2020": "WARNING: _STD_3 value 150.0 < min value 18636.38 for 2020",
-                "2021": "WARNING: _STD_3 value 153.2 < min value 19035.46 for 2021",
-                "2022": "WARNING: _STD_3 value 156.54 < min value 19452.61 for 2022",
-                "2023": "WARNING: _STD_3 value 159.86 < min value 19867.13 for 2023",
-                "2024": "WARNING: _STD_3 value 163.3 < min value 20296.42 for 2024",
-                "2025": "WARNING: _STD_3 value 166.78 < min value 20730.86 for 2025",
-                "2026": "WARNING: _STD_3 value 170.33 < min value 11172.0 for 2026",
-                "2027": "WARNING: _STD_3 value 173.99 < min value 11414.35 for 2027"
+                "2020": "WARNING: _STD_3 value 150.0 < min value 9834.0 for 2020",
+                "2021": "WARNING: _STD_3 value 153.2 < min value 10045.0 for 2021",
+                "2022": "WARNING: _STD_3 value 156.54 < min value 10266.0 for 2022",
+                "2023": "WARNING: _STD_3 value 159.86 < min value 10486.0 for 2023",
+                "2024": "WARNING: _STD_3 value 163.3 < min value 10714.0 for 2024",
+                "2025": "WARNING: _STD_3 value 166.78 < min value 10944.0 for 2025",
+                "2026": "WARNING: _STD_3 value 170.33 < min value 11179.0 for 2026",
+                "2027": "WARNING: _STD_3 value 173.99 < min value 11422.0 for 2027"
             }
         }
     },
     "behavior": {
-        "warnings": {},
-        "errors": {}
+        "errors": {},
+        "warnings": {}
     }
 }

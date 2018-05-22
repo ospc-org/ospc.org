@@ -350,7 +350,8 @@ def exp_assumptions_text():
                  '_BE_inc': [-0.6],
                  '_BE_cg': [-0.67]}
             },
-        'growdiff_baseline': {}
+        'growdiff_baseline': {},
+        'growmodel': {}
     }
 
     return _exp_assumptions_text
@@ -380,7 +381,8 @@ def errors_warnings_exp_read_json_assumptions():
         'behavior': {
             2018: {'_BE_sub': [-0.8], '_BE_inc': [0.6]}},
         'growdiff_baseline': {},
-        'growdiff_response': {}
+        'growdiff_response': {},
+        'growmodel': {}
     }
 
     return _ew_assumptions

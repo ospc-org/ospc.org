@@ -2,5 +2,6 @@
     "growdiff_response": {},
     "consumption": {},
     "behavior": {},
-    "growdiff_baseline": {}
+    "growdiff_baseline": {},
+    "growmodel": {}
 }

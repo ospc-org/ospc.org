@@ -6,5 +6,6 @@
     },
     "growdiff_response": {},
     "consumption": {},
-    "growdiff_baseline": {}
+    "growdiff_baseline": {},
+    "growmodel": {}
 }

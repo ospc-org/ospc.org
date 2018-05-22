@@ -238,6 +238,7 @@ def test_append_ew_personal_inputs():
 )
 def test_read_json_reform(request, _test_reform, _test_assump,
                           _exp_reform, _exp_assump, _exp_errors_warnings):
+    import json
     test_reform = request.getfixturevalue(_test_reform)
     test_assump = request.getfixturevalue(_test_assump)
     exp_reform = request.getfixturevalue(_exp_reform)
@@ -247,11 +248,16 @@ def test_read_json_reform(request, _test_reform, _test_assump,
 
     act_reform, act_assump, act_errors_warnings = read_json_reform(
         test_reform,
-        test_assump
+        test_assump,
+        use_puf_not_cps=True
     )
+    print(json.dumps(act_errors_warnings, indent=4))
+    print(json.dumps(exp_errors_warnings, indent=4))
     np.testing.assert_equal(act_reform, exp_reform)
     np.testing.assert_equal(act_assump, exp_assump)
-    np.testing.assert_equal(act_errors_warnings, exp_errors_warnings)
+    for key in exp_errors_warnings:
+        np.testing.assert_equal(act_errors_warnings[key],
+                                exp_errors_warnings[key])
 
 
 ###############################################################################
