@@ -264,7 +264,7 @@ def parse_errors_warnings(errors_warnings):
     return parsed
 
 
-def read_json_reform(reform, assumptions):
+def read_json_reform(reform, assumptions, use_puf_not_cps=True):
     """
     Read reform and parse errors
 
@@ -278,8 +278,14 @@ def read_json_reform(reform, assumptions):
         assumptions,
     )
     # get errors and warnings on parameters that do not cause ValueErrors
-    errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict)
-    errors_warnings = parse_errors_warnings(errors_warnings)
+    tc_errors_warnings = taxcalc.tbi.reform_warnings_errors(policy_dict,
+                                                            use_puf_not_cps)
+    # errors_warnings contains warnings and errors separated by each
+    # project/project module
+    errors_warnings = {}
+    for project in tc_errors_warnings:
+        errors_warnings[project] = parse_errors_warnings(tc_errors_warnings[project])
+
     # separate reform and assumptions
     reform_dict = policy_dict["policy"]
     assumptions_dict = {k: v for k, v in list(policy_dict.items()) if k != "policy"}
@@ -288,7 +294,7 @@ def read_json_reform(reform, assumptions):
 
 
 def get_reform_from_file(request_files, reform_text=None,
-                         assumptions_text=None):
+                         assumptions_text=None, use_puf_not_cps=True):
     """
     Parse files from request object and collect errors_warnings
 
@@ -306,7 +312,8 @@ def get_reform_from_file(request_files, reform_text=None,
         assumptions_text = inmemfile_assumption.read().decode('utf-8')
     (reform_dict, assumptions_dict,
         errors_warnings) = read_json_reform(reform_text,
-                                            assumptions_text)
+                                            assumptions_text,
+                                            use_puf_not_cps=use_puf_not_cps)
 
     assumptions_text = assumptions_text or ""
 
@@ -315,7 +322,7 @@ def get_reform_from_file(request_files, reform_text=None,
 
 
 def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
-                        stored_errors=None):
+                        stored_errors=None, use_puf_not_cps=True):
     """
     Parse request and model objects and collect reforms and warnings
     This function is also called by dynamic/views.behavior_model.  In the
@@ -349,11 +356,13 @@ def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
     assumptions_dict_json = {"behavior": assumptions_dict_json,
                              "growdiff_response": {},
                              "consumption": {},
-                             "growdiff_baseline": {}}
+                             "growdiff_baseline": {},
+                             "growmodel": {}}
     assumptions_dict_json = json.dumps(assumptions_dict_json)
 
     (reform_dict, assumptions_dict,
         errors_warnings) = read_json_reform(policy_dict_json,
-                                            assumptions_dict_json)
+                                            assumptions_dict_json,
+                                            use_puf_not_cps=use_puf_not_cps)
 
     return (reform_dict, assumptions_dict, "", "", errors_warnings)

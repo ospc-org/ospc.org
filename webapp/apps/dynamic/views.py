@@ -39,7 +39,7 @@ from ..taxbrain.views import (make_bool, dropq_compute,
                               JOB_PROC_TIME_IN_SECONDS,
                               add_summary_column)
 from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
-                                         parse_fields)
+                                         parse_fields, append_errors_warnings)
 from ..taxbrain.helpers import (taxcalc_results_to_tables,
                                 convert_val)
 from ..taxbrain.param_displayers import default_behavior
@@ -190,6 +190,7 @@ def dynamic_behavioral(request, pk):
     handles the calculation on the inputs.
     """
     start_year = START_YEAR
+    has_errors = False
     if request.method == 'POST':
         print('method=POST get', request.GET)
         print('method=POST post', request.POST)
@@ -218,37 +219,43 @@ def dynamic_behavioral(request, pk):
              # necessary for simulations before PR 641
             if not taxbrain_model.json_text:
                 taxbrain_model.set_fields()
-                (reform_dict, assumptions_dict, reform_text, assumptions_text,
+                (reform_dict, _, reform_text, _,
                     errors_warnings) = taxbrain_model.get_model_specs()
                 json_reform = JSONReformTaxCalculator(
                     reform_text=json.dumps(reform_dict),
-                    assumption_text=json.dumps(assumptions_dict),
                     raw_reform_text=reform_text,
-                    raw_assumption_text=assumptions_text
+                    errors_warnings=json.dumps(errors_warnings)
                 )
                 json_reform.save()
                 taxbrain_model.json_text = json_reform
-                taxbrain_model.save()
             else:
                 reform_dict = json.loads(taxbrain_model.json_text.reform_text)
 
             (_, assumptions_dict, _, _,
                 errors_warnings) = model.get_model_specs()
-            # start calc job
-            user_mods = dict({'policy': reform_dict}, **assumptions_dict)
-            data = {'user_mods': json.dumps(user_mods),
-                    'first_budget_year': int(start_year),
-                    'start_budget_year': 0,
-                    'num_budget_years': NUM_BUDGET_YEARS,
-                    'use_puf_not_cps': model.use_puf_not_cps}
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                data
-            )
 
-            if not submitted_ids:
-                no_inputs = True
-                form_personal_exemp = personal_inputs
-            else:
+            taxbrain_model.json_text.assumption_text = json.dumps(assumptions_dict)
+            taxbrain_model.json_text.raw_assumption_text = ''
+            # update the behavior key in the errors warnings dictionary created
+            # in the static run
+            policy_ew = taxbrain_model.json_text.get_errors_warnings()
+            policy_ew['behavior'] = errors_warnings['behavior']
+            taxbrain_model.json_text.errors_warnings_text = json.dumps(policy_ew)
+            taxbrain_model.save()
+            # no problems--let's submit the jobs
+            if len(errors_warnings['behavior']['errors']) == 0:
+
+                # start calc job
+                user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+                data = {'user_mods': json.dumps(user_mods),
+                        'first_budget_year': int(start_year),
+                        'start_budget_year': 0,
+                        'num_budget_years': NUM_BUDGET_YEARS,
+                        'use_puf_not_cps': model.use_puf_not_cps}
+                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+                    data
+                )
+
                 model.job_ids = denormalize(submitted_ids)
                 model.first_year = int(start_year)
                 model.save()
@@ -276,10 +283,21 @@ def dynamic_behavioral(request, pk):
                 unique_url.save()
 
                 return redirect('behavior_results', unique_url.pk)
-
-        else:
-            # received POST but invalid results, return to form with errors
-            form_personal_exemp = dyn_mod_form
+            else: # parameters caused some errors; store errors on object
+                # ensure that parameters causing the warnings are shown on page
+                # with warnings/errors
+                dyn_mod_form = DynamicBehavioralInputsModelForm(
+                    start_year,
+                    True,
+                    initial=json.loads(dyn_mod_form.data['raw_input_fields'])
+                )
+                append_errors_warnings(
+                    errors_warnings['behavior'],
+                    lambda param, msg: dyn_mod_form.add_error(param, msg)
+                )
+        has_errors = True
+        # received POST but invalid results, return to form with errors
+        form_personal_exemp = dyn_mod_form
 
     else:
         # Probably a GET request, load a default form
@@ -303,7 +321,8 @@ def dynamic_behavioral(request, pk):
         'taxcalc_version': TAXCALC_VERSION,
         'webapp_version': WEBAPP_VERSION,
         'start_year': start_year,
-        'pk': pk
+        'pk': pk,
+        'has_errors': has_errors
     }
 
     if has_field_errors(form_personal_exemp):

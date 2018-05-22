@@ -173,7 +173,8 @@ def submit_reform(request, user=None, json_reform_id=None):
     taxcalc_warnings = False
     is_valid = True
     has_parse_errors = False
-    errors_warnings = {'warnings': {}, 'errors': {}}
+    _ew = {'warnings': {}, 'errors': {}}
+    errors_warnings = {'policy': _ew.copy(), 'behavior': _ew.copy()}
     reform_dict = {}
     assumptions_dict = {}
     reform_text = ""
@@ -203,7 +204,7 @@ def submit_reform(request, user=None, json_reform_id=None):
         assumptions_dict = json.loads(json_reform.assumption_text)
         reform_text = json_reform.raw_reform_text
         assumptions_text = json_reform.raw_assumption_text
-        errors_warnings = json.loads(json_reform.errors_warnings_text)
+        errors_warnings = json_reform.get_errors_warnings()
 
         if "docfile" in request_files or "assumpfile" in request_files:
             if "docfile" in request_files or len(reform_text) == 0:
@@ -266,12 +267,17 @@ def submit_reform(request, user=None, json_reform_id=None):
     #        --> show warning/error messages again
     #   4. no user input --> do not run model
 
-    warn_msgs = errors_warnings['warnings'] != {}
-    stop_errors = no_inputs or not is_valid or errors_warnings['errors'] != {}
+    # We need to stop on both! File uploads should stop if there are 'behavior'
+    # or 'policy' errors
+    warn_msgs = any([len(errors_warnings[project]['warnings']) > 0
+                      for project in ['policy', 'behavior']])
+    error_msgs = any([len(errors_warnings[project]['errors']) > 0
+                      for project in ['policy', 'behavior']])
+    stop_errors = no_inputs or not is_valid or error_msgs
     stop_submission = stop_errors or (not has_errors and warn_msgs)
     if stop_submission:
-        taxcalc_errors = True if errors_warnings['errors'] else False
-        taxcalc_warnings = True if errors_warnings['warnings'] else False
+        taxcalc_errors = True if error_msgs else False
+        taxcalc_warnings = True if warn_msgs else False
         if personal_inputs is not None:
             # ensure that parameters causing the warnings are shown on page
             # with warnings/errors
@@ -284,8 +290,10 @@ def submit_reform(request, user=None, json_reform_id=None):
             # only handle GUI errors for now
             if ((taxcalc_errors or taxcalc_warnings)
                     and personal_inputs is not None):
+                # we are only concerned with adding *static* reform errors to
+                # the *static* reform page.
                 append_errors_warnings(
-                    errors_warnings,
+                    errors_warnings['policy'],
                     lambda param, msg: personal_inputs.add_error(param, msg)
                 )
             has_parse_errors = any(['Unrecognize value' in e[0]
@@ -408,10 +416,11 @@ def file_input(request):
                 json_reform = post_meta.json_reform
                 has_errors = post_meta.has_errors
                 errors.append(OUT_OF_RANGE_ERROR_MSG)
-                append_errors_warnings(
-                    errors_warnings,
-                    lambda _, msg: errors.append(msg)
-                )
+                for project in ['policy', 'behavior']:
+                    append_errors_warnings(
+                        errors_warnings[project],
+                        lambda _, msg: errors.append(msg)
+                    )
             else:
                 return redirect(unique_url)
     else:

@@ -1,5 +1,6 @@
 from django.test import TestCase
 import pytest
+import json
 
 from ..models import JSONReformTaxCalculator, TaxSaveInputs
 from ..forms import TaxBrainForm
@@ -21,6 +22,31 @@ class TaxBrainJSONReformModelTest(TestCase):
             assumption_text=self.test_string,
             raw_assumption_text=self.test_string
         )
+
+    def test_get_errors_warnings_pre_PB_160(self):
+        """
+        Test get old errors/warnings
+        """
+        pre_PB_160 = {'errors': {'1900': 'test'}, 'warnings': {'1770': 'test2'}}
+        reform = JSONReformTaxCalculator(
+            errors_warnings_text=json.dumps(pre_PB_160)
+        )
+        assert reform.get_errors_warnings() == {'policy': pre_PB_160}
+
+    def test_get_errors_warnings_post_PB_160(self):
+        """
+        Test get old errors/warnings
+        """
+        post_PB_160 = {
+            'project': {
+                'errors': {'1900': 'test'},
+                'warnings': {'1770': 'test2'}
+            }
+        }
+        reform = JSONReformTaxCalculator(
+            errors_warnings_text=json.dumps(post_PB_160)
+        )
+        assert reform.get_errors_warnings() == post_PB_160
 
 
 class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):

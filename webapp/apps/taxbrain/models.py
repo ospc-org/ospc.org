@@ -1,5 +1,6 @@
 import re
 import uuid
+import json
 from distutils.version import LooseVersion
 
 from django.db import models
@@ -75,6 +76,17 @@ class JSONReformTaxCalculator(models.Model):
     assumption_text = models.TextField(blank=True, null=False)
     raw_assumption_text = models.TextField(blank=True, null=False)
     errors_warnings_text = models.TextField(blank=True, null=False)
+
+    def get_errors_warnings(self):
+        """
+        Errors were only stored for the taxcalc.Policy class until PB 1.6.0
+        This method ensures that old runs are parsed correctly
+        """
+        ew = json.loads(self.errors_warnings_text)
+        if 'errors' in ew:
+            return {'policy': ew}
+        else:
+            return ew
 
 class ErrorMessageTaxCalculator(models.Model):
     '''
@@ -786,6 +798,7 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable, Hostnameable,
             errors_warnings) = param_formatters.get_reform_from_gui(
             self.start_year,
             taxbrain_fields=self.input_fields,
+            use_puf_not_cps=self.use_puf_not_cps
         )
         Fieldable.pop_extra_errors(self, errors_warnings)
         return (reform_dict, assumptions_dict, reform_text, assumptions_text,
