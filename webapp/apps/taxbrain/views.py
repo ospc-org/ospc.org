@@ -70,11 +70,12 @@ TAXCALC_VERSION = tcversion_info['version']
 
 JOB_PROC_TIME_IN_SECONDS = 100
 
-OUT_OF_RANGE_ERROR_MSG = ("Some fields have warnings or errors. Values "
-                          "outside of suggested ranges will be accepted if "
-                          "they only cause warnings and are submitted again "
-                          "from this page. Warning messages begin with "
-                          "'WARNING', and error messages begin with 'ERROR'.")
+INIT_MESSAGE = ("Some fields have warnings or errors.")
+OUT_OF_RANGE_ERROR_MSG = (INIT_MESSAGE,
+                          'out of range',
+                          'warn instructions',
+                          'error instructions')
+
 
 def log_ip(request):
     """
