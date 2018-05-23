@@ -54,7 +54,7 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          REFORM_TOOLTIP, FISCAL_CURRENT_LAW, FISCAL_REFORM,
                          FISCAL_CHANGE, INCOME_BINS_TOOLTIP,
                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
-                         DATA_SOURCES, DEFAULT_SOURCE)
+                         DATA_SOURCES, DEFAULT_SOURCE, OUT_OF_RANGE_ERROR_MSG)
 
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
@@ -69,17 +69,6 @@ tcversion_info = taxcalc._version.get_versions()
 TAXCALC_VERSION = tcversion_info['version']
 
 JOB_PROC_TIME_IN_SECONDS = 100
-
-INIT_MESSAGE = ("Some fields have warnings or errors.")
-OUT_OF_RANGE_ERROR_MSG = (
-    INIT_MESSAGE,
-    ("Fields with warnings have message(s) below them beginning with 'WARNING',"
-     " and fields with errors have message(s) below them beginning with 'ERROR'."),
-    ("If the field has a warning message , then review the input to make sure"
-     " it is correct and click 'SUBMIT' to run the model with these inputs."),
-    ("If the field has an error message, then the parameter value must be "
-     "changed so that it is in a valid range.")
-)
 
 
 def log_ip(request):
@@ -302,8 +291,7 @@ def submit_reform(request, user=None, json_reform_id=None):
                     "Please specify a tax-law change before submitting."
                 )
             if taxcalc_warnings or taxcalc_errors:
-                for msg in OUT_OF_RANGE_ERROR_MSG:
-                    personal_inputs.add_error(None, msg)
+                personal_inputs.add_error(None, OUT_OF_RANGE_ERROR_MSG)
             if has_parse_errors:
                 msg = ("Some fields have unrecognized values. Enter comma "
                        "separated values for each input.")
