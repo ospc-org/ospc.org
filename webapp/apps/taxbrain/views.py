@@ -54,7 +54,7 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          REFORM_TOOLTIP, FISCAL_CURRENT_LAW, FISCAL_REFORM,
                          FISCAL_CHANGE, INCOME_BINS_TOOLTIP,
                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
-                         DATA_SOURCES, DEFAULT_SOURCE)
+                         DATA_SOURCES, DEFAULT_SOURCE, OUT_OF_RANGE_ERROR_MSG)
 
 from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
@@ -70,11 +70,6 @@ TAXCALC_VERSION = tcversion_info['version']
 
 JOB_PROC_TIME_IN_SECONDS = 100
 
-OUT_OF_RANGE_ERROR_MSG = ("Some fields have warnings or errors. Values "
-                          "outside of suggested ranges will be accepted if "
-                          "they only cause warnings and are submitted again "
-                          "from this page. Warning messages begin with "
-                          "'WARNING', and error messages begin with 'ERROR'.")
 
 def log_ip(request):
     """
@@ -304,8 +299,7 @@ def submit_reform(request, user=None, json_reform_id=None):
                     "Please specify a tax-law change before submitting."
                 )
             if taxcalc_warnings or taxcalc_errors:
-                msg = OUT_OF_RANGE_ERROR_MSG
-                personal_inputs.add_error(None, msg)
+                personal_inputs.add_error(None, OUT_OF_RANGE_ERROR_MSG)
             if has_parse_errors:
                 msg = ("Some fields have unrecognized values. Enter comma "
                        "separated values for each input.")
