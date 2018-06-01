@@ -406,7 +406,7 @@ class TestTaxBrainViews(object):
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, 'PUF')
-        data['STD_3'] = ['10000']
+        data['STD_3'] = ['1000']
         response = CLIENT.post(url, data)
 
         assert response.status_code == 200

@@ -1,5 +1,7 @@
 import os
 
+from django.utils.safestring import mark_safe
+
 DISTRIBUTION_TOOLTIP = "Key variables in the computation of tax liabilities."
 DIFFERENCE_TOOLTIP = "Key variables that highlight the differences between two tax plans."
 PAYROLL_TOOLTIP = " Include employee and employer payroll taxes in output."
@@ -22,3 +24,16 @@ DATA_SOURCES = ('PUF', 'CPS')
 DEFAULT_SOURCE = os.environ.get('DEFAULT_SOURCE', 'PUF')
 
 TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE = "0.13.0"
+
+OUT_OF_RANGE_ERROR_MSG = mark_safe("""
+<div align="left">
+    Some fields have warnings or errors. Fields with warnings have message(s)
+    below them beginning with \'WARNING\', and fields with errors have
+    message(s) below them beginning with \'ERROR\'.
+    <br /> <br />
+    &emsp;- If the field has a warning message , then review the input to make sure
+    it is correct and click \'SUBMIT\' to run the model with these inputs.
+    <br />
+    &emsp;- If the field has an error message, then the parameter value must be
+    changed so that it is in a valid range.
+</div>""")
