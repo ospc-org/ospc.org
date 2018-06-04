@@ -22,4 +22,9 @@ ADD ./manage.py /opt/
 ADD ./static /opt/static/
 RUN python manage.py collectstatic --noinput
 
-CMD gunicorn --bind 0.0.0.0:$PORT webapp.wsgi
+# create NewRelic file
+ARG NEW_RELIC_TOKEN
+RUN newrelic-admin generate-config $NEW_RELIC_TOKEN newrelic.ini
+ENV NEW_RELIC_CONFIG_FILE=newrelic.ini
+
+CMD newrelic-admin run-program gunicorn --bind 0.0.0.0:$PORT webapp.wsgi
