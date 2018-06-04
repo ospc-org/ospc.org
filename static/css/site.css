@@ -254,8 +254,8 @@ th {
 }
 @font-face {
   font-family: 'Glyphicons Halflings';
-  src: url('../fonts/glyphicons-halflings-regular.eot');
-  src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff2') format('woff2'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
+  src: url('../fonts/glyphicons/glyphicons-halflings-regular.eot');
+  src: url('../fonts/glyphicons/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons/glyphicons-halflings-regular.svg#glyphicons_halflingsregular') format('svg');
 }
 .glyphicon {
   position: relative;
@@ -7405,20 +7405,20 @@ a.back-to:before {
 /**
  * @license
  * MyFonts Webfont Build ID 2963436, 2015-01-31T12:50:41-0500
- * 
+ *
  * The fonts listed in this notice are subject to the End User License
- * Agreement(s) entered into by the website owner. All other parties are 
+ * Agreement(s) entered into by the website owner. All other parties are
  * explicitly restricted from using the Licensed Webfonts(s).
- * 
+ *
  * You may obtain a valid license at the URLs below.
- * 
+ *
  * Webfont: MuseoSansRounded-700 by exljbris
  * URL: http://www.myfonts.com/fonts/exljbris/museo-sans-rounded/700/
  * Copyright: Copyright (c) 2011 by Jos Buivenga. All rights reserved.
- * 
+ *
  * License: http://www.myfonts.com/viewlicense?type=web&buildid=2963436
  * Licensed pageviews: 500,000
- * 
+ *
  * © 2015 MyFonts Inc
 */
 /* @import must be at top of file, otherwise CSS will not work */
@@ -7430,28 +7430,28 @@ a.back-to:before {
 /**
  * @license
  * MyFonts Webfont Build ID 2963436, 2015-01-31T12:50:41-0500
- * 
+ *
  * The fonts listed in this notice are subject to the End User License
- * Agreement(s) entered into by the website owner. All other parties are 
+ * Agreement(s) entered into by the website owner. All other parties are
  * explicitly restricted from using the Licensed Webfonts(s).
- * 
+ *
  * You may obtain a valid license at the URLs below.
- * 
+ *
  * Webfont: VerbRegular-Bold by Yellow Design Studio
  * URL: http://www.myfonts.com/fonts/yellow-design/verb/bold/
  * Copyright: Copyright (c) 2013 by Yellow Design Studio. All rights reserved.
- * 
+ *
  * Webfont: VerbMedium by Yellow Design Studio
  * URL: http://www.myfonts.com/fonts/yellow-design/verb/medium/
  * Copyright: Copyright (c) 2013 by Yellow Design Studio. All rights reserved.
- * 
+ *
  * Webfont: VerbCondLight by Yellow Design Studio
  * URL: http://www.myfonts.com/fonts/yellow-design/verb/light-126623/
  * Copyright: Copyright (c) 2013 by Yellow Design Studio. All rights reserved.
- * 
+ *
  * License: http://www.myfonts.com/viewlicense?type=web&buildid=2963436
  * Licensed pageviews: 500,000
- * 
+ *
  * © 2015 MyFonts Inc
 */
 /* @import must be at top of file, otherwise CSS will not work */

@@ -22,9 +22,18 @@ SITE_ID = 1
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import dj_database_url
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = '/static/'
 
+# Extra places for collectstatic to find static files.
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 from django.conf import global_settings
@@ -79,6 +88,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE_CLASSES = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.gzip.GZipMiddleware',
     'htmlmin.middleware.HtmlMinifyMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -147,13 +157,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
-
 # AWS S3 static file storage
 
 # Use Amazon S3 for storage for uploaded media files.
@@ -178,15 +181,10 @@ AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
 # using the 'static' template tag. In production, we use storages, so just leave this as
 # '/static/' for development purposes
 #STATIC_URL = "https://%s/" % AWS_S3_CUSTOM_DOMAIN
-STATIC_URL = '/static/'
 
 # Tell the staticfiles app to use S3Boto storage when writing the collected static files (when
 # you run `collectstatic`).
-if True:
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-else:
-    STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 SENDGRID_API_KEY=os.environ.get("SENDGRID_API_KEY", "")
 EMAIL_BACKEND = "sgbackend.SendGridBackend"
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')

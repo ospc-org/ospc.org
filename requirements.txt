@@ -26,3 +26,4 @@ django-htmlmin
 pyparsing
 python-dateutil
 toolz
+whitenoise
