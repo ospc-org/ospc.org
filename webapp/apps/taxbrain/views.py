@@ -68,7 +68,7 @@ tcversion_info = taxcalc._version.get_versions()
 
 TAXCALC_VERSION = tcversion_info['version']
 
-JOB_PROC_TIME_IN_SECONDS = 100
+JOB_PROC_TIME_IN_SECONDS = 35
 
 
 def log_ip(request):
