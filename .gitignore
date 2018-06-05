@@ -27,3 +27,5 @@ _build
 
 .DS_Store
 *.egg-info
+
+staticfiles/

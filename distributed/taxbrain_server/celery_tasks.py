@@ -62,7 +62,7 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True, use_f
         )
     )
 
-    results = taxcalc.tbi.run_nth_year_tax_calc_model(
+    results = taxcalc.tbi.run_nth_year_taxcalc_model(
         year_n=year_n,
         start_year=int(first_budget_year),
         use_puf_not_cps=use_puf_not_cps,
