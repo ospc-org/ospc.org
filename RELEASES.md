@@ -19,6 +19,7 @@ Release 1.6.0 on 2018-06-??
 
 **Bug Fixes**
 - [#882](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/882) - Check hostnames to make sure they are current before pinging them (applied as hot fix) - Hank Doupe
+- [#893](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/893) - Quick dynamic app parameter fixes - Hank Doupe
 
 Release 1.5.1 on 2018-03-30
 ----------------------------

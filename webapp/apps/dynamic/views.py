@@ -58,7 +58,8 @@ dynamic_compute = DynamicCompute()
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                           PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                           REFORM_TOOLTIP, INCOME_BINS_TOOLTIP,
-                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS)
+                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
+                          OUT_OF_RANGE_ERROR_MSG)
 
 from ..formatters import format_dynamic_params, get_version
 
@@ -291,6 +292,7 @@ def dynamic_behavioral(request, pk):
                     True,
                     initial=json.loads(dyn_mod_form.data['raw_input_fields'])
                 )
+                dyn_mod_form.add_error(None, OUT_OF_RANGE_ERROR_MSG)
                 append_errors_warnings(
                     errors_warnings['behavior'],
                     lambda param, msg: dyn_mod_form.add_error(param, msg)
@@ -324,9 +326,6 @@ def dynamic_behavioral(request, pk):
         'pk': pk,
         'has_errors': has_errors
     }
-
-    if has_field_errors(form_personal_exemp):
-        form_personal_exemp.add_error(None, "Some fields have errors.")
 
     return render(request, 'dynamic/behavior.html', init_context)
 
@@ -382,7 +381,8 @@ def dynamic_elasticities(request, pk):
             assumptions_dict = {"behavior": {},
                                 "growdiff_response": {},
                                 "consumption": {},
-                                "growdiff_baseline": {}}
+                                "growdiff_baseline": {},
+                                "growmodel": {}}
 
             user_mods = dict({'policy': reform_dict}, **assumptions_dict)
             data = {'user_mods': json.dumps(user_mods),
