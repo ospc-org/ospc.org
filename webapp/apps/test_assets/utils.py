@@ -23,6 +23,7 @@ def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
 
     returns: mocked dropq compute object
     """
+    print('getting module', module_import_path)
     module_views = sys.modules[module_import_path]
     setattr(module_views, attr, MockComputeObj(**mc_args))
     return getattr(module_views, attr)
@@ -45,7 +46,7 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
     #Monkey patch to mock out running of compute jobs
     if tb_dropq_compute is None:
         tb_dropq_compute = get_dropq_compute_from_module(
-            'webapp.apps.taxbrain.views',
+            'webapp.apps.taxbrain.submit_data',
             num_times_to_wait=0
         )
     if dyn_dropq_compute is None:

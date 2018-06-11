@@ -1,47 +1,4 @@
-from collections import namedtuple
-import datetime
-import json
-
-from ipware.ip import get_real_ip
-from django.http import HttpResponse
-
-from .models import TaxSaveInputs, JSONReformTaxCalculator, OutputUrl
-from .compute import DropqCompute, NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
-from .forms import TaxBrainForm
-from .helpers import make_bool
-from .param_formatters import get_reform_from_file, append_errors_warnings
-from ..constants import (START_YEAR, OUT_OF_RANGE_ERROR_MSG,
-                         WEBAPP_VERSION, TAXCALC_VERSION)
-
-JOB_PROC_TIME_IN_SECONDS = 35
-
-dropq_compute = DropqCompute()
-
-PostMeta = namedtuple(
-    'PostMeta',
-    ['request',
-     'personal_inputs',
-     'json_reform',
-     'model',
-     'stop_submission',
-     'has_errors',
-     'errors_warnings',
-     'start_year',
-     'data_source',
-     'do_full_calc',
-     'is_file',
-     'reform_dict',
-     'assumptions_dict',
-     'reform_text',
-     'assumptions_text',
-     'submitted_ids',
-     'max_q_length',
-     'user',
-     'url']
-)
-
-BadPost = namedtuple('BadPost', ['http_response_404', 'has_errors'])
-
+from .submit_data import PostMeta, BadPost
 
 def save_model(post_meta):
     """
@@ -256,7 +213,6 @@ def submit_reform(request, user=None, json_reform_id=None):
                 personal_inputs.add_error(None, msg)
     else:
         log_ip(request)
-        print('DropqCompute', type(dropq_compute))
         user_mods = dict({'policy': reform_dict}, **assumptions_dict)
         data = {'user_mods': json.dumps(user_mods),
                 'first_budget_year': int(start_year),
@@ -318,27 +274,3 @@ def process_reform(request, user=None, **kwargs):
     else:
         url = save_model(post_meta)
         return url, post_meta
-
-
-def denormalize(x):
-    ans = ["#".join([i[0],i[1]]) for i in x]
-    ans = [str(x) for x in ans]
-    return ans
-
-
-def normalize(x):
-    ans = [i.split('#') for i in x]
-    return ans
-
-
-def log_ip(request):
-    """
-    Attempt to get the IP address of this request and log it
-    """
-    ip = get_real_ip(request)
-    if ip is not None:
-        # we have a real, public ip address for user
-        print("BEGIN DROPQ WORK FROM: ", ip)
-    else:
-        # we don't have a real, public ip address for user
-        print("BEGIN DROPQ WORK FROM: unknown IP")

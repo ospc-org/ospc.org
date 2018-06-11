@@ -196,7 +196,7 @@ class TestTaxBrainViews(object):
         # check if too invalid parameters are posted
 
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         # Provide behavioral input
         data = get_post_data(START_YEAR)
@@ -210,7 +210,7 @@ class TestTaxBrainViews(object):
     def test_taxbrain_nodes_down(self):
         #Monkey patch to mock out running of compute jobs
         dropq_compute = get_dropq_compute_from_module(
-            'webapp.apps.taxbrain.views',
+            'webapp.apps.taxbrain.submit_data',
             MockComputeObj=NodeDownCompute
         )
 
@@ -235,7 +235,7 @@ class TestTaxBrainViews(object):
     def test_taxbrain_failed_job(self):
         #Monkey patch to mock out running of compute jobs
         dropq_compute = get_dropq_compute_from_module(
-            'webapp.apps.taxbrain.views',
+            'webapp.apps.taxbrain.submit_data',
             MockComputeObj=MockFailedCompute
         )
 
@@ -356,7 +356,7 @@ class TestTaxBrainViews(object):
         is false so should give an error
         """
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {'II_brk1_0': ['*, *, 38000'],
@@ -423,7 +423,7 @@ class TestTaxBrainViews(object):
         so should give an error
         """
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         data.pop('start_year')
@@ -447,7 +447,7 @@ class TestTaxBrainViews(object):
         Check reverse operator post without other numbers throws error
         """
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {'cpi_offset': ['<,']}
@@ -464,7 +464,7 @@ class TestTaxBrainViews(object):
         Check reverse operator not in first position throws error
         """
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {'cpi_offset': ['-0.002,<,-0.001']}
@@ -521,7 +521,7 @@ class TestTaxBrainViews(object):
     @pytest.mark.xfail
     def test_taxbrain_view_old_data_model(self):
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         unique_url = get_taxbrain_model(self.test_coverage_fields,
                                         taxcalc_vers="0.10.0",
@@ -550,7 +550,7 @@ class TestTaxBrainViews(object):
         it gives an error
         """
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
         mod = {'II_brk1_0': ['XTOT*4500'],
@@ -569,7 +569,7 @@ class TestTaxBrainViews(object):
         from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
 
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         data = get_file_post_data(START_YEAR, self.bad_reform)
         data.pop('start_year')
@@ -610,7 +610,7 @@ class TestTaxBrainViews(object):
         """
         from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
 
         data = get_file_post_data(START_YEAR, self.warning_reform)
         data.pop('start_year')
@@ -660,7 +660,7 @@ class TestTaxBrainViews(object):
         start_year = 2017
         from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         #Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
+        get_dropq_compute_from_module('webapp.apps.taxbrain.submit_data')
         if use_assumptions:
             assumptions_text = self.assumptions_text
         else:
