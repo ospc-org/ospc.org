@@ -1,4 +1,4 @@
-FROM opensourcepolicycenter/distributed:v1.6.0_rc4
+FROM opensourcepolicycenter/distributed:v1.6.0
 
 LABEL build="celery" date="2018-06-13"
 
