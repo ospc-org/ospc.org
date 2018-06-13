@@ -359,7 +359,6 @@ def output_detail(request, pk):
         # try to render table; if failure render not available page
         try:
             exp_num_minutes = 0.25
-            # JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
             tax_result = url.unique_inputs.tax_result
             tables = json.loads(tax_result)[0]
             first_year = url.unique_inputs.first_year
