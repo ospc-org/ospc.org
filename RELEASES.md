@@ -16,11 +16,13 @@ Release 1.6.0 on 2018-06-??
 - [#888](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/888) - Remove no longer used gevent script - Hank Doupe
 - [#889](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/889) - Use heroku container registry to deploy the webapp - Hank Doupe
 - [#891](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/891) - Add formatting to warn/error messge banner - Hank Doupe
+- [#898](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/898) - Update Docker image versions for 1.6.0_rc4 and RELEASES.md - Hank Doupe
 
 **Bug Fixes**
 - [#882](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/882) - Check hostnames to make sure they are current before pinging them (applied as hot fix) - Hank Doupe
 - [#893](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/893) - Quick dynamic app parameter fixes - Hank Doupe
-- [#895](ttps://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/895) - Rename CNN.jpg to cnn.jpg so CSS can find it - Hank Doupe
+- [#895](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/895) - Rename CNN.jpg to cnn.jpg so CSS can find it - Hank Doupe
+- [#897](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/897) - Complete PR 688 (Adding dynamic CDNs for the widgets) - Anderson Frailey and Haylee Ham
 
 Release 1.5.1 on 2018-03-30
 ----------------------------

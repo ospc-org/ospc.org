@@ -150,7 +150,7 @@ USE_TZ = True
 
 # Use whitenoise to serve static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-SENDGRID_API_KEY=os.environ.get("SENDGRID_API_KEY", "")
+SENDGRID_API_KEY=os.environ.get("SENDGRID_API_KEY", "not-specified")
 EMAIL_BACKEND = "sgbackend.SendGridBackend"
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
 
