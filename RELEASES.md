@@ -4,6 +4,24 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.6.0 on 2018-06-??
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#884](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/884) - Add Docker documentation and update local development setup documentaion - Hank Doupe
+- [#886](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/886) - Convert to Python 3 - Hank Doupe
+- [#887](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/887) - Upgrade to Tax-Calculator 0.19.+ - Hank Doupe
+- [#888](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/888) - Remove no longer used gevent script - Hank Doupe
+- [#889](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/889) - Use heroku container registry to deploy the webapp - Hank Doupe
+- [#891](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/891) - Add formatting to warn/error messge banner - Hank Doupe
+
+**Bug Fixes**
+- [#882](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/882) - Check hostnames to make sure they are current before pinging them (applied as hot fix) - Hank Doupe
+- [#893](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/893) - Quick dynamic app parameter fixes - Hank Doupe
+- [#895](ttps://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/895) - Rename CNN.jpg to cnn.jpg so CSS can find it - Hank Doupe
+
 Release 1.5.1 on 2018-03-30
 ----------------------------
 **Major Changes**
