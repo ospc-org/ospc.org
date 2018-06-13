@@ -10,30 +10,30 @@
 
       <div class="home-hero">
         <div class="home-hero-break"></div>
-        {% flatblock "home_top_overview" %}
+        <p class="lead">A LABORATORY FOR PREDICTING THE EFFECTS OF PUBLIC POLICY</p>
         <div class="row">
           <div class="col-sm-4">
             <div class="home-hero-item">
               <span class="icon icon-invisible-folder"></span>
-              {% flatblock "home_left_subtitle" %}
-              {% flatblock "home_left_blurb" %}
-              {% flatblock "home_left_link" %}
+              <h2 class="h3">Transparent</h2>
+              <p>All of the projects we incubate are freely available and we encourage peer review. </p>
+              <a href="https://github.com/Open-source-economics" target="_blank">The code repository</a>
             </div>
           </div>
           <div class="col-sm-4">
             <div class="home-hero-item">
               <span class="icon icon-wrenches"></span>
-              {% flatblock "home_center_subtitle" %}
-              {% flatblock "home_center_blurb" %}
-              {% flatblock "home_center_link" %}
+              <h2 class="h3">Accessible</h2>
+              <p>You can run the models yourself through our webapp interface or by downloading the code and using it with your own data.</p>
+              <a href="/taxbrain">Our first web app</a>
             </div>
           </div>
           <div class="col-sm-4">
             <div class="home-hero-item">
               <span class="icon icon-arrows-inward"></span>
-              {% flatblock "home_right_subtitle" %}
-              {% flatblock "home_right_blurb" %}
-              {% flatblock "home_right_link" %}
+              <h2 class="h3">Collaborative</h2>
+              <p>We welcome anyone, whether you are a modeler, software developer, economist, or policy analyst, to help improve and expand the suite of models.</p>
+              <a href="http://taxcalc.readthedocs.org/en/latest/contributor_guide.html" target="_blank">Getting started guide</a>
             </div>
           </div>
         </div>
@@ -47,8 +47,8 @@
             <img src="{% static 'images/btax/cost-of-capital-dark-light-blue.png' %}" alt="CCC" class="img-responsive" style="height:140px;">
           </div>
           <div class="app-info">
-            {% flatblock "home_ccc_subtitle" %}
-            {% flatblock "home_ccc_blurb" %}
+            <p class="lead">A simulator to analyze the impact of taxes on investment incentives.</p>
+            <p class="lead">Compute marginal effective tax rates on investment and savings under current-law and user-defined tax reforms.</p>
             <br>
             <a href="/ccc/" class="btn btn-primary">Explore the numbers</a>
           </div>
@@ -59,8 +59,8 @@
             <img src="{% static 'images/logo-taxbrainbeta.png' %}" alt="TaxBrain" class="img-responsive">
           </div>
           <div class="app-info">
-            {% flatblock "home_taxbrain_subtitle" %}
-            {% flatblock "home_taxbrain_blurb" %}
+            <p class="lead">A simulator to analyze the budgetary impact of taxes.</p>
+            <p>TaxBrain is an interface to open source economic models for tax policy analysis. </p>
             <br>
             <a href="/taxbrain/" class="btn btn-primary">Explore the numbers</a>
           </div>
@@ -99,8 +99,8 @@
             <span class="icon icon-code-doc"></span>
             Documentation
             <hr>
-            {% flatblock "home_contributor_left_blurb" %}
-            {% flatblock "home_contributor_left_link" %}
+            <p>We document the economics, data, and software behind our models.</p>
+            <a href="http://taxcalc.readthedocs.org/en/latest/" target = "_blank">View Documentation</a>
           </div>
         </div>
         <div class="col-sm-4">
@@ -108,8 +108,8 @@
             <span class="icon icon-github"></span>
             GitHub Project
             <hr>
-            {% flatblock "home_contributor_center_blurb" %}
-            {% flatblock "home_contributor_center_link" %}
+            <p>All of our code is available on Github.com.</p>
+            <a href="https://github.com/open-source-economics">Visit Our Code Repositories</a>
           </div>
         </div>
         <div class="col-sm-4">
@@ -117,8 +117,8 @@
             <span class="icon icon-model-diagram"></span>
             Peer-Modeling Group
             <hr>
-            {% flatblock "home_contributor_right_blurb" %}
-            {% flatblock "home_contributor_right_link" %}
+            <p>Start with our getting started guide.</p>
+            <a href="http://taxcalc.readthedocs.org/en/latest/contributor_guide.html" target="_blank">Join the Modeling Community</a>
           </div>
         </div>
       </div>
@@ -132,13 +132,13 @@
   <section class="news-items news-items-dark">
     <div class="container">
       <p class="text-right">
-        <a href="//news.ospc.org" class="see-all">See all news</a>
+        <a href="http://news.ospc.org/" class="see-all">See all news</a>
       </p>
       <div class="row">
         <div class="col-sm-6 col-sm-offset-3">
           <div class="news-item tagged">
             <h4>
-              <a href="//news.ospc.org/welcome-to-ospc.html">Welcome to OSPC</a>
+              <a href="http://news.ospc.org/welcome-to-ospc.html">Welcome to OSPC</a>
             </h4>
             <p>
               The Open Source Policy Center is making policy analysis more
@@ -162,44 +162,47 @@
         <div class="block-grid-xs-2 block-grid-sm-3 block-grid-md-4">
           <div>
             <div>
-              <a href="http://online.barrons.com/articles/social-securitys-predictions-1431129373">
                 <img src="{% static 'images/media-coverage/barrons.jpg' %}" alt="">
-              </a>
             </div>
           </div>
           <div>
             <div>
-              <a href="http://www.motherjones.com/kevin-drum/2016/04/we-need-quit-trying-cut-middle-class-income-taxes">
                 <img src="{% static 'images/media-coverage/motherjones.png' %}" alt="">
-              </a>
             </div>
           </div>
           <div>
             <div>
-              <a href="http://opportunitylives.com/this-transparent-new-tool-could-fundamentally-change-how-politicians-make-policy/">
                 <img src="{% static 'images/media-coverage/opportunitylives.png' %}" alt="">
-              </a>
             </div>
           </div>
           <div>
             <div>
-              <a href="http://www.realclearmarkets.com/articles/2016/04/13/as_tax_day_approaches_we_can_surely_do_better_102110.html">
                 <img src="{% static 'images/media-coverage/realclearmarkets.jpg' %}" alt="">
-              </a>
             </div>
           </div>
           <div>
             <div>
-              <a href="https://www.washingtonpost.com/news/wonk/wp/2016/04/14/the-search-for-the-best-middle-class-tax-cut/">
                 <img src="{% static 'images/media-coverage/thewashingtonpost.jpg' %}" alt="">
-              </a>
             </div>
           </div>
           <div>
             <div>
-              <a href="http://www.wsj.com/articles/cracking-washingtons-black-box-1459723493">
                 <img src="{% static 'images/media-coverage/wallstreetjournal.png' %}" alt="">
-              </a>
+            </div>
+          </div>
+          <div>
+            <div>
+                <img src="{% static 'images/media-coverage/thenewyorktimes.png' %}" alt="">
+            </div>
+          </div>
+          <div>
+            <div>
+                <img src="{% static 'images/media-coverage/forbes.png' %}" alt="">
+            </div>
+          </div>
+          <div>
+            <div>
+                <img src="{% static 'images/media-coverage/cnn.jpg' %}" alt="">
             </div>
           </div>
         </div>

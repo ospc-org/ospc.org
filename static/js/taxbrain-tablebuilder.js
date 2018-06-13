@@ -89,7 +89,6 @@ $(function() {
             plan:'X',
             payroll_tax: true,
             income_tax: true,
-            income: 'expanded',
             grouping: 'bin'
         },
 
@@ -104,35 +103,39 @@ $(function() {
         },
 
         rowLabels: function() {
+            // TODO: retrieve labels from the context and display them instead of hardcode labels here
             if (this.get('grouping') == 'bin') {
-                return [
-                    'Less than 10',
-                    '10-20',
-                    '20-30',
-                    '30-40',
-                    '40-50',
-                    '50-75',
-                    '75-100',
-                    '100-200',
-                    '200-500',
-                    '500-1000',
-                    '1000+',
-                    'All'
-                ];
+                return ['<$0K',
+                        '=$0K',
+                        '$0-10K',
+                        '$10-20K',
+                        '$20-30K',
+                        '$30-40K',
+                        '$40-50K',
+                        '$50-75K',
+                        '$75-100K',
+                        '$100-200K',
+                        '$200-500K',
+                        '$500-1000K',
+                        '>$1000K',
+                        'ALL'];
             } else if (this.get('grouping') == 'dec') {
-                return [
-                    '0-10%',
-                    '10-20%',
-                    '20-30%',
-                    '30-40%',
-                    '40-50%',
-                    '50-60%',
-                    '60-70%',
-                    '70-80%',
-                    '80-90%',
-                    '90-100%',
-                    'All'
-                ];
+                return ['0-10n',
+                        '0-10z',
+                        '0-10p',
+                        '10-20',
+                        '20-30',
+                        '30-40',
+                        '40-50',
+                        '50-60',
+                        '60-70',
+                        '70-80',
+                        '80-90',
+                        '90-100',
+                        'ALL',
+                        '90-95',
+                        '95-99',
+                        'Top 1%'];
             }
         }
     });
@@ -248,19 +251,43 @@ $(function() {
             </div>\
         '),
 
+        dataTableOptions: {
+            "paging":   false,
+            "ordering": false,
+            "searching": false,
+            "bInfo" : false,
+            "dom": 'tB'
+        },
+
         events: {
+
             'click [data-tablename]': function(e) {
                 e.preventDefault();
                 var $el = $(e.currentTarget);
                 var el_tablename = $el.data('tablename');
-
                 if (this.selectedTableName === el_tablename) {
                   return;
                 }
 
                 this.selectedTableName = el_tablename;
                 this.render();
-        }},
+                this.dataTableOptions.buttons = [
+                    {
+                        extend: 'print',
+                        customize: function ( win ) {
+                            if (el_tablename == 'fiscal_reform'){var title = 'TOTAL LIABILITIES BY CALENDAR YEAR (REFORM)';}
+                            if (el_tablename == 'fiscal_change'){var title = 'TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)';}
+                            if (el_tablename == 'fiscal_currentlaw'){var title = 'TOTAL LIABILITIES BY CALENDAR YEAR (CURRENT LAW)';}
+                            $(win.document.body).find('h1').html('<center>' + title + '</center>');
+                        }
+                    },
+                    'copy',
+                    'csv'
+                ];
+                this.$el.find('table').dataTable(this.dataTableOptions);
+                this.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');
+        }
+    },
 
 
         render: function() {
@@ -324,12 +351,6 @@ $(function() {
                   <li class="active" data-payrolltax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.payroll %>" href="#">Payroll Tax</a></li>\
                   <li><h1 class="text-center" style="margin:0">+</h1></li>\
                   <li class="active" data-incometax="false"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.income %>" href="#">Income Tax</a></li>\
-                </ul>\
-                <br>\
-                <br>\
-                <ul class="nav nav-pills nav-justified">\
-                  <li class="active" data-income="expanded"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.expanded %>" href="#">Expanded Income</a></li>\
-                  <li class="disabled" data-income="adjusted"><a data-toggle="tooltip" data-placement="bottom" title="<%= tooltips.adjusted %>" href="#" disabled>Adjusted Income</a></li>\
                 </ul>\
                 <br>\
                 <br>\
@@ -524,8 +545,7 @@ $(function() {
                         }
                     },
                     'copy',
-                    'csv',
-                    'excel'
+                    'csv'
                 ];
                 this.tableView.$el.find('table').dataTable(this.dataTableOptions);
                 this.tableView.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');
@@ -561,12 +581,11 @@ $(function() {
                 {
                     extend: 'print',
                     customize: function ( win ) {
-                        $(win.document.body).find('h1').html('<center>' + fiscalTableModel.get('label').toUpperCase() + '</center>');
+                        $(win.document.body).find('h1').html('<center>' + 'TOTAL LIABILITIES BY CALENDAR YEAR (REFORM)' + '</center>');
                     }
                 },
                 'copy',
-                'csv',
-                'excel',
+                'csv'
             ];
             fiscalTableView.$el.find('table').dataTable(this.dataTableOptions);
             fiscalTableView.$el.find("div.dt-buttons.btn-group").addClass('btn-group-justified');

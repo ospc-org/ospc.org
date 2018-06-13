@@ -3,33 +3,33 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 
 from .models import BTaxSaveInputs
-from .helpers import (BTaxField, BTaxParam, get_btax_defaults)
+from .helpers import (BTaxField, BTaxParam, get_btax_defaults,
+                      convert_val, make_bool)
 from ..taxbrain.helpers import (is_number, int_to_nth,
                                 is_string, string_to_float_array,
                                 check_wildcards, expand_list,
-                                propagate_user_list, convert_val,
-                                make_bool)
+                                propagate_user_list)
 import taxcalc
 
 from ..taxbrain.forms import (has_field_errors,
                               bool_like,
                               parameter_name)
 
+from ..constants import START_YEAR
 
-BTAX_DEFAULTS = get_btax_defaults()
-
+BTAX_DEFAULTS = get_btax_defaults(START_YEAR)
 
 class BTaxExemptionForm(ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
         self._first_year = int(first_year)
-        self._default_params = BTAX_DEFAULTS
+        self._default_params = get_btax_defaults(first_year)
 
         # Defaults are set in the Meta, but we need to swap
         # those outs here in the init because the user may
         # have chosen a different start year
         all_defaults = []
-        for param in self._default_params.values():
+        for param in list(self._default_params.values()):
             for field in param.col_fields:
                 all_defaults.append((field.id, field.default_value))
         for _id, default in all_defaults:
@@ -76,7 +76,7 @@ class BTaxExemptionForm(ModelForm):
         are detected.
         """
 
-        for param_id, param in self._default_params.iteritems():
+        for param_id, param in self._default_params.items():
             if any(token in param_id for token in ('gds', 'ads', 'tax')):
                 param.col_fields[0].values[0] = make_bool(param.col_fields[0].values[0])
             if param.max is None and param.min is None:
@@ -112,11 +112,11 @@ class BTaxExemptionForm(ModelForm):
                         if value > maxes[i]:
                             if len(col_values) == 1:
                                 self.add_error(col_field.id,
-                                               u"Must be \u2264 {0} of {1}".
+                                               "Must be \u2264 {0} of {1}".
                                                format(source, maxes[i]))
                             else:
                                 self.add_error(col_field.id,
-                                               u"{0} value must be \u2264 \
+                                               "{0} value must be \u2264 \
                                                {1}'s {0} value of {2}".format(
                                                    int_to_nth(i + 1),
                                                    source, maxes[i]))
@@ -131,11 +131,11 @@ class BTaxExemptionForm(ModelForm):
                         if value < mins[i]:
                             if len(col_values) == 1:
                                 self.add_error(col_field.id,
-                                               u"Must be \u2265 {0} of {1}".
+                                               "Must be \u2265 {0} of {1}".
                                                format(source, mins[i]))
                             else:
                                 self.add_error(col_field.id,
-                                               u"{0} value must be \u2265 \
+                                               "{0} value must be \u2265 \
                                                {1}'s {0} value of {2}".format(
                                                    int_to_nth(i + 1),
                                                    source, mins[i]))
@@ -146,7 +146,7 @@ class BTaxExemptionForm(ModelForm):
         widgets = {}
         labels = {}
 
-        for param in BTAX_DEFAULTS.values():
+        for param in list(BTAX_DEFAULTS.values()):
             for field in param.col_fields:
                 attrs = {
                     'class': 'form-control',

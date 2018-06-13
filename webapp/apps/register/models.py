@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 
 import os
-import urllib
+import urllib.parse
 import uuid
 
 
@@ -18,7 +18,7 @@ class Subscriber(models.Model):
       return "{host}{path}?{params}".format(
             host = hostname,
             path = reverse('register_user'),
-            params = urllib.urlencode({'k': self.confirm_key})
+            params = urllib.parse.urlencode({'k': self.confirm_key})
         )
 
     def send_subscribe_confirm_email(self):

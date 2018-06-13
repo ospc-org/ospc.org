@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 from django.conf import settings
-import uuidfield.fields
-
+import uuid
 
 class Migration(migrations.Migration):
 
@@ -19,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('model_pk', models.IntegerField(default=None, null=True)),
-                ('uuid', uuidfield.fields.UUIDField(null=True, default=None, editable=False, max_length=32, blank=True, unique=True)),
+                ('uuid', models.UUIDField(null=True, default=None, editable=False, max_length=32, blank=True, unique=True)),
                 ('taxcalc_vers', models.CharField(default=None, max_length=50, null=True, blank=True)),
             ],
         ),

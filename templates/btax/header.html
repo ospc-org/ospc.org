@@ -1,0 +1,79 @@
+{% load staticfiles %}
+{% load flatblocks %}
+<div id="affix-offset">
+  <nav class="logobar" role="navigation">
+    <a class="logobar-brand" href="/">
+      <img alt="TaxBrain: A disruptive open source platform for exploring tax policy impact" src="{% static 'images/logo-no-icon.png' %}">
+    </a>
+  </nav>
+  <section class="taxbrain-hero taxbrain-hero-small">
+    <div class="taxbrain-hero-block">
+        <div class="logo">
+          <h2 class="sr-only">TaxBrain</h2>
+          <img src="{% static 'images/btax/cost-of-capital-white-blue.png' %}" alt="TaxBrain" class="img-responsive">
+        </div>
+        <div class="what-is">
+          <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is Cost of Capital Calculator?</a>
+        </div>
+    </div>
+  </section>
+      <section class="taxbrain-info collapse" id="taxbrainInfo">
+        <div class="container">
+          <div class="taxbrain-history">
+            <h2>About Cost of Capital Calculator</h2>
+            <h1> What is the Cost of Capital Calculator? </h1>
+            <p>The Cost of Capital Calculator is an interface to <a href = "//www.github.com/open-source-economics" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the Cost of Capital Calculator webapp interface is itself open source. </p>
+
+            <ul>
+            <li> <strong>Step 1.</strong> Create a policy reform by modifying tax law parameters such as rates and depreciation schedules, adjust the economic assumptions, and request the static result.</li>
+            <li><strong>Step 2.</strong> Review your static output carefully. Ask questions.</li>
+            <li><strong>Step 3.</strong> Share your results! The link to every results page is static and will never change. Send them around.</li>
+            </ul>
+
+            <p> Throughout this process, if you have a question about how to use the Cost of Capital Calculator or interpret the results, if you want to make a suggestion for making the interface or underlying models better, or if you discover a bug, please send a message to our mailing list, which you can join at <a href = '//list.ospc.org/mailman/listinfo/users_list.ospc.org' target="_blank">list.ospc.org/mailman/listinfo/users_list.ospc.org</a>.</p>
+
+            <p><strong>Disclaimer</strong>
+
+            <p>Proper use of this tool and description of that use is ultimately your responsibility. If you plan on publishing your results, I highly recommend that you confirm with the community that you are using the tools properly and interpreting the results correctly before you publish them. If you have a compelling reason not to leave a public note on the mailing list, email me at matt.jensen@aei.org.</p>
+
+            <p>Results will change as the underlying models improve. A fundamental reason for adopting open source methods in this project is to let people from all backgrounds contribute to the models that our society uses to assess economic policy; when community-contributed improvements are incorporated, the models will produce different results.</p>
+
+            <p>Neither the Open Source Policy Center nor the American Enterprise Institute maintain institutional positions, and the results from models accessible via the TaxBrain interface should not be attributed directly to OSPC or AEI. A suggested acknowledgement is, "We thank AEI for making TaxBrain available, but we bear sole responsibility for the use of the models and any conclusions drawn."</p>
+
+            <p><strong> - Matt Jensen, managing director and founder of the Open Source Policy Center </strong></p>
+
+            <hr>
+
+            <h1>Static modeling (Step 1)</h1>
+
+            <p> Static tax analysis entails computing changes in marginal effective tax rates on new investment under the assumption that behavior does not change in response to tax policy. Static analyses are useful for understanding the mechanistic effects of tax policy changes, and they form the basis to which behavior is applied for dynamic analyses.
+
+            <p><strong>Accuracy notes</strong></p>
+
+            <p>The Python code that performs the cost of capital calculations has been validated in a
+            number of ways.  First, Cost of Capital Results results for a number of asset types have been compared to hand calculations performed using current law tax policy parameters.  Second, Cost of Capital Calculator results for a large number of assets
+            have been compared to results for the same assets generated  ).
+            <a href = 'https://www.cbo.gov/sites/default/files/109th-congress-2005-2006/reports/12-18-taxrates.pdf' target="_blank">by the Congressional Budget Office</a> (using CBO assumptions).
+
+            <p> Bugs aside, the results from the Cost of Capital Calculator might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, marginal effective total tax rates produced by the Cost of Capital Calculator assume the "old view" of dividend taxation.  Others might assume the "new view" is more applicable.  These assumptions are all flexible in <a href = '//www.github.com/open-source-economics/B-Tax' target="_blank">the Cost of Capital Calculator</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in the Cost of Capital Calculator based on user requests.</p>
+
+            <p><strong>
+            Core Maintainers (static modeling)*:
+            <ul style = "list-style-type:none">
+            <li>- <a href = "http://www.jasondebacker.com" target = "blank" >Jason DeBacker, University of South Carolina</a></li>
+            <li>- <a href = "https://github.com/bfgard" target = "blank" >Benjamin Gardner, Brigham Young University</a></li>
+            </ul>
+            </strong></p>
+            <p> These members have "write access" to the core modeling repositories, B-Tax, and work as a team to determine which open source contributions are accepted.</p>
+          </div>
+          <div class="taxbrain-build">
+            <h2>PolicyBrain Code Build</h2>
+            <p><a href="https://github.com/OpenSourcePolicyCenter/webapp-public/tree/v{{webapp_version}}">Version {{ webapp_version }} - GitHub</a></p>
+          </div>
+          <div class="taxbrain-build">
+            <h2>B-Tax Code Build</h2>
+            <p><a href="https://github.com/open-source-economics/B-Tax/tree/{{btax_version}}">Version {{ btax_version }} - GitHub</a></p>
+          </div>
+        </div>
+      </section>
+</div>

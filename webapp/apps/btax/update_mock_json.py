@@ -12,9 +12,9 @@ cats = ['Major Grouping 1',
         'Major Grouping 5',
         'Major Grouping 6']
 
-for h in data.keys():
+for h in list(data.keys()):
     if h.startswith('asset') or h.startswith('industry'):
-        for i in data[h].keys():
+        for i in list(data[h].keys()):
             for j in data[h][i]['rows']:
                 j['major_grouping'] = random.choice(cats)
                 j['summary_c'] = -999

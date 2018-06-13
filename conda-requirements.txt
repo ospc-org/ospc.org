@@ -1,9 +1,9 @@
 nomkl
-taxcalc==0.10.2
-btax==0.1.9
-numba==0.33.0
-pandas
-gevent
+taxcalc==0.20.1
+btax==0.2.2
+ogusa==0.5.11
+numba>=0.33.0
+pandas>=0.22.0
 pillow
 pyparsing
-bokeh>=0.12.7
+bokeh=0.12.7

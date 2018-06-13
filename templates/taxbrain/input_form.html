@@ -24,7 +24,7 @@
             <h2 class="sr-only">TaxBrain</h2>
             <img src="{% static 'images/taxbrain/logo-taxbrain-altbeta.png' %}" alt="TaxBrain" class="img-responsive">
           </div>
-          {% flatblock "taxbrain_subheader" %}
+          <p class="lead">A platform for accessing open-source tax models.</p>
           <a href="#get-started" class="btn btn-primary btn-explore">Start Exploring</a>
           <div class="what-is">
             <a class="collapsed" data-toggle="collapse" href="#taxbrainInfo" aria-expanded="false" aria-controls="taxbrainInfo">What is TaxBrain?</a>
@@ -35,7 +35,84 @@
         <div class="container">
           <div class="taxbrain-history">
             <h2>About TaxBrain</h2>
-            {% flatblock "taxbrain_what_is_taxbrain_dropdown" %}
+            <p>TaxBrain is an interface to <a href = "//www.github.com/open-source-economics" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
+
+            <ul>
+            <li> <strong>Step 1.</strong> Create a policy reform by modifying tax law parameters such as rates and deductions, adjust the economic baseline, and request the static result. You can do so with the graphical user interface below or by uploading a policy reform file <a href = "//www.ospc.org/taxbrain/file" target="_blank">from this page</a>.</li>
+            <li><strong>Step 2.</strong> Review your static output carefully. Ask questions.</li>
+            <li><strong>Step 3.</strong> Choose a dynamic modeling approach. Because different approaches generally lead to different estimates, you may want to compare several approaches.</li>
+            <li><strong>Step 4.</strong> Adjust economic assumptions and request the dynamic analysis.</li>
+            <li><strong>Step 5.</strong> Review your dynamic output carefully. Ask questions.</li>
+            <li><strong>Step 6.</strong> Share your results! The link to every results page is static and will never change. Send them around.</li>
+            </ul>
+
+            <p> Throughout this process, if you have a question about how to use TaxBrain or interpret the results, if you want to make a suggestion for making the interface or underlying models better, or if you discover a bug, please send a message to our mailing list, which you can join at <a href = '//list.ospc.org/mailman/listinfo/users_list.ospc.org' target="_blank">list.ospc.org/mailman/listinfo/users_list.ospc.org</a>.</p>
+
+            <p><strong>Disclaimer</strong>
+
+            <p>Proper use of this tool and description of that use is ultimately your responsibility. If you plan on publishing your results, I highly recommend that you confirm with the community that you are using the tools properly and interpreting the results correctly before you publish them. If you have a compelling reason not to leave a public note on the mailing list, email me at matt.jensen@aei.org.</p>
+
+            <p>Results will change as the underlying models improve. A fundamental reason for adopting open source methods in this project is to let people from all backgrounds contribute to the models that our society uses to assess economic policy; when community-contributed improvements are incorporated, the models will produce different results.</p>
+
+            <p>Neither the Open Source Policy Center nor the American Enterprise Institute maintain institutional positions, and the results from models accessible via the TaxBrain interface should not be attributed directly to OSPC or AEI. A suggested acknowledgement is, "We thank AEI for making TaxBrain available, but we bear sole responsibility for the use of the models and any conclusions drawn."</p>
+
+            <p><strong> - Matt Jensen, managing director and founder of the Open Source Policy Center </strong></p>
+
+            <hr>
+
+            <h1>Static modeling (Step 1)</h1>
+
+            <p> Static tax analysis entails computing individuals' tax changes under the assumption that behavior does not change in response to tax policy. Static analyses are useful for understanding the mechanistic effects of tax policy changes, and they form the basis to which behavior is applied for dynamic analyses.
+
+            <p>TaxBrain's static modeling capabilities rely on several open source economic models and other packages:</p>
+            <ul>
+            <li> <a href = "//www.github.com/open-source-economics/tax-calculator" target="_blank">Tax-Calculator</a> computes federal individual income taxes and Federal Insurance Contribution Act(FICA) taxes for a sample of tax filing units in years beginning with 2013 .</li>
+            <li><a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> creates a microdataset that closely reproduces the multivariate distribution of income, deduction and credit items in 2009, extrapolated to 2015-2026 levels in accordance with Congressional Budget Office forecasts available in spring 2016. It is intended to match similar but confidential data used by the Congressional Joint Committee on Taxation. The underlying dataset must be purchased from the Statistics of Income division of the Internal Revenue Service. Additional information on non-filers is taken from the March 2013 Current Population Survey. </li>
+            <li> DropQ implements a disclosure avoidance algorithm initially proposed by the U.S. Census Bureau to protect confidential data from differencing attacks. The code is undergoing security review before it is open sourced.</li>
+            <li> <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">TaxBrain</a> itself is an open source project. The underlying models are deployed to TaxBrain using conda, a free and open source package management system supported by <a href = '//www.continuum.io' target="_blank">Continuum Analytics</a></li>
+            </ul>
+
+            <p><strong>Transparency and Replicability</strong></p>
+
+            <p>In addition to relying on open source models, we are devoted to making it easy for reviewers to understand the models even if they can't understand the source code or don't have access to the underlying data. Toward that end we produce several additional reports to enhance transparency, peer review, collaboration and a scientific advancement.</p>
+
+            <p>Note that these reports currently rely on the latest versions of tax-calculator and TaxData, which might not correspond perfectly to TaxBrain.</p>
+
+            <ul>
+            <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/reform_results.txt" target = "_blank">Federal income tax and FICA liability deltas for example reforms</a></li>
+            <li>Dummy datasets and associated Tax-Calculator results (Coming soon)</li>
+            <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/variable_stats_summary.csv">Basic summary statistics for variables used in Tax-Calculator and major intermediate results (2013-2026) </a></li>Currently only weighted mean is available, more statistics will be  added shortly.
+            <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/correlation.csv" target= "_blank">Correlation matrix for the same set of variables</a> 2016 available now, other years coming soon.</li>
+            <li>Extrapolation related: <br>
+            <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_I_factors.csv" target= "_blank">Blow-up factors</a><br>
+            <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_II_targets.csv" target= "_blank">Aggregate and distributional targets</a></li>
+            <li>Equations and coefficients for imputations (Coming soon)</li>
+            </ul>
+
+            <p><strong>Accuracy notes</strong></p>
+
+            <p>The Python code that performs the tax calculations has been validated in a
+            number of ways.  First, Tax-Calculator results for a number of tax filing
+            units have been compared to hand calculations performed using IRS tax
+            forms.  Second, Tax-Calculator results for a large sample of tax filing units
+            have been compared to results for the same sample generated by a
+            <a href = '//www.nber.org/taxcalc' target="_blank">detailed SAS program</a> developed by Dan
+            Feenberg and Ina Shapiro of NBER.  Third, a subset of input variables has been used to compare the results of Tax-Calculator to <a href = '//users.nber.org/~taxsim' target="_blank">Internet TAXSIM</a> as well as against the Policy Simulation Group's <a href = '//www.polsim.com/inctax-caps.html' target="_blank">PENSIM tax module</a></p>
+
+            <p> Bugs aside, the results from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
+
+            <p><strong>
+            Core Maintainers (static modeling)*:
+            <ul style = "list-style-type:none">
+            <li>- <a href = "https://github.com/talumbau" target = "blank" >T.J. Alumbaugh, Continuum Analytics</a></li>
+            <li>- <a href = "http://www.nber.org/people/daniel_feenberg" target = "blank" >Dan Feenberg, National Bureau of Economic Research</a></li>
+            <li>- <a href = "http://www.polsim.com/MRH_vita.pdf" target = "blank" >Martin Holmer, Policy Simulation Group</a></li>
+            <li>- <a href = "https://www.aei.org/scholar/matthew-h-jensen/" target = "blank" >Matt Jensen, American Enterprise Institute</a></li>
+            <li>- <a href = "http://quantria.com/#team" target = "blank" >John O'Hare, Quantria Strategies</a></li>
+            <li>- <a href = "https://github.com/Amy-Xu" target = "blank" >Amy Xu, American Enterprise Institute</a></li>
+            </ul>
+            </strong></p>
+            <p> These members have "write access" to one or both of the core static modeling repositories, Tax-Calculator and TaxData, and work as a team to determine which open source contributions are accepted.</p>
           </div>
           <div class="taxbrain-build">
             <h2>PolicyBrain Code Build</h2>
@@ -48,7 +125,7 @@
         </div>
       </section>
     </div>
-    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}">
+    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}&data_source={{data_source}}">
       {% csrf_token %}
       <input type="hidden" name="has_errors" value="{{ has_errors }}" />
       <div class="container">
@@ -62,6 +139,13 @@
                   {% endfor %}
                 </select>
             </label>
+            <label class=""> Principal Data Source:
+                <select id="data-source-select" class="form-control pull-right">
+                {% for data in data_sources %}
+                  <option value="{{data}}" {% if data == data_source %} selected {% endif %}>{{data}}</option>
+                {% endfor %}
+                </select>
+             </label>
               <div class="reset-button">
                 {% if is_edit_page %}
                   <a href="/taxbrain" class="btn btn-tertiary btn-block" style="background-color:#96000b">Reset Parameters</a>
@@ -75,9 +159,7 @@
                 <li class="get-started"><a href="#get-started">Get Started</a></li>
                   {% for param in params %}
                     {% for key, value in param.items %}
-                      {% if key != "ubi" %}
-                        <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
-                      {% endif %}
+                      <li><a href="#{{ key|make_id }}">{{ key }}</a></li>
                     {% endfor %}
                   {% endfor %}
               </ul>
@@ -85,23 +167,12 @@
                 <a href="#" ></a>
                 <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" name="full_calc" value="Show me the results!">
             </div>
-              {% if enable_quick_calc %}
               <div class="sidebar-button">
                 <a href="#" ></a>
                 <button id="tax-submit-quick" class="btn btn-tertiary btn-block" type="submit" value="quick_calc" name="quick_calc">
-                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; 2% sample)</span>
+                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; small sample)</span>
                 </button>
               </div>
-              {% endif %}
-              <!--
-              <div class="sidebar-note">
-                <div class="sidebar-count">
-                  <span>11</span> / 24
-                </div>
-                <h3>Changes made to the Current Tax Policy</h3>
-                <p>Data is pre-populated with current tax policy parameters. The amount listed above tracks the number of parameters changed, that different from the current tax policy parameters.</p>
-              </div>
-              -->
             </div> <!-- sidebar -->
           </div>
           <div class="col-xs-9">
@@ -118,9 +189,27 @@
 
               <div class="inputs-block inputs-block-intro">
                 <div class="inputs-block-header">
-                  {% flatblock "taxbrain_above_get_started_blurb" %}
                   <h1 id="get-started">Get Started</h1>
-                  {% flatblock "taxbrain_get_started_blurb" %}
+                  <h3>User tips</h3>
+
+                  <ul>
+                  <li> By default, the policy parameter boxes contain Start Year values. You can change the Start Year of the analysis in the upper left.</li>
+                  <li>Toggle the <strong>CPI</strong> control to indicate whether a parameter should be adjusted for inflation. </li>
+                  <li>Enter comma-separated values into a field to indicate the multiple years of tax law.
+                  <strong>DO NOT</strong> use commas as thousands separators. </li>
+                  <li> Express rates as decimals. </li>
+                  <li>You can represent a value that would otherwise manifest itself in a year with the <strong>*</strong> operator. So, for example, if you enter <strong>0.1, *, 0.2</strong> in a tax rate field, the rate will be 10 percent in the Start Year, 10 percent a year after the Start Year, and 20 percent two years after the Start Year and forward. If you enter <strong>100, *, 200</strong> in a CPI-indexed field for a credit amount, the credit will be $100 in the Start Year, $100*(1+CPI) the next year, and $200 the following year.</li>
+                  <li>You may specify a parameter change in the year before the Start Year with the <strong> < </strong> operator. For example, if you set the Start Year as 2018 and a Parameter Indexing Offset parameter to <strong> <,-0.0025,-0.001 </strong> then this sets the Offset to -0.0025 in 2017 and -0.001 in 2018.</li>
+                  <li> <a href = "//ospc.org/docs" target="_blank">Read the Docs</a> </li>
+                  <li> <a href = "//docs.google.com/forms/d/e/1FAIpQLSfvKEsQZNe9_16FhKNZcEyv3C8qXZhBfrqLxSd4VR97w92moQ/viewform" target="_blank">Leave Feedback</a> </li>
+                  </ul>
+                  <h3>Datasets</h3>
+                  <p>TaxBrain now offers users two data options: CPS and PUF. Both datasets contain tax unit level data, but they do not have all of the same variables. As a result, you will not be able to change some policy parameters, depending on which dataset you choose. A more detailed breakdown of the differences between the file can be found <a href="https://github.com/open-source-economics/taxdata/blob/master/datasets.md">here</a>. The CPS-based file is still young relative to the PUF-based file, and we would appreciate your feedback as it matures.</p>
+                  <h3>Presets: key provisions from newsworthy proposals</h3>
+                  <ul>
+                  <li>The policy parameter presets are under review given the change in baseline parameters caused by the passage of the Tax Cuts and Jobs Act (TCJA).</li>
+                  </ul>
+
                   <div>
                     You are looking at default parameters for {{start_year}}.
                     <!--
@@ -172,4 +261,22 @@
       </div>
     </div>
   </div>
+  <div class="modal fade" id="data-source-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Change Data Source</h4>
+        </div>
+        <div class="modal-body">
+          Warning: This will clear your current inputs.
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal">Nevermind.</a>
+          <a type="button" class="btn btn-primary" id="data-source-link">OK, go for it.</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
 {% endblock %}

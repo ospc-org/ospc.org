@@ -4,7 +4,7 @@ from .models import WorkerNodesCounter
 import json
 import requests
 import taxcalc
-from requests.exceptions import Timeout, RequestException
+from requests.exceptions import Timeout, RequestException, ConnectionError
 from .helpers import arrange_totals_by_row
 from ..constants import START_YEAR
 import requests_mock
@@ -23,8 +23,8 @@ DROPQ_SMALL_URL = "/dropq_small_start_job"
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-TAXCALC_RESULTS_TOTAL_ROW_KEYS = taxcalc.dropq.TOTAL_ROW_NAMES
-ELASTIC_RESULTS_TOTAL_ROW_KEYS = ["gdp_elasticity"]
+AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
+GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
 
 
 class JobFailError(Exception):
@@ -38,71 +38,51 @@ class DropqCompute(object):
     def package_up_vars(self, *args, **kwargs):
         return _package_up_vars(*args, **kwargs)
 
+
     def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
+        print(theurl, data)
         response = requests.post(theurl, data=data, timeout=timeout)
         return response
+
 
     def remote_results_ready(self, theurl, params):
         job_response = requests.get(theurl, params=params)
         return job_response
 
+
     def remote_retrieve_results(self, theurl, params):
         job_response = requests.get(theurl, params=params)
         return job_response
 
-    def submit_json_dropq_calculation(self, user_mods, first_budget_year, additional_data=None):
+
+    def submit_dropq_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS,
-                                       pack_up_user_mods=False,
-                                       additional_data=additional_data)
+        return self.submit_calculation(data, url_template)
 
-    def submit_dropq_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False,
-                                 pack_up_user_mods=True):
-        url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS,
-                                       additional_data=additional_data,
-                                       pack_up_user_mods=pack_up_user_mods)
 
-    def submit_json_dropq_small_calculation(self, user_mods, first_budget_year):
+    def submit_dropq_small_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS_QUICK,
-                                       increment_counter=False,
-                                       pack_up_user_mods=False)
+        return self.submit_calculation(data, url_template,
+                                       increment_counter=False
+                                       )
 
-    def submit_dropq_small_calculation(self, user_mods, first_budget_year, additional_data={}, is_file=False,
-                                       pack_up_user_mods=True):
-        url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       num_years=NUM_BUDGET_YEARS_QUICK,
-                                       additional_data=additional_data,
-                                       increment_counter=False,
-                                       pack_up_user_mods=pack_up_user_mods)
 
-    def submit_elastic_calculation(self, user_mods, first_budget_year, is_file=False, additional_data={},
-                                   pack_up_user_mods=True):
+    def submit_elastic_calculation(self, data):
         url_template = "http://{hn}/elastic_gdp_start_job"
-        return self.submit_calculation(user_mods, first_budget_year, url_template,
-                                       start_budget_year=1,
-                                       additional_data=additional_data,
-                                       pack_up_user_mods=pack_up_user_mods)
+        return self.submit_calculation(data, url_template)
 
 
-    def submit_calculation(self, user_mods, first_budget_year, url_template,
-                           start_budget_year=0, num_years=NUM_BUDGET_YEARS,
+    def submit_calculation(self,
+                           data,
+                           url_template,
                            workers=DROPQ_WORKERS,
                            increment_counter=True,
-                           use_wnc_offset=True,
-                           pack_up_user_mods=True,
-                           additional_data={}):
-        if pack_up_user_mods:
-            user_mods = self.package_up_vars(user_mods, first_budget_year)
-            if not bool(user_mods):
-                return False
-            user_mods = {first_budget_year: user_mods}
-        data = {}
+                           use_wnc_offset=True):
+
+        first_budget_year = int(data['first_budget_year'])
+        start_budget_year = int(data['start_budget_year'])
+        num_years = int(data['num_budget_years'])
+
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
             wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
@@ -114,16 +94,11 @@ class DropqCompute(object):
                 wnc.save()
         else:
             dropq_worker_offset = 0
+
         hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
-        print "hostnames: ", hostnames
+        print("hostnames: ", hostnames)
+        print("submitting data: ", data)
         num_hosts = len(hostnames)
-        data["user_mods"] = json.dumps(user_mods)
-        data["first_budget_year"] = str(first_budget_year)
-        if additional_data:
-            if "behavior" in additional_data.keys():
-                data["behavior_params"] = json.dumps(additional_data)
-            else:
-                data[additional_data.keys()[0]] = json.dumps(additional_data)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
@@ -136,7 +111,7 @@ class DropqCompute(object):
                 try:
                     response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
                     if response.status_code == 200:
-                        print "submitted: ", hostnames[hostname_idx]
+                        print("submitted: ", hostnames[hostname_idx])
                         year_submitted = True
                         response_d = response.json()
                         job_ids.append((response_d['job_id'], hostnames[hostname_idx]))
@@ -144,19 +119,19 @@ class DropqCompute(object):
                         if response_d['qlength'] > max_queue_length:
                             max_queue_length = response_d['qlength']
                     else:
-                        print "FAILED: ", str(y), hostnames[hostname_idx]
+                        print("FAILED: ", str(y), hostnames[hostname_idx])
                         hostname_idx = (hostname_idx + 1) % num_hosts
                         attempts += 1
                 except Timeout:
-                    print "Couldn't submit to: ", hostnames[hostname_idx]
+                    print("Couldn't submit to: ", hostnames[hostname_idx])
                     hostname_idx = (hostname_idx + 1) % num_hosts
                     attempts += 1
                 except RequestException as re:
-                    print "Something unexpected happened: ", re
+                    print("Something unexpected happened: ", re)
                     hostname_idx = (hostname_idx + 1) % num_hosts
                     attempts += 1
                 if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
-                    print "Exceeded max attempts. Bailing out."
+                    print("Exceeded max attempts. Bailing out.")
                     raise IOError()
 
         return job_ids, max_queue_length
@@ -179,7 +154,7 @@ class DropqCompute(object):
                 rep = job_response.text
                 jobs_done[idx] = rep
             else:
-                print 'did not expect response with status_code', job_response.status_code
+                print('did not expect response with status_code', job_response.status_code)
                 raise JobFailError(msg)
         return jobs_done
 
@@ -207,62 +182,36 @@ class DropqCompute(object):
 
         ans = self._get_results_base(job_ids, job_failure=job_failure)
 
-        mY_dec = {}
-        mX_dec = {}
-        df_dec = {}
-        pdf_dec = {}
-        cdf_dec = {}
-        mY_bin = {}
-        mX_bin = {}
-        df_bin = {}
-        pdf_bin = {}
-        cdf_bin = {}
-        fiscal_tot_diffs = {}
-        fiscal_tot_base = {}
-        fiscal_tot_ref = {}
-        for result in ans:
-            mY_dec.update(result['mY_dec'])
-            mX_dec.update(result['mX_dec'])
-            df_dec.update(result['df_dec'])
-            pdf_dec.update(result['pdf_dec'])
-            cdf_dec.update(result['cdf_dec'])
-            mY_bin.update(result['mY_bin'])
-            mX_bin.update(result['mX_bin'])
-            df_bin.update(result['df_bin'])
-            pdf_bin.update(result['pdf_bin'])
-            cdf_bin.update(result['cdf_bin'])
-            fiscal_tot_diffs.update(result['fiscal_tot_diffs'])
-            fiscal_tot_base.update(result['fiscal_tot_base'])
-            fiscal_tot_ref.update(result['fiscal_tot_ref'])
+        names = ["dist2_xdec", "dist1_xdec", "diff_itax_xdec", "diff_ptax_xdec",
+                 "diff_comb_xdec", "dist2_xbin", "dist1_xbin", "diff_itax_xbin",
+                 "diff_itax_xbin", "diff_ptax_xbin", "diff_comb_xbin", "aggr_d",
+                 "aggr_1", "aggr_2"]
+        results = {name: {} for name in names}
 
+        for result in ans:
+            for name in results:
+                results[name].update(result[name])
 
         if ENFORCE_REMOTE_VERSION_CHECK:
             versions = [r.get('taxcalc_version', None) for r in ans]
             if not all([ver==taxcalc_version for ver in versions]):
                 msg ="Got different taxcalc versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
             versions = [r.get('dropq_version', None) for r in ans]
             if not all([same_version(ver, dropq_version) for ver in versions]):
                 msg ="Got different dropq versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
 
-        fiscal_tot_diffs = arrange_totals_by_row(fiscal_tot_diffs,
-                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
+        results['aggr_d'] = arrange_totals_by_row(results['aggr_d'],
+                                                  AGG_ROW_NAMES)
 
-        fiscal_tot_base = arrange_totals_by_row(fiscal_tot_base,
-                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
+        results['aggr_1'] = arrange_totals_by_row(results['aggr_1'],
+                                                  AGG_ROW_NAMES)
 
-        fiscal_tot_ref = arrange_totals_by_row(fiscal_tot_ref,
-                                            TAXCALC_RESULTS_TOTAL_ROW_KEYS)
-
-        results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
-                'pdf_dec': pdf_dec, 'cdf_dec': cdf_dec, 'mY_bin': mY_bin,
-                'mX_bin': mX_bin, 'df_bin': df_bin, 'pdf_bin': pdf_bin,
-                'cdf_bin': cdf_bin, 'fiscal_tot_diffs': fiscal_tot_diffs,
-                'fiscal_tot_base': fiscal_tot_base,
-                'fiscal_tot_ref': fiscal_tot_ref}
+        results['aggr_2'] = arrange_totals_by_row(results['aggr_2'],
+                                                  AGG_ROW_NAMES)
 
         return results
 
@@ -284,17 +233,17 @@ class DropqCompute(object):
             versions = [r.get('taxcalc_version', None) for r in ans]
             if not all([ver==taxcalc_version for ver in versions]):
                 msg ="Got different taxcalc versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
             versions = [r.get('dropq_version', None) for r in ans]
             if not all([same_version(ver, dropq_version) for ver in versions]):
                 msg ="Got different dropq versions from workers. Bailing out"
-                print msg
+                print(msg)
                 raise IOError(msg)
 
-        elasticity_gdp[u'gdp_elasticity_0'] = u'NA'
+        elasticity_gdp['gdp_elasticity_0'] = 'NA'
         elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
-                                            ELASTIC_RESULTS_TOTAL_ROW_KEYS)
+                                            GDP_ELAST_ROW_NAMES)
 
         results = {'elasticity_gdp': elasticity_gdp}
 
@@ -342,11 +291,17 @@ class MockCompute(DropqCompute):
             mock.register_uri('GET', '/dropq_get_result', text=text)
             return DropqCompute.remote_retrieve_results(self, theurl, params)
 
+    def reset_count(self):
+        """
+        reset worker node count
+        """
+        self.count = 0
+
 class ElasticMockCompute(MockCompute):
 
     def remote_retrieve_results(self, theurl, params):
         self.count += 1
-        text = (u'{"elasticity_gdp": {"gdp_elasticity_1": "0.00310"}, '
+        text = ('{"elasticity_gdp": {"gdp_elasticity_1": "0.00310"}, '
                 '"dropq_version": "0.6.a96303", "taxcalc_version": '
                 '"0.6.10d462"}')
         with requests_mock.Mocker() as mock:
@@ -357,10 +312,20 @@ class ElasticMockCompute(MockCompute):
 class MockFailedCompute(MockCompute):
 
     def remote_results_ready(self, theurl, params):
-        print 'MockFailedCompute remote_results_ready', theurl, params
+        print('MockFailedCompute remote_results_ready', theurl, params)
         with requests_mock.Mocker() as mock:
             mock.register_uri('GET', '/dropq_query_result', text='FAIL')
             return DropqCompute.remote_results_ready(self, theurl, params)
+
+class MockFailedComputeOnOldHost(MockCompute):
+    """
+    Simulate requesting results from a host IP that is no longer used. This
+    action should raise a `ConnectionError`
+    """
+    def remote_results_ready(self, theurl, params):
+        print('MockFailedComputeOnOldHost remote_results_ready', theurl, params)
+        raise requests.ConnectionError()
+
 
 class NodeDownCompute(MockCompute):
 
@@ -390,4 +355,5 @@ class NodeDownCompute(MockCompute):
                 mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
                 mock.register_uri('POST', '/btax_start_job', text=resp)
             self.switch += 1
+            self.last_posted = data
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)

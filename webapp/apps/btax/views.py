@@ -2,7 +2,7 @@ import csv
 import pdfkit
 import json
 import pytz
-
+import traceback
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
@@ -15,11 +15,11 @@ import taxcalc
 import datetime
 import logging
 from os import path
-from urlparse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
 from django.core import serializers
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
@@ -31,24 +31,21 @@ from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
 from django import forms
 
-from djqscsv import render_to_csv_response
-
 from .forms import BTaxExemptionForm, has_field_errors
 from .models import BTaxSaveInputs, BTaxOutputUrl
 from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC,
                       BTAX_OTHER, BTAX_ECON,
-                      group_args_to_btax_depr, hover_args_to_btax_depr)
+                      group_args_to_btax_depr, hover_args_to_btax_depr,
+                      make_bool, convert_val)
 from ..taxbrain.helpers import (format_csv,
-                                is_wildcard,
-                                convert_val,
-                                make_bool)
-from ..taxbrain.views import (benefit_switch_fixup,
-                              denormalize, normalize)
-from .compute import DropqComputeBtax, MockComputeBtax, JobFailError
+                                is_wildcard)
+from ..taxbrain.views import denormalize, normalize
+from .compute import DropqComputeBtax, MockComputeBtax, JobFailError, BTAX_WORKERS
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
-                        START_YEAR, START_YEARS)
+                        START_YEAR)
+from .constants import START_YEARS
 
 from ..formatters import get_version
 from django.conf import settings
@@ -73,7 +70,7 @@ JOB_PROC_TIME_IN_SECONDS = 30
 
 
 def make_bool_gds_ads(form_btax_input):
-    for k, v in vars(form_btax_input).items():
+    for k, v in list(vars(form_btax_input).items()):
         if any(token in k for token in ('gds', 'ads', 'tax')):
             setattr(getattr(form_btax_input, k), 'value', make_bool(v))
     return form_btax_input
@@ -102,15 +99,19 @@ def btax_results(request):
     """
     no_inputs = False
     start_year = START_YEAR
-    REQUEST = request.REQUEST
     if request.method=='POST':
-        print 'POST'
+        print('method=POST get', request.GET)
+        print('method=POST post', request.POST)
         # Client is attempting to send inputs, validate as form data
         # Need need to the pull the start_year out of the query string
         # to properly set up the Form
         has_errors = make_bool(request.POST['has_errors'])
-        start_year = REQUEST['start_year']
-        fields = dict(REQUEST)
+        fields = dict(request.GET)
+        fields.update(dict(request.POST))
+        fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
+        start_year = fields.get('start_year', START_YEAR)
+        # TODO: migrate first_year to start_year to get rid of weird stuff like
+        # this
         fields['first_year'] = fields['start_year']
         btax_inputs = BTaxExemptionForm(start_year, fields)
         btax_inputs = make_bool_gds_ads(btax_inputs)
@@ -124,7 +125,7 @@ def btax_results(request):
         # time
 
         if btax_inputs.is_valid() or has_errors:
-            print 'is valid'
+            print('is valid')
             stored_errors = None
             if has_errors and btax_inputs.errors:
                 msg = ("Form has validation errors, but allowing the user "
@@ -148,13 +149,13 @@ def btax_results(request):
             # prepare taxcalc params from BTaxSaveInputs model
             curr_dict = dict(model.__dict__)
 
-            for key, value in curr_dict.items():
-                if type(value) == type(unicode()):
+            for key, value in list(curr_dict.items()):
+                if type(value) == type(str()):
                     curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
                 else:
-                    print "missing this: ", key
+                    print("missing this: ", key)
 
-            worker_data = {k:v for k, v in curr_dict.items() if not (v == [] or v == None)}
+            worker_data = {k:v for k, v in list(curr_dict.items()) if not (v == [] or v == None)}
 
             #Non corp entity fix up:
             if 'btax_betr_pass' not in worker_data:
@@ -164,15 +165,15 @@ def btax_results(request):
             ip = get_real_ip(request)
             if ip is not None:
                 # we have a real, public ip address for user
-                print "BEGIN DROPQ WORK FROM: ", ip
+                print("BEGIN DROPQ WORK FROM: ", ip)
             else:
                 # we don't have a real, public ip address for user
-                print "BEGIN DROPQ WORK FROM: unknown IP"
+                print("BEGIN DROPQ WORK FROM: unknown IP")
 
             # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data)
+            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data, start_year)
 
-            print 'submitted_ids', submitted_ids, max_q_length
+            print('submitted_ids', submitted_ids, max_q_length)
             if not submitted_ids:
                 no_inputs = True
                 form_btax_input = btax_inputs
@@ -208,12 +209,13 @@ def btax_results(request):
                 return redirect(unique_url)
 
         else:
-            print 'invalid inputs'
+            print('invalid inputs')
             # received POST but invalid results, return to form with errors
             form_btax_input = btax_inputs
 
     else:
-        print 'GET'
+        print('method=GET get', request.GET)
+        print('method=GET post', request.POST)
         params = parse_qs(urlparse(request.build_absolute_uri()).query)
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
@@ -221,8 +223,7 @@ def btax_results(request):
         # Probably a GET request, load a default form
         form_btax_input = BTaxExemptionForm(first_year=start_year)
 
-    btax_default_params = get_btax_defaults()
-
+    btax_default_params = get_btax_defaults(start_year)
     has_errors = False
     if has_field_errors(form_btax_input):
         msg = ("Some fields have errors. Values outside of suggested ranges "
@@ -232,6 +233,7 @@ def btax_results(request):
     asset_yr_str = ["3", "5", "7", "10", "15", "20", "25", "27_5", "39"]
     form_btax_input = make_bool_gds_ads(form_btax_input)
     hover_notes = hover_args_to_btax_depr()
+
     init_context = {
         'form': form_btax_input,
         'make_bool':  make_bool,
@@ -263,7 +265,7 @@ def edit_btax_results(request, pk):
     except:
         raise Http404
 
-    model = BTaxSaveInputs.objects.get(pk=url.model_pk)
+    model = url.unique_inputs
     start_year = model.first_year
     #Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
@@ -354,19 +356,33 @@ def output_detail(request, pk):
 
     model = url.unique_inputs
     if model.tax_result:
-        exp_num_minutes = 0.25
-        JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
-
-        tables = url.unique_inputs.tax_result[0]
-        first_year = url.unique_inputs.first_year
-        created_on = url.unique_inputs.creation_date
-        tables["tooltips"] = {
-            "metr": METR_TOOLTIP,
-            "mettr": METTR_TOOLTIP,
-            "coc": COC_TOOLTIP,
-            "dprc": DPRC_TOOLTIP,
-        }
-        bubble_js, bubble_div, cdn_js, cdn_css, widget_js, widget_css = bubble_plot_tabs(model.tax_result[0]['dataframes'])
+        # try to render table; if failure render not available page
+        try:
+            exp_num_minutes = 0.25
+            # JsonResponse({'eta': exp_num_minutes, 'wait_interval': 15000}, status=202)
+            tax_result = url.unique_inputs.tax_result
+            tables = json.loads(tax_result)[0]
+            first_year = url.unique_inputs.first_year
+            created_on = url.unique_inputs.creation_date
+            tables["tooltips"] = {
+                "metr": METR_TOOLTIP,
+                "mettr": METTR_TOOLTIP,
+                "coc": COC_TOOLTIP,
+                "dprc": DPRC_TOOLTIP,
+            }
+            bubble_js, bubble_div, cdn_js, cdn_css, widget_js, widget_css = bubble_plot_tabs(tables['dataframes'])
+        except Exception as e:
+            print('Exception rendering pk', pk, e)
+            traceback.print_exc()
+            edit_href = '/ccc/edit/{}/?start_year={}'.format(
+                pk,
+                model.first_year or START_YEAR  # sometimes first_year is None
+            )
+            print('edit_href', edit_href, pk, model.first_year)
+            not_avail_context = dict(edit_href=edit_href,
+                                     is_btax=True,
+                                     **context_vers_disp)
+            return render(request, 'btax/not_avail.html', not_avail_context)
 
         inputs = url.unique_inputs
         is_registered = True if request.user.is_authenticated() else False
@@ -389,7 +405,10 @@ def output_detail(request, pk):
         return render(request, 'btax/results.html', context)
 
     else:
-
+        if not model.check_hostnames(BTAX_WORKERS):
+            print('bad hostname', model.jobs_not_ready, BTAX_WORKERS)
+            return render_to_response('taxbrain/failed.html',
+                                      context={'is_btax': True})
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
@@ -400,7 +419,7 @@ def output_detail(request, pk):
         try:
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
         except JobFailError as jfe:
-            print jfe
+            print(jfe)
             return render_to_response('taxbrain/failed.html',
                                      context={'is_btax': True})
 
@@ -419,10 +438,10 @@ def output_detail(request, pk):
 
 
         if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.btax_get_results(normalize(job_ids))
-
+            tax_result = dropq_compute.btax_get_results(normalize(job_ids))
+            model.tax_result = json.dumps(tax_result)
             model.creation_date = datetime.datetime.now()
-            print 'ready'
+            print('ready')
             model.save()
             return redirect(url)
         else:
@@ -430,7 +449,7 @@ def output_detail(request, pk):
                                 zip(jobs_to_check, jobs_ready) if not job_ready == 'YES']
             jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
-            print 'not ready', jobs_not_ready
+            print('not ready', jobs_not_ready)
             model.save()
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
@@ -447,7 +466,7 @@ def output_detail(request, pk):
                     return JsonResponse({'eta': exp_num_minutes,'wait_interval': 7000}, status=200)
 
             else:
-                print "rendering not ready yet"
+                print("rendering not ready yet")
                 context = {'eta': '100', 'is_btax': True, 'wait_interval': 7000}
                 context.update(context_vers_disp)
                 return render_to_response('btax/not_ready.html', context,

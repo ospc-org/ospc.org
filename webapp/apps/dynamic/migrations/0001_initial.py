@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models, migrations
 import datetime
-import jsonfield.fields
 from django.conf import settings
-import uuidfield.fields
+import uuid
 import webapp.apps.taxbrain.models
 
 
@@ -21,7 +20,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('model_pk', models.IntegerField(default=None, null=True)),
-                ('uuid', uuidfield.fields.UUIDField(null=True, default=None, editable=False, max_length=32, blank=True, unique=True)),
+                ('uuid', models.UUIDField(null=True, default=None, editable=False, max_length=32, blank=True, unique=True)),
                 ('ogusa_vers', models.CharField(default=None, max_length=50, null=True, blank=True)),
             ],
         ),
@@ -35,7 +34,7 @@ class Migration(migrations.Migration):
                 ('upsilon_cpi', models.NullBooleanField(default=None)),
                 ('job_ids', webapp.apps.taxbrain.models.SeparatedValuesField(default=None, null=True, blank=True)),
                 ('first_year', models.IntegerField(default=None, null=True)),
-                ('tax_result', jsonfield.fields.JSONField(default=None, null=True, blank=True)),
+                ('tax_result', models.TextField(default=None, null=True, blank=True)),
                 ('creation_date', models.DateTimeField(default=datetime.datetime(2015, 1, 1, 0, 0))),
             ],
             options={

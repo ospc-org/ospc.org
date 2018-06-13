@@ -12,8 +12,9 @@ MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-from ..taxbrain.helpers import TaxCalcParam, package_up_vars, default_taxcalc_data
-from ..taxbrain.compute import ELASTIC_RESULTS_TOTAL_ROW_KEYS
+from ..taxbrain.helpers import package_up_vars, default_taxcalc_data
+from ..taxbrain.param_displayers import TaxCalcParam
+from ..taxbrain.compute import GDP_ELAST_ROW_NAMES
 from django.core.mail import send_mail
 import requests
 from requests.exceptions import Timeout, RequestException
@@ -29,9 +30,9 @@ OGUSA_RESULTS_TOTAL_ROW_KEYS  = ['GDP', 'Consumption', 'Investment', 'Hours Work
     'Wages', 'Interest Rates', 'Total Taxes']
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
-ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in ELASTIC_RESULTS_TOTAL_ROW_KEYS}
-ELASTIC_RESULTS_TABLE_LABELS = {
-        'elasticity_gdp': 'Elasticity of GDP wrt 1 - Average Marginal Tax Rate'
+GDP_ELAST_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in GDP_ELAST_ROW_NAMES}
+GDP_ELAST_RESULTS_TABLE_LABELS = {
+        'elasticity_gdp': 'Percentage Change in GDP'
         }
 
 OGUSA_RESULTS_TABLE_LABELS = {
@@ -56,8 +57,8 @@ def string_to_float_array(s):
 
 
 def strip_empty_lists(l):
-    for k, v in l.items():
-        l[k] = v[0] if v == [u''] else v
+    for k, v in list(l.items()):
+        l[k] = v[0] if v == [''] else v
 
 
 def same_version(v1, v2):
@@ -129,7 +130,7 @@ def convert_to_floats(tsi):
             return numberfy_one(x)
 
     attrs = vars(tsi)
-    return {k: numberfy(v) for k, v in attrs.items() if v}
+    return {k: numberfy(v) for k, v in list(attrs.items()) if v}
 
 
 def default_behavior_parameters(first_budget_year):
@@ -139,7 +140,7 @@ def default_behavior_parameters(first_budget_year):
                                                         metadata=True,
                                                         start_year=first_budget_year)
 
-    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.iteritems():
+    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
         param = TaxCalcParam(k,v, first_budget_year)
         default_behavior_params[param.nice_id] = param
 
@@ -162,9 +163,9 @@ def default_elasticity_parameters(first_budget_year):
                          'description': adj_descr,
                          'irs_ref':'', 'notes':''}
 
-    ELASTICITY_DEFAULT_PARAMS_JSON = {'elastic_gdp': elasticity_of_gdp}
+    GDP_ELAST_DEFAULT_PARAMS_JSON = {'elastic_gdp': elasticity_of_gdp}
 
-    for k,v in ELASTICITY_DEFAULT_PARAMS_JSON.iteritems():
+    for k,v in GDP_ELAST_DEFAULT_PARAMS_JSON.items():
         param = TaxCalcParam(k,v, first_budget_year)
         default_elasticity_params[param.nice_id] = param
 
@@ -179,7 +180,7 @@ def default_parameters(first_budget_year):
         OGUSA_DEFAULT_PARAMS_JSON = json.load(f)
 
     default_ogusa_params = {}
-    for k,v in OGUSA_DEFAULT_PARAMS_JSON.iteritems():
+    for k,v in OGUSA_DEFAULT_PARAMS_JSON.items():
         #TaxCalcParams expect list
         if 'value' in v:
             v['value'] = [v['value']]
@@ -204,9 +205,9 @@ def filter_ogusa_only(user_values):
 
     unused_names = ['first_year', 'creation_date', '_state', 'id', 'user_email']
 
-    for k, v in user_values.items():
+    for k, v in list(user_values.items()):
         if k in unused_names:
-            print "Removing ", k, v
+            print("Removing ", k, v)
             del user_values[k]
         else:
             user_values[k] = float(v)
@@ -260,7 +261,7 @@ def dynamic_params_from_model(model):
 
     params = {k:inputs[k] for k in USER_MODIFIABLE_PARAMS}
 
-    for k, v in params.items():
+    for k, v in list(params.items()):
         if v == '':
             params[k] = str(OGUSA_PARAMS[k]['value'])
 
@@ -327,15 +328,15 @@ def elast_results_to_tables(results, first_budget_year):
     for table_id in results:
 
         if table_id == 'elasticity_gdp':
-            row_keys = ELASTIC_RESULTS_TOTAL_ROW_KEYS
-            row_labels = ELASTIC_RESULTS_TOTAL_ROW_KEY_LABELS
+            row_keys = GDP_ELAST_ROW_NAMES
+            row_labels = GDP_ELAST_ROW_KEY_LABELS
             col_labels = years
             col_formats = [ [1, '%', 1] for y in col_labels]
 
             table_data = results[table_id]
             #Displaying as a percentage, so multiply by 100
-            for k, v in table_data.iteritems():
-                table_data[k] = list(map(str, map(format_float_values, v)))
+            for k, v in table_data.items():
+                table_data[k] = list(map(str, list(map(format_float_values, v))))
             multi_year_cells = False
 
         else:
@@ -344,7 +345,7 @@ def elast_results_to_tables(results, first_budget_year):
         table = {
             'col_labels': col_labels,
             'cols': [],
-            'label': ELASTIC_RESULTS_TABLE_LABELS[table_id],
+            'label': GDP_ELAST_RESULTS_TABLE_LABELS[table_id],
             'rows': [],
             'multi_valued': multi_year_cells
         }
@@ -423,8 +424,8 @@ def ogusa_results_to_tables(results, first_budget_year):
 
             table_data = results[table_id]
             #Displaying as a percentage, so multiply by 100
-            for k, v in table_data.iteritems():
-                table_data[k] = list(map(str, map(lambda x: 100.*x, map(float, v))))
+            for k, v in table_data.items():
+                table_data[k] = list(map(str, [100.*x for x in list(map(float, v))]))
             multi_year_cells = False
 
         else:

@@ -1,22 +1,19 @@
-Django==1.8.2
+Django==1.9
 argparse==1.2.1
 dj-database-url==0.3.0
 dj-static==0.0.6
 django-toolbelt==0.0.1
 waitress
 static3==0.5.1
-wsgiref==0.1.2
 -e git+https://github.com/funkybob/django-flatblocks.git#egg=django-flatblocks
 sendgrid-django
 psycopg2>=2.5.4
 django-user-accounts
 django-uuidfield==0.5.0
-django-queryset-csv==0.2.10
-newrelic==2.58.2.45
+newrelic
 pdfkit==0.4.1
 django-hermes
 mock
-jsonfield
 eventlet
 django-debug-toolbar==1.2.1
 django_import_export
@@ -27,3 +24,6 @@ boto
 django-storages
 django-htmlmin
 pyparsing
+python-dateutil
+toolz
+whitenoise

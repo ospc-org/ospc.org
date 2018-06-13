@@ -14,10 +14,10 @@
         data-target="#{{ title|make_id }}-collapse"
         aria-expanded="false"
         aria-controls="{{ title|make_id }}-collapse">
-        <span class="glyphicon glyphicon-plus" style="font-size:2em; margin-bottom:5px"></span>
+        <span class="glyphicon glyphicon-minus" style="font-size:2em; margin-bottom:5px"></span>
       </button>
     </div>
-    <div class="collapse" id="{{ title|make_id }}-collapse">
+    <div class="collapse in" id="{{ title|make_id }}-collapse">
       {% for field in param %}
         {% for name, param_object in field.items %}
           {% if param_object.name %}
@@ -34,7 +34,6 @@
         {% endfor %}
       {% endfor %}
     </div>
-    {% flatblock "taxbrain_payroll_blurb" %}
     {% block section_warnings %}{% endblock %}
   </div>
 

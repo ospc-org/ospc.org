@@ -1,0 +1,6 @@
+// throws warning but not error
+{
+    "policy": {
+        "_STD_single": {"2020": [1000]}
+    }
+}

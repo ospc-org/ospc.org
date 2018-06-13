@@ -1,14 +1,19 @@
-from __future__ import print_function
+
 from django import forms
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 from pyparsing import ParseException
+import six
+import json
+
+from ..constants import START_YEAR
 
 from .models import TaxSaveInputs
-from .helpers import (TaxCalcField, TaxCalcParam, default_policy, is_number,
+from .helpers import (is_number,
                       int_to_nth, is_string, string_to_float_array, check_wildcards,
                       default_taxcalc_data, expand_list, propagate_user_list,
-                      convert_val, INPUT)
+                      convert_val, INPUT, INPUTS_META)
+from .param_displayers import TaxCalcField, TaxCalcParam, default_policy
 import taxcalc
 
 
@@ -74,157 +79,178 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
 
 
 
-TAXCALC_DEFAULTS_2016 = default_policy(2016)
+class PolicyBrainForm:
 
-
-class PersonalExemptionForm(ModelForm):
-
-    def __init__(self, first_year, *args, **kwargs):
-        self._first_year = int(first_year)
-        self._default_params = default_policy(self._first_year)
-
-        self._default_meta = default_taxcalc_data(taxcalc.policy.Policy,
-                               start_year=self._first_year, metadata=True)
-
-
-        self._default_taxcalc_data = default_taxcalc_data(taxcalc.policy.Policy,
-                                         start_year=self._first_year)
-        # Defaults are set in the Meta, but we need to swap
-        # those outs here in the init because the user may
-        # have chosen a different start year
-        all_defaults = []
-        for param in self._default_params.values():
-            for field in param.col_fields:
-                all_defaults.append((field.id, field.default_value))
-
-        for _id, default in all_defaults:
-            self._meta.widgets[_id].attrs['placeholder'] = default
-
-        # If a stored instance is passed,
-        # set CPI flags based on the values in this instance
-        if 'instance' in kwargs:
-            instance = kwargs['instance']
-            cpi_flags = [attr for attr in dir(instance) if attr.endswith('_cpi')]
-            for flag in cpi_flags:
-                if getattr(instance, flag) is not None and flag in self._meta.widgets:
-                    self._meta.widgets[flag].attrs['placeholder'] = getattr(instance, flag)
-
-        super(PersonalExemptionForm, self).__init__(*args, **kwargs)
-
-    def discover_cpi_flag(self, param, user_values):
-        ''' Helper function to discover the CPI setting for this parameter'''
-
-        cpi_flag_from_user = user_values.get(param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get("_" + param + "_cpi", None)
-        if cpi_flag_from_user is None:
-            cpi_flag_from_user = user_values.get(param[1:] + "_cpi", None)
-
-        if cpi_flag_from_user is None:
-            attrs = self._default_meta[param]
-            cpi_flag = attrs.get('cpi_inflated', False)
-        else:
-            cpi_flag = cpi_flag_from_user
-        return cpi_flag
-
-    def get_comp_data(self, comp_key, param_id, col, param_values):
-        """
-        Get the data necessary for a min/max validation comparison, given:
-            param_id - The webapp-internal TC parameter ID
-            col - The column number for the param
-            comp_key - a key that is either:
-               * a static value
-               * the word 'default' - we should use the field's defaults
-               * the name of another param - we should use that param's
-                 corresponding column field. If values have been submitted for
-                 it, use them. Otherwise use its defaults
-             param_values - either user supplied or default values of the
-                            parameter
-
-        After finding the proper data, expand it to the required length.
-        Either the parameter specified by comp_key, or the parameter referred
-        by param_id may need to be extended and have wildcard entries
-        replaced.
-
-        Returns: dict
-                 'source': text for error reporting
-                 'comp_data': a sequence of values associated with param
-                 'epx_col_values': a (possibly) expanded set of column values
-                                   for comparison against comp_data
-        """
-
-        len_param_values = len(param_values)
-        param_name = "_" + param_id
-        param_column_name = param_name + "_" + str(col)
-
-        if is_number(comp_key):
-            source = "the static value"
-            new_len = len_param_values
-            comp_data = [comp_key]
-            len_diff = len_param_values - len(comp_data)
-            # No inflation of static values, just repeat
-            if len_diff > 0:
-                comp_data += [comp_data[-1]] * len_diff
-            col_values = param_values
-
-        elif comp_key == 'default':
-            source = "this field's default"
-            new_len = len_param_values
-            # Grab the default values and expand if necessary
-            base_param = self._default_params[param_id]
-            base_col = base_param.col_fields[col]
-            comp_data = base_col.values
-            len_diff = len_param_values - len(comp_data)
-            if len_diff > 0:
-                new_data = expand_unless_empty(comp_data, param_name,
-                                   param_column_name, self, new_len)
-                comp_data = new_data
-            col_values = param_values
-
-        elif comp_key in self._default_params:
-            # Comparing two parameters against each other, either of
-            # which might be expanded and have wildcards
-            other_param = self._default_params[comp_key]
-            other_col = other_param.col_fields[col]
-            other_values = None
-            other_param_name = parameter_name(other_col.id)
-            other_param_column_name = other_col.id
-            new_len = len_param_values
-
-            if other_col.id in self.cleaned_data:
-                other_values_raw = self.cleaned_data[other_col.id]
-                try:
-                    other_values = string_to_float_array(other_values_raw)
-                    new_len = max(len_param_values, len(other_values))
-                    other_values = expand_unless_empty(other_values, other_param_name,
-                                            other_param_column_name, self,
-                                            new_len)
-
-                except ValueError as ve:
-                    # Assume wildcards here
-                    other_values_list = other_values_raw.split(',')
-                    new_len = max(len_param_values, len(other_values_list))
-                    other_values = expand_unless_empty(other_values_list, other_param_name,
-                                        other_param_column_name, self,
-                                        new_len)
-
-            if other_values:
-                comp_data = other_values
-                source = other_param.name + "'s value"
+    def add_fields(self, args):
+        if not args:
+            return args
+        parsed_data = {}
+        args_data = args[0]
+        raw_fields = {}
+        for k, v in list(args_data.items()):
+            if k not in INPUTS_META:
+                raw_fields[k] = v
+            elif k in ('first_year', 'data_source'):
+                parsed_data[k] = v
             else:
-                other_defaults = other_col.values
-                comp_data = expand_unless_empty(other_defaults, other_param_name,
-                                   other_param_column_name, self, new_len)
-                source = other_param.name + "'s default"
-            col_values = expand_unless_empty(param_values, param_name, param_column_name, self, new_len)
-        else:
-            raise ValueError('Unknown comp keyword "{0}"'.format(comp_key))
+                pass
+        parsed_data["raw_input_fields"] = json.dumps(raw_fields)
+        parsed_data["input_fields"] = json.dumps("")
+        return (parsed_data,)
 
-        if len(comp_data) < 1:
-            raise ValueError('No comparison data found for kw'.format(comp_key))
+    def add_errors_on_extra_inputs(self):
+        ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken',
+                          'data_source'}
+        all_inputs = set(self.data.keys())
+        allowed_inputs= set(self.fields.keys())
+        extra_inputs = all_inputs - allowed_inputs - ALLOWED_EXTRAS
+        for _input in extra_inputs:
+            self.add_error(None, "Extra input '{0}' not allowed".format(_input))
 
-        assert len(comp_data) == len(col_values)
-        return {'source': source, 'comp_data': comp_data, 'exp_col_values': col_values}
+    def do_taxcalc_validations(self):
+        """
+        Do minimal type checking to make sure that we did not get any
+        malicious input
+        """
+        fields = self.cleaned_data['raw_input_fields']
+        for param_name, value in fields.items():
+            # make sure the text parses OK
+            if param_name == 'data_source':
+                assert value in ('CPS', 'PUF')
+            elif isinstance(value, six.string_types) and len(value) > 0:
+                try:
+                    INPUT.parseString(value)
+                except (ParseException, AssertionError):
+                    # Parse Error - we don't recognize what they gave us
+                    self.add_error(param_name, "Unrecognized value: {}".format(value))
+                try:
+                    # reverse character is not at the beginning
+                    assert value.find('<') <= 0
+                except AssertionError:
+                    self.add_error(
+                        param_name,
+                        ("Operator '<' can only be used "
+                         "at the beginning")
+                    )
+            else:
+                assert isinstance(value, bool) or len(value) == 0
+
+    @staticmethod
+    def set_form(defaults):
+        """
+        Setup all of the form fields and widgets with the the 2016 default data
+        """
+        widgets = {}
+        labels = {}
+        update_fields = {}
+        boolean_fields = []
+
+        for param in list(defaults.values()):
+            for field in param.col_fields:
+                attrs = {
+                    'class': 'form-control',
+                    'placeholder': field.default_value,
+                }
+                if param.coming_soon:
+                    attrs['disabled'] = True
+
+                if param.tc_id in boolean_fields:
+                    checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                    widgets[field.id] = checkbox
+                    update_fields[field.id] = forms.BooleanField(
+                        label=field.label,
+                        widget=widgets[field.id],
+                        required=False,
+                        disabled=param.gray_out
+                    )
+                else:
+                    widgets[field.id] = forms.TextInput(attrs=attrs)
+                    update_fields[field.id] = forms.fields.CharField(
+                        label=field.label,
+                        widget=widgets[field.id],
+                        required=False,
+                        disabled=param.gray_out
+                    )
+
+                labels[field.id] = field.label
+
+            if getattr(param, "inflatable", False):
+                field = param.cpi_field
+                attrs = {
+                    'class': 'form-control sr-only',
+                    'placeholder': bool(field.default_value),
+                }
+
+                widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
+                update_fields[field.id] = forms.NullBooleanField(
+                    label=field.label,
+                    widget=widgets[field.id],
+                    required=False,
+                    disabled=param.gray_out
+                )
+        return widgets, labels, update_fields
+
+
+TAXCALC_DEFAULTS = {
+    (int(START_YEAR), True): default_policy(int(START_YEAR),
+                                            use_puf_not_cps=True)
+}
+
+
+class TaxBrainForm(PolicyBrainForm, ModelForm):
+
+    def __init__(self, first_year, use_puf_not_cps, *args, **kwargs):
+        # the start year and the data source form object for later access.
+        # This should be refactored into `process_model`
+        if first_year is None:
+            first_year = START_YEAR
+        self._first_year = int(first_year)
+
+        # reset form data; form data from the `Meta` class is not updated each
+        # time a new `TaxBrainForm` instance is created
+        self.set_form_data(self._first_year, use_puf_not_cps)
+        # move parameter fields into `raw_fields` JSON object
+        args = self.add_fields(args)
+        # Override `initial` with `instance`. The only relevant field
+        # in `instance` is `raw_input_fields` which contains all of the user
+        # input data from the stored run. By overriding the `initial` kw
+        # argument we are making all of the user input from the previous run
+        # as stored in the `raw_input_fields` field of `instance` available
+        # to the fields attribute in django forms. This front-end data is
+        # derived from this fields attribute.
+        # Take a look at the source code for more info:
+        # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
+        if "instance" in kwargs:
+            kwargs["initial"] = kwargs["instance"].raw_input_fields
+
+        # Update CPI flags if either
+        # 1. initial is specified in `kwargs` (reform has warning/error msgs)
+        # 2. if `instance` is specified and `initial` is added above
+        #    (edit parameters page)
+        if kwargs.get("initial", False):
+            for k, v in kwargs["initial"].items():
+                if k.endswith("cpi") and v:
+                    # raw data is stored as choices 1, 2, 3 with the following
+                    # mapping:
+                    #     '1': unknown
+                    #     '2': True
+                    #     '3': False
+                    # value_from_datadict unpacks this data:
+                    # https://github.com/django/django/blob/1.9/django/forms/widgets.py#L582-L589
+                    if v == '1':
+                        continue
+                    django_val = self.widgets[k].value_from_datadict(
+                        kwargs["initial"],
+                        None,
+                        k
+                    )
+                    self.widgets[k].attrs["placeholder"] = django_val
+
+        super(TaxBrainForm, self).__init__(*args, **kwargs)
+
+        # update fields in a similar way as
+        # https://www.pydanny.com/overloading-form-fields.html
+        self.fields.update(self.update_fields.copy())
 
     def clean(self):
         """
@@ -240,95 +266,41 @@ class PersonalExemptionForm(ModelForm):
         self.do_taxcalc_validations()
         self.add_errors_on_extra_inputs()
 
-    def add_errors_on_extra_inputs(self):
-        ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken'}
-        all_inputs = set(self.data.keys())
-        allowed_inputs= set(self.fields.keys())
-        extra_inputs = all_inputs - allowed_inputs - ALLOWED_EXTRAS
-        for _input in extra_inputs:
-            self.add_error(None, "Extra input '{0}' not allowed".format(_input))
-
-    def do_taxcalc_validations(self):
+    def add_error(self, field, error):
         """
-        Run the validations specified by Taxcalc's param definitions
-
-        Each parameter can be assigned a min and a max, the value of which can
-        be statically defined or determined dynamically via a keyword.
-
-        Keywords correlate to submitted value array for a different parameter,
-        or to the default value array for the validated field.
-
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        Safely adds errors. There was an issue where the `cleaned_data`
+        attribute wasn't created after `is_valid` was called. This ensures
+        that the `cleaned_data` attribute is there.
         """
+        if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
+            self.cleaned_data = {}
+        ModelForm.add_error(self, field, error)
 
-        for param_id, param in self._default_params.iteritems():
-            if param.coming_soon or param.hidden:
-                continue
-
-            # First make sure the text parses OK
-            BOOLEAN_FLAGS = (u'True', u'False')
-            for col, col_field in enumerate(param.col_fields):
-                if col_field.id not in self.cleaned_data:
-                    continue
-
-                submitted_col_values_raw = self.cleaned_data[col_field.id]
-
-                if len(submitted_col_values_raw) > 0 and submitted_col_values_raw not in BOOLEAN_FLAGS:
-                    try:
-                        INPUT.parseString(submitted_col_values_raw)
-                    except ParseException as pe:
-                        # Parse Error - we don't recognize what they gave us
-                        self.add_error(col_field.id, "Unrecognized value: {}".format(submitted_col_values_raw))
+    def set_form_data(self, start_year, use_puf_not_cps):
+        defaults_key = (start_year, use_puf_not_cps)
+        if defaults_key not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[defaults_key] = default_policy(start_year, use_puf_not_cps)
+        defaults = TAXCALC_DEFAULTS[defaults_key]
+        (self.widgets, self.labels,
+            self.update_fields) = PolicyBrainForm.set_form(defaults)
 
     class Meta:
         model = TaxSaveInputs
-        exclude = ['creation_date']
-        widgets = {}
-        labels = {}
-        boolean_fields = [
-            "_ID_BenefitSurtax_Switch",
-            "_ID_BenefitCap_Switch",
-            "_ALD_InvInc_ec_base_RyanBrady",
-            "_NIIT_PT_taxed",
-            "_CG_nodiff",
-            "_EITC_indiv",
-            "_CTC_new_refund_limited",
-            "_II_no_em_nu18",
-        ]
-
-        for param in TAXCALC_DEFAULTS_2016.values():
-            for field in param.col_fields:
-                attrs = {
-                    'class': 'form-control',
-                    'placeholder': field.default_value,
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
-                if param.tc_id in boolean_fields:
-                    checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
-                    widgets[field.id] = checkbox
-                else:
-                    widgets[field.id] = forms.TextInput(attrs=attrs)
-
-                labels[field.id] = field.label
-
-            if param.inflatable:
-                field = param.cpi_field
-                attrs = {
-                    'class': 'form-control sr-only',
-                    'placeholder': bool(field.default_value),
-                }
-
-                if param.coming_soon:
-                    attrs['disabled'] = True
-
-                widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
-
+        # we are only updating the "first_year", "raw_fields", and "fields"
+        # fields
+        fields = ['first_year', 'data_source', 'raw_input_fields',
+                  'input_fields']
+        start_year = int(START_YEAR)
+        defaults_key = (start_year, True)
+        if defaults_key not in TAXCALC_DEFAULTS:
+            TAXCALC_DEFAULTS[defaults_key] = default_policy(
+                start_year,
+                use_puf_not_cps=True
+            )
+        (widgets, labels,
+            update_fields) = PolicyBrainForm.set_form(
+            TAXCALC_DEFAULTS[defaults_key]
+        )
 
 def has_field_errors(form, include_parse_errors=False):
     """

@@ -1,0 +1,289 @@
+PolicyBrain RELEASE HISTORY
+==============================
+Go
+[here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
+for a complete commit history.
+
+Release 1.6.0 on 2018-06-??
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#884](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/884) - Add Docker documentation and update local development setup documentaion - Hank Doupe
+- [#886](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/886) - Convert to Python 3 - Hank Doupe
+- [#887](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/887) - Upgrade to Tax-Calculator 0.19.+ - Hank Doupe
+- [#888](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/888) - Remove no longer used gevent script - Hank Doupe
+- [#889](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/889) - Use heroku container registry to deploy the webapp - Hank Doupe
+- [#891](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/891) - Add formatting to warn/error messge banner - Hank Doupe
+
+**Bug Fixes**
+- [#882](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/882) - Check hostnames to make sure they are current before pinging them (applied as hot fix) - Hank Doupe
+- [#893](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/893) - Quick dynamic app parameter fixes - Hank Doupe
+- [#895](ttps://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/895) - Rename CNN.jpg to cnn.jpg so CSS can find it - Hank Doupe
+
+Release 1.5.1 on 2018-03-30
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#879](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/879) - Add back static files - Hank Doupe
+
+Release 1.5.0 on 2018-03-30
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#830](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/830) - Add database docs - Hank Doupe
+- [#832](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/832) - Containerize worker nodes - Hank Doupe
+- [#835](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/835) - Add button to allow CPS as input data source - Sean Wang, Anderson Frailey, and Hank Doupe
+- [#842](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Gray out fields based on data-source selection - Hank Doupe and Sean Wang
+- [#847](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/847) - Adds data source to file input page, refactors reform submission, and improves tests - Hank Doupe
+- [#848](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/848) - Add missing variables to distribution table (with update to TC 0.17.0) - Sean Wang and Hank Doupe
+- [#849](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/849) - Add CCC start year drop-down - Hank Doupe
+- [#854](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/854) - Change "About _ remaining" to "Estimated time remaining: _ " - Max Ghenis
+- [#856](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/856) - Add link to data document - Anderson Frailey
+- [#857](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Update link to CCC guide - Jason DeBacker
+- [#863](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/863) - Updates job time and adds version to docker files - Hank Doupe
+- [#867](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/857) - Display parameter data type as indicated by Tax-Calculator specifications - Hank Doupe
+- [#871](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/871) - Change Data Related Text - Anderson Frailey
+- [#872](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/872) - Change Dropdown Order - Anderson Frailey
+- [#877](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/877) - Update to Tax-Calculator 0.18.0 - Hank Doupe
+
+**Bug Fixes**
+- [#844](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/842) - Pass start year to dynamic behavioral - Hank Doupe
+- [#851](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/851) - Update update CSV builder test labels and un-xfail the CSV test - Hank Doupe
+- [#860](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/860) - Restore "Print" button for elasticity output page - Sean Wang
+- [#865](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/865) - Extend tests and fix warning/error handling regression - Hank Doupe
+- [#868](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/868) - Remove special processing for AMT parameters - Hank Doupe
+- [#870](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/870) - Update RELEASES.md and increase compute time to 100 seconds - Hank Doupe
+- [#874](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/874) - Add special HTML pages for when a model result is not found or is incompatible - Sean Wang
+- [#875](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/875) - Back-end for not_avail.html page - Hank Doupe
+- [#876](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/876) - Use current default start year if start year was not saved - Hank Doupe
+
+Release 1.4.4 on 2018-03-08
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#840](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/840) - Add column ID's back to PolicyBrain - Hank Doupe
+
+Release 1.4.3 on 2018-03-07
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#834](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/834) - Remove presets and add notice/explanation - Hank Doupe
+
+**Bug Fixes**
+- None
+
+Release 1.4.2 on 2018-03-01
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#827](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/827) - Remove errors for un-displayed parameters and save input data for warning/error message page - Hank Doupe
+- [#829](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/829) - Generate new form data for each page load - Hank Doupe
+
+Release 1.4.1 on 2018-02-27
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#826](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/826) - Update deployment process to use conda/pip instead of cloning github repos - Hank Doupe
+
+Release 1.4.0 on 2018-02-26
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#798](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/798) - Add examples for get_default_policy_param_name - Hank Doupe
+- [#800](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/800) - Refactor warning/error parsing - Hank Doupe
+- [#808](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/808) - Upgrade to Tax-Calculator 0.15.0 - Hank Doupe
+- [#809](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/809) - Add Legend to Bubble Plot - Anderson Frailey
+- [#810](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/810) - Small changes to .gitignore and install script - Ben Bolte
+- [#822](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/822) - Update to Django 1.9 and store parameters as JSON object - Hank Doupe
+
+**Bug Fixes**
+- [#797](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/797) - Remove Expanded-Income/or/Adjusted-Income row buttons - Sean Wang
+- [#799](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/799) - .travis.yml update to fix build errors - Hank Doupe
+- [#807](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/807) - Fix "Vizualization" typo in Gallery - Max Ghenis
+- [#814](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/814) - Resolve more backwards compatibility issues related to old taxcalc tables - Hank Doupe
+- [#818](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/818) - Changed all instances of TJ Alumbaugh's email address - Ben Bolte
+- [#824](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/824) - Resolve edit-parameter page backwards compatibility bugs - Hank Doupe
+
+Release 1.3.0 on 2017-12-23
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#778](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/778) - Upgrade to Tax-Calculator 0.14.1 - Hank Doupe
+- [#781](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/781) - Add CNN to media coverage - Sean Wang
+- [#782](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/782) - Convert DependentCredit_before_CTC from bool to int - Hank Doupe
+- [#784](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/784) - Update to Tax-Calculator 0.14.2 - Hank Doupe
+- [#788](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/788) - Convert default values for boolean parameters from 1/0 to "True"/"False" - Hank Doupe
+- [#790](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/790) - Add reverse operator - Hank Doupe
+- [#792](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/792) - Add TCJA preset - Hank Doupe
+
+**Bug Fixes**
+- [#741](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/741) - Web page clean ups and bug fixes - Sean Wang
+- [#780](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/780) - Fix buttons disappear after fiscal tables being re-rendered - Sean Wang
+- [#783](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/783) - Removes extra "Total" labels - Hank Doupe
+- [#791](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/791) - Saves start year after warnings are shown for file upload - Hank Doupe
+
+Release 1.2.1 on 2017-12-12
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#762](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#762) - Save submitted JSON files in case of warning messages - Hank Doupe
+- [#774](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#774) - Update to taxcalc 0.14.0+ - Hank Doupe
+
+**Bug Fixes**
+- [#757](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#757) - Make sure ID_AmountCap_Switch param is submitted as 1/0 - Hank Doupe
+- [#759](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#759) - Quick-calc clean up - Hank Doupe
+- [#767](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Add input_type back to context - Hank Doupe and Sean Wang
+- [#776](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#767) - Short-term fix for package pinning - Hank Doupe
+- [#777](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/#777) - Update warning/error messages and description - Hank Doupe
+
+Release 1.2.0 on 2017-11-21
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#738](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/738) - Update to taxcalc 0.13.0+ - Hank Doupe
+- [#739](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/739) - Remove media coverage links and add more medias - Sean Wang
+
+**Bug Fixes**
+- [#742](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/742) - Labels and titles dynamically update and initial loading bug fixed - Haylee Ham
+- [#744](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/744) - Cleanup reform_style removal and 738 migrations - Hank Doupe
+- [#745](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/745) - Collapse in all fields temporarily -- Sean Wang
+- [#748](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/748) - Remove UBI exclude statement - Hank Doupe
+- [#751](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/751) - Change job processing time from 30 to 50 seconds - Hank Doupe
+- [#752](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/752) - Post 738 dynamic sim cleanup - Hank Doupe
+- [#755](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/755) - Fix table label order - Hank Doupe
+
+Release 1.1.1 on 2017-11-04
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#729](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/729) - Fix "news.ospc.org" link bug - Sean Wang
+
+Release 1.1.0 on 2017-11-02
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#684](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/684) - Rename macro elasticity labels and remove dropdown menu in elasticity result page - Sean Wang
+- [#693](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/693) - Create RELEASES.md - Hank Doupe
+- [#694](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/694) - Remove "Excel" output buttons - Sean Wang
+- [#698](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/698) - New content for getting started, about, and nav menu - Jessica Ciarelli
+- [#701](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/701) - Enhance file upload preview - Sean Wang
+- [#702](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/702) - Update README.md - Hank Doupe
+- [#711](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/711) - Migrate private Django Flat blocks to Github - Sean Wang
+- [#713](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/713) - Improvements to Create and Update scripts - Brittain Hard
+- [#715](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/715) - Add Brown-Khanna Gain Act of 2017 preset - Hank Doupe
+- [#724](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/724) - Add CCC video to getting started page - Jessica Ciarelli
+
+**Bug Fixes**
+- [#675](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/675) - Correct build table names for "Copy", "CSV" and "Excel" - Sean Wang
+- [#708](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/708) - Unit test parameter formatters (with bug-fix) - Hank Doupe
+- [#722](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/722) - Fix reverted Macro page changes - Sean Wang
+
+Release 1.0.3 on 2017-10-05
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#655](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/655) – Refactor submit_reform for quick-calc submission case – Hank Doupe
+- [#656](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/656) – Elastic submit bugfix – Hank Doupe
+- [#658](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/658) – Show reform contents when assumption file is not uploaded – Hank Doupe
+- [#665](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/665) – Revert switches from 1/0 to True/False in model – Hank Doupe
+- [#670](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/670) – Fix dynamic simulation button logic for file upload – Hank Doupe
+- [#679](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/679) – Add file input warning/error handling logic – Hank Doupe
+- [#687](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/687) – Bokeh Requirement in Correct File – Brittain Hard
+- [#689](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/689) – Pin Bokeh to 0.12.7 – Hank Doupe
+
+Release 1.0.2 on 2017-08-18
+----------------------------
+
+**User Highlights**
+- **New user-input processing logic.**
+    - Eliminates several input processing bugs. 
+    - T.J. Alumbaugh designed a process in which TaxBrain GUI parameters could more easily be mapped to Tax-Calculator parameters.  Martin Holmer and Hank Doupe implemented this design.
+- **New warning/error messages and logic.**
+    - There are now three outcomes for when a reform is submitted. 
+        1. If the user input does not cause any warnings or errors, then the reform is submitted to the model.
+        2. If the user input causes warnings but not errors, then the warning messages are displayed under the offending parameters.  The user has the option to either submit the reform as is or change the values.  The reform runs as usual either way.  For example, a user reduces the Standard Deduction (STD).  There is nothing illogical about this input, but the user should be aware of Tax-Calculator’s limitations.
+        3. If the user input causes errors and/or warnings, then the user will not be able to run the reform unless they fix the parameters that cause the errors.  Note: Errors are only thrown in cases where the user input is illogical.  For example, the cap for the second personal income tax bracket is set below the cap of the first personal income tax bracket.
+    - Martin Holmer and Hank Doupe coordinated to build this feature. 
+- **New data visualization for the Cost-of-Capital calculator.**
+    - Haylee Ham built a bubble plot feature that enables the user to better visualize the change in the METTR, METR, Cost of Capital, and Depreciation for several tabulations.
+- **Front-end bug-fixes and enhancements**
+    - Brittain Hard and Sean Wang made several contributions including improved labels and functionality for displaying a total in the “TOTAL LIABILITIES BY CALENDAR YEAR (CHANGE)” table
+
+**Technical Highlights**
+- **Two broad improvements in the PolicyBrain code base** introduced by the new user-input processing logic and warning and error message logic:
+    * The code base is simpler which makes it easier to maintain and modify.
+    * The parameter validation is almost entirely done in Tax-Calculator.  This is part of an approach to push more of the model specific work such as parameter validation to the packages that host the model.
+- **PolicyBrain now uses B-Tax 0.1.9** which includes a feature added by Jason DeBacker that enables serialized data frames to be passed to the Cost-of-Capital Calculator.  This gave Haylee Ham access to the data required to create the bubble plot visualization.
+- **The app deployment script was improved** significantly by Brittain Hard.
+
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#583](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/583) – Update README.md – Teodora Szasz
+- [#626](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/626) – Rename “Diagnositic Table” to “Distribution Table” – Sean Wang
+- [#637](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/637) – Handle data from new BTAX Version – Brittain Hard
+- [#642](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/642) – Bubble plot visualization – Haylee Ham
+- [#646](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/646) – Add summary row for table – Brittain Hard
+- [#652](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/652) – Refactor Reset Server Script – Brittain Hard
+
+**Bug Fixes**
+- [#569](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/569) – Add Table Title for Excel Output – Sean Wang
+- [#593](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/593) – File Upload Fixes – Brittain Hard
+- [#599](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/599) – Revert to Tax-Calculator Version 0.9.0 – Brittain Hard
+- [#603](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/603) – Bad syntax in requirements file – Brittain Hard
+- [#611](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/611) – Web Page Clean Up – Sean Wang
+- [#621](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/621) – Change title name for liability table – Sean Wang
+- [#622](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/622) – Remove reference to commit IDs – Hank Doupe
+- [#623](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/623) – Modify row labels for fiscal table – Sean Wang
+- [#635](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/635) – Remove lines that were lower-casing the titles – Brittain Hard
+- [#641](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/641) – GUI input processing – Hank Doupe
+- [#648](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/648) – Fix Payroll Tax + Income Tax buttons on difference table – Sean Wang
+- [#650](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/650) – GUI input processing bug fixes – Hank Doupe
+- [#651](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/651) – Fix BTAX backend bug caused by PR #641 – Hank Doupe and Brittain Hard

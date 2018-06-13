@@ -8,12 +8,11 @@
 {% block content %}
 <div class="inputs-block-header">
     <h1>Reform File: See examples <a href="https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/reforms/REFORMS.md">here</a></h1>
-  {% flatblock "taxbrain_json_blurb" %}
   {% block section_warnings %}
   {% endblock %}
 </div>
 
-<p><label for="id_docfile">Select a reform file:</label> </p>
+<p><label for="id_docfile">Select a policy reform file:</label> </p>
 <p><input id="id_docfile" name="docfile" type="file" /></p>
 
 <p><label for="id_assumpfile">Select an economic assumptions file:</label> </p>

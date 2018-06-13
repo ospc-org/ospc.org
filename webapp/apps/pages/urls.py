@@ -1,12 +1,13 @@
 from django.conf.urls import patterns, include, url
 
-from views import (homepage, aboutpage, newspage, gallerypage, hellopage,
+from .views import (homepage, aboutpage, newspage, gallerypage, hellopage,
                    embedpage, widgetpage, newsdetailpage,
-                   apps_landing_page, border_adjustment_plot, docspage)
+                   apps_landing_page, border_adjustment_plot, docspage, gettingstartedpage)
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', homepage, name='home'), # url(r'^apps/$', apps_landing_page, name='apps'),
     url(r'^about/$', aboutpage, name='about'),
+    url(r'^getting-started/$', gettingstartedpage, name='gettingstartedpage'),
     url(r'^hello/$', hellopage, name='hello'),
     url(r'^gallery/$', gallerypage, name='gallery'),
     url(r'^news/$', newspage, name='news'),
@@ -18,4 +19,4 @@ urlpatterns = patterns('',
     url(r'^docs/$', docspage, name='docs'),
     url(r'^gallery/border_adjustment$', border_adjustment_plot, name='border_adjustment'),
     url(r'^bac/$', border_adjustment_plot, name='border_adjustment')
-)
+]

@@ -1,0 +1,14 @@
+version: '2'
+services:
+  flask:
+    image: opensourcepolicycenter/flask
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+  celery:
+    image: opensourcepolicycenter/celery
+    depends_on:
+      - redis
+  redis:
+    image: redis

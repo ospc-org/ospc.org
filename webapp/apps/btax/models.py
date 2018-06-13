@@ -1,4 +1,5 @@
 import re
+import uuid
 
 from django.db import models
 from django.core import validators
@@ -7,17 +8,16 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from uuidfield import UUIDField
-from jsonfield import JSONField
+from django.contrib.postgres.fields import JSONField
 import datetime
 
 from ..taxbrain.models import (SeparatedValuesField,
-                               CommaSeparatedField,
-                               convert_to_floats)
+                               CommaSeparatedField)
+
+from ..taxbrain.behaviors import Hostnameable
 
 
-
-class BTaxSaveInputs(models.Model):
+class BTaxSaveInputs(Hostnameable, models.Model):
     """
     This model contains all the parameters for the tax model and the tax
     result.
@@ -115,9 +115,10 @@ class BTaxSaveInputs(models.Model):
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
-
+    # data source for model
+    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
     # Result
-    tax_result = JSONField(default=None, blank=True, null=True)
+    tax_result = models.TextField(default=None, blank=True, null=True)
     # Creation DateTime
     creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
 
@@ -138,7 +139,7 @@ class BTaxOutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
-    uuid = UUIDField(auto=True, default=None, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     btax_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,

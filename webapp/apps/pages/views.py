@@ -6,7 +6,7 @@ from django.shortcuts import render, render_to_response, redirect
 from django.template import RequestContext
 from django.views.generic import TemplateView, DetailView
 from webapp.apps.register.forms import SubscribeForm
-from django.core.context_processors import csrf
+from django.template.context_processors import csrf
 from django.conf import settings
 from django.views.decorators.clickjacking import xframe_options_exempt
 
@@ -103,6 +103,13 @@ def docspage(request):
         },
     })
 
+def gettingstartedpage(request):
+    return render(request, 'pages/gettingstarted.html', {
+        'section': {
+            'active_nav': 'getting-started',
+            'title': 'Getting Started',
+        },
+    })
 
 def _discover_widgets():
     '''stubbed out data I wish to recieve from some widget discovery mechanism'''
@@ -122,7 +129,7 @@ def widgetpage(request, widget_id):
 
     widgets = _discover_widgets()
 
-    if widget_id not in widgets.keys():
+    if widget_id not in list(widgets.keys()):
         raise ValueError('Invalid Widget Id {0}'.format(widget_id))
 
     widget = widgets[widget_id]
@@ -172,7 +179,7 @@ def embedpage(request, widget_id, layout='landscape'):
 
     widgets = _discover_widgets()
 
-    if widget_id not in widgets.keys():
+    if widget_id not in list(widgets.keys()):
         raise ValueError('Invalid Widget Id {0}'.format(widget_id))
 
     widget = widgets[widget_id]
