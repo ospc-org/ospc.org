@@ -1,6 +1,6 @@
-FROM opensourcepolicycenter/distributed:v1.6.0_rc1
+FROM opensourcepolicycenter/distributed:v1.6.0_rc4
 
-LABEL build="flask" date="2018-03-30"
+LABEL build="flask" date="2018-06-13"
 
 USER root
 

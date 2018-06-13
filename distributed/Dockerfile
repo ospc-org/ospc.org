@@ -1,6 +1,6 @@
 FROM continuumio/miniconda
 
-LABEL build="distributed" date="2018-03-30"
+LABEL build="distributed" date="2018-06-13"
 USER root
 RUN  apt-get update && apt install libgl1-mesa-glx --yes
 
