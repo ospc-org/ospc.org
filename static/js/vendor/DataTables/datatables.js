@@ -27693,13 +27693,19 @@ DataTable.ext.buttons.csvHtml5 = {
 		var output_ = _exportData( dt, config ).str;
         var data = dt.buttons.exportData( config.exportOptions );
         if (data.header[2][0] == 2) {
-            var str = $('tr:first').text() + '\n'
-            var output = str + output_
-            }
-        else{
-            var str = $('h1:last').text() + '\n'
-            var output = str + output_
+            var caption = $('tr:first').text();
         }
+        else {
+            var caption = $('h1:last').text();
+        }
+        // Generate a string of sequential commas
+        // As many commas as in the CSV output of the first row of the table
+        var commas = output_.split('\n')[0].match(/,/g) || [];
+        // Generate empty columns like (,"") to go after caption column
+        var columns = commas.reduce((function(acc) { return acc + ',""' }), '');
+        // Place caption row before the table output
+        var output = '"' + caption + '"' + columns + '\n' + output_;
+
         var url = window.location.href;
         var myRegexp = /(\d+)/g;
         var regExp = /\(([^)]+)\)/;
