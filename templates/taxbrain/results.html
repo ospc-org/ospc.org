@@ -76,9 +76,11 @@
       <h2>The following parameters were used for this simulation: </h2>
       {% endif %}
       <div class="file-contents">
+          <h3>Reform</h3>
           {%autoescape off %}
           {{ reform_file_contents | nbsp | linebreaks | safe}}
           {%endautoescape %}
+          <h3>Assumptions</h3>
           {%autoescape off %}
           {{ assump_file_contents | nbsp | linebreaks | safe}}
           {%endautoescape %}
