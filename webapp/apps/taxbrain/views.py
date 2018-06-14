@@ -271,10 +271,10 @@ def submit_reform(request, user=None, json_reform_id=None):
 
     # We need to stop on both! File uploads should stop if there are 'behavior'
     # or 'policy' errors
-    warn_msgs = any((len(errors_warnings[project]['warnings']) > 0
-                     for project in ['policy', 'behavior']))
-    error_msgs = any((len(errors_warnings[project]['errors']) > 0
-                      for project in ['policy', 'behavior']))
+    warn_msgs = any(len(errors_warnings[project]['warnings']) > 0
+                    for project in ['policy', 'behavior'])
+    error_msgs = any(len(errors_warnings[project]['errors']) > 0
+                     for project in ['policy', 'behavior'])
     stop_errors = no_inputs or not is_valid or error_msgs
     stop_submission = stop_errors or (not has_errors and warn_msgs)
     if stop_submission:
@@ -298,9 +298,9 @@ def submit_reform(request, user=None, json_reform_id=None):
                     errors_warnings['policy'],
                     lambda param, msg: personal_inputs.add_error(param, msg)
                 )
-            has_parse_errors = any(('Unrecognize value' in e[0]
-                                    for e
-                                    in list(personal_inputs.errors.values())))
+            has_parse_errors = any('Unrecognize value' in e[0]
+                                   for e
+                                   in list(personal_inputs.errors.values()))
             if no_inputs:
                 personal_inputs.add_error(
                     None,
@@ -801,7 +801,7 @@ def output_detail(request, pk):
             print(jfe)
             return render_to_response('taxbrain/failed.html')
 
-        if any([j == 'FAIL' for j in jobs_ready]):
+        if any(j == 'FAIL' for j in jobs_ready):
             failed_jobs = [sub_id for (sub_id, job_ready)
                            in zip(jobs_to_check, jobs_ready)
                            if job_ready == 'FAIL']
@@ -823,7 +823,7 @@ def output_detail(request, pk):
             return render(request, 'taxbrain/failed.html',
                           {"error_msg": error_contents})
 
-        if all((j == 'YES' for j in jobs_ready)):
+        if all(j == 'YES' for j in jobs_ready):
             results = dropq_compute.dropq_get_results(normalize(job_ids))
             model.tax_result = results
             model.creation_date = datetime.datetime.now()
