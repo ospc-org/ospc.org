@@ -27693,13 +27693,14 @@ DataTable.ext.buttons.csvHtml5 = {
 		var output_ = _exportData( dt, config ).str;
         var data = dt.buttons.exportData( config.exportOptions );
         if (data.header[2][0] == 2) {
-            var str = $('tr:first').text() + '\n'
-            var output = str + output_
-            }
-        else{
-            var str = $('h1:last').text() + '\n'
-            var output = str + output_
+            var str = $('tr:first').text();
         }
+        else {
+            var str = $('h1:last').text();
+        }
+        var commas = (output_.split('\n')[0].match(/,/g) || []).join('');
+        var output = '"' + str + '"' + commas + '\n' + output_;
+
         var url = window.location.href;
         var myRegexp = /(\d+)/g;
         var regExp = /\(([^)]+)\)/;
