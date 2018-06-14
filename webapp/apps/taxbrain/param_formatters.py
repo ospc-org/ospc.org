@@ -365,4 +365,5 @@ def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
                                             assumptions_dict_json,
                                             use_puf_not_cps=use_puf_not_cps)
 
-    return (reform_dict, assumptions_dict, "", "", errors_warnings)
+    return (reform_dict, assumptions_dict, policy_dict_json,
+            assumptions_dict_json, errors_warnings)

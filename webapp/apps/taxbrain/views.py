@@ -689,6 +689,8 @@ def get_result_context(model, request, url):
         'fiscal_change': FISCAL_CHANGE,
     }
 
+    is_from_file = not model.raw_input_fields
+
     if (model.json_text is not None and (model.json_text.raw_reform_text or
        model.json_text.raw_assumption_text)):
         reform_file_contents = model.json_text.raw_reform_text
@@ -736,7 +738,8 @@ def get_result_context(model, request, url):
         'is_micro': True,
         'reform_file_contents': reform_file_contents,
         'assump_file_contents': assump_file_contents,
-        'allow_dyn_links': True if not assump_file_contents else False,
+        'is_from_file': is_from_file,
+        'allow_dyn_links': not is_from_file,
         'results_type': "static"
     }
     return context
@@ -778,8 +781,6 @@ def output_detail(request, pk):
             return render(request, 'taxbrain/not_avail.html', not_avail_context)
 
         context.update(context_vers_disp)
-        context["raw_reform_text"] = model.json_text.raw_reform_text if model.json_text else ""
-        context["raw_assumption_text"] = model.json_text.raw_assumption_text if model.json_text else ""
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
         return render(request, 'taxbrain/failed.html', {"error_msg": model.error_text.text})

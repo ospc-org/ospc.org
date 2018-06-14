@@ -8,6 +8,7 @@ bower_components
 
 src/django-flatblocks
 src/dropq
+src/pip-*
 webapp_test.sh
 
 puf.csv.gz
