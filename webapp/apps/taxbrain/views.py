@@ -742,6 +742,7 @@ def get_result_context(model, request, url):
         'is_micro': True,
         'reform_file_contents': reform_file_contents,
         'assump_file_contents': assump_file_contents,
+        'dynamic_file_contents': None,
         'is_from_file': is_from_file,
         'allow_dyn_links': not is_from_file,
         'results_type': "static"

@@ -81,6 +81,12 @@
           {%autoescape off %}
           {{ reform_file_contents | nbsp | linebreaks | safe}}
           {%endautoescape %}
+          {% if dynamic_file_contents %}
+          <h3>Dynamic Simulation Parameters</h3>
+          {% autoescape off %}
+          {{ dynamic_file_contents | nbsp | linebreaks | safe}}
+          {% endautoescape %}
+          {% endif %}
           <h3>Assumptions</h3>
           {%autoescape off %}
           {{ assump_file_contents | nbsp | linebreaks | safe}}
