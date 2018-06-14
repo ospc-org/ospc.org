@@ -16,7 +16,7 @@ Release 1.6.1 on 2018-06-??
 **Bug Fixes**
 - [#904](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/904) - Fix formatting of the first line in CSV output for better compatibility
 
-Release 1.6.0 on 2018-06-??
+Release 1.6.0 on 2018-06-13
 ----------------------------
 **Major Changes**
 - None

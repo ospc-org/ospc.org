@@ -697,9 +697,13 @@ def get_result_context(model, request, url):
         reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
         assump_file_contents = model.json_text.raw_assumption_text
         assump_file_contents = assump_file_contents.replace(" ","&nbsp;")
+    elif model.input_fields is not None:
+        reform = to_json_reform(first_year, model.input_fields)
+        reform_file_contents = json.dumps(reform, indent=4)
+        assump_file_contents = '{}'
     else:
-        reform_file_contents = False
-        assump_file_contents = False
+        reform_file_contents = None
+        assump_file_contents = None
 
     if hasattr(request, 'user'):
         is_registered = True if request.user.is_authenticated() else False
