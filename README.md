@@ -21,7 +21,7 @@ Local Deployment Setup
 
 First, if you plan on contributing to PolicyBrain, then fork PolicyBrain and work off of that fork.  If you do not plan to contribute, then you can clone the main repo.
 
-Make sure that the local Postgres Server is running. Then, open a terminal
+Make sure that [Anaconda/Miniconda](https://www.anaconda.com) is installed. Make sure that the local Postgres Server is running. Then, open a terminal
 window and run the following commands using bash:
 ```
 # swap out YOURUSERNAME with OpenSourcePolicyCenter if you did not fork this project and
