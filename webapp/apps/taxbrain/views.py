@@ -258,7 +258,6 @@ def submit_reform(request, user=None, json_reform_id=None):
         )
         json_reform.save()
 
-    no_inputs = (reform_dict == {})
     # TODO: account for errors
     # 5 cases:
     #   0. no warning/error messages --> run model
@@ -275,7 +274,7 @@ def submit_reform(request, user=None, json_reform_id=None):
                     for project in ['policy', 'behavior'])
     error_msgs = any(len(errors_warnings[project]['errors']) > 0
                      for project in ['policy', 'behavior'])
-    stop_errors = no_inputs or not is_valid or error_msgs
+    stop_errors = not is_valid or error_msgs
     stop_submission = stop_errors or (not has_errors and warn_msgs)
     if stop_submission:
         taxcalc_errors = bool(error_msgs)
@@ -301,11 +300,6 @@ def submit_reform(request, user=None, json_reform_id=None):
             has_parse_errors = any('Unrecognize value' in e[0]
                                    for e
                                    in list(personal_inputs.errors.values()))
-            if no_inputs:
-                personal_inputs.add_error(
-                    None,
-                    "Please specify a tax-law change before submitting."
-                )
             if taxcalc_warnings or taxcalc_errors:
                 personal_inputs.add_error(None, OUT_OF_RANGE_ERROR_MSG)
             if has_parse_errors:
@@ -336,7 +330,7 @@ def submit_reform(request, user=None, json_reform_id=None):
                json_reform=json_reform,
                model=model,
                stop_submission=stop_submission,
-               has_errors=any([taxcalc_errors, taxcalc_warnings, no_inputs,
+               has_errors=any([taxcalc_errors, taxcalc_warnings,
                                not is_valid]),
                errors_warnings=errors_warnings,
                start_year=start_year,
