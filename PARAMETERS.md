@@ -41,5 +41,5 @@ and edit the parameters that still exist and for the parameters that do not,
 display an error message at the top of the page for each missing parameter that
 says:
 
-    Field {parameter name} has been deprecated. Refer to the Tax-Caclulator
+    Field {parameter name} has been deprecated. Refer to the Tax-Calculator
     documentation for a sensible replacement.
