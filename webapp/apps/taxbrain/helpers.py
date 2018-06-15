@@ -43,10 +43,15 @@ MORE_VALUES = COMMON + VALUE
 
 BOOL = WILDCARD | TRUE | FALSE
 MORE_BOOLS = COMMON + BOOL
-INPUT = pp.Optional(REVERSE) + BOOL + pp.ZeroOrMore(MORE_BOOLS) | pp.Optional(REVERSE) + VALUE + pp.ZeroOrMore(MORE_VALUES)
+INPUT = (pp.Optional(REVERSE)
+         + BOOL
+         + pp.ZeroOrMore(MORE_BOOLS) | pp.Optional(REVERSE)
+         + VALUE
+         + pp.ZeroOrMore(MORE_VALUES))
 
 TRUE_REGEX = re.compile('(?i)true')
 FALSE_REGEX = re.compile('(?i)false')
+
 
 def is_wildcard(x):
     if isinstance(x, six.string_types):

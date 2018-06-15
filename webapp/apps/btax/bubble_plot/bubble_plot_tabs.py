@@ -246,7 +246,7 @@ def bubble_plot_tabs(dataframes):
     controls_callback.args['c_nc_buttons'] = c_nc_buttons
 
     format_buttons = RadioButtonGroup(labels=['Baseline', 'Reform', 'Change'],
-                                    active=0, callback=controls_callback)
+                                      active=0, callback=controls_callback)
     controls_callback.args['format_buttons'] = format_buttons
 
     interest_buttons = RadioButtonGroup(labels=['METTR', 'METR', 'Cost of Capital', 'Depreciation'],
@@ -271,5 +271,7 @@ def bubble_plot_tabs(dataframes):
     js, div = components(layout)
     cdn_js = CDN.js_files[0]
     cdn_css = CDN.css_files[0]
+    widget_js = CDN.js_files[1]
+    widget_css = CDN.css_files[1]
 
-    return js, div, cdn_js, cdn_css
+    return js, div, cdn_js, cdn_css, widget_js, widget_css

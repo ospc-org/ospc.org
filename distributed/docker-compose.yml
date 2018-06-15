@@ -1,13 +1,13 @@
 version: '3'
 services:
   flask:
-    image: opensourcepolicycenter/flask:v1.5.0.1
+    image: opensourcepolicycenter/flask:v1.6.0
     ports:
       - 5050:5050
     depends_on:
       - redis
   celery:
-    image: opensourcepolicycenter/celery:v1.5.0.1
+    image: opensourcepolicycenter/celery:v1.6.0
     depends_on:
       - redis
   redis:
