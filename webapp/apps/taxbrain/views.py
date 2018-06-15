@@ -10,14 +10,8 @@ import traceback
 import requests
 
 
-#Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
-MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d']
-ENABLE_QUICK_CALC = bool(os.environ.get('ENABLE_QUICK_CALC', ''))
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
 
 import taxcalc
 import datetime
@@ -29,8 +23,10 @@ from django.core import serializers
 from django.template.context_processors import csrf
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
-from django.shortcuts import render, render_to_response, get_object_or_404, redirect
+from django.http import (HttpResponseRedirect, HttpResponse, Http404,
+                         JsonResponse)
+from django.shortcuts import (render, render_to_response, get_object_or_404,
+                              redirect)
 from django.template import loader, Context
 from django.template.context import RequestContext
 from django.utils.translation import ugettext_lazy as _
@@ -39,15 +35,13 @@ from django.contrib.auth.models import User
 from django import forms
 
 from .forms import TaxBrainForm, has_field_errors
-from .models import TaxSaveInputs, OutputUrl, JSONReformTaxCalculator, ErrorMessageTaxCalculator
+from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
+                     ErrorMessageTaxCalculator)
 from .helpers import (taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool,
-                      )
+                      is_wildcard, convert_val, make_bool)
 from .param_displayers import nested_form_parameters
-from .compute import (DropqCompute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
-                      NUM_BUDGET_YEARS_QUICK, DROPQ_WORKERS)
-
-dropq_compute = DropqCompute()
+from .compute import (DropqCompute, MockCompute, JobFailError,
+                      NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK, DROPQ_WORKERS)
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -62,6 +56,15 @@ from .param_formatters import (get_reform_from_file, get_reform_from_gui,
 from .submit_data import PostMeta, BadPost
 
 from django.conf import settings
+
+# Mock some module for imports because we can't fit them on Heroku slugs
+MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
+                'mpl_toolkits.mplot3d']
+ENABLE_QUICK_CALC = bool(os.environ.get('ENABLE_QUICK_CALC', ''))
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+dropq_compute = DropqCompute()
+
 WEBAPP_VERSION = settings.WEBAPP_VERSION
 
 tcversion_info = taxcalc._version.get_versions()
@@ -83,15 +86,16 @@ def log_ip(request):
         # we don't have a real, public ip address for user
         print("BEGIN DROPQ WORK FROM: unknown IP")
 
+
 def denormalize(x):
-    ans = ["#".join([i[0],i[1]]) for i in x]
-    ans = [str(x) for x in ans]
+    ans = [str("#".join([i[0], i[1]])) for i in x]
     return ans
 
 
 def normalize(x):
     ans = [i.split('#') for i in x]
     return ans
+
 
 def save_model(post_meta):
     """
@@ -128,7 +132,8 @@ def save_model(post_meta):
     unique_url.unique_inputs = model
     unique_url.model_pk = model.pk
     cur_dt = datetime.datetime.utcnow()
-    future_offset_seconds = ((2 + post_meta.max_q_length) * JOB_PROC_TIME_IN_SECONDS)
+    future_offset_seconds = ((2 + post_meta.max_q_length)
+                             * JOB_PROC_TIME_IN_SECONDS)
     future_offset = datetime.timedelta(seconds=future_offset_seconds)
     expected_completion = cur_dt + future_offset
     unique_url.exp_comp_datetime = expected_completion
@@ -145,7 +150,8 @@ def submit_reform(request, user=None, json_reform_id=None):
     """
     fields = dict(request.GET)
     fields.update(dict(request.POST))
-    fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
+    fields = {k: v[0] if isinstance(v, list) else v
+              for k, v in list(fields.items())}
     start_year = fields.get('start_year', START_YEAR)
     # TODO: migrate first_year to start_year to get rid of weird stuff like
     # this
@@ -157,10 +163,7 @@ def submit_reform(request, user=None, json_reform_id=None):
 
     # which file to use, front-end not yet implemented
     data_source = fields.get('data_source', 'PUF')
-    if data_source == 'PUF':
-        use_puf_not_cps = True
-    else:
-        use_puf_not_cps = False
+    use_puf_not_cps = (data_source == 'PUF')
 
     # declare a bunch of variables--TODO: clean this up
     taxcalc_errors = False
@@ -184,15 +187,18 @@ def submit_reform(request, user=None, json_reform_id=None):
         del fields['full_calc']
     elif 'quick_calc' in fields:
         del fields['quick_calc']
+
     # re-submission of file for case where file-input generated warnings
     if json_reform_id:
         try:
-            json_reform = JSONReformTaxCalculator.objects.get(id=int(json_reform_id))
+            json_reform = JSONReformTaxCalculator.objects.get(
+                id=int(json_reform_id)
+            )
         except Exception as e:
             msg = "ID {} is not in JSON reform database".format(json_reform_id)
             return BadPost(
                        http_response_404=HttpResponse(msg, status=400),
-                       has_errors= True
+                       has_errors=True
                    )
         reform_dict = json.loads(json_reform.reform_text)
         assumptions_dict = json.loads(json_reform.assumption_text)
@@ -231,8 +237,10 @@ def submit_reform(request, user=None, json_reform_id=None):
             # raise a 400
             if personal_inputs.non_field_errors():
                 return BadPost(
-                           http_response_404=HttpResponse("Bad Input!", status=400),
-                           has_errors= True
+                           http_response_404=HttpResponse(
+                               "Bad Input!", status=400
+                           ),
+                           has_errors=True
                        )
             is_valid = personal_inputs.is_valid()
             if is_valid:
@@ -253,7 +261,8 @@ def submit_reform(request, user=None, json_reform_id=None):
     # TODO: account for errors
     # 5 cases:
     #   0. no warning/error messages --> run model
-    #   1. has seen warning/error messages and now there are no errors -- > run model
+    #   1. has seen warning/error messages and now there are no errors
+    #        --> run model
     #   2. has not seen warning/error messages --> show warning/error messages
     #   3. has seen warning/error messages and there are still error messages
     #        --> show warning/error messages again
@@ -261,15 +270,15 @@ def submit_reform(request, user=None, json_reform_id=None):
 
     # We need to stop on both! File uploads should stop if there are 'behavior'
     # or 'policy' errors
-    warn_msgs = any([len(errors_warnings[project]['warnings']) > 0
-                      for project in ['policy', 'behavior']])
-    error_msgs = any([len(errors_warnings[project]['errors']) > 0
-                      for project in ['policy', 'behavior']])
+    warn_msgs = any(len(errors_warnings[project]['warnings']) > 0
+                    for project in ['policy', 'behavior'])
+    error_msgs = any(len(errors_warnings[project]['errors']) > 0
+                     for project in ['policy', 'behavior'])
     stop_errors = not is_valid or error_msgs
     stop_submission = stop_errors or (not has_errors and warn_msgs)
     if stop_submission:
-        taxcalc_errors = True if error_msgs else False
-        taxcalc_warnings = True if warn_msgs else False
+        taxcalc_errors = bool(error_msgs)
+        taxcalc_warnings = bool(warn_msgs)
         if personal_inputs is not None:
             # ensure that parameters causing the warnings are shown on page
             # with warnings/errors
@@ -288,8 +297,9 @@ def submit_reform(request, user=None, json_reform_id=None):
                     errors_warnings['policy'],
                     lambda param, msg: personal_inputs.add_error(param, msg)
                 )
-            has_parse_errors = any(['Unrecognize value' in e[0]
-                                    for e in list(personal_inputs.errors.values())])
+            has_parse_errors = any('Unrecognize value' in e[0]
+                                   for e
+                                   in list(personal_inputs.errors.values()))
             if taxcalc_warnings or taxcalc_errors:
                 personal_inputs.add_error(None, OUT_OF_RANGE_ERROR_MSG)
             if has_parse_errors:
@@ -347,15 +357,12 @@ def process_reform(request, user=None, **kwargs):
     returns OutputUrl object with parsed user input and warning/error messages
             if necessary
             boolean variable indicating whether this reform has errors or not
-
     """
     post_meta = submit_reform(request, user=user, **kwargs)
-    if isinstance(post_meta, BadPost):
+    if isinstance(post_meta, BadPost) or post_meta.stop_submission:
         return None, post_meta
-
-    if post_meta.stop_submission:
-        return None, post_meta#(args['personal_inputs'], args['json_reform'], args['has_errors'],
-                #errors_warnings)
+        # (args['personal_inputs'], args['json_reform'], args['has_errors'],
+        #  errors_warnings)
     else:
         url = save_model(post_meta)
         return url, post_meta
@@ -448,7 +455,7 @@ def personal_results(request):
     start_year = START_YEAR
     has_errors = False
     data_source = DEFAULT_SOURCE
-    if request.method=='POST':
+    if request.method == 'POST':
         print('method=POST get', request.GET)
         print('method=POST post', request.POST)
         obj, post_meta = process_reform(request)
@@ -465,10 +472,7 @@ def personal_results(request):
             personal_inputs = post_meta.personal_inputs
             start_year = post_meta.start_year
             data_source = post_meta.data_source
-            if data_source == 'PUF':
-                use_puf_not_cps = True
-            else:
-                use_puf_not_cps = False
+            use_puf_not_cps = (data_source == 'PUF')
             has_errors = post_meta.has_errors
 
     else:
@@ -558,31 +562,31 @@ def submit_micro(request, pk):
             'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
-    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-        data
-    )
+    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(data)
 
-    post_meta = PostMeta(url=url,
-            request=request,
-            model=model,
-            json_reform=json_reform,
-            has_errors=False,
-            start_year=start_year,
-            data_source=model.data_source,
-            do_full_calc=True,
-            is_file=is_file,
-            reform_dict=reform_dict,
-            assumptions_dict=assumptions_dict,
-            reform_text=(model.json_text.raw_reform_text
-                            if model.json_text else ""),
-            assumptions_text=(model.json_text.raw_assumption_text
-                                 if model.json_text else ""),
-            submitted_ids=submitted_ids,
-            max_q_length=max_q_length,
-            user=None,
-            personal_inputs=None,
-            stop_submission=False,
-            errors_warnings=None)
+    post_meta = PostMeta(
+        url=url,
+        request=request,
+        model=model,
+        json_reform=json_reform,
+        has_errors=False,
+        start_year=start_year,
+        data_source=model.data_source,
+        do_full_calc=True,
+        is_file=is_file,
+        reform_dict=reform_dict,
+        assumptions_dict=assumptions_dict,
+        reform_text=(model.json_text.raw_reform_text
+                     if model.json_text else ""),
+        assumptions_text=(model.json_text.raw_assumption_text
+                          if model.json_text else ""),
+        submitted_ids=submitted_ids,
+        max_q_length=max_q_length,
+        user=None,
+        personal_inputs=None,
+        stop_submission=False,
+        errors_warnings=None
+    )
 
     url = save_model(post_meta)
 
@@ -595,7 +599,7 @@ def edit_personal_results(request, pk):
     """
     try:
         url = OutputUrl.objects.get(pk=pk)
-    except:
+    except OutputUrl.DoesNotExist:
         raise Http404
 
     model = url.unique_inputs
@@ -653,7 +657,6 @@ def add_summary_column(table):
     return table
 
 
-
 def get_result_context(model, request, url):
     output = model.get_tax_result()
     first_year = model.first_year
@@ -682,19 +685,16 @@ def get_result_context(model, request, url):
     }
 
     if (model.json_text is not None and (model.json_text.raw_reform_text or
-       model.json_text.raw_assumption_text)):
+                                         model.json_text.raw_assumption_text)):
         reform_file_contents = model.json_text.raw_reform_text
-        reform_file_contents = reform_file_contents.replace(" ","&nbsp;")
+        reform_file_contents = reform_file_contents.replace(" ", "&nbsp;")
         assump_file_contents = model.json_text.raw_assumption_text
-        assump_file_contents = assump_file_contents.replace(" ","&nbsp;")
+        assump_file_contents = assump_file_contents.replace(" ", "&nbsp;")
     else:
         reform_file_contents = False
         assump_file_contents = False
 
-    if hasattr(request, 'user'):
-        is_registered = True if request.user.is_authenticated() else False
-    else:
-        is_registered = False
+    is_registered = hasattr(request, 'user') and request.user.is_authenticated()
 
     # TODO: Fix the java script mapping problem.  There exists somewhere in
     # the taxbrain javascript code a mapping to the old table names.  As
@@ -718,8 +718,8 @@ def get_result_context(model, request, url):
     # TODO: Add row labels for decile and income bin tables to the context here
     # and display these instead of hardcode in the javascript
     context = {
-        'locals':locals(),
-        'unique_url':url,
+        'locals': locals(),
+        'unique_url': url,
         'tables': json_table,
         'created_on': created_on,
         'first_year': first_year,
@@ -744,7 +744,7 @@ def output_detail(request, pk):
 
     try:
         url = OutputUrl.objects.get(pk=pk)
-    except:
+    except OutputUrl.DoesNotExist:
         raise Http404
 
     model = url.unique_inputs
@@ -770,11 +770,14 @@ def output_detail(request, pk):
             return render(request, 'taxbrain/not_avail.html', not_avail_context)
 
         context.update(context_vers_disp)
-        context["raw_reform_text"] = model.json_text.raw_reform_text if model.json_text else ""
-        context["raw_assumption_text"] = model.json_text.raw_assumption_text if model.json_text else ""
+        context["raw_reform_text"] = (model.json_text.raw_reform_text
+                                      if model.json_text else "")
+        context["raw_assumption_text"] = (model.json_text.raw_assumption_text
+                                          if model.json_text else "")
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
-        return render(request, 'taxbrain/failed.html', {"error_msg": model.error_text.text})
+        return render(request, 'taxbrain/failed.html',
+                      {"error_msg": model.error_text.text})
     else:
         if not model.check_hostnames(DROPQ_WORKERS):
             print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
@@ -792,27 +795,29 @@ def output_detail(request, pk):
             print(jfe)
             return render_to_response('taxbrain/failed.html')
 
-        if any([j == 'FAIL' for j in jobs_ready]):
-            failed_jobs = [sub_id for (sub_id, job_ready) in
-                           zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
+        if any(j == 'FAIL' for j in jobs_ready):
+            failed_jobs = [sub_id for (sub_id, job_ready)
+                           in zip(jobs_to_check, jobs_ready)
+                           if job_ready == 'FAIL']
 
-            #Just need the error message from one failed job
-            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
+            # Just need the error message from one failed job
+            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]],
+                                                         job_failure=True)
             if error_msgs:
                 error_msg = error_msgs[0]
             else:
                 error_msg = "Error: stack trace for this error is unavailable"
             val_err_idx = error_msg.rfind("Error")
             error = ErrorMessageTaxCalculator()
-            error_contents = error_msg[val_err_idx:].replace(" ","&nbsp;")
+            error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
             error.text = error_contents
             error.save()
             model.error_text = error
             model.save()
-            return render(request, 'taxbrain/failed.html', {"error_msg": error_contents})
+            return render(request, 'taxbrain/failed.html',
+                          {"error_msg": error_contents})
 
-
-        if all([j == 'YES' for j in jobs_ready]):
+        if all(j == 'YES' for j in jobs_ready):
             results = dropq_compute.dropq_get_results(normalize(job_ids))
             model.tax_result = results
             model.creation_date = datetime.datetime.now()
@@ -822,8 +827,9 @@ def output_detail(request, pk):
             return render(request, 'taxbrain/results.html', context)
 
         else:
-            jobs_not_ready = [sub_id for (sub_id, job_ready) in
-                                zip(jobs_to_check, jobs_ready) if job_ready == 'NO']
+            jobs_not_ready = [sub_id for (sub_id, job_ready)
+                              in zip(jobs_to_check, jobs_ready)
+                              if job_ready == 'NO']
             jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
             model.save()
@@ -844,21 +850,25 @@ def output_detail(request, pk):
             else:
                 context = {'eta': '100'}
                 context.update(context_vers_disp)
-                return render_to_response('taxbrain/not_ready.html', context, context_instance=RequestContext(request))
+                return render_to_response(
+                    'taxbrain/not_ready.html',
+                    context,
+                    context_instance=RequestContext(request)
+                )
 
 
 @permission_required('taxbrain.view_inputs')
 def csv_output(request, pk):
     try:
         url = OutputUrl.objects.get(pk=pk)
-    except:
+    except OutputUrl.DoesNotExist:
         raise Http404
 
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')
     now = datetime.datetime.now()
-    suffix = "".join(map(str, [now.year, now.month, now.day, now.hour, now.minute,
-                       now.second]))
+    suffix = "".join(map(str, [now.year, now.month, now.day, now.hour,
+                               now.minute, now.second]))
     filename = "taxbrain_outputs_" + suffix + ".csv"
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
@@ -871,13 +881,13 @@ def csv_output(request, pk):
 
     return response
 
+
 @permission_required('taxbrain.view_inputs')
 def csv_input(request, pk):
     try:
         url = OutputUrl.objects.get(pk=pk)
-    except:
+    except OutputUrl.DoesNotExist:
         raise Http404
-
 
     def filter_names(x):
         """
@@ -887,14 +897,15 @@ def csv_input(request, pk):
                          'medical_inflation', 'medical_years', 'tax_result',
                          'creation_date']
 
-    field_names = [f.name for f in TaxSaveInputs._meta.get_fields(include_parents=False)]
+    field_names = [f.name for f
+                   in TaxSaveInputs._meta.get_fields(include_parents=False)]
     field_names = tuple(filter(filter_names, field_names))
 
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')
     now = datetime.datetime.now()
-    suffix = "".join(map(str, [now.year, now.month, now.day, now.hour, now.minute,
-                       now.second]))
+    suffix = "".join(map(str, [now.year, now.month, now.day, now.hour,
+                               now.minute, now.second]))
     filename = "taxbrain_inputs_" + suffix + ".csv"
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
@@ -905,6 +916,7 @@ def csv_input(request, pk):
     writer.writerow([getattr(inputs, field) for field in field_names])
 
     return response
+
 
 @permission_required('taxbrain.view_inputs')
 def pdf_view(request):
