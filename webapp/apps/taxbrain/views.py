@@ -43,7 +43,7 @@ from .helpers import (taxcalc_results_to_tables, format_csv,
                       is_wildcard, convert_val, make_bool,
                       )
 from .param_displayers import nested_form_parameters
-from .compute import (DropqCompute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
+from .compute import (dropq_compute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
                       NUM_BUDGET_YEARS_QUICK, DROPQ_WORKERS)
 
 
@@ -59,7 +59,7 @@ from ..formatters import get_version
 from .param_formatters import (get_reform_from_file, get_reform_from_gui,
                                to_json_reform, append_errors_warnings)
 from .submit_data import (PostMeta, BadPost, process_reform, save_model,
-                          denormalize, normalize, log_ip, dropq_compute,
+                          denormalize, normalize, log_ip,
                           JOB_PROC_TIME_IN_SECONDS)
 
 def file_input(request):
@@ -442,7 +442,6 @@ def output_detail(request, pk):
     job results if the job is done. Finally, it will render a 'job failed'
     page if the job has failed.
     """
-
     try:
         url = OutputUrl.objects.get(pk=pk)
     except:

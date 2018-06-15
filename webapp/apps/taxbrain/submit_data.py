@@ -6,7 +6,7 @@ from ipware.ip import get_real_ip
 from django.http import HttpResponse
 
 from .models import TaxSaveInputs, JSONReformTaxCalculator, OutputUrl
-from .compute import DropqCompute, NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
+from .compute import dropq_compute, NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
 from .forms import TaxBrainForm
 from .helpers import make_bool
 from .param_formatters import get_reform_from_file, append_errors_warnings
@@ -14,8 +14,6 @@ from ..constants import (START_YEAR, OUT_OF_RANGE_ERROR_MSG,
                          WEBAPP_VERSION, TAXCALC_VERSION)
 
 JOB_PROC_TIME_IN_SECONDS = 35
-
-dropq_compute = DropqCompute()
 
 PostMeta = namedtuple(
     'PostMeta',

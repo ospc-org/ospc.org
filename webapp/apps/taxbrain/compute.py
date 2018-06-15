@@ -249,11 +249,11 @@ class DropqCompute(object):
 
         return results
 
+dropq_compute = DropqCompute()
 
 class MockCompute(DropqCompute):
 
     num_budget_years = NUM_BUDGET_YEARS
-    __slots__ = ('count', 'num_times_to_wait', 'last_posted')
 
     def __init__(self, num_times_to_wait=0):
         self.count = 0
@@ -266,13 +266,11 @@ class MockCompute(DropqCompute):
         with requests_mock.Mocker() as mock:
             resp = {'job_id': '424242', 'qlength':2}
             resp = json.dumps(resp)
-            print(DROPQ_URL)
             mock.register_uri('POST', DROPQ_URL, text=resp)
             mock.register_uri('POST', DROPQ_SMALL_URL, text=resp)
             mock.register_uri('POST', '/elastic_gdp_start_job', text=resp)
             mock.register_uri('POST', '/btax_start_job', text=resp)
             self.last_posted = data
-            print(mock.__dict__)
             return DropqCompute.remote_submit_job(self, theurl, data, timeout)
 
     def remote_results_ready(self, theurl, params):
@@ -331,8 +329,6 @@ class MockFailedComputeOnOldHost(MockCompute):
 
 
 class NodeDownCompute(MockCompute):
-
-    __slots__ = ('count', 'num_times_to_wait', 'switch')
 
     def __init__(self, **kwargs):
         if 'switch' in kwargs:

@@ -16,17 +16,20 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
-def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
+def get_dropq_compute_from_module(module_import_paths, attr='dropq_compute',
                                   MockComputeObj=MockCompute, **mc_args):
     """
     mocks dropq compute object from specified module
 
     returns: mocked dropq compute object
     """
-    print('getting module', module_import_path)
-    module_views = sys.modules[module_import_path]
-    setattr(module_views, attr, MockComputeObj(**mc_args))
-    return getattr(module_views, attr)
+    obj = MockComputeObj(**mc_args)
+    if not isinstance(module_import_paths, (list, tuple)):
+        module_import_paths = [module_import_paths]
+    for mip in module_import_paths:
+        module_ = sys.modules[mip]
+        setattr(module_, attr, obj)
+    return obj
 
 def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
                  compute_count=None, post_url='/taxbrain/'):
@@ -46,7 +49,7 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
     #Monkey patch to mock out running of compute jobs
     if tb_dropq_compute is None:
         tb_dropq_compute = get_dropq_compute_from_module(
-            'webapp.apps.taxbrain.submit_data',
+            ['webapp.apps.taxbrain.submit_data', 'webapp.apps.taxbrain.views'],
             num_times_to_wait=0
         )
     if dyn_dropq_compute is None:
