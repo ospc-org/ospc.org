@@ -148,15 +148,15 @@ class TestDynamicBehavioralViews(object):
                                         UrlModel=DynamicBehaviorOutputUrl)
 
         model = unique_url.unique_inputs
-        model.raw_input_fields = {}
-        model.input_fields = {}
-        model.deprecated_fields = {}
         model.tax_result = "unrenderable"
         if start_year_is_none:
             model.first_year = None
-        model.micro_sim = get_taxbrain_model(fields,
+        micro_sim_fields = get_post_data(start_year,
+                                         _ID_BenefitSurtax_Switches=False)
+        micro_sim_fields['first_year'] = start_year
+        model.micro_sim = get_taxbrain_model(micro_sim_fields,
                                              taxcalc_vers="0.14.2",
-                                             webapp_vers="1.3.0")
+                                             webapp_vers="1.4.0")
         model.save()
         unique_url.unique_inputs = model
         unique_url.save()

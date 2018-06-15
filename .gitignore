@@ -18,6 +18,7 @@ logs/
 
 dump.rdb
 
+.pytest_cache
 .idea
 .cache
 .ipynb_checkpoints

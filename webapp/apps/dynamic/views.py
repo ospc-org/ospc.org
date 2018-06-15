@@ -785,7 +785,7 @@ def behavior_results(request, pk):
 
     model = url.unique_inputs
 
-    first_year = model.first_year
+    first_year = model.first_year or START_YEAR
     micro = model.micro_sim.unique_inputs
     if (micro.json_text is not None and (micro.json_text.raw_reform_text or
                                          micro.json_text.raw_assumption_text)):
