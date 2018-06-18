@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 
 from django.contrib.postgres.fields import JSONField, ArrayField
 import datetime
+from django.utils.timezone import make_aware
 
 import taxcalc
 
@@ -761,7 +762,9 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable, Hostnameable,
     error_text = models.ForeignKey(ErrorMessageTaxCalculator, null=True, default=None, blank=True)
 
     # Creation DateTime
-    creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    creation_date = models.DateTimeField(
+                        default=make_aware(datetime.datetime(2015, 1, 1))
+                    )
 
     def get_tax_result(self):
         """
@@ -834,7 +837,9 @@ class OutputUrl(models.Model):
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
-    exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    exp_comp_datetime = models.DateTimeField(
+                            default=make_aware(datetime.datetime(2015, 1, 1))
+                        )
     uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
