@@ -40,18 +40,16 @@ selecting preferences, and click the "Advanced" icon. Make sure to click
 
 Build and Deploy Docker Images
 --------------------------------
-1. Set environment variables `TAG` and `VERSION` where `TAG` is the branch or tag
-of the repo that should be pushed and `VERSION` specifies whether we are
-deploying to the test server (`test`) or the production server (`prod`).
+- Build worker node images: `make dist-build -e TAG=$TAG`
+- Build webapp image: `make webapp-build -e TAG=$TAG`
+- Push worker node images: `make dist-push -e TAG=$TAG`
+- Push webapp image: `make webapp-push -e TAG=$TAG -e VERSION=$VERSION`
+- Release webapp image: `make webapp-release -e VERSION=$VERSION`
 
-2. Run the script `docker_build.sh` to build and push all docker images.
-
-3a. SSH into the nodes and run `TAG={tag} docker-compose up -d` to update the
-worker nodes.
-
-3b. Run the command `heroku container:release web -a ospc-$VERSION` to update the
-webapp to run on the new image.
-
+Note:
+- `TAG` refers to the GitHub release version or local branch
+- `VERSION` refers to the app type, either test (`test`) or production (`prod`)
+- The OSPC token is not required if the PUF is not required
 
 Other useful commands
 -------------------------
