@@ -38,6 +38,21 @@ Adjust these parameters by clicking the docker icon in the toolbar,
 selecting preferences, and click the "Advanced" icon. Make sure to click
 "Apply & Restart" so that the adjustments will go into effect.
 
+Build and Deploy Docker Images
+--------------------------------
+1. Set environment variables `TAG` and `VERSION` where `TAG` is the branch or tag
+of the repo that should be pushed and `VERSION` specifies whether we are
+deploying to the test server (`test`) or the production server (`prod`).
+
+2. Run the script `docker_build.sh` to build and push all docker images.
+
+3a. SSH into the nodes and run `TAG={tag} docker-compose up -d` to update the
+worker nodes.
+
+3b. Run the command `heroku container:release web -a ospc-$VERSION` to update the
+webapp to run on the new image.
+
+
 Other useful commands
 -------------------------
 - View logs
