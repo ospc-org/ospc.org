@@ -1,6 +1,5 @@
 FROM continuumio/miniconda
 
-LABEL build="distributed" date="2018-06-13"
 USER root
 RUN  apt-get update && apt install libgl1-mesa-glx --yes
 
@@ -19,7 +18,7 @@ RUN conda install python=2.7.14 numpy>=1.12.1 pandas>=0.23.0 taxcalc=0.20.1 \
 
 RUN pip install -r requirements.txt
 
-COPY . /home/distributed
+RUN mkdir /home/distributed/taxbrain_server
 WORKDIR /home/distributed/taxbrain_server
 
 # not safe. don't publish with token

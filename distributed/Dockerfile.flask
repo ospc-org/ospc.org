@@ -16,5 +16,7 @@ ENV DEBUG true
 EXPOSE 80
 EXPOSE 5050
 
+COPY ./taxbrain_server /home/distributed/taxbrain_server
+
 # run the app server
 CMD ["gunicorn", "--bind", "0.0.0.0:5050", "flask_server:app"]

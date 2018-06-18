@@ -1,9 +1,9 @@
 FROM opensourcepolicycenter/distributed:v1.6.0
 
-LABEL build="celery" date="2018-06-13"
-
 ENV CELERY_BROKER_URL redis://redis:6379/0
 ENV CELERY_RESULT_BACKEND redis://redis:6379/0
 ENV C_FORCE_ROOT true
+
+COPY ./taxbrain_server /home/distributed/taxbrain_server
 
 ENTRYPOINT celery -A celery_tasks worker --loglevel=info --concurrency=1
