@@ -1,6 +1,7 @@
 
 from django.test import TestCase
 from django.test import Client
+import pytest
 import mock
 import os
 # os.environ["NUM_BUDGET_YEARS"] = '2'
@@ -29,7 +30,7 @@ class DynamicViewsTests(TestCase):
         # Check that the response is 200 OK.
         self.assertEqual(response.status_code, 200)
 
-    def test_behavioral_post(self):
+    def behavioral_post_helper(self):
         #Monkey patch to mock out running of compute jobs
         import sys
         from webapp.apps.taxbrain import views
@@ -68,6 +69,11 @@ class DynamicViewsTests(TestCase):
         response = self.client.get(dynamic_behavior)
         self.assertEqual(response.status_code, 200)
 
+        return dynamic_behavior
+
+    def test_behavioral_post(self):
+        dynamic_behavior = self.behavioral_post_helper()
+
         # Do the partial equilibrium job submission
         pe_data = {'BE_inc': ['-0.4']}
         response = self.client.post(dynamic_behavior, pe_data)
@@ -80,6 +86,16 @@ class DynamicViewsTests(TestCase):
         link_idx = response.url[:-1].rfind('/')
         self.assertTrue(response.url[:link_idx+1].endswith("behavior_results/"))
 
+    @pytest.mark.xfail
+    def test_behavioral_post_invalid_param(self):
+        """
+        Check that we get a 400 error if we submit an invalid field
+        """
+        dynamic_behavior = self.behavioral_post_helper()
+
+        pe_data = {'BE_inc': ['-0.4'], 'foo': 'bar'}
+        response = self.client.post(dynamic_behavior, pe_data)
+        self.assertEqual(response.status_code, 400)
 
     def test_elastic_post(self):
         #Monkey patch to mock out running of compute jobs
