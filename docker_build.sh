@@ -20,4 +20,3 @@ docker build --build-arg NEW_RELIC_TOKEN=$(cat ~/newrelic-$VERSION) -t opensourc
 echo 'tagging and pushing web image...'
 docker tag opensourcepolicycenter/web:$TAG registry.heroku.com/ospc-$VERSION/web
 docker push registry.heroku.com/ospc-$VERSION/web
-heroku container:release web -a ospc-$VERSION
