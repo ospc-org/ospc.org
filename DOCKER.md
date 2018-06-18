@@ -38,6 +38,19 @@ Adjust these parameters by clicking the docker icon in the toolbar,
 selecting preferences, and click the "Advanced" icon. Make sure to click
 "Apply & Restart" so that the adjustments will go into effect.
 
+Build and Deploy Docker Images
+--------------------------------
+- Build worker node images: `make dist-build -e TAG=$TAG`
+- Build webapp image: `make webapp-build -e TAG=$TAG`
+- Push worker node images: `make dist-push -e TAG=$TAG`
+- Push webapp image: `make webapp-push -e TAG=$TAG -e VERSION=$VERSION`
+- Release webapp image: `make webapp-release -e VERSION=$VERSION`
+
+Note:
+- `TAG` refers to the GitHub release version or local branch
+- `VERSION` refers to the app type, either test (`test`) or production (`prod`)
+- The OSPC token is not required if the PUF is not required
+
 Other useful commands
 -------------------------
 - View logs

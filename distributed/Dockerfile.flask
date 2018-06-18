@@ -1,4 +1,5 @@
-FROM opensourcepolicycenter/distributed:v1.6.0
+ARG TAG
+FROM opensourcepolicycenter/distributed:$TAG
 
 LABEL build="flask" date="2018-06-13"
 
@@ -15,6 +16,8 @@ ENV DEBUG true
 # expose the app port
 EXPOSE 80
 EXPOSE 5050
+
+COPY ./taxbrain_server /home/distributed/taxbrain_server
 
 # run the app server
 CMD ["gunicorn", "--bind", "0.0.0.0:5050", "flask_server:app"]
