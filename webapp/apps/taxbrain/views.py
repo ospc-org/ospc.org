@@ -606,7 +606,7 @@ def edit_personal_results(request, pk):
     start_year = model.first_year
     model.set_fields()
 
-    msg = ('Field {} has been deprecated. Refer to the Tax-Caclulator '
+    msg = ('Field {} has been deprecated. Refer to the Tax-Calculator '
            'documentation for a sensible replacement.')
     form_personal_exemp = TaxBrainForm(
         first_year=start_year,
@@ -684,15 +684,21 @@ def get_result_context(model, request, url):
         'fiscal_change': FISCAL_CHANGE,
     }
 
+    is_from_file = not model.raw_input_fields
+
     if (model.json_text is not None and (model.json_text.raw_reform_text or
                                          model.json_text.raw_assumption_text)):
         reform_file_contents = model.json_text.raw_reform_text
         reform_file_contents = reform_file_contents.replace(" ", "&nbsp;")
         assump_file_contents = model.json_text.raw_assumption_text
         assump_file_contents = assump_file_contents.replace(" ", "&nbsp;")
+    elif model.input_fields is not None:
+        reform = to_json_reform(first_year, model.input_fields)
+        reform_file_contents = json.dumps(reform, indent=4)
+        assump_file_contents = '{}'
     else:
-        reform_file_contents = False
-        assump_file_contents = False
+        reform_file_contents = None
+        assump_file_contents = None
 
     is_registered = hasattr(request, 'user') and request.user.is_authenticated()
 
@@ -728,7 +734,9 @@ def get_result_context(model, request, url):
         'is_micro': True,
         'reform_file_contents': reform_file_contents,
         'assump_file_contents': assump_file_contents,
-        'allow_dyn_links': True if not assump_file_contents else False,
+        'dynamic_file_contents': None,
+        'is_from_file': is_from_file,
+        'allow_dyn_links': not is_from_file,
         'results_type': "static"
     }
     return context
@@ -770,10 +778,6 @@ def output_detail(request, pk):
             return render(request, 'taxbrain/not_avail.html', not_avail_context)
 
         context.update(context_vers_disp)
-        context["raw_reform_text"] = (model.json_text.raw_reform_text
-                                      if model.json_text else "")
-        context["raw_assumption_text"] = (model.json_text.raw_assumption_text
-                                          if model.json_text else "")
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
         return render(request, 'taxbrain/failed.html',

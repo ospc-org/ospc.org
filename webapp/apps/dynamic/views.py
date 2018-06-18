@@ -582,8 +582,7 @@ def dynamic_finished(request):
     dsi.save()
 
     params = dynamic_params_from_model(dsi)
-    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-    microsim_url = hostname + "/taxbrain/" + str(dsi.micro_sim.pk)
+    microsim_url = "/taxbrain/" + str(dsi.micro_sim.pk)
     #Create a new output model instance
     if status == "SUCCESS":
         unique_url = DynamicOutputUrl()
@@ -593,8 +592,7 @@ def dynamic_finished(request):
         unique_url.unique_inputs = dsi
         unique_url.model_pk = dsi.pk
         unique_url.save()
-        result_url = "{host}/dynamic/results/{pk}".format(host=hostname,
-                                                          pk=unique_url.pk)
+        result_url = "/dynamic/results/{pk}".format(pk=unique_url.pk)
         text = success_text()
         text = text.format(url=result_url, microsim_url=microsim_url,
                            job_id=job_id, params=params)
@@ -653,8 +651,7 @@ def elastic_results(request, pk):
         first_year = model.first_year
         created_on = model.creation_date
         tables = elast_results_to_tables(output, first_year)
-        hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-        microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
+        microsim_url = "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
 
         context = {
             'locals':locals(),
@@ -749,8 +746,7 @@ def ogusa_results(request, pk):
     first_year = url.unique_inputs.first_year
     created_on = url.unique_inputs.creation_date
     tables = ogusa_results_to_tables(output, first_year)
-    hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-    microsim_url = hostname + "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
+    microsim_url = "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
 
     ogusa_vers_disp = get_version(url, 'ogusa_vers', OGUSA_VERSION)
     taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
@@ -788,6 +784,26 @@ def behavior_results(request, pk):
                          'webapp_version': webapp_vers_disp}
 
     model = url.unique_inputs
+
+    first_year = model.first_year or int(START_YEAR)
+    micro = model.micro_sim.unique_inputs
+    if (micro.json_text is not None and (micro.json_text.raw_reform_text or
+                                         micro.json_text.raw_assumption_text)):
+        reform_file_contents = micro.json_text.raw_reform_text
+        reform_file_contents = reform_file_contents.replace(" ", "&nbsp;")
+        assump_file_contents = micro.json_text.raw_assumption_text
+        assump_file_contents = assump_file_contents.replace(" ", "&nbsp;")
+    elif micro.input_fields is not None:
+        reform = to_json_reform(first_year, micro.input_fields)
+        reform_file_contents = json.dumps(reform, indent=4)
+        assump_file_contents = '{}'
+    else:
+        reform_file_contents = ''
+        assump_file_contents = ''
+
+    dynamic_parameters = to_json_reform(first_year, model.input_fields)
+    dynamic_file_contents = json.dumps(dynamic_parameters, indent=4)
+
     if model.tax_result:
         # try to render table; if failure render not available page
         try:
@@ -813,8 +829,7 @@ def behavior_results(request, pk):
                 'deciles': INCOME_DECILES_TOOLTIP
             }
             is_registered = True if request.user.is_authenticated() else False
-            hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
-            microsim_url = hostname + "/taxbrain/" + str(model.micro_sim.pk)
+            microsim_url = "/taxbrain/" + str(model.micro_sim.pk)
 
             # TODO: Fix the java script mapping problem.  There exists somewhere in
             # the taxbrain javascript code a mapping to the old table names.  As
@@ -855,6 +870,9 @@ def behavior_results(request, pk):
             'is_registered': is_registered,
             'is_behavior': True,
             'microsim_url': microsim_url,
+            'reform_file_contents': reform_file_contents,
+            'assump_file_contents': assump_file_contents,
+            'dynamic_file_contents': dynamic_file_contents,
             'results_type': "behavioral"
         }
         context.update(context_vers_disp)

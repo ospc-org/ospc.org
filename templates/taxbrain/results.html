@@ -58,10 +58,10 @@
     {% endif %}
     <div class="result-table">
       <div class="result-table-controls">
-        {% if is_micro and not reform_file_contents %}
+        {% if is_micro and not is_from_file %}
         <a href="/taxbrain/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
-        {% if is_behavior and not reform_file_contents %}
+        {% if is_behavior and not is_from_file %}
         <a href="/dynamic/behavioral/edit/{{ unique_url.pk }}/?start_year={{ first_year }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
         {% if is_micro %}
@@ -70,16 +70,28 @@
         {% endif %}
         {% endif %}
       </div>
-      {% if reform_file_contents %}
-      <h2> The following reform file(s) were uploaded for this simulation: </h2>
+      {% if reform_file_contents and assump_file_contents %}
+      {% if is_from_file %}
+      <h2>The following reform file(s) were uploaded for this simulation: </h2>
+      {% else %}
+      <h2>The following parameters were used for this simulation: </h2>
+      {% endif %}
       <div class="file-contents">
+          <h3>Reform</h3>
           {%autoescape off %}
-          {{ raw_reform_text  | nbsp | linebreaks | safe}}
+          {{ reform_file_contents | nbsp | linebreaks | safe}}
           {%endautoescape %}
+          {% if dynamic_file_contents %}
+          <h3>Dynamic Simulation Parameters</h3>
+          {% autoescape off %}
+          {{ dynamic_file_contents | nbsp | linebreaks | safe}}
+          {% endautoescape %}
+          {% endif %}
+          <h3>Assumptions</h3>
           {%autoescape off %}
-          {{ raw_assumption_text | nbsp | linebreaks | safe}}
+          {{ assump_file_contents | nbsp | linebreaks | safe}}
           {%endautoescape %}
-       </div>
+      </div>
       {% endif %}
     </div>
   </div>

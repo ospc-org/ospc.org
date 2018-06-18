@@ -775,7 +775,7 @@ class TestTaxBrainViews(object):
 
         assert response.context['has_errors'] is False
 
-        msg = ('Field {} has been deprecated. Refer to the Tax-Caclulator '
+        msg = ('Field {} has been deprecated. Refer to the Tax-Calculator '
                'documentation for a sensible replacement.')
 
         for param in ["ALD_Alimony_hc", "PT_exclusion_rt",
@@ -798,9 +798,6 @@ class TestTaxBrainViews(object):
                                         taxcalc_vers="0.14.2",
                                         webapp_vers="1.3.0")
         model = unique_url.unique_inputs
-        model.raw_input_fields = None
-        model.input_fields = None
-        model.deprecated_fields = None
         model.tax_result = "unrenderable"
         if start_year_is_none:
             model.first_year = None

@@ -351,18 +351,19 @@ def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
 
     policy_dict_json = {"policy": policy_dict_json}
 
-    policy_dict_json = json.dumps(policy_dict_json)
+    policy_dict_json = json.dumps(policy_dict_json, indent=4)
 
     assumptions_dict_json = {"behavior": assumptions_dict_json,
                              "growdiff_response": {},
                              "consumption": {},
                              "growdiff_baseline": {},
                              "growmodel": {}}
-    assumptions_dict_json = json.dumps(assumptions_dict_json)
+    assumptions_dict_json = json.dumps(assumptions_dict_json, indent=4)
 
     (reform_dict, assumptions_dict,
         errors_warnings) = read_json_reform(policy_dict_json,
                                             assumptions_dict_json,
                                             use_puf_not_cps=use_puf_not_cps)
 
-    return (reform_dict, assumptions_dict, "", "", errors_warnings)
+    return (reform_dict, assumptions_dict, policy_dict_json,
+            assumptions_dict_json, errors_warnings)
