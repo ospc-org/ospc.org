@@ -1,4 +1,5 @@
-FROM opensourcepolicycenter/distributed:v1.6.0
+ARG TAG
+FROM opensourcepolicycenter/distributed:$TAG
 
 ENV CELERY_BROKER_URL redis://redis:6379/0
 ENV CELERY_RESULT_BACKEND redis://redis:6379/0

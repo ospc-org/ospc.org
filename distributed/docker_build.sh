@@ -1,9 +1,9 @@
 #!/bin/bash
 
 echo 'building images...'
-docker build --no-cache -t opensourcepolicycenter/distributed:$TAG ./ --build-arg PUF_TOKEN=$(cat ~/.ospc_anaconda_token)
-docker build --no-cache -t opensourcepolicycenter/flask:$TAG --file Dockerfile.flask ./
-docker build --no-cache -t opensourcepolicycenter/celery:$TAG --file Dockerfile.celery ./
+docker build -t opensourcepolicycenter/distributed:$TAG ./ --build-arg PUF_TOKEN=$(cat ~/.ospc_anaconda_token)
+docker build --build-arg TAG=$TAG -t opensourcepolicycenter/flask:$TAG --file Dockerfile.flask ./
+docker build --build-arg TAG=$TAG -t opensourcepolicycenter/celery:$TAG --file Dockerfile.celery ./
 
 echo 'pushing images...'
 docker push opensourcepolicycenter/distributed:$TAG

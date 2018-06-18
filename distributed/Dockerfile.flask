@@ -1,4 +1,5 @@
-FROM opensourcepolicycenter/distributed:v1.6.0
+ARG TAG
+FROM opensourcepolicycenter/distributed:$TAG
 
 LABEL build="flask" date="2018-06-13"
 
