@@ -1,6 +1,5 @@
-
-from django.test import TestCase
 from django.test import Client
+import pytest
 import mock
 import os
 # os.environ["NUM_BUDGET_YEARS"] = '2'
@@ -15,12 +14,18 @@ from taxcalc import Policy
 START_YEAR = '2016'
 
 
-class DynamicViewsTests(TestCase):
+class DynamicViewsTests(object):
     ''' Test the views of this app. '''
 
     def setUp(self):
         # Every test needs a client.
         self.client = Client()
+
+    def assertEqual(self, a, b):
+        assert (a == b)
+
+    def assertTrue(self, a):
+        assert a
 
     def test_taxbrain_get(self):
         # Issue a GET request.
@@ -80,8 +85,12 @@ class DynamicViewsTests(TestCase):
         link_idx = response.url[:-1].rfind('/')
         self.assertTrue(response.url[:link_idx+1].endswith("behavior_results/"))
 
-
-    def test_elastic_post(self):
+    # Test whether default elasticity is used if no param is given
+    @pytest.mark.parametrize(
+        'el_data',
+        [{'elastic_gdp': ['0.55']}, {}]
+    )
+    def test_elastic_post(self, el_data):
         #Monkey patch to mock out running of compute jobs
         import sys
         from webapp.apps.taxbrain import views
@@ -121,7 +130,6 @@ class DynamicViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Do the elasticity job submission
-        el_data = {'elastic_gdp': ['0.55']}
         response = self.client.post(dynamic_egdp, el_data)
         self.assertEqual(response.status_code, 302)
         print(response)
