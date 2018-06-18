@@ -278,6 +278,7 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
         fields = ['first_year', 'raw_input_fields', 'input_fields']
+        allowed_fields = BEHAVIOR_DEFAULT_PARAMS
         (widgets, labels,
             update_fields) = PolicyBrainForm.set_form(BEHAVIOR_DEFAULT_PARAMS)
 

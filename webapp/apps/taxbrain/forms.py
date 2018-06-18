@@ -10,10 +10,12 @@ from ..constants import START_YEAR
 
 from .models import TaxSaveInputs
 from .helpers import (is_number,
-                      int_to_nth, is_string, string_to_float_array, check_wildcards,
-                      default_taxcalc_data, expand_list, propagate_user_list,
-                      convert_val, INPUT, INPUTS_META)
+                      int_to_nth, is_string, string_to_float_array,
+                      check_wildcards, default_taxcalc_data, expand_list,
+                      propagate_user_list, convert_val, INPUT, INPUTS_META)
 from .param_displayers import TaxCalcField, TaxCalcParam, default_policy
+from .param_formatters import (get_default_policy_param,
+                               ParameterLookUpException)
 import taxcalc
 
 
@@ -102,10 +104,25 @@ class PolicyBrainForm:
         ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken',
                           'data_source'}
         all_inputs = set(self.data.keys())
-        allowed_inputs= set(self.fields.keys())
+        allowed_inputs = set(self.fields.keys())
         extra_inputs = all_inputs - allowed_inputs - ALLOWED_EXTRAS
+
         for _input in extra_inputs:
-            self.add_error(None, "Extra input '{0}' not allowed".format(_input))
+            self.add_error(None,
+                           "Extra input '{0}' not allowed".format(_input))
+
+        all_fields = self.cleaned_data['raw_input_fields']
+        default_policy = getattr(self.Meta, 'default_policy', None)
+        allowed_fields = getattr(self.Meta, 'allowed_fields', None)
+        for _field in all_fields:
+            if default_policy:
+                try:
+                    get_default_policy_param(_field, default_policy)
+                except ParameterLookUpException as exn:
+                    self.add_error(None, str(exn))
+            elif _field not in allowed_fields:
+                msg = "Received unexpected parameter: {}".format(_field)
+                self.add_error(None, msg)
 
     def do_taxcalc_validations(self):
         """
@@ -291,6 +308,10 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         fields = ['first_year', 'data_source', 'raw_input_fields',
                   'input_fields']
         start_year = int(START_YEAR)
+        default_policy = taxcalc.Policy.default_data(
+                             start_year=int(START_YEAR),
+                             metadata=True
+                         )
         defaults_key = (start_year, True)
         if defaults_key not in TAXCALC_DEFAULTS:
             TAXCALC_DEFAULTS[defaults_key] = default_policy(
