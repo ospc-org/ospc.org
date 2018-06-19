@@ -1,6 +1,8 @@
 from __future__ import print_function, unicode_literals, division
 
 from flask import Flask, request, make_response
+from celery.result import AsyncResult
+
 import redis
 import json
 
@@ -16,7 +18,7 @@ from celery_tasks import (celery_app, dropq_task_async,
 app = Flask(__name__)
 
 queue_name = "celery"
-client = redis.Redis(host="redis", port=6379)
+client = redis.StrictRedis(host="redis", port=6379)
 
 def dropq_endpoint(dropq_task):
     if request.method == 'POST':
@@ -39,10 +41,10 @@ def dropq_endpoint(dropq_task):
     print("user_mods", user_mods)
     print("first_budget_year", first_budget_year)
     print("use_puf_not_cps", use_puf_not_cps)
-    raw_results = dropq_task.delay(year_n, user_mods, first_budget_year, use_puf_not_cps)
+    result = dropq_task.delay(year_n, user_mods, first_budget_year, use_puf_not_cps)
     length = client.llen(queue_name) + 1
-    results = {'job_id':str(raw_results), 'qlength':length}
-    return str(json.dumps(results))
+    data = {'job_id': str(result), 'qlength':length}
+    return json.dumps(data)
 
 
 @app.route("/dropq_start_job", methods=['GET', 'POST'])
@@ -67,7 +69,6 @@ def btax_endpoint():
     results = {'job_id': str(raw_results), 'qlength':length}
     json_res = json.dumps(results)
     return json_res
-
 
 @app.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
@@ -95,31 +96,25 @@ def elastic_endpoint():
     results = {'job_id': str(raw_results), 'qlength': length}
     return str(json.dumps(results))
 
-
 @app.route("/dropq_get_result", methods=['GET'])
 def dropq_results():
     job_id = request.args.get('job_id', '')
-    results = RUNNING_JOBS[job_id]
-    if results.ready() and results.successful():
-        tax_result = results.result
-        return tax_result
-    elif results.failed():
-        return results.traceback
+    async_result = AsyncResult(job_id)
+    if async_result.ready() and async_result.successful():
+        return async_result.result
+    elif async_result.failed():
+        return async_result.traceback
     else:
         resp = make_response('not ready', 202)
         return resp
 
-
 @app.route("/dropq_query_result", methods=['GET'])
 def query_results():
     job_id = request.args.get('job_id', '')
-    if job_id in RUNNING_JOBS:
-        results = RUNNING_JOBS[job_id]
-        if results.ready() and results.successful():
-            return "YES"
-        elif results.failed():
-            return "FAIL"
-        else:
-            return "NO"
+    async_result = AsyncResult(job_id)
+    if async_result.ready() and async_result.successful():
+        return 'YES'
+    elif async_result.failed():
+        return 'FAIL'
     else:
-        return "FAIL"
+        return 'NO'
