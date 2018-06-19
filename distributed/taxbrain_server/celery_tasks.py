@@ -1,4 +1,4 @@
-from __future__ import print_function, unicode_literals, division
+from __future__ import print_function, unicode_literals, division, absolute_import
 from argparse import Namespace
 import json
 import os
@@ -14,7 +14,7 @@ import btax
 from btax.front_end_util import runner_json_tables
 import taxcalc
 import ogusa
-import run_ogusa
+from taxbrain_server import run_ogusa
 
 
 EXPECTED_KEYS = ('policy', 'consumption', 'behavior',
@@ -22,7 +22,7 @@ EXPECTED_KEYS = ('policy', 'consumption', 'behavior',
                 'gdp_elasticity',)
 TEST_FAIL = False
 
-from utils import set_env
+from taxbrain_server.utils import set_env
 globals().update(set_env())
 celery_app = Celery('tasks2', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 
@@ -67,21 +67,21 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True, use_f
     return json_res
 
 
-@celery_app.task
+@celery_app.task(name='taxbrain_server.celery_tasks.dropq_task_async')
 def dropq_task_async(year, user_mods, first_budget_year, use_puf_not_cps=True):
     print('dropq_task_async', year, user_mods, first_budget_year, use_puf_not_cps)
     return dropq_task(year, user_mods, first_budget_year,
                       use_puf_not_cps=use_puf_not_cps, use_full_sample=True)
 
 
-@celery_app.task
+@celery_app.task(name='taxbrain_server.celery_tasks.dropq_task_small_async')
 def dropq_task_small_async(year, user_mods, first_budget_year, use_puf_not_cps=True):
     print('dropq_task_small_async', year, user_mods, first_budget_year, use_puf_not_cps)
     return dropq_task(year, user_mods, first_budget_year,
                       use_puf_not_cps=use_puf_not_cps, use_full_sample=False)
 
 
-@celery_app.task
+@celery_app.task(name='taxbrain_server.celery_tasks.elasticity_gdp_task_async')
 def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
                               gdp_elasticity, use_puf_not_cps=True):
     # convert all string year values to int
@@ -115,7 +115,7 @@ def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
     return json_res
 
 
-@celery_app.task
+@celery_app.task(name='taxbrain_server.celery_tasks.ogusa_async')
 def ogusa_async(user_mods, ogusa_params, guid):
     print("user mods: ", user_mods)
     user_mods = convert_int_key(user_mods)
@@ -141,7 +141,7 @@ def ogusa_async(user_mods, ogusa_params, guid):
     return json_res
 
 
-@celery_app.task
+@celery_app.task(name='taxbrain_server.celery_tasks.btax_async')
 def btax_async(user_mods, start_year):
     print("user mods: ", user_mods)
     user_mods['start_year'] = start_year

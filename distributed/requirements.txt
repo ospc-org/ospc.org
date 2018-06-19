@@ -18,3 +18,4 @@ requests-mock
 requests
 funcsigs
 xlrd >=0.9.0
+pytest

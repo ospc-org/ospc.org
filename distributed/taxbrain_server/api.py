@@ -1,26 +1,26 @@
-from __future__ import print_function, unicode_literals, division
+from __future__ import print_function, unicode_literals, division, absolute_import
 
-from flask import Flask, request, make_response
+from flask import Blueprint, request, make_response
 from celery.result import AsyncResult
 
 import redis
 import json
 
-from utils import set_env
+from taxbrain_server.utils import set_env
 globals().update(set_env())
-from celery_tasks import (celery_app, dropq_task_async,
+from .celery_tasks import (celery_app, dropq_task_async,
                           dropq_task_small_async,
                           ogusa_async, elasticity_gdp_task_async,
                           btax_async)
 
-
-
-app = Flask(__name__)
+print('name', dropq_task_async.name)
+bp = Blueprint('api', __name__)
 
 queue_name = "celery"
 client = redis.StrictRedis(host="redis", port=6379)
 
 def dropq_endpoint(dropq_task):
+    print('method', request.method)
     if request.method == 'POST':
         year_n = request.form['year']
         user_mods = json.loads(request.form['user_mods'])
@@ -47,17 +47,18 @@ def dropq_endpoint(dropq_task):
     return json.dumps(data)
 
 
-@app.route("/dropq_start_job", methods=['GET', 'POST'])
+@bp.route("/dropq_start_job", methods=['GET', 'POST'])
 def dropq_endpoint_full():
     return dropq_endpoint(dropq_task_async)
 
 
-@app.route("/dropq_small_start_job", methods=['GET', 'POST'])
+@bp.route("/dropq_small_start_job", methods=['GET', 'POST'])
 def dropq_endpoint_small():
+    print('dropq_task_small_async name', dropq_task_small_async.name)
     return dropq_endpoint(dropq_task_small_async)
 
 
-@app.route("/btax_start_job", methods=['POST'])
+@bp.route("/btax_start_job", methods=['POST'])
 def btax_endpoint():
     # TODO: this assumes a single year is the key at highest
     # level.
@@ -70,7 +71,7 @@ def btax_endpoint():
     json_res = json.dumps(results)
     return json_res
 
-@app.route("/elastic_gdp_start_job", methods=['POST'])
+@bp.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
     user_mods = json.loads(request.form['user_mods'])
     year_n = int(request.form['year'])
@@ -96,22 +97,24 @@ def elastic_endpoint():
     results = {'job_id': str(raw_results), 'qlength': length}
     return str(json.dumps(results))
 
-@app.route("/dropq_get_result", methods=['GET'])
+@bp.route("/dropq_get_result", methods=['GET'])
 def dropq_results():
     job_id = request.args.get('job_id', '')
     async_result = AsyncResult(job_id)
     if async_result.ready() and async_result.successful():
         return async_result.result
     elif async_result.failed():
+        print('traceback', async_result.traceback)
         return async_result.traceback
     else:
         resp = make_response('not ready', 202)
         return resp
 
-@app.route("/dropq_query_result", methods=['GET'])
+@bp.route("/dropq_query_result", methods=['GET'])
 def query_results():
     job_id = request.args.get('job_id', '')
     async_result = AsyncResult(job_id)
+    print('async_result', async_result.state)
     if async_result.ready() and async_result.successful():
         return 'YES'
     elif async_result.failed():
