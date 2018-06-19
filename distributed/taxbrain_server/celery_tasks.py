@@ -11,12 +11,10 @@ from celery.exceptions import Ignore, Terminated
 import pandas as pd
 
 import btax
-import btax.run_btax as run_btax
 from btax.front_end_util import runner_json_tables
 import taxcalc
 import ogusa
 import run_ogusa
-from taxcalc import Policy, Calculator
 
 
 EXPECTED_KEYS = ('policy', 'consumption', 'behavior',
@@ -27,16 +25,6 @@ TEST_FAIL = False
 from utils import set_env
 globals().update(set_env())
 celery_app = Celery('tasks2', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
-if MOCK_CELERY:
-    CELERY_ALWAYS_EAGER = True
-    BROKER_BACKEND = 'memory'
-    CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
-    def task(func):
-        celery_app_like = Namespace(delay=func)
-        return celery_app_like
-    celery_app = Namespace(task=task)
-
-tax_dta_full = tax_dta = pd.DataFrame({})
 
 
 def convert_int_key(user_mods):
@@ -176,54 +164,3 @@ def btax_async(user_mods, start_year):
     results['btax_version'] = binfo['version']
     json_res = json.dumps(results)
     return json_res
-
-
-@celery_app.task
-def example_async():
-    "example async 4 second function for testing"
-    time.sleep(4)
-    example_table = {'ok': 1}
-    results = {'df_ogusa': example_table}
-
-    if TEST_FAIL:
-        raise Exception()
-
-    #Add version to results
-    vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version']
-    dqvinfo = taxcalc.dropq._version.get_versions()
-    results['dropq_version'] = vinfo['version']
-
-    #ogusa uses different version convention
-    ogvinfo = ogusa._version.get_versions()
-    ogusa_version = ogvinfo['version']
-    results['ogusa_version'] = ogusa_version
-    json_res = json.dumps(results)
-    return json_res
-
-
-def main():
-    import subprocess as sp
-    pfx = sys.prefix
-    args = [os.path.join(pfx, 'bin', 'celery'),
-            '-A',
-            'taxbrain_server.celery_tasks',
-            'worker',
-            '--concurrency=1',
-            '-P',
-            'eventlet',
-            '-l',
-            'info']
-    proc = sp.Popen(args,
-                    env=os.environ,
-                    stdout=sp.PIPE,
-                    stderr=sp.STDOUT)
-    while proc.poll() is None:
-        line = proc.stdout.readline().decode()
-        print(line, end='')
-    print(proc.stdout.read().decode())
-    return proc.poll()
-
-
-if __name__ == "__main__":
-    main()
