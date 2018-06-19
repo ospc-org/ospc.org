@@ -20,15 +20,10 @@ queue_name = "celery"
 client = redis.StrictRedis(host="redis", port=6379)
 
 def dropq_endpoint(dropq_task):
-    print('method', request.method)
-    if request.method == 'POST':
-        year_n = request.form['year']
-        user_mods = json.loads(request.form['user_mods'])
-        first_budget_year = None if 'first_budget_year' not in request.form else request.form['first_budget_year']
-        use_puf_not_cps = None if 'use_puf_not_cps' not in request.form else request.form['use_puf_not_cps']
-    else:
-        year_n = request.args.get('year', '')
-        first_budget_year = None
+    year_n = request.form['year']
+    user_mods = json.loads(request.form['user_mods'])
+    first_budget_year = None if 'first_budget_year' not in request.form else request.form['first_budget_year']
+    use_puf_not_cps = None if 'use_puf_not_cps' not in request.form else request.form['use_puf_not_cps']
 
     year_n = int(year_n)
     # use_puf_not_cps passed as string. If for some reason it is not supplied
@@ -47,12 +42,12 @@ def dropq_endpoint(dropq_task):
     return json.dumps(data)
 
 
-@bp.route("/dropq_start_job", methods=['GET', 'POST'])
+@bp.route("/dropq_start_job", methods=['POST'])
 def dropq_endpoint_full():
     return dropq_endpoint(dropq_task_async)
 
 
-@bp.route("/dropq_small_start_job", methods=['GET', 'POST'])
+@bp.route("/dropq_small_start_job", methods=['POST'])
 def dropq_endpoint_small():
     print('dropq_task_small_async name', dropq_task_small_async.name)
     return dropq_endpoint(dropq_task_small_async)
