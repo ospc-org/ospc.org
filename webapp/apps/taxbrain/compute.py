@@ -26,7 +26,7 @@ TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
 AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
-
+BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
 
 class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''
@@ -114,7 +114,7 @@ class DropqCompute(object):
                     response = self.remote_submit_job(theurl,
                                                       data=packed,
                                                       timeout=TIMEOUT_IN_SECONDS,
-                                                      headers={'Content-Type': 'application/octet-stream'})
+                                                      headers=BYTES_HEADER)
                     if response.status_code == 200:
                         print("submitted: ", hostnames[hostname_idx])
                         year_submitted = True
@@ -262,7 +262,7 @@ class MockCompute(DropqCompute):
         # replying that a job is ready
         self.num_times_to_wait = num_times_to_wait
 
-    def remote_submit_job(self, theurl, data, timeout):
+    def remote_submit_job(self, theurl, data, timeout, headers=None):
         with requests_mock.Mocker() as mock:
             resp = {'job_id': '424242', 'qlength':2}
             resp = json.dumps(resp)
@@ -343,7 +343,7 @@ class NodeDownCompute(MockCompute):
         super(MockCompute, self).__init__(**kwargs)
 
 
-    def remote_submit_job(self, theurl, data, timeout):
+    def remote_submit_job(self, theurl, data, timeout, headers=None):
         with requests_mock.Mocker() as mock:
             resp = {'job_id': '424242', 'qlength':2}
             resp = json.dumps(resp)

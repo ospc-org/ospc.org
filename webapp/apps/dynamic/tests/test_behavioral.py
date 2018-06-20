@@ -1,10 +1,7 @@
 
-from django.test import TestCase
 from django.test import Client
-import mock
-import os
-import json
 import pytest
+import msgpack
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -76,15 +73,17 @@ class TestDynamicBehavioralViews(object):
 
         # Do the partial equilibrium simulation based on the microsim
         pe_reform = {'BE_sub': ['0.25']}
-        pe_response = do_dynamic_sim(CLIENT, 'behavioral', micro1, pe_reform)
-        orig_micro_model_num = micro1.url[-2:-1]
+        do_dynamic_sim(CLIENT, 'behavioral', micro1, pe_reform)
         from webapp.apps.dynamic import views
-        post = views.dropq_compute.last_posted
+        last_posted = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        user_mods = json.loads(post['user_mods'])
-        assert user_mods["policy"]["2020"]['_SS_Earnings_c'][0]  == 15000.0
-        assert user_mods["behavior"]["2016"]["_BE_sub"][0] == 0.25
+        inputs = msgpack.loads(last_posted, encoding='utf8',
+                               use_list=True)
+        last_posted = inputs['inputs']
+        user_mods = last_posted['user_mods']
+        assert user_mods["policy"][2020]['_SS_Earnings_c'][0]  == 15000.0
+        assert user_mods["behavior"][2016]["_BE_sub"][0] == 0.25
 
     def test_behavioral_reform_post_gui(self):
         # Do the microsim
@@ -97,18 +96,20 @@ class TestDynamicBehavioralViews(object):
 
         # Do the partial equilibrium simulation based on the microsim
         pe_reform = {'BE_sub': ['0.25']}
-        pe_response = do_dynamic_sim(CLIENT, 'behavioral', micro1,
-                                     pe_reform, start_year=start_year)
-        orig_micro_model_num = micro1.url[-2:-1]
+        do_dynamic_sim(CLIENT, 'behavioral', micro1, pe_reform,
+                       start_year=start_year)
         from webapp.apps.dynamic import views
-        post = views.dropq_compute.last_posted
+        last_posted = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        user_mods = json.loads(post['user_mods'])
-        assert post["first_budget_year"] == int(start_year)
-        assert user_mods["policy"]["2020"]['_SS_Earnings_c'][0]  == 15000.0
-        assert user_mods["behavior"]["2016"]["_BE_sub"][0] == 0.25
-        assert post['use_puf_not_cps'] == False
+        inputs = msgpack.loads(last_posted, encoding='utf8',
+                               use_list=True)
+        last_posted = inputs['inputs']
+        user_mods = last_posted['user_mods']
+        assert last_posted["first_budget_year"] == int(start_year)
+        assert user_mods["policy"][2020]['_SS_Earnings_c'][0]  == 15000.0
+        assert user_mods["behavior"][2016]["_BE_sub"][0] == 0.25
+        assert last_posted['use_puf_not_cps'] == False
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file
@@ -118,15 +119,17 @@ class TestDynamicBehavioralViews(object):
 
         # Do the partial equilibrium simulation based on the microsim
         be_reform = {'BE_sub': ['0.25']}
-        be_response = do_dynamic_sim(CLIENT, 'behavioral', micro1, be_reform)
-        orig_micro_model_num = micro1.url[-2:-1]
+        do_dynamic_sim(CLIENT, 'behavioral', micro1, be_reform)
         from webapp.apps.dynamic import views
-        post = views.dropq_compute.last_posted
+        last_posted = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        user_mods = json.loads(post["user_mods"])
-        assert post["first_budget_year"] == int(START_YEAR)
-        assert user_mods["behavior"][str(START_YEAR)]["_BE_sub"][0] == 0.25
+        inputs = msgpack.loads(last_posted, encoding='utf8',
+                               use_list=True)
+        last_posted = inputs['inputs']
+        user_mods = last_posted['user_mods']
+        assert last_posted["first_budget_year"] == int(START_YEAR)
+        assert user_mods["behavior"][int(START_YEAR)]["_BE_sub"][0] == 0.25
 
     @pytest.mark.parametrize(
         'start_year,start_year_is_none',
@@ -223,5 +226,5 @@ class TestDynamicBehavioralViews(object):
             'has_errors': ['True']
         }
 
-        pe_response = do_dynamic_sim(CLIENT, 'behavioral', microsim_response,
-                                     data3, start_year=start_year)
+        do_dynamic_sim(CLIENT, 'behavioral', microsim_response,
+                       data3, start_year=start_year)

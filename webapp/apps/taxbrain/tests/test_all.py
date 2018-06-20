@@ -5,7 +5,7 @@ from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                      format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ..param_displayers import default_policy
 from ...taxbrain import compute as compute
-from ..views import convert_val
+from ..helpers import convert_val
 import taxcalc
 from taxcalc import Policy
 import pytest
@@ -109,20 +109,20 @@ class TaxInputTests(TestCase):
             '$20-30K_0',
             '$20-30K_1',
             '$20-30K_2',
-            '$30-40K_0', 
+            '$30-40K_0',
             '$30-40K_1',
             '$30-40K_2',
-            '$40-50K_0', 
-            '$40-50K_1', 
-            '$40-50K_2', 
+            '$40-50K_0',
+            '$40-50K_1',
+            '$40-50K_2',
             '$50-75K_0',
             '$50-75K_1',
-            '$50-75K_2', 
+            '$50-75K_2',
             '$75-100K_0',
             '$75-100K_1',
             '$75-100K_2',
             '$100-200K_0',
-            '$100-200K_1', 
+            '$100-200K_1',
             '$100-200K_2',
             '$200-500K_0',
             '$200-500K_1',
@@ -130,9 +130,9 @@ class TaxInputTests(TestCase):
             '$500-1000K_0',
             '$500-1000K_1',
             '$500-1000K_2',
-            '>$1000K_0', 
-            '>$1000K_1', 
-            '>$1000K_2', 
+            '>$1000K_0',
+            '>$1000K_1',
+            '>$1000K_2',
             'ALL_0',
             'ALL_1',
             'ALL_2'
@@ -177,7 +177,7 @@ class TaxInputTests(TestCase):
             '90-100_2',
             '90-95_0',
             '90-95_1',
-            '90-95_2', 
+            '90-95_2',
             '95-99_0',
             '95-99_1',
             '95-99_2',

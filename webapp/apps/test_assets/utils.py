@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import ast
-import six
+import msgpack
 
 from ..taxbrain.compute import MockCompute
 
@@ -83,14 +83,18 @@ def check_posted_params(mock_compute, params_to_check, start_year,
                      (formatted as taxcalc dict style reform)
     """
     last_posted = mock_compute.last_posted
-    user_mods = json.loads(last_posted["user_mods"])
+    inputs = msgpack.loads(last_posted, encoding='utf8',
+                           use_list=True)
+    last_posted = inputs['inputs']
+    user_mods = last_posted['user_mods']
     assert last_posted["first_budget_year"] == int(start_year)
     if data_source is not None:
         use_puf_not_cps = True if data_source == 'PUF' else False
     assert last_posted["use_puf_not_cps"] == use_puf_not_cps
+    print('checking user_mods', user_mods)
     for year in params_to_check:
         for param in params_to_check[year]:
-            act = user_mods["policy"][str(year)][param]
+            act = user_mods["policy"][year][param]
             exp = params_to_check[year][param]
             # more extensive assertion statement
             # catches: [['true', '2']] == [['true', '2']]
