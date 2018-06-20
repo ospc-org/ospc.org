@@ -338,9 +338,19 @@ def dynamic_elasticities(request, pk):
     start_year = START_YEAR
     if request.method=='POST':
         # Client is attempting to send inputs, validate as form data
-        fields = dict(request.GET)
-        fields.update(dict(request.POST))
-        fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
+        init_fields = dict(request.GET)
+        init_fields.update(dict(request.POST))
+
+        fields = {}
+        for k, v in list(init_fields.items()):
+            if isinstance(v, list):
+                v = v[0]
+            if not v:
+                v = (default_elasticity_parameters(int(start_year))[k]
+                     .col_fields[0]
+                     .default_value)
+            fields[k] = v
+
         start_year = fields.get('start_year', START_YEAR)
         print(fields)
         # TODO: migrate first_year to start_year to get rid of weird stuff like
