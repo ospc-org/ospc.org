@@ -292,12 +292,17 @@ def dynamic_behavioral(request, pk):
                     True,
                     initial=json.loads(dyn_mod_form.data['raw_input_fields'])
                 )
-                dyn_mod_form.add_error(None, OUT_OF_RANGE_ERROR_MSG)
+                dyn_mod_form.add_error(
+                    next(iter(errors_warnings['behavior']['errors'])),
+                    OUT_OF_RANGE_ERROR_MSG
+                )
                 append_errors_warnings(
                     errors_warnings['behavior'],
                     lambda param, msg: dyn_mod_form.add_error(param, msg)
                 )
         has_errors = True
+        if dyn_mod_form.non_field_errors():
+            return HttpResponse("Bad Input!", status=400)
         # received POST but invalid results, return to form with errors
         form_personal_exemp = dyn_mod_form
 

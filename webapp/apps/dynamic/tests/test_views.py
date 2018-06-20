@@ -92,7 +92,7 @@ class DynamicViewsTests(TestCase):
         """
         dynamic_behavior = self.behavioral_post_helper()
 
-        pe_data = {'BE_inc': ['-0.4'], 'foo': 'bar'}
+        pe_data = {'BE_inc': ['-0.4'], 'foo': ['0.0']}
         response = self.client.post(dynamic_behavior, pe_data)
         self.assertEqual(response.status_code, 400)
 

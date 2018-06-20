@@ -64,9 +64,8 @@ class TestTaxBrainViews(object):
         data = get_post_data(START_YEAR)
         data.pop('start_year')
         data.pop('data_source')
-        data['foo'] = 'bar'
-        url = ('/taxbrain/?start_year={0}&data_source={1}'
-               .format(START_YEAR, data_source))
+        data['foo'] = ['0.0']
+        url = '/taxbrain/?start_year={0}&data_source=PUF'.format(START_YEAR)
         response = CLIENT.post(url, data)
         assert response.status_code == 400
 
@@ -203,7 +202,6 @@ class TestTaxBrainViews(object):
         check_posted_params(result2['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
 
-    @pytest.mark.xfail
     def test_taxbrain_post_no_behavior_entries(self):
         # marking as xfail for 822--don't have a way to
         # check if too invalid parameters are posted
