@@ -5,6 +5,7 @@ from celery.result import AsyncResult
 
 import redis
 import json
+import msgpack
 
 from taxbrain_server.utils import set_env
 globals().update(set_env())
@@ -20,23 +21,27 @@ queue_name = "celery"
 client = redis.StrictRedis(host="redis", port=6379)
 
 def dropq_endpoint(dropq_task):
-    year_n = request.form['year']
-    user_mods = json.loads(request.form['user_mods'])
-    first_budget_year = None if 'first_budget_year' not in request.form else request.form['first_budget_year']
-    use_puf_not_cps = None if 'use_puf_not_cps' not in request.form else request.form['use_puf_not_cps']
-
-    year_n = int(year_n)
-    # use_puf_not_cps passed as string. If for some reason it is not supplied
-    # we default to True i.e. using the PUF file
-    if use_puf_not_cps in ('True', 'true') or use_puf_not_cps is None:
-        use_puf_not_cps = True
-    else:
-        use_puf_not_cps = False
-    print("year_n", year_n)
-    print("user_mods", user_mods)
-    print("first_budget_year", first_budget_year)
-    print("use_puf_not_cps", use_puf_not_cps)
-    result = dropq_task.delay(year_n, user_mods, first_budget_year, use_puf_not_cps)
+    # year_n = request.form['year']
+    # user_mods = json.loads(request.form['user_mods'])
+    # first_budget_year = request.form['first_budget_year']
+    # use_puf_not_cps = request.form['use_puf_not_cps']
+    #
+    # year_n = int(year_n)
+    # # use_puf_not_cps passed as string. If for some reason it is not supplied
+    # # we default to True i.e. using the PUF file
+    # if use_puf_not_cps in ('True', 'true') or use_puf_not_cps is None:
+    #     use_puf_not_cps = True
+    # else:
+    #     use_puf_not_cps = False
+    print('dropq endpoint')
+    # print('data',
+    # data = request.get_data()
+    # print('data data', data)
+    data = request.get_data()
+    inputs = msgpack.loads(data, encoding='utf8',
+                           use_list=True)
+    print('inputs', inputs)
+    result = dropq_task.delay(**inputs['inputs'])
     length = client.llen(queue_name) + 1
     data = {'job_id': str(result), 'qlength':length}
     return json.dumps(data)

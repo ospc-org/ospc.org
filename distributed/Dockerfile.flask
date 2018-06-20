@@ -20,6 +20,6 @@ EXPOSE 5050
 COPY ./taxbrain_server /home/distributed/taxbrain_server
 COPY ./setup.py /home/distributed
 RUN cd /home/distributed && pip install -e .
-
+RUN pip install msgpack
 # run the app server
 CMD ["gunicorn", "--bind", "0.0.0.0:5050", "taxbrain_server:create_app()", "--access-logfile", "-"]

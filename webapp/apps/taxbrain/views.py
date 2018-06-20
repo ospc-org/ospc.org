@@ -309,7 +309,7 @@ def submit_reform(request, user=None, json_reform_id=None):
     else:
         log_ip(request)
         user_mods = dict({'policy': reform_dict}, **assumptions_dict)
-        data = {'user_mods': json.dumps(user_mods),
+        data = {'user_mods': user_mods,
                 'first_budget_year': int(start_year),
                 'start_budget_year': 0,
                 'use_puf_not_cps': use_puf_not_cps}

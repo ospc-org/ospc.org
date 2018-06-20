@@ -3,6 +3,7 @@ from .helpers import package_up_vars as _package_up_vars
 from .models import WorkerNodesCounter
 import json
 import requests
+import msgpack
 import taxcalc
 from requests.exceptions import Timeout, RequestException, ConnectionError
 from .helpers import arrange_totals_by_row
@@ -39,9 +40,15 @@ class DropqCompute(object):
         return _package_up_vars(*args, **kwargs)
 
 
-    def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
+    def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS, headers=None):
         print(theurl, data)
-        response = requests.post(theurl, data=data, timeout=timeout)
+        if headers is not None:
+            response = requests.post(theurl,
+                                     data=data,
+                                     timeout=timeout,
+                                     headers=headers)
+        else:
+            response = requests.post(theurl, data=data, timeout=timeout)
         return response
 
 
@@ -82,6 +89,9 @@ class DropqCompute(object):
         first_budget_year = int(data['first_budget_year'])
         start_budget_year = int(data['start_budget_year'])
         num_years = int(data['num_budget_years'])
+        # TODO: propogate this back to all fns that call submit_calculation
+        data.pop('num_budget_years')
+        data.pop('start_budget_year')
 
         years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
@@ -106,10 +116,14 @@ class DropqCompute(object):
             year_submitted = False
             attempts = 0
             while not year_submitted:
-                data['year'] = str(y)
+                data['year'] = y
+                packed = msgpack.dumps({'inputs': data}, use_bin_type=True)
                 theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
-                    response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
+                    response = self.remote_submit_job(theurl,
+                                                      data=packed,
+                                                      timeout=TIMEOUT_IN_SECONDS,
+                                                      headers={'Content-Type': 'application/octet-stream'})
                     if response.status_code == 200:
                         print("submitted: ", hostnames[hostname_idx])
                         year_submitted = True
