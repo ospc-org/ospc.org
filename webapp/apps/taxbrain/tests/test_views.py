@@ -203,9 +203,6 @@ class TestTaxBrainViews(object):
                             str(START_YEAR), data_source=data_source)
 
     def test_taxbrain_post_no_behavior_entries(self):
-        # marking as xfail for 822--don't have a way to
-        # check if too invalid parameters are posted
-
         #Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
