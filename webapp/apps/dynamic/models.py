@@ -21,6 +21,7 @@ from ..taxbrain import helpers as taxbrain_helpers
 from ..taxbrain import param_formatters
 
 import datetime
+from django.utils.timezone import make_aware
 
 
 class DynamicSaveInputs(DataSourceable, models.Model):
@@ -47,7 +48,10 @@ class DynamicSaveInputs(DataSourceable, models.Model):
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
-    creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    creation_date = models.DateTimeField(
+                        default=make_aware(datetime.datetime(2015, 1, 1))
+                    )
+
     # Email address for user who started this job
     user_email = models.CharField(blank=True, default=None, null=True,
                                   max_length=50)
@@ -91,7 +95,9 @@ class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
-    creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    creation_date = models.DateTimeField(
+                        default=make_aware(datetime.datetime(2015, 1, 1))
+                    )
 
     micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
                                   on_delete=models.SET_NULL)
@@ -166,7 +172,9 @@ class DynamicElasticitySaveInputs(DataSourceable, Hostnameable, models.Model):
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
-    creation_date = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    creation_date = models.DateTimeField(
+                        default=make_aware(datetime.datetime(2015, 1, 1))
+                    )
 
     micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
                                   on_delete=models.SET_NULL)
@@ -217,7 +225,9 @@ class DynamicBehaviorOutputUrl(models.Model):
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
-    exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    exp_comp_datetime = models.DateTimeField(
+                            default=make_aware(datetime.datetime(2015, 1, 1))
+                        )
     uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)
@@ -239,7 +249,9 @@ class DynamicElasticityOutputUrl(models.Model):
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
-    exp_comp_datetime = models.DateTimeField(default=datetime.datetime(2015, 1, 1))
+    exp_comp_datetime = models.DateTimeField(
+                            default=make_aware(datetime.datetime(2015, 1, 1))
+                        )
     uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
         max_length=50)

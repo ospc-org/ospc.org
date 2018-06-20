@@ -2,7 +2,6 @@
 import csv
 import pdfkit
 import json
-import pytz
 import os
 import tempfile
 import re
@@ -15,6 +14,7 @@ import sys
 
 import taxcalc
 import datetime
+from django.utils import timezone
 import logging
 from urllib.parse import urlparse, parse_qs
 from ipware.ip import get_real_ip
@@ -131,7 +131,7 @@ def save_model(post_meta):
 
     unique_url.unique_inputs = model
     unique_url.model_pk = model.pk
-    cur_dt = datetime.datetime.utcnow()
+    cur_dt = timezone.now()
     future_offset_seconds = ((2 + post_meta.max_q_length)
                              * JOB_PROC_TIME_IN_SECONDS)
     future_offset = datetime.timedelta(seconds=future_offset_seconds)
@@ -824,7 +824,7 @@ def output_detail(request, pk):
         if all(j == 'YES' for j in jobs_ready):
             results = dropq_compute.dropq_get_results(normalize(job_ids))
             model.tax_result = results
-            model.creation_date = datetime.datetime.now()
+            model.creation_date = timezone.now()
             model.save()
             context = get_result_context(model, request, url)
             context.update(context_vers_disp)
@@ -840,8 +840,7 @@ def output_detail(request, pk):
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
                 exp_comp_dt = url.exp_comp_datetime
-                utc_now = datetime.datetime.utcnow()
-                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                utc_now = timezone.now()
                 dt = exp_comp_dt - utc_now
                 exp_num_minutes = dt.total_seconds() / 60.
                 exp_num_minutes = round(exp_num_minutes, 2)
@@ -870,7 +869,7 @@ def csv_output(request, pk):
 
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')
-    now = datetime.datetime.now()
+    now = timezone.now()
     suffix = "".join(map(str, [now.year, now.month, now.day, now.hour,
                                now.minute, now.second]))
     filename = "taxbrain_outputs_" + suffix + ".csv"
@@ -907,7 +906,7 @@ def csv_input(request, pk):
 
     # Create the HttpResponse object with the appropriate CSV header.
     response = HttpResponse(content_type='text/csv')
-    now = datetime.datetime.now()
+    now = timezone.now()
     suffix = "".join(map(str, [now.year, now.month, now.day, now.hour,
                                now.minute, now.second]))
     filename = "taxbrain_inputs_" + suffix + ".csv"

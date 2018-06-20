@@ -1,7 +1,6 @@
 import csv
 import pdfkit
 import json
-import pytz
 import traceback
 #Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -13,6 +12,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 import btax
 import taxcalc
 import datetime
+from django.utils import timezone
 import logging
 from os import path
 from urllib.parse import urlparse, parse_qs
@@ -201,8 +201,11 @@ def btax_results(request):
 
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
-                cur_dt = datetime.datetime.utcnow()
-                future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
+                cur_dt = timezone.now()
+                future_offset = datetime.timedelta(
+                                    seconds=((2 + max_q_length)
+                                             * JOB_PROC_TIME_IN_SECONDS)
+                                )
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
@@ -439,7 +442,7 @@ def output_detail(request, pk):
         if all([job == 'YES' for job in jobs_ready]):
             tax_result = dropq_compute.btax_get_results(normalize(job_ids))
             model.tax_result = json.dumps(tax_result)
-            model.creation_date = datetime.datetime.now()
+            model.creation_date = timezone.now()
             print('ready')
             model.save()
             return redirect(url)
@@ -453,8 +456,7 @@ def output_detail(request, pk):
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
                 exp_comp_dt = url.exp_comp_datetime
-                utc_now = datetime.datetime.utcnow()
-                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                utc_now = timezone.now()
                 dt = exp_comp_dt - utc_now
                 exp_num_minutes = dt.total_seconds() / 60.
                 exp_num_minutes = round(exp_num_minutes, 2)

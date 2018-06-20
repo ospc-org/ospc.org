@@ -1,6 +1,6 @@
 import json
-import pytz
 import datetime
+from django.utils import timezone
 from urllib.parse import urlparse, parse_qs
 import os
 #Mock some module for imports because we can't fit them on Heroku slugs
@@ -277,7 +277,7 @@ def dynamic_behavioral(request, pk):
 
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
-                cur_dt = datetime.datetime.utcnow()
+                cur_dt = timezone.now()
                 future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
@@ -433,7 +433,7 @@ def dynamic_elasticities(request, pk):
                 unique_url.unique_inputs = model
                 unique_url.model_pk = model.pk
 
-                cur_dt = datetime.datetime.utcnow()
+                cur_dt = timezone.now()
                 future_offset = datetime.timedelta(seconds=((2 + max_q_length) * JOB_PROC_TIME_IN_SECONDS))
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
@@ -588,7 +588,7 @@ def dynamic_finished(request):
     submitted_ids = normalize(job_ids)
     result = dynamic_compute.ogusa_get_results(submitted_ids, status=status)
     dsi.tax_result = result
-    dsi.creation_date = datetime.datetime.now()
+    dsi.creation_date = timezone.now()
     dsi.save()
 
     params = dynamic_params_from_model(dsi)
@@ -712,7 +712,7 @@ def elastic_results(request, pk):
 
         if all([job == 'YES' for job in jobs_ready]):
             model.tax_result = dropq_compute.elastic_get_results(normalize(job_ids))
-            model.creation_date = datetime.datetime.now()
+            model.creation_date = timezone.now()
             model.save()
             return redirect(url)
 
@@ -725,8 +725,7 @@ def elastic_results(request, pk):
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
                 exp_comp_dt = url.exp_comp_datetime
-                utc_now = datetime.datetime.utcnow()
-                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                utc_now = timezone.now()
                 dt = exp_comp_dt - utc_now
                 exp_num_minutes = dt.total_seconds() / 60.
                 exp_num_minutes = round(exp_num_minutes, 2)
@@ -908,7 +907,7 @@ def behavior_results(request, pk):
         if all([job == 'YES' for job in jobs_ready]):
             results = dropq_compute.dropq_get_results(normalize(job_ids))
             model.tax_result = results
-            model.creation_date = datetime.datetime.now()
+            model.creation_date = timezone.now()
             model.save()
             return redirect('behavior_results', url.pk)
         else:
@@ -920,8 +919,7 @@ def behavior_results(request, pk):
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
                 exp_comp_dt = url.exp_comp_datetime
-                utc_now = datetime.datetime.utcnow()
-                utc_now = utc_now.replace(tzinfo=pytz.utc)
+                utc_now = timezone.now()
                 dt = exp_comp_dt - utc_now
                 exp_num_minutes = dt.total_seconds() / 60.
                 exp_num_minutes = round(exp_num_minutes, 2)
