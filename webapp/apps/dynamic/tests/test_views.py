@@ -86,7 +86,6 @@ class DynamicViewsTests(TestCase):
         link_idx = response.url[:-1].rfind('/')
         self.assertTrue(response.url[:link_idx+1].endswith("behavior_results/"))
 
-    @pytest.mark.xfail
     def test_behavioral_post_invalid_param(self):
         """
         Check that we get a 400 error if we submit an invalid field

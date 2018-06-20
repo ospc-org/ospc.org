@@ -57,7 +57,6 @@ class TestTaxBrainViews(object):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
 
-    @pytest.mark.xfail
     def test_taxbrain_post_invalid_param(self):
         """
         Check that we get a 400 error if we submit an invalid field
