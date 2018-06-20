@@ -68,7 +68,7 @@ def run_micro_macro(reform, user_params, guid):
 
     time.sleep(0.5)
     ans = postprocess.create_diff(baseline_dir=BASELINE_DIR, policy_dir=REFORM_DIR)
-    print "total time was ", (time.time() - start_time)
+    print("total time was ", (time.time() - start_time))
 
     return ans
 

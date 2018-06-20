@@ -16,7 +16,7 @@ def set_env():
                         CELERYD_PREFETCH_MULTIPLIER="1",
                         MOCK_CELERY=MOCK_CELERY)
     ENV = {}
-    for k, v in ENV_DEFAULTS.items():
+    for k, v in list(ENV_DEFAULTS.items()):
         ENV[k] = os.environ.get(k, v)
     globals().update(ENV)
     return ENV

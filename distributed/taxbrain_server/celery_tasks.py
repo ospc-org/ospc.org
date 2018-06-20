@@ -1,4 +1,4 @@
-from __future__ import print_function, unicode_literals, division, absolute_import
+
 from argparse import Namespace
 import json
 import os
@@ -149,7 +149,7 @@ def btax_async(user_mods, start_year):
         results.update(tables["json_table"])
         if tables.get("dataframes"):
             dataframes = json.loads(tables["dataframes"])
-            for x, y in dataframes.items():
+            for x, y in list(dataframes.items()):
                 dataframes[x] = json.loads(y)
             results["dataframes"] = dataframes
     else:
