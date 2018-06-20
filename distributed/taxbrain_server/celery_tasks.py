@@ -24,8 +24,12 @@ TEST_FAIL = False
 
 from taxbrain_server.utils import set_env
 globals().update(set_env())
+accept_content = ['msgpack', 'json']
 celery_app = Celery('tasks2', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
-
+celery_app.conf.update(
+    task_serializer='json',
+    accept_content=['msgpack', 'json'],
+)
 
 def convert_int_key(user_mods):
     for key in user_mods:
@@ -35,10 +39,6 @@ def convert_int_key(user_mods):
 
 
 def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True, use_full_sample=True):
-    # convert all year values from string to int
-    for k in user_mods:
-        user_mods[k] = convert_int_key(user_mods[k])
-
     print(
         'keywords to dropq',
         dict(
@@ -84,9 +84,6 @@ def dropq_task_small_async(year, user_mods, first_budget_year, use_puf_not_cps=T
 @celery_app.task(name='taxbrain_server.celery_tasks.elasticity_gdp_task_async')
 def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
                               gdp_elasticity, use_puf_not_cps=True):
-    # convert all string year values to int
-    # all dictionaries in user_mods are empty
-    user_mods["policy"] = convert_int_key(user_mods["policy"])
     print("kw to dropq", dict(
         year_n=year_n,
         start_year=int(first_budget_year),

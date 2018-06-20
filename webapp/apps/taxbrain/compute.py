@@ -80,43 +80,34 @@ class DropqCompute(object):
 
 
     def submit_calculation(self,
-                           data,
+                           data_list,
                            url_template,
                            workers=DROPQ_WORKERS,
                            increment_counter=True,
                            use_wnc_offset=True):
 
-        first_budget_year = int(data['first_budget_year'])
-        start_budget_year = int(data['start_budget_year'])
-        num_years = int(data['num_budget_years'])
-        # TODO: propogate this back to all fns that call submit_calculation
-        data.pop('num_budget_years')
-        data.pop('start_budget_year')
-
-        years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
             wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
             dropq_worker_offset = wnc.current_offset
             if dropq_worker_offset > len(workers):
                 dropq_worker_offset = 0
             if increment_counter:
-                wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
+                wnc.current_offset = (dropq_worker_offset + len(data_list)) % len(DROPQ_WORKERS)
                 wnc.save()
         else:
             dropq_worker_offset = 0
 
-        hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
+        hostnames = workers[dropq_worker_offset: dropq_worker_offset + len(data_list)]
         print("hostnames: ", hostnames)
-        print("submitting data: ", data)
+        print("submitting data: ", data_list)
         num_hosts = len(hostnames)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
-        for y in years:
+        for data in data_list:
             year_submitted = False
             attempts = 0
             while not year_submitted:
-                data['year'] = y
                 packed = msgpack.dumps({'inputs': data}, use_bin_type=True)
                 theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
@@ -133,7 +124,7 @@ class DropqCompute(object):
                         if response_d['qlength'] > max_queue_length:
                             max_queue_length = response_d['qlength']
                     else:
-                        print("FAILED: ", str(y), hostnames[hostname_idx])
+                        print("FAILED: ", data, hostnames[hostname_idx])
                         hostname_idx = (hostname_idx + 1) % num_hosts
                         attempts += 1
                 except Timeout:
@@ -150,12 +141,8 @@ class DropqCompute(object):
 
         return job_ids, max_queue_length
 
-    def _get_years(self, start_budget_year, num_years, first_budget_year):
-        if start_budget_year is not None:
-            return list(range(start_budget_year, num_years))
-        # The following is just a dummy year for btax
-        # Btax is not currently running in separate years, I don't think.
-        return [first_budget_year]
+    def _get_years(self, num_years, first_budget_year):
+        return list(range(0, num_years))
 
     def dropq_results_ready(self, job_ids):
         jobs_done = [None] * len(job_ids)

@@ -311,17 +311,16 @@ def submit_reform(request, user=None, json_reform_id=None):
         user_mods = dict({'policy': reform_dict}, **assumptions_dict)
         data = {'user_mods': user_mods,
                 'first_budget_year': int(start_year),
-                'start_budget_year': 0,
                 'use_puf_not_cps': use_puf_not_cps}
         if do_full_calc:
-            data['num_budget_years'] = NUM_BUDGET_YEARS
+            data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                data
+                data_list
             )
         else:
-            data['num_budget_years'] = NUM_BUDGET_YEARS_QUICK
+            data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS_QUICK)]
             submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                data
+                data_list
             )
 
     return PostMeta(
@@ -557,12 +556,13 @@ def submit_micro(request, pk):
     print('data source', model.data_source)
     data = {'user_mods': json.dumps(user_mods),
             'first_budget_year': int(start_year),
-            'start_budget_year': 0,
-            'num_budget_years': NUM_BUDGET_YEARS,
             'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
-    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(data)
+    data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
+    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+        data_list
+    )
 
     post_meta = PostMeta(
         url=url,

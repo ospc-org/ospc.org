@@ -67,12 +67,10 @@ class DropqComputeBtax(DropqCompute):
         if not bool(user_mods):
             return False
         user_mods = {first_budget_year: user_mods}
-        data['user_mods'] = json.dumps(user_mods)
-        data['first_budget_year'] = str(first_budget_year)
-        data['start_budget_year'] = '0'
-        data['num_budget_years'] = 1
+        data['user_mods'] = user_mods
+        data['start_year'] = int(first_budget_year)
         print('submitting btax data:', data)
-        return self.submit_calculation(data, url_template,
+        return self.submit_calculation([data], url_template,
                                        workers=BTAX_WORKERS,
                                        increment_counter=False,
                                        use_wnc_offset=False)

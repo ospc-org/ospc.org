@@ -21,27 +21,12 @@ queue_name = "celery"
 client = redis.StrictRedis(host="redis", port=6379)
 
 def dropq_endpoint(dropq_task):
-    # year_n = request.form['year']
-    # user_mods = json.loads(request.form['user_mods'])
-    # first_budget_year = request.form['first_budget_year']
-    # use_puf_not_cps = request.form['use_puf_not_cps']
-    #
-    # year_n = int(year_n)
-    # # use_puf_not_cps passed as string. If for some reason it is not supplied
-    # # we default to True i.e. using the PUF file
-    # if use_puf_not_cps in ('True', 'true') or use_puf_not_cps is None:
-    #     use_puf_not_cps = True
-    # else:
-    #     use_puf_not_cps = False
     print('dropq endpoint')
-    # print('data',
-    # data = request.get_data()
-    # print('data data', data)
     data = request.get_data()
     inputs = msgpack.loads(data, encoding='utf8',
                            use_list=True)
     print('inputs', inputs)
-    result = dropq_task.delay(**inputs['inputs'])
+    result = dropq_task.apply_async(kwargs=inputs['inputs'], serializer='msgpack')
     length = client.llen(queue_name) + 1
     data = {'job_id': str(result), 'qlength':length}
     return json.dumps(data)
@@ -54,48 +39,16 @@ def dropq_endpoint_full():
 
 @bp.route("/dropq_small_start_job", methods=['POST'])
 def dropq_endpoint_small():
-    print('dropq_task_small_async name', dropq_task_small_async.name)
     return dropq_endpoint(dropq_task_small_async)
 
 
 @bp.route("/btax_start_job", methods=['POST'])
 def btax_endpoint():
-    # TODO: this assumes a single year is the key at highest
-    # level.
-    user_mods = tuple(json.loads(request.form['user_mods']).values())[0]
-    print('user_mods', user_mods)
-    start_year = int(request.form['first_budget_year'])
-    raw_results = btax_async.delay(user_mods, start_year)
-    length = client.llen(queue_name) + 1
-    results = {'job_id': str(raw_results), 'qlength':length}
-    json_res = json.dumps(results)
-    return json_res
+    return dropq_endpoint(btax_async)
 
 @bp.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
-    user_mods = json.loads(request.form['user_mods'])
-    year_n = int(request.form['year'])
-    print('user_mods', user_mods, 'year_n', year_n)
-    elast_params = json.loads(request.form['gdp_elasticity'])
-    first_budget_year = request.form['first_budget_year']
-    print("elast params", elast_params, " user_mods: ", user_mods)
-    use_puf_not_cps = request.form['use_puf_not_cps']
-    # use_puf_not_cps passed as string. If for some reason it is not supplied
-    # we default to True i.e. using the PUF file
-    if use_puf_not_cps in ('True', 'true') or use_puf_not_cps is None:
-        use_puf_not_cps = True
-    else:
-        use_puf_not_cps = False
-    raw_results = elasticity_gdp_task_async.delay(
-        year_n,
-        user_mods,
-        first_budget_year,
-        elast_params,
-        use_puf_not_cps=use_puf_not_cps
-    )
-    length = client.llen(queue_name) + 1
-    results = {'job_id': str(raw_results), 'qlength': length}
-    return str(json.dumps(results))
+    return dropq_endpoint(elasticity_gdp_task_async)
 
 @bp.route("/dropq_get_result", methods=['GET'])
 def dropq_results():
