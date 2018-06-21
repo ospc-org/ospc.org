@@ -10,9 +10,9 @@ import msgpack
 from taxbrain_server.utils import set_env
 globals().update(set_env())
 from .celery_tasks import (celery_app, dropq_task_async,
-                          dropq_task_small_async,
-                          ogusa_async, elasticity_gdp_task_async,
-                          btax_async)
+                           dropq_task_small_async,
+                           ogusa_async, elasticity_gdp_task_async,
+                           btax_async)
 
 print('name', dropq_task_async.name)
 bp = Blueprint('api', __name__)
