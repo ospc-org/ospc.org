@@ -28,7 +28,7 @@ class DynamicViewsTests(object):
         # Check that the response is 200 OK.
         assert (response.status_code == 200)
 
-    def test_behavioral_post(self):
+    def behavioral_post_helper(self):
         #Monkey patch to mock out running of compute jobs
         import sys
         from webapp.apps.taxbrain import views
@@ -67,6 +67,11 @@ class DynamicViewsTests(object):
         response = self.client.get(dynamic_behavior)
         assert (response.status_code == 200)
 
+        return dynamic_behavior
+
+    def test_behavioral_post(self):
+        dynamic_behavior = self.behavioral_post_helper()
+
         # Do the partial equilibrium job submission
         pe_data = {'BE_inc': ['-0.4']}
         response = self.client.post(dynamic_behavior, pe_data)
@@ -78,6 +83,16 @@ class DynamicViewsTests(object):
         assert (response_success.status_code == 200)
         link_idx = response.url[:-1].rfind('/')
         assert response.url[:link_idx+1].endswith("behavior_results/")
+
+    def test_behavioral_post_invalid_param(self):
+        """
+        Check that we get a 400 error if we submit an invalid field
+        """
+        dynamic_behavior = self.behavioral_post_helper()
+
+        pe_data = {'BE_inc': ['-0.4'], 'foo': ['0.0']}
+        response = self.client.post(dynamic_behavior, pe_data)
+        self.assertEqual(response.status_code, 400)
 
     # Test whether default elasticity is used if no param is given
     @pytest.mark.parametrize(
