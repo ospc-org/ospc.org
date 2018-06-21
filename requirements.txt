@@ -27,3 +27,4 @@ pyparsing
 python-dateutil
 toolz
 whitenoise
+msgpack

@@ -3,6 +3,7 @@ from .helpers import package_up_vars as _package_up_vars
 from .models import WorkerNodesCounter
 import json
 import requests
+import msgpack
 import taxcalc
 from requests.exceptions import Timeout, RequestException, ConnectionError
 from .helpers import arrange_totals_by_row
@@ -25,7 +26,7 @@ TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
 AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
-
+BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
 
 class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''
@@ -39,9 +40,15 @@ class DropqCompute(object):
         return _package_up_vars(*args, **kwargs)
 
 
-    def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
+    def remote_submit_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS, headers=None):
         print(theurl, data)
-        response = requests.post(theurl, data=data, timeout=timeout)
+        if headers is not None:
+            response = requests.post(theurl,
+                                     data=data,
+                                     timeout=timeout,
+                                     headers=headers)
+        else:
+            response = requests.post(theurl, data=data, timeout=timeout)
         return response
 
 
@@ -73,43 +80,41 @@ class DropqCompute(object):
 
 
     def submit_calculation(self,
-                           data,
+                           data_list,
                            url_template,
                            workers=DROPQ_WORKERS,
                            increment_counter=True,
                            use_wnc_offset=True):
 
-        first_budget_year = int(data['first_budget_year'])
-        start_budget_year = int(data['start_budget_year'])
-        num_years = int(data['num_budget_years'])
-
-        years = self._get_years(start_budget_year, num_years, first_budget_year)
         if use_wnc_offset:
             wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
             dropq_worker_offset = wnc.current_offset
             if dropq_worker_offset > len(workers):
                 dropq_worker_offset = 0
             if increment_counter:
-                wnc.current_offset = (dropq_worker_offset + num_years) % len(DROPQ_WORKERS)
+                wnc.current_offset = (dropq_worker_offset + len(data_list)) % len(DROPQ_WORKERS)
                 wnc.save()
         else:
             dropq_worker_offset = 0
 
-        hostnames = workers[dropq_worker_offset: dropq_worker_offset + num_years]
+        hostnames = workers[dropq_worker_offset: dropq_worker_offset + len(data_list)]
         print("hostnames: ", hostnames)
-        print("submitting data: ", data)
+        print("submitting data: ", data_list)
         num_hosts = len(hostnames)
         job_ids = []
         hostname_idx = 0
         max_queue_length = 0
-        for y in years:
+        for data in data_list:
             year_submitted = False
             attempts = 0
             while not year_submitted:
-                data['year'] = str(y)
+                packed = msgpack.dumps({'inputs': data}, use_bin_type=True)
                 theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
-                    response = self.remote_submit_job(theurl, data=data, timeout=TIMEOUT_IN_SECONDS)
+                    response = self.remote_submit_job(theurl,
+                                                      data=packed,
+                                                      timeout=TIMEOUT_IN_SECONDS,
+                                                      headers=BYTES_HEADER)
                     if response.status_code == 200:
                         print("submitted: ", hostnames[hostname_idx])
                         year_submitted = True
@@ -119,7 +124,7 @@ class DropqCompute(object):
                         if response_d['qlength'] > max_queue_length:
                             max_queue_length = response_d['qlength']
                     else:
-                        print("FAILED: ", str(y), hostnames[hostname_idx])
+                        print("FAILED: ", data, hostnames[hostname_idx])
                         hostname_idx = (hostname_idx + 1) % num_hosts
                         attempts += 1
                 except Timeout:
@@ -136,12 +141,8 @@ class DropqCompute(object):
 
         return job_ids, max_queue_length
 
-    def _get_years(self, start_budget_year, num_years, first_budget_year):
-        if start_budget_year is not None:
-            return list(range(start_budget_year, num_years))
-        # The following is just a dummy year for btax
-        # Btax is not currently running in separate years, I don't think.
-        return [first_budget_year]
+    def _get_years(self, num_years, first_budget_year):
+        return list(range(0, num_years))
 
     def dropq_results_ready(self, job_ids):
         jobs_done = [None] * len(job_ids)
@@ -261,7 +262,7 @@ class MockCompute(DropqCompute):
         # replying that a job is ready
         self.num_times_to_wait = num_times_to_wait
 
-    def remote_submit_job(self, theurl, data, timeout):
+    def remote_submit_job(self, theurl, data, timeout, headers=None):
         with requests_mock.Mocker() as mock:
             resp = {'job_id': '424242', 'qlength':2}
             resp = json.dumps(resp)
@@ -342,7 +343,7 @@ class NodeDownCompute(MockCompute):
         super(MockCompute, self).__init__(**kwargs)
 
 
-    def remote_submit_job(self, theurl, data, timeout):
+    def remote_submit_job(self, theurl, data, timeout, headers=None):
         with requests_mock.Mocker() as mock:
             resp = {'job_id': '424242', 'qlength':2}
             resp = json.dumps(resp)

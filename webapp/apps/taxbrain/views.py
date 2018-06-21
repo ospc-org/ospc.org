@@ -38,7 +38,7 @@ from .forms import TaxBrainForm, has_field_errors
 from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
                      ErrorMessageTaxCalculator)
 from .helpers import (taxcalc_results_to_tables, format_csv,
-                      is_wildcard, convert_val, make_bool)
+                      json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
 from .compute import (DropqCompute, MockCompute, JobFailError,
                       NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK, DROPQ_WORKERS)
@@ -200,8 +200,8 @@ def submit_reform(request, user=None, json_reform_id=None):
                        http_response_404=HttpResponse(msg, status=400),
                        has_errors=True
                    )
-        reform_dict = json.loads(json_reform.reform_text)
-        assumptions_dict = json.loads(json_reform.assumption_text)
+        reform_dict = json_int_key_encode(json.loads(json_reform.reform_text))
+        assumptions_dict = json_int_key_encode(json.loads(json_reform.assumption_text))
         reform_text = json_reform.raw_reform_text
         assumptions_text = json_reform.raw_assumption_text
         errors_warnings = json_reform.get_errors_warnings()
@@ -309,19 +309,18 @@ def submit_reform(request, user=None, json_reform_id=None):
     else:
         log_ip(request)
         user_mods = dict({'policy': reform_dict}, **assumptions_dict)
-        data = {'user_mods': json.dumps(user_mods),
+        data = {'user_mods': user_mods,
                 'first_budget_year': int(start_year),
-                'start_budget_year': 0,
                 'use_puf_not_cps': use_puf_not_cps}
         if do_full_calc:
-            data['num_budget_years'] = NUM_BUDGET_YEARS
+            data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
             submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                data
+                data_list
             )
         else:
-            data['num_budget_years'] = NUM_BUDGET_YEARS_QUICK
+            data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS_QUICK)]
             submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                data
+                data_list
             )
 
     return PostMeta(
@@ -550,19 +549,20 @@ def submit_micro(request, pk):
         )
         json_reform.save()
     else:
-        reform_dict = json.loads(model.json_text.reform_text)
-        assumptions_dict = json.loads(model.json_text.assumption_text)
+        reform_dict = json_int_key_encode(json.loads(model.json_text.reform_text))
+        assumptions_dict = json_int_key_encode(json.loads(model.json_text.assumption_text))
 
     user_mods = dict({'policy': reform_dict}, **assumptions_dict)
     print('data source', model.data_source)
-    data = {'user_mods': json.dumps(user_mods),
+    data = {'user_mods': user_mods,
             'first_budget_year': int(start_year),
-            'start_budget_year': 0,
-            'num_budget_years': NUM_BUDGET_YEARS,
             'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
-    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(data)
+    data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
+    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+        data_list
+    )
 
     post_meta = PostMeta(
         url=url,

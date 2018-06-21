@@ -1,20 +1,8 @@
 gunicorn
 flask
 redis
-greenlet
 toolz
-fabric
-boto
 celery
-eventlet==0.20.0
-retrying
-plotly
-sphinx-rtd-theme
-sphinx-autobuild
-redis
-supervisor
-plotly
 requests-mock
 requests
-funcsigs
-xlrd >=0.9.0
+pytest

@@ -217,20 +217,19 @@ def dynamic_behavioral(request, pk):
             taxbrain_model = outputsurl.unique_inputs
             model.data_source = taxbrain_model.data_source
             model.save()
-             # necessary for simulations before PR 641
-            if not taxbrain_model.json_text:
-                taxbrain_model.set_fields()
-                (reform_dict, _, reform_text, _,
-                    errors_warnings) = taxbrain_model.get_model_specs()
-                json_reform = JSONReformTaxCalculator(
-                    reform_text=json.dumps(reform_dict),
-                    raw_reform_text=reform_text,
-                    errors_warnings=json.dumps(errors_warnings)
-                )
-                json_reform.save()
-                taxbrain_model.json_text = json_reform
-            else:
-                reform_dict = json.loads(taxbrain_model.json_text.reform_text)
+            # get taxbrain data
+            # inputs are re-built because the loaded JSON serialization loses
+            # some info around the start year
+            taxbrain_model.set_fields()
+            (reform_dict, _, reform_text, _,
+                errors_warnings) = taxbrain_model.get_model_specs()
+            json_reform = JSONReformTaxCalculator(
+                reform_text=json.dumps(reform_dict),
+                raw_reform_text=reform_text,
+                errors_warnings_text=json.dumps(errors_warnings)
+            )
+            json_reform.save()
+            taxbrain_model.json_text = json_reform
 
             (_, assumptions_dict, _, _,
                 errors_warnings) = model.get_model_specs()
@@ -248,13 +247,12 @@ def dynamic_behavioral(request, pk):
 
                 # start calc job
                 user_mods = dict({'policy': reform_dict}, **assumptions_dict)
-                data = {'user_mods': json.dumps(user_mods),
+                data = {'user_mods': user_mods,
                         'first_budget_year': int(start_year),
-                        'start_budget_year': 0,
-                        'num_budget_years': NUM_BUDGET_YEARS,
                         'use_puf_not_cps': model.use_puf_not_cps}
+                data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
                 submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                    data
+                    data_list
                 )
 
                 model.job_ids = denormalize(submitted_ids)
@@ -376,22 +374,19 @@ def dynamic_elasticities(request, pk):
             model.micro_sim = outputsurl
             taxbrain_model = outputsurl.unique_inputs
             model.data_source = taxbrain_model.data_source
-            # necessary for simulations before PR 641
-            if not taxbrain_model.json_text:
-                taxbrain_model.set_fields()
-                (reform_dict, assumptions_dict, reform_text, assumptions_text,
-                    errors_warnings) = taxbrain_model.get_model_specs()
-                json_reform = JSONReformTaxCalculator(
-                    reform_text=json.dumps(reform_dict),
-                    assumption_text=json.dumps(assumptions_dict),
-                    raw_reform_text=reform_text,
-                    raw_assumption_text=assumptions_text
-                )
-                json_reform.save()
-                taxbrain_model.json_text = json_reform
-                taxbrain_model.save()
-            else:
-                reform_dict = json.loads(taxbrain_model.json_text.reform_text)
+            # get taxbrain data
+            # inputs are re-built because the loaded JSON serialization loses
+            # some info around the start year
+            taxbrain_model.set_fields()
+            (reform_dict, _, reform_text, _,
+                errors_warnings) = taxbrain_model.get_model_specs()
+            json_reform = JSONReformTaxCalculator(
+                reform_text=json.dumps(reform_dict),
+                raw_reform_text=reform_text,
+                errors_warnings_text=json.dumps(errors_warnings)
+            )
+            json_reform.save()
+            taxbrain_model.json_text = json_reform
             # empty assumptions dictionary
             assumptions_dict = {"behavior": {},
                                 "growdiff_response": {},
@@ -400,16 +395,15 @@ def dynamic_elasticities(request, pk):
                                 "growmodel": {}}
 
             user_mods = dict({'policy': reform_dict}, **assumptions_dict)
-            data = {'user_mods': json.dumps(user_mods),
+            data = {'user_mods': user_mods,
                     'gdp_elasticity': gdp_elasticity,
                     'first_budget_year': int(start_year),
-                    'start_budget_year': 0,
-                    'num_budget_years': NUM_BUDGET_YEARS,
                     'use_puf_not_cps': model.use_puf_not_cps}
 
             # start calc job
+            data_list = [dict(year_n=i, **data) for i in range(NUM_BUDGET_YEARS)]
             submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
-                data
+                data_list
             )
 
             if not submitted_ids:

@@ -5,6 +5,7 @@ import mock
 import json
 import pytest
 import os
+import msgpack
 
 NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
@@ -708,9 +709,11 @@ class TestTaxBrainViews(object):
         result = do_micro_sim(CLIENT, data2, post_url=url)
 
         dropq_compute = result['tb_dropq_compute']
-        user_mods = json.loads(dropq_compute.last_posted["user_mods"])
+        inputs = msgpack.loads(dropq_compute.last_posted, encoding='utf8',
+                               use_list=True)
+        user_mods = inputs['inputs']['user_mods']
         if use_assumptions:
-            assert user_mods["behavior"][str(2018)]["_BE_sub"][0] == 1.0
+            assert user_mods["behavior"][2018]["_BE_sub"][0] == 1.0
         truth_mods = {2018: {'_II_em': [8000.0]}}
         check_posted_params(dropq_compute, truth_mods, start_year,
                             data_source=data_source)

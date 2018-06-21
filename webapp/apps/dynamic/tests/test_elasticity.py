@@ -1,10 +1,9 @@
 
 from django.test import TestCase
 from django.test import Client
-import mock
-import os
 import json
 import sys
+import msgpack
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
@@ -93,9 +92,11 @@ class DynamicElasticityViewsTests(TestCase):
         egdp_response = do_dynamic_sim(self.client,'macro', micro1['response'],
                                           egdp_reform)
         from webapp.apps.dynamic import views
-        post = views.dropq_compute.last_posted
-
-        assert post['use_puf_not_cps'] == False
+        last_posted = views.dropq_compute.last_posted
+        inputs = msgpack.loads(last_posted, encoding='utf8',
+                               use_list=True)
+        last_posted = inputs['inputs']
+        assert last_posted['use_puf_not_cps'] == False
 
     @pytest.mark.xfail
     def test_elasticity_reform_from_file(self):

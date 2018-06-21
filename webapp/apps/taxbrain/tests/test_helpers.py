@@ -3,7 +3,7 @@ import json
 import numpy as np
 import taxcalc
 import pyparsing as pp
-from ..helpers import (rename_keys, INPUT, make_bool,
+from ..helpers import (rename_keys, json_int_key_encode, INPUT, make_bool,
                        is_reverse,
                        reorder_lists)
 from ..param_formatters import parse_value, MetaParam
@@ -133,6 +133,12 @@ def test_rename_keys(monkeypatch):
     act = rename_keys(a, map_dict)
     np.testing.assert_equal(act, exp)
 
+
+def test_json_int_key_encode():
+    exp = {2017: 'stuff', 2019: {2016: 'stuff', 2000: {1: 'heyo'}}}
+    json_str = json.loads(json.dumps(exp))
+    act = json_int_key_encode(json_str)
+    assert exp == act
 
 def test_reorder_lists():
     reorder_map = [1, 0, 2]
