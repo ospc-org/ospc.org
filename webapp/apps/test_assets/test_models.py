@@ -4,7 +4,7 @@ import json
 import os
 import pytest
 import numpy as np
-from datetime import datetime
+from django.utils import timezone
 
 from ..taxbrain.models import (JSONReformTaxCalculator,
                                OutputUrl, TaxSaveInputs)
@@ -38,7 +38,7 @@ class TaxBrainTableResults(TaxBrainModelsTest):
 
         model = unique_url.unique_inputs
         model.tax_result = self.skelaton_res_lt_0130
-        model.creation_date = datetime.now()
+        model.creation_date = timezone.now()
         model.save()
 
         np.testing.assert_equal(model.get_tax_result(),
@@ -52,7 +52,7 @@ class TaxBrainTableResults(TaxBrainModelsTest):
 
         model = unique_url.unique_inputs
         model.tax_result = self.skelaton_res_gt_0130
-        model.creation_date = datetime.now()
+        model.creation_date = timezone.now()
         model.save()
 
         np.testing.assert_equal(model.get_tax_result(),

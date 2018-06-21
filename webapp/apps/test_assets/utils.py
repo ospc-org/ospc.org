@@ -146,7 +146,8 @@ def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_cal
 
 def get_taxbrain_model(_fields, first_year=2017,
                        quick_calc=False, taxcalc_vers="0.13.0",
-                       webapp_vers="1.2.0", exp_comp_datetime = "2017-10-10",
+                       webapp_vers="1.2.0",
+                       exp_comp_datetime="2017-10-10T00:00:00+00:00",
                        Form=TaxBrainForm, UrlModel=OutputUrl,
                        use_puf_not_cps=True):
     fields = _fields.copy()
