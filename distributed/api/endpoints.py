@@ -7,15 +7,15 @@ import redis
 import json
 import msgpack
 
-from taxbrain_server.utils import set_env
+from api.utils import set_env
 globals().update(set_env())
-from .celery_tasks import (celery_app, dropq_task_async,
+from api.celery_tasks import (celery_app, dropq_task_async,
                            dropq_task_small_async,
                            ogusa_async, elasticity_gdp_task_async,
                            btax_async)
 
 print('name', dropq_task_async.name)
-bp = Blueprint('api', __name__)
+bp = Blueprint('endpoints', __name__)
 
 queue_name = "celery"
 client = redis.StrictRedis(host="redis", port=6379)

@@ -10,8 +10,8 @@ src/django-flatblocks
 src/dropq
 webapp_test.sh
 
-taxbrain_server/puf.csv.gz
-taxbrain_server/puf.csv
+api/puf.csv.gz
+api/puf.csv
 
 logs/
 

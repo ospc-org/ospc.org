@@ -17,9 +17,9 @@ ENV DEBUG true
 EXPOSE 80
 EXPOSE 5050
 
-COPY ./taxbrain_server /home/distributed/taxbrain_server
+COPY ./api /home/distributed/api
 COPY ./setup.py /home/distributed
 RUN cd /home/distributed && pip install -e .
 
 # run the app server
-CMD ["gunicorn", "--bind", "0.0.0.0:5050", "taxbrain_server:create_app()", "--access-logfile", "-"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5050", "api:create_app()", "--access-logfile", "-"]

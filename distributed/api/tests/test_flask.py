@@ -2,7 +2,7 @@ import pytest
 import json
 import time
 
-from taxbrain_server import create_app
+from api import create_app
 
 @pytest.fixture
 def app():
@@ -33,7 +33,7 @@ def test_dropq_small_start_job(client):
                        data=data
                        )
     print(resp)
-    print('raw data', resp.data)
+    print(('raw data', resp.data))
     data = json.loads(resp.data.encode('utf-8'))
     job_id = data['job_id']
     status = 'NO'

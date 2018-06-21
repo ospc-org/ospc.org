@@ -18,8 +18,8 @@ RUN conda install numpy>=1.12.1 pandas>=0.23.0 taxcalc=0.20.1 \
 
 RUN pip install -r requirements.txt
 
-RUN mkdir /home/distributed/taxbrain_server
-WORKDIR /home/distributed/taxbrain_server
+RUN mkdir /home/distributed/api
+WORKDIR /home/distributed/api
 
 # not safe. don't publish with token
 # see conversations like: https://github.com/moby/moby/issues/33343

@@ -1,9 +1,9 @@
 from distutils.core import setup
 
 setup(
-    name='PolicyBrainServer',
+    name='api',
     version='0.1.0',
-    packages=['taxbrain_server',],
+    packages=['api',],
     license='',
-    long_description='server for policybrain',
+    long_description='API server for PolicyBrain',
 )

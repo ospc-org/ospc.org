@@ -10,7 +10,7 @@ def create_app(test_config=None):
     if test_config is not None:
         app.config.update(test_config)
 
-    from taxbrain_server import api
-    app.register_blueprint(api.bp)
+    from api import endpoints
+    app.register_blueprint(endpoints.bp)
 
     return app
