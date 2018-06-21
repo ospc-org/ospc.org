@@ -25,7 +25,7 @@ def dropq_endpoint(dropq_task):
     result = dropq_task.apply_async(kwargs=inputs['inputs'],
                                     serializer='msgpack')
     length = client.llen(queue_name) + 1
-    data = {'job_id': str(result), 'qlength':length}
+    data = {'job_id': str(result), 'qlength': length}
     return json.dumps(data)
 
 
@@ -43,9 +43,11 @@ def dropq_endpoint_small():
 def btax_endpoint():
     return dropq_endpoint(btax_async)
 
+
 @bp.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
     return dropq_endpoint(elasticity_gdp_task_async)
+
 
 @bp.route("/dropq_get_result", methods=['GET'])
 def dropq_results():
@@ -59,6 +61,7 @@ def dropq_results():
     else:
         resp = make_response('not ready', 202)
         return resp
+
 
 @bp.route("/dropq_query_result", methods=['GET'])
 def query_results():
