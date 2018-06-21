@@ -1,5 +1,3 @@
-
-
 from flask import Blueprint, request, make_response
 from celery.result import AsyncResult
 
@@ -7,18 +5,16 @@ import redis
 import json
 import msgpack
 
-from api.utils import set_env
-globals().update(set_env())
-from api.celery_tasks import (celery_app, dropq_task_async,
-                           dropq_task_small_async,
-                           ogusa_async, elasticity_gdp_task_async,
-                           btax_async)
+from api.celery_tasks import (dropq_task_async,
+                              dropq_task_small_async,
+                              elasticity_gdp_task_async,
+                              btax_async)
 
-print('name', dropq_task_async.name)
 bp = Blueprint('endpoints', __name__)
 
 queue_name = "celery"
 client = redis.StrictRedis(host="redis", port=6379)
+
 
 def dropq_endpoint(dropq_task):
     print('dropq endpoint')
@@ -26,7 +22,8 @@ def dropq_endpoint(dropq_task):
     inputs = msgpack.loads(data, encoding='utf8',
                            use_list=True)
     print('inputs', inputs)
-    result = dropq_task.apply_async(kwargs=inputs['inputs'], serializer='msgpack')
+    result = dropq_task.apply_async(kwargs=inputs['inputs'],
+                                    serializer='msgpack')
     length = client.llen(queue_name) + 1
     data = {'job_id': str(result), 'qlength':length}
     return json.dumps(data)
