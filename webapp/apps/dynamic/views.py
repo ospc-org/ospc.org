@@ -41,7 +41,7 @@ from ..taxbrain.views import (make_bool, dropq_compute,
 from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
                                          parse_fields, append_errors_warnings)
 from ..taxbrain.helpers import (taxcalc_results_to_tables,
-                                convert_val)
+                                convert_val, json_int_key_encode)
 from ..taxbrain.param_displayers import default_behavior
 from ..taxbrain.compute import JobFailError, DROPQ_WORKERS
 from .helpers import (default_parameters, job_submitted,
@@ -218,29 +218,33 @@ def dynamic_behavioral(request, pk):
             model.data_source = taxbrain_model.data_source
             model.save()
             # get taxbrain data
-            # inputs are re-built because the loaded JSON serialization loses
-            # some info around the start year
-            taxbrain_model.set_fields()
-            (reform_dict, _, reform_text, _,
-                errors_warnings) = taxbrain_model.get_model_specs()
-            json_reform = JSONReformTaxCalculator(
-                reform_text=json.dumps(reform_dict),
-                raw_reform_text=reform_text,
-                errors_warnings_text=json.dumps(errors_warnings)
-            )
-            json_reform.save()
-            taxbrain_model.json_text = json_reform
+            # necessary for simulations before PR 641
+            if not taxbrain_model.json_text:
+                taxbrain_model.set_fields()
+                (reform_dict, _, reform_text, _,
+                    errors_warnings) = taxbrain_model.get_model_specs()
+                json_reform = JSONReformTaxCalculator(
+                    reform_text=json.dumps(reform_dict),
+                    raw_reform_text=reform_text,
+                    errors_warnings=json.dumps(errors_warnings)
+                )
+                json_reform.save()
+                taxbrain_model.json_text = json_reform
+            else:
+                reform_dict = json_int_key_encode(
+                    json.loads(taxbrain_model.json_text.reform_text)
+                )
 
-            (_, assumptions_dict, _, _,
+            (_, assumptions_dict, _, assumption_text,
                 errors_warnings) = model.get_model_specs()
-
             taxbrain_model.json_text.assumption_text = json.dumps(assumptions_dict)
-            taxbrain_model.json_text.raw_assumption_text = ''
+            taxbrain_model.json_text.raw_assumption_text = assumption_text
             # update the behavior key in the errors warnings dictionary created
             # in the static run
             policy_ew = taxbrain_model.json_text.get_errors_warnings()
             policy_ew['behavior'] = errors_warnings['behavior']
             taxbrain_model.json_text.errors_warnings_text = json.dumps(policy_ew)
+            taxbrain_model.json_text.save()
             taxbrain_model.save()
             # no problems--let's submit the jobs
             if len(errors_warnings['behavior']['errors']) == 0:
@@ -280,7 +284,6 @@ def dynamic_behavioral(request, pk):
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
-
                 return redirect('behavior_results', unique_url.pk)
             else: # parameters caused some errors; store errors on object
                 # ensure that parameters causing the warnings are shown on page
@@ -375,18 +378,25 @@ def dynamic_elasticities(request, pk):
             taxbrain_model = outputsurl.unique_inputs
             model.data_source = taxbrain_model.data_source
             # get taxbrain data
-            # inputs are re-built because the loaded JSON serialization loses
-            # some info around the start year
-            taxbrain_model.set_fields()
-            (reform_dict, _, reform_text, _,
-                errors_warnings) = taxbrain_model.get_model_specs()
-            json_reform = JSONReformTaxCalculator(
-                reform_text=json.dumps(reform_dict),
-                raw_reform_text=reform_text,
-                errors_warnings_text=json.dumps(errors_warnings)
-            )
-            json_reform.save()
-            taxbrain_model.json_text = json_reform
+            # necessary for simulations before PR 641
+            if not taxbrain_model.json_text:
+                taxbrain_model.set_fields()
+                (reform_dict, assumptions_dict, reform_text, assumptions_text,
+                    errors_warnings) = taxbrain_model.get_model_specs()
+                json_reform = JSONReformTaxCalculator(
+                    reform_text=json.dumps(reform_dict),
+                    assumption_text=json.dumps(assumptions_dict),
+                    raw_reform_text=reform_text,
+                    raw_assumption_text=assumptions_text
+                )
+                json_reform.save()
+                taxbrain_model.json_text = json_reform
+                taxbrain_model.json_text.save()
+                taxbrain_model.save()
+            else:
+                reform_dict = json_int_key_encode(
+                    json.loads(taxbrain_model.json_text.reform_text)
+                )
             # empty assumptions dictionary
             assumptions_dict = {"behavior": {},
                                 "growdiff_response": {},
@@ -804,13 +814,12 @@ def behavior_results(request, pk):
     elif micro.input_fields is not None:
         reform = to_json_reform(first_year, micro.input_fields)
         reform_file_contents = json.dumps(reform, indent=4)
-        assump_file_contents = '{}'
+        model.set_fields()
+        assump = to_json_reform(first_year, model.input_fields)
+        assump_file_contents = json.dumps(assump, indent=4)
     else:
         reform_file_contents = ''
         assump_file_contents = ''
-
-    dynamic_parameters = to_json_reform(first_year, model.input_fields)
-    dynamic_file_contents = json.dumps(dynamic_parameters, indent=4)
 
     if model.tax_result:
         # try to render table; if failure render not available page
@@ -880,7 +889,6 @@ def behavior_results(request, pk):
             'microsim_url': microsim_url,
             'reform_file_contents': reform_file_contents,
             'assump_file_contents': assump_file_contents,
-            'dynamic_file_contents': dynamic_file_contents,
             'results_type': "behavioral"
         }
         context.update(context_vers_disp)
