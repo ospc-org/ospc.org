@@ -22,6 +22,7 @@ Release 1.7.0 on 2018-06-??
 
 **Bug Fixes**
 - [#904](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/904) - Fix formatting of the first line in CSV output for better compatibility - Lucas Szwarcberg
+- [#912](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/912) - Cleans up input parameter save and display logic for dyanamic app - Hank Doupe
 
 Release 1.6.0 on 2018-06-13
 ----------------------------
