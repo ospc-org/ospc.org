@@ -25,9 +25,9 @@ for information on how to set this up on your operating system.
     2. run
     ```
     export PB_VERSION='type current PolicyBrain version here'
-    docker build -t distributed:$PB_VERSION ./
-    docker build -t celery:$PB_VERSION --file Dockerfile.celery ./
-    docker build -t flask:$PB_VERSION --file Dockerfile.flask
+    docker build -t opensourcepolicycenter/distributed:$PB_VERSION ./
+    docker build -t opensourcepolicycenter/celery:$PB_VERSION --build-arg TAG=$PB_VERSION --file Dockerfile.celery ./
+    docker build -t opensourcepolicycenter/flask:$PB_VERSION --build-arg TAG=$PB_VERSION --file Dockerfile.flask ./
     ```
 3. Depending on your system you may have to tweak the Docker memory and CPU
 usage limits. I find that I can do most runs with RAM set around 8 GB and

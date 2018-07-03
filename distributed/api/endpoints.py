@@ -13,7 +13,8 @@ from api.celery_tasks import (dropq_task_async,
 bp = Blueprint('endpoints', __name__)
 
 queue_name = "celery"
-client = redis.StrictRedis(host="redis", port=6379)
+client = redis.StrictRedis.from_url(os.environ.get("CELERY_BROKER_URL",
+                                                   "redis://redis:6379/0"))
 
 
 def dropq_endpoint(dropq_task):
