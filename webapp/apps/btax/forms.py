@@ -1,6 +1,5 @@
 from django import forms
 from django.forms import ModelForm
-from django.utils.translation import ugettext_lazy as _
 
 from .models import BTaxSaveInputs
 from .helpers import (BTaxField, BTaxParam, get_btax_defaults,
@@ -9,7 +8,6 @@ from ..taxbrain.helpers import (is_number, int_to_nth,
                                 is_string, string_to_float_array,
                                 check_wildcards, expand_list,
                                 propagate_user_list)
-import taxcalc
 
 from ..taxbrain.forms import (has_field_errors,
                               bool_like,
@@ -86,7 +84,7 @@ class BTaxExemptionForm(ModelForm):
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
                 try:
                     submitted_col_values = string_to_float_array(submitted_col_values_raw)
-                except ValueError as ve:
+                except ValueError:
                     # Assuming wildcard notation here
                     submitted_col_values_list = submitted_col_values_raw.split(',')
                     param_name = parameter_name(col_field.id)

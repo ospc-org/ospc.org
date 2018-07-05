@@ -1,7 +1,5 @@
 from django.test import Client
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test.client import RequestFactory
-import mock
 import json
 import pytest
 import os
@@ -16,7 +14,6 @@ from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
                        NodeDownCompute, MockFailedComputeOnOldHost)
 from ..views import get_result_context
 import taxcalc
-from taxcalc import Policy
 
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data,

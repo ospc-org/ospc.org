@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 
 from .views import (show_job_submitted, dynamic_input, dynamic_finished,
                     ogusa_results, dynamic_landing, dynamic_behavioral,

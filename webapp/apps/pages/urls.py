@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 
 from .views import (homepage, aboutpage, newspage, gallerypage, hellopage,
                    embedpage, widgetpage, newsdetailpage,

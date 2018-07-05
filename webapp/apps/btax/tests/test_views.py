@@ -1,14 +1,11 @@
 from django.test import TestCase
 from django.test import Client
-import mock
 
 from ..models import BTaxSaveInputs, BTaxOutputUrl
 from ..forms import BTaxExemptionForm
 from ...taxbrain.models import WorkerNodesCounter
 from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
-import taxcalc
-from taxcalc import Policy
 from ...btax import views
 
 from ...constants import START_YEAR
@@ -62,7 +59,6 @@ class BTaxViewsTests(TestCase):
 
     def test_btax_nodes_down(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
         from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = NodeDownComputeBtax()
 
@@ -80,7 +76,6 @@ class BTaxViewsTests(TestCase):
 
     def test_btax_failed_job(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
         from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = MockFailedComputeBtax()
         data = OK_POST_DATA.copy()
@@ -134,7 +129,6 @@ class BTaxViewsTests(TestCase):
 
     def test_btax_edit_ccc_switches_show_correctly(self):
         #Monkey patch to mock out running of compute jobs
-        import sys
         from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = MockComputeBtax()
 
@@ -167,7 +161,6 @@ class BTaxViewsTests(TestCase):
         """
         start_year = 2018
         #Monkey patch to mock out running of compute jobs
-        import sys
         from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = MockComputeBtax()
         fields = {'first_year': str(start_year),
@@ -195,7 +188,6 @@ class BTaxViewsTests(TestCase):
         """
         start_year = START_YEAR
         #Monkey patch to mock out running of compute jobs
-        import sys
         from webapp.apps.btax import views as webapp_views
         webapp_views.dropq_compute = MockComputeBtax()
         fields = {'first_year': str(start_year),

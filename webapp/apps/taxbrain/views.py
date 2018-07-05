@@ -3,10 +3,7 @@ import csv
 import pdfkit
 import json
 import os
-import tempfile
-import re
 import traceback
-import requests
 
 
 from mock import Mock
@@ -15,26 +12,18 @@ import sys
 import taxcalc
 import datetime
 from django.utils import timezone
-import logging
 from urllib.parse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
-from django.core import serializers
-from django.template.context_processors import csrf
-from django.core.exceptions import ValidationError
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import permission_required
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          JsonResponse)
 from django.shortcuts import (render, render_to_response, get_object_or_404,
                               redirect)
-from django.template import loader, Context
 from django.template.context import RequestContext
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
-from django import forms
 
-from .forms import TaxBrainForm, has_field_errors
+from .forms import TaxBrainForm
 from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
                      ErrorMessageTaxCalculator)
 from .helpers import (taxcalc_results_to_tables, format_csv,
@@ -194,7 +183,7 @@ def submit_reform(request, user=None, json_reform_id=None):
             json_reform = JSONReformTaxCalculator.objects.get(
                 id=int(json_reform_id)
             )
-        except Exception as e:
+        except Exception:
             msg = "ID {} is not in JSON reform database".format(json_reform_id)
             return BadPost(
                        http_response_404=HttpResponse(msg, status=400),

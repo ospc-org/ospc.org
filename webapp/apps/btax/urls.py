@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 
 from .views import (btax_results, output_detail,
                     edit_btax_results, generate_mock_results)

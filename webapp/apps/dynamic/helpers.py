@@ -1,5 +1,4 @@
 import os
-import requests
 import json
 import sys
 import taxcalc
@@ -12,12 +11,10 @@ MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
 
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-from ..taxbrain.helpers import package_up_vars, default_taxcalc_data
+from ..taxbrain.helpers import default_taxcalc_data
 from ..taxbrain.param_displayers import TaxCalcParam
 from ..taxbrain.compute import GDP_ELAST_ROW_NAMES
 from django.core.mail import send_mail
-import requests
-from requests.exceptions import Timeout, RequestException
 ogusa_workers = os.environ.get('OGUSA_WORKERS', '')
 OGUSA_WORKERS = ogusa_workers.split(",")
 dropq_workers = os.environ.get('DROPQ_WORKERS', '')

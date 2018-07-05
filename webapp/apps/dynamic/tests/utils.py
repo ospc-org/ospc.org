@@ -1,21 +1,11 @@
 
-from django.test import TestCase
-from django.test import Client
-import mock
-import os
-import sys
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.models import TaxSaveInputs, OutputUrl
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                                  format_csv, arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 from ..compute import MockDynamicCompute
-import taxcalc
-from taxcalc import Policy
 
-from ...test_assets import *
-from ...test_assets.utils import get_dropq_compute_from_module, do_micro_sim
+from ...test_assets.utils import get_dropq_compute_from_module
 
 START_YEAR = '2016'
 

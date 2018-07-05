@@ -5,9 +5,8 @@ import json
 import requests
 import msgpack
 import taxcalc
-from requests.exceptions import Timeout, RequestException, ConnectionError
+from requests.exceptions import RequestException, Timeout
 from .helpers import arrange_totals_by_row
-from ..constants import START_YEAR
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
@@ -30,7 +29,6 @@ BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
 
 class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''
-    pass
 
 class DropqCompute(object):
 

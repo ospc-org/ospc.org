@@ -3,7 +3,7 @@ import json
 import time
 import msgpack
 
-from api import create_app, endpoints
+from api import create_app
 
 
 

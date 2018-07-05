@@ -1,7 +1,6 @@
 from django.test import TestCase
 
 import pytest
-from mock import patch
 
 from django.test import Client
 from django.core.urlresolvers import reverse

@@ -1,16 +1,8 @@
-import mock
-import json
 
 from django.test import TestCase
 from django.test import Client
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test.client import RequestFactory
 
-from .. import compute
-from ..compute import DropqCompute, MockCompute
-from ...test_assets import *
-import requests_mock
-import msgpack
+from ..compute import MockCompute
 
 
 class MockComputeTests(MockCompute):

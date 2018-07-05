@@ -1,13 +1,11 @@
 from django import forms
 from django.forms import ModelForm
-from django.utils.translation import ugettext_lazy as _
 
 from ..constants import START_YEAR
 from .models import (DynamicSaveInputs, DynamicBehaviorSaveInputs,
                      DynamicElasticitySaveInputs)
 from ..taxbrain.helpers import (string_to_float_array, int_to_nth,
                                 is_string, is_number)
-from ..taxbrain.param_displayers import TaxCalcField, TaxCalcParam
 from ..taxbrain.forms import PolicyBrainForm
 from .helpers import (default_parameters, default_behavior_parameters,
                       default_elasticity_parameters)
