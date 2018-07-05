@@ -6,24 +6,22 @@ import msgpack
 from api import create_app, endpoints
 
 
-
 @pytest.fixture
 def taxcalc_inputs():
     return {
         'user_mods': {
             "policy": {
                 2017: {"_FICA_ss_trt": [0.1]}},
-                "consumption": {},
-                "behavior": {},
-                "growdiff_baseline": {},
-                "growdiff_response": {},
-                "growmodel": {}
-            },
+            "consumption": {},
+            "behavior": {},
+            "growdiff_baseline": {},
+            "growdiff_response": {},
+            "growmodel": {}
+        },
         'first_budget_year': 2017,
         'use_puf_not_cps': True,
         'year': 0
     }
-
 
 
 @pytest.fixture
@@ -31,6 +29,7 @@ def app():
     app = create_app({'TESTING': True})
 
     yield app
+
 
 @pytest.fixture
 def client(app):

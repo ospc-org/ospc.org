@@ -5,7 +5,7 @@ import sys
 import taxcalc
 from django.core import serializers
 
-#Mock some module for imports because we can't fit them on Heroku slugs
+# Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
 MOCK_MODULES = ['numba', 'numba.jit', 'numba.vectorize', 'numba.guvectorize']
@@ -24,16 +24,25 @@ dropq_workers = os.environ.get('DROPQ_WORKERS', '')
 DROPQ_WORKERS = dropq_workers.split(",")
 OGUSA_WORKER_IDX = 0
 CALLBACK_HOSTNAME = os.environ.get('CALLBACK_HOSTNAME', 'localhost:8000')
-ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
+ENFORCE_REMOTE_VERSION_CHECK = (os.environ.get('ENFORCE_VERSION', 'False') ==
+                                'True')
 
-OGUSA_RESULTS_TOTAL_ROW_KEYS  = ['GDP', 'Consumption', 'Investment', 'Hours Worked',
-    'Wages', 'Interest Rates', 'Total Taxes']
-OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {n:n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
+OGUSA_RESULTS_TOTAL_ROW_KEYS = [
+    'GDP',
+    'Consumption',
+    'Investment',
+    'Hours Worked',
+    'Wages',
+    'Interest Rates',
+    'Total Taxes']
+OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {
+    n: n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
-GDP_ELAST_ROW_KEY_LABELS = {n:'% Difference in GDP' for n in GDP_ELAST_ROW_NAMES}
+GDP_ELAST_ROW_KEY_LABELS = {
+    n: '% Difference in GDP' for n in GDP_ELAST_ROW_NAMES}
 GDP_ELAST_RESULTS_TABLE_LABELS = {
-        'elasticity_gdp': 'Percentage Change in GDP'
-        }
+    'elasticity_gdp': 'Percentage Change in GDP'
+}
 
 OGUSA_RESULTS_TABLE_LABELS = {
     'df_ogusa': 'Difference between Base and User plan',
@@ -44,6 +53,7 @@ OGUSA_RESULTS_TABLE_LABELS = {
 #
 
 PYTHON_MAJOR_VERSION = sys.version_info.major
+
 
 def string_to_float(x):
     return float(x.replace(',', ''))
@@ -81,7 +91,7 @@ def arrange_totals_by_row(tots, keys):
 
 
 def denormalize(x):
-    ans = ["#".join([i[0],i[1]]) for i in x]
+    ans = ["#".join([i[0], i[1]]) for i in x]
     ans = [str(x) for x in ans]
     return ans
 
@@ -97,14 +107,14 @@ def normalize(x):
 
 import taxcalc
 tcversion_info = taxcalc._version.get_versions()
-#ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
-                  #u'dirty': False, u'version': u'0.1.1', u'error': None}
+# ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
+# u'dirty': False, u'version': u'0.1.1', u'error': None}
 
 version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
 with open(version_path, "r") as f:
     ogversion_info = json.load(f)
 ogusa_version = ".".join([ogversion_info['version'],
-                         ogversion_info['full-revisionid'][:6]])
+                          ogversion_info['full-revisionid'][:6]])
 
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 
@@ -136,12 +146,11 @@ def convert_to_floats(tsi):
 def default_behavior_parameters(first_budget_year):
     ''' Create a list of default Behavior parameters '''
     default_behavior_params = {}
-    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.Behavior,
-                                                        metadata=True,
-                                                        start_year=first_budget_year)
+    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(
+        taxcalc.Behavior, metadata=True, start_year=first_budget_year)
 
-    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
-        param = TaxCalcParam(k,v, first_budget_year)
+    for k, v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
+        param = TaxCalcParam(k, v, first_budget_year)
         default_behavior_params[param.nice_id] = param
 
     return default_behavior_params
@@ -158,15 +167,15 @@ def default_elasticity_parameters(first_budget_year):
                  "marginal tax rate, weighted by income, in the "
                  "preceeding year.")
 
-    elasticity_of_gdp = {'value':[default_value], 'col_label':"",
+    elasticity_of_gdp = {'value': [default_value], 'col_label': "",
                          'long_name': adj_long_name,
                          'description': adj_descr,
-                         'irs_ref':'', 'notes':''}
+                         'irs_ref': '', 'notes': ''}
 
     GDP_ELAST_DEFAULT_PARAMS_JSON = {'elastic_gdp': elasticity_of_gdp}
 
-    for k,v in GDP_ELAST_DEFAULT_PARAMS_JSON.items():
-        param = TaxCalcParam(k,v, first_budget_year)
+    for k, v in GDP_ELAST_DEFAULT_PARAMS_JSON.items():
+        param = TaxCalcParam(k, v, first_budget_year)
         default_elasticity_params[param.nice_id] = param
 
     return default_elasticity_params
@@ -175,19 +184,21 @@ def default_elasticity_parameters(first_budget_year):
 def default_parameters(first_budget_year):
     ''' Create a list of default parameters '''
 
-    param_path = os.path.join(os.path.split(__file__)[0], "ogusa_parameters.json")
+    param_path = os.path.join(
+        os.path.split(__file__)[0],
+        "ogusa_parameters.json")
     with open(param_path, "r") as f:
         OGUSA_DEFAULT_PARAMS_JSON = json.load(f)
 
     default_ogusa_params = {}
-    for k,v in OGUSA_DEFAULT_PARAMS_JSON.items():
-        #TaxCalcParams expect list
+    for k, v in OGUSA_DEFAULT_PARAMS_JSON.items():
+        # TaxCalcParams expect list
         if 'value' in v:
             v['value'] = [v['value']]
-        param = TaxCalcParam(k,v, first_budget_year)
+        param = TaxCalcParam(k, v, first_budget_year)
         default_ogusa_params[param.nice_id] = param
 
-    #Add user email
+    # Add user email
     val = {"col_label": ["Email address to contact when job is done."],
            "description": ("OGUSA jobs take a long time. We'll email you when "
                            "your job is done."),
@@ -203,7 +214,12 @@ def default_parameters(first_budget_year):
 
 def filter_ogusa_only(user_values):
 
-    unused_names = ['first_year', 'creation_date', '_state', 'id', 'user_email']
+    unused_names = [
+        'first_year',
+        'creation_date',
+        '_state',
+        'id',
+        'user_email']
 
     for k, v in list(user_values.items()):
         if k in unused_names:
@@ -225,15 +241,15 @@ def job_submitted(email_addr, model):
     submitted_ids_and_ips = normalize(job_ids)
     submitted_id, submitted_ip = submitted_ids_and_ips[0]
     send_mail(subject="Your TaxBrain simulation has been submitted!",
-        message = """Hello!
+              message="""Hello!
 
         Good news! Your TaxBrain simulation has been submitted.
         Your job ID is {job}. We'll notify you again when your job is complete.
 
         Best,
         The TaxBrain Team""".format(url=url, job=submitted_id),
-        from_email = "Open Source Policy Center <mailing@ospc.org>",
-        recipient_list = [email_addr])
+              from_email="Open Source Policy Center <mailing@ospc.org>",
+              recipient_list=[email_addr])
 
     email_txt, subj_txt = cc_text_submitted()
     send_cc_email(email_txt, subj_txt, model)
@@ -250,16 +266,16 @@ def dynamic_params_from_model(model):
     usermods_path = os.path.join(os.path.split(__file__)[0],
                                  "ogusa_user_modifiable.json")
     with open(usermods_path, "r") as f:
-         ump = json.load(f)
-         USER_MODIFIABLE_PARAMS = ump["USER_MODIFIABLE_PARAMS"]
+        ump = json.load(f)
+        USER_MODIFIABLE_PARAMS = ump["USER_MODIFIABLE_PARAMS"]
 
     # Read ogusa parameters list from file
     ogusa_params_path = os.path.join(os.path.split(__file__)[0],
-                                 "ogusa_parameters.json")
+                                     "ogusa_parameters.json")
     with open(ogusa_params_path, "r") as f:
-         OGUSA_PARAMS = json.load(f)
+        OGUSA_PARAMS = json.load(f)
 
-    params = {k:inputs[k] for k in USER_MODIFIABLE_PARAMS}
+    params = {k: inputs[k] for k in USER_MODIFIABLE_PARAMS}
 
     for k, v in list(params.items()):
         if v == '':
@@ -276,18 +292,18 @@ def send_cc_email(email_txt, subject_txt, model):
     pk = model.micro_sim.pk
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
-    #Get the celery ID and IP address of the job
+    # Get the celery ID and IP address of the job
     job_id, ip_addr = submitted_ids[0]
 
-    #Get the globally unique ID of the job
+    # Get the globally unique ID of the job
     guids = model.guids
     guids = normalize(guids)
     _, guid = guids[0]
 
-    #Get the user-input from the model in a way we can render
+    # Get the user-input from the model in a way we can render
     params = dynamic_params_from_model(model)
 
-    #Create the path information for debugging info to include in the email
+    # Create the path information for debugging info to include in the email
     baseline = "/home/ubuntu/dropQ/OUTPUT_BASELINE_{guid}".format(guid=guid)
     policy = "/home/ubuntu/dropQ/OUTPUT_REFORM_{guid}".format(guid=guid)
     hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
@@ -331,12 +347,13 @@ def elast_results_to_tables(results, first_budget_year):
             row_keys = GDP_ELAST_ROW_NAMES
             row_labels = GDP_ELAST_ROW_KEY_LABELS
             col_labels = years
-            col_formats = [ [1, '%', 1] for y in col_labels]
+            col_formats = [[1, '%', 1] for y in col_labels]
 
             table_data = results[table_id]
-            #Displaying as a percentage, so multiply by 100
+            # Displaying as a percentage, so multiply by 100
             for k, v in table_data.items():
-                table_data[k] = list(map(str, list(map(format_float_values, v))))
+                table_data[k] = list(
+                    map(str, list(map(format_float_values, v))))
             multi_year_cells = False
 
         else:
@@ -376,7 +393,8 @@ def elast_results_to_tables(results, first_budget_year):
 
                 if multi_year_cells:
                     for yi, year in enumerate(years):
-                        value = table_data["{0}_{1}".format(row_key, yi)][col_key]
+                        value = table_data["{0}_{1}"
+                                           .format(row_key, yi)][col_key]
                         if value[-1] == "%":
                             value = value[:-1]
                         cell['year_values'][year] = value
@@ -386,7 +404,7 @@ def elast_results_to_tables(results, first_budget_year):
                 else:
                     value = table_data[row_key][col_key]
                     if value[-1] == "%":
-                            value = value[:-1]
+                        value = value[:-1]
                     cell['value'] = value
 
                 row['cells'].append(cell)
@@ -395,10 +413,8 @@ def elast_results_to_tables(results, first_budget_year):
 
         tables[table_id] = table
 
-
     tables['result_years'] = years
     return tables
-
 
 
 def ogusa_results_to_tables(results, first_budget_year):
@@ -418,14 +434,15 @@ def ogusa_results_to_tables(results, first_budget_year):
             row_keys = OGUSA_RESULTS_TOTAL_ROW_KEYS
             row_labels = OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS
             add_col1 = "-".join([str(years[0]), str(years[-1])])
-            add_col2= "Steady State"
+            add_col2 = "Steady State"
             col_labels = years + [add_col1, add_col2]
-            col_formats = [ [1, '%', 2] for y in col_labels]
+            col_formats = [[1, '%', 2] for y in col_labels]
 
             table_data = results[table_id]
-            #Displaying as a percentage, so multiply by 100
+            # Displaying as a percentage, so multiply by 100
             for k, v in table_data.items():
-                table_data[k] = list(map(str, [100.*x for x in list(map(float, v))]))
+                table_data[k] = list(
+                    map(str, [100. * x for x in list(map(float, v))]))
             multi_year_cells = False
 
         else:
@@ -465,7 +482,8 @@ def ogusa_results_to_tables(results, first_budget_year):
 
                 if multi_year_cells:
                     for yi, year in enumerate(years):
-                        value = table_data["{0}_{1}".format(row_key, yi)][col_key]
+                        value = table_data["{0}_{1}"
+                                           .format(row_key, yi)][col_key]
                         if value[-1] == "%":
                             value = value[:-1]
                         cell['year_values'][year] = value
@@ -475,7 +493,7 @@ def ogusa_results_to_tables(results, first_budget_year):
                 else:
                     value = table_data[row_key][col_key]
                     if value[-1] == "%":
-                            value = value[:-1]
+                        value = value[:-1]
                     cell['value'] = value
 
                 row['cells'].append(cell)
@@ -483,7 +501,6 @@ def ogusa_results_to_tables(results, first_budget_year):
             table['rows'].append(row)
 
         tables[table_id] = table
-
 
     tables['result_years'] = years
     return tables
@@ -508,6 +525,7 @@ def success_text():
     Best,
     The TaxBrain Team"""
     return message
+
 
 def failure_text():
     '''

@@ -2,12 +2,7 @@ import csv
 import pdfkit
 import json
 import traceback
-#Mock some module for imports because we can't fit them on Heroku slugs
-from mock import Mock
 import sys
-MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
-                'mpl_toolkits.mplot3d']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 import btax
 import taxcalc
@@ -34,23 +29,26 @@ from django import forms
 from .forms import BTaxExemptionForm, has_field_errors
 from .models import BTaxSaveInputs, BTaxOutputUrl
 from .helpers import (get_btax_defaults,
-                      BTAX_BITR, BTAX_DEPREC,
-                      BTAX_OTHER, BTAX_ECON,
+                      BTAX_BITR, BTAX_DEPREC, BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr, hover_args_to_btax_depr,
                       make_bool, convert_val)
-from ..taxbrain.helpers import (format_csv,
-                                is_wildcard)
+from ..taxbrain.helpers import format_csv, is_wildcard
 from ..taxbrain.views import denormalize, normalize
 from .compute import DropqComputeBtax, MockComputeBtax, JobFailError, BTAX_WORKERS
 
-from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP, DPRC_TOOLTIP,
-                        START_YEAR)
+from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP,
+                         DPRC_TOOLTIP, START_YEAR)
 from .constants import START_YEARS
 
 from ..formatters import get_version
 from django.conf import settings
 from .bubble_plot.bubble_plot_tabs import bubble_plot_tabs
 
+# Mock some module for imports because we can't fit them on Heroku slugs
+from mock import Mock
+MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
+                'mpl_toolkits.mplot3d']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 dropq_compute = DropqComputeBtax()
 
@@ -99,7 +97,7 @@ def btax_results(request):
     """
     no_inputs = False
     start_year = START_YEAR
-    if request.method=='POST':
+    if request.method == 'POST':
         print('method=POST get', request.GET)
         print('method=POST post', request.POST)
         # Client is attempting to send inputs, validate as form data
@@ -108,7 +106,9 @@ def btax_results(request):
         has_errors = make_bool(request.POST['has_errors'])
         fields = dict(request.GET)
         fields.update(dict(request.POST))
-        fields = {k: v[0] if isinstance(v, list) else v for k, v in list(fields.items())}
+        fields = {k: v[0]
+                  if isinstance(v, list) else v
+                  for k, v in list(fields.items())}
         start_year = fields.get('start_year', START_YEAR)
         # TODO: migrate first_year to start_year to get rid of weird stuff like
         # this
@@ -150,14 +150,16 @@ def btax_results(request):
             curr_dict = dict(model.__dict__)
 
             for key, value in list(curr_dict.items()):
-                if type(value) == type(str()):
-                    curr_dict[key] = [convert_val(x) for x in value.split(',') if x]
+                if isinstance(value, type(str())):
+                    curr_dict[key] = [convert_val(x)
+                                      for x in value.split(',') if x]
                 else:
                     print("missing this: ", key)
 
-            worker_data = {k:v for k, v in list(curr_dict.items()) if not (v == [] or v == None)}
+            worker_data = {k: v for k, v in list(curr_dict.items())
+                           if v == [] and v is None}
 
-            #Non corp entity fix up:
+            # Non corp entity fix up:
             if 'btax_betr_pass' not in worker_data:
                 worker_data['btax_betr_pass'] = [0.0]
 
@@ -171,7 +173,8 @@ def btax_results(request):
                 print("BEGIN DROPQ WORK FROM: unknown IP")
 
             # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(worker_data, start_year)
+            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(
+                worker_data, start_year)
 
             print('submitted_ids', submitted_ids, max_q_length)
             if not submitted_ids:
@@ -186,7 +189,7 @@ def btax_results(request):
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
                     unique_url.user = current_user
-                if unique_url.btax_vers != None:
+                if unique_url.btax_vers is not None:
                     pass
                 else:
                     unique_url.btax_vers = BTAX_VERSION
@@ -203,9 +206,9 @@ def btax_results(request):
                 unique_url.model_pk = model.pk
                 cur_dt = timezone.now()
                 future_offset = datetime.timedelta(
-                                    seconds=((2 + max_q_length)
-                                             * JOB_PROC_TIME_IN_SECONDS)
-                                )
+                    seconds=((2 + max_q_length) *
+                             JOB_PROC_TIME_IN_SECONDS)
+                )
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
@@ -239,7 +242,7 @@ def btax_results(request):
 
     init_context = {
         'form': form_btax_input,
-        'make_bool':  make_bool,
+        'make_bool': make_bool,
         'params': btax_default_params,
         'btax_version': BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
@@ -248,14 +251,16 @@ def btax_results(request):
         'start_year': start_year,
         'has_errors': has_errors,
         'asset_yr_str': asset_yr_str,
-        'depr_argument_groups': group_args_to_btax_depr(btax_default_params, asset_yr_str),
+        'depr_argument_groups': group_args_to_btax_depr(
+            btax_default_params,
+            asset_yr_str),
         'hover_notes': hover_notes,
         'is_btax': True,
     }
 
-
     if no_inputs:
-        form_btax_input.add_error(None, "Please specify a tax-law change before submitting.")
+        form_btax_input.add_error(
+            None, "Please specify a tax-law change before submitting.")
     return render(request, 'btax/input_form.html', init_context)
 
 
@@ -265,12 +270,12 @@ def edit_btax_results(request, pk):
     """
     try:
         url = BTaxOutputUrl.objects.get(pk=pk)
-    except:
+    except BaseException:
         raise Http404
 
     model = url.unique_inputs
     start_year = model.first_year
-    #Get the user-input from the model in a way we can render
+    # Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
     user_inputs = json.loads(ser_model)
     inputs = user_inputs[0]['fields']
@@ -298,10 +303,11 @@ def edit_btax_results(request, pk):
         'start_year': str(start_year),
         'has_errors': has_errors,
         'asset_yr_str': asset_yr_str,
-        'depr_argument_groups': group_args_to_btax_depr(btax_default_params, asset_yr_str),
+        'depr_argument_groups': group_args_to_btax_depr(
+            btax_default_params,
+            asset_yr_str),
         'hover_notes': hover_notes,
         'is_btax': True,
-
     }
 
     return render(request, 'btax/input_form.html', init_context)
@@ -328,7 +334,7 @@ def generate_mock_results(request):
         "dprc": DPRC_TOOLTIP,
     }
     context.update({
-        'btax_version':BTAX_VERSION,
+        'btax_version': BTAX_VERSION,
         'taxcalc_version': TAXCALC_VERSION,
         'webapp_vers': WEBAPP_VERSION,
         'table_json': str(mock_json),
@@ -348,7 +354,7 @@ def output_detail(request, pk):
 
     try:
         url = BTaxOutputUrl.objects.get(pk=pk)
-    except:
+    except BaseException:
         raise Http404
 
     btax_vers_disp = get_version(url, 'btax_vers', BTAX_VERSION)
@@ -372,7 +378,8 @@ def output_detail(request, pk):
                 "coc": COC_TOOLTIP,
                 "dprc": DPRC_TOOLTIP,
             }
-            bubble_js, bubble_div, cdn_js, cdn_css, widget_js, widget_css = bubble_plot_tabs(tables['dataframes'])
+            bubble_js, bubble_div, cdn_js, cdn_css, widget_js, widget_css = bubble_plot_tabs(
+                tables['dataframes'])
         except Exception as e:
             print('Exception rendering pk', pk, e)
             traceback.print_exc()
@@ -423,21 +430,21 @@ def output_detail(request, pk):
         except JobFailError as jfe:
             print(jfe)
             return render_to_response('taxbrain/failed.html',
-                                     context={'is_btax': True})
+                                      context={'is_btax': True})
 
         if any([j == 'FAIL' for j in jobs_ready]):
-            failed_jobs = [sub_id for (sub_id, job_ready) in
-                           zip(jobs_to_check, jobs_ready) if job_ready == 'FAIL']
+            failed_jobs = [sub_id for (sub_id, job_ready)
+                           in zip(jobs_to_check, jobs_ready)
+                           if job_ready == 'FAIL']
 
-            #Just need the error message from one failed job
-            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]], job_failure=True)
+            # Just need the error message from one failed job
+            error_msgs = dropq_compute.dropq_get_results(
+                [failed_jobs[0]], job_failure=True)
             error_msg = error_msgs[0]
             val_err_idx = error_msg.rfind("Error")
             context = {"error_msg": error_msg[val_err_idx:],
                        "is_btax": True}
             return render(request, 'taxbrain/failed.html', context)
-
-
 
         if all([job == 'YES' for job in jobs_ready]):
             tax_result = dropq_compute.btax_get_results(normalize(job_ids))
@@ -447,8 +454,9 @@ def output_detail(request, pk):
             model.save()
             return redirect(url)
         else:
-            jobs_not_ready = [sub_id for (sub_id, job_ready) in
-                                zip(jobs_to_check, jobs_ready) if not job_ready == 'YES']
+            jobs_not_ready = [sub_id for (sub_id, job_ready)
+                              in zip(jobs_to_check, jobs_ready)
+                              if job_ready != 'YES']
             jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
             print('not ready', jobs_not_ready)
@@ -462,13 +470,20 @@ def output_detail(request, pk):
                 exp_num_minutes = round(exp_num_minutes, 2)
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
                 if exp_num_minutes > 0:
-                    return JsonResponse({'eta': exp_num_minutes,'wait_interval': 7000}, status=202)
+                    return JsonResponse(
+                        {'eta': exp_num_minutes, 'wait_interval': 7000}, status=202)
                 else:
-                    return JsonResponse({'eta': exp_num_minutes,'wait_interval': 7000}, status=200)
+                    return JsonResponse(
+                        {'eta': exp_num_minutes, 'wait_interval': 7000}, status=200)
 
             else:
                 print("rendering not ready yet")
-                context = {'eta': '100', 'is_btax': True, 'wait_interval': 7000}
+                context = {
+                    'eta': '100',
+                    'is_btax': True,
+                    'wait_interval': 7000}
                 context.update(context_vers_disp)
-                return render_to_response('btax/not_ready.html', context,
-                                          context_instance=RequestContext(request))
+                return render_to_response(
+                    'btax/not_ready.html',
+                    context,
+                    context_instance=RequestContext(request))

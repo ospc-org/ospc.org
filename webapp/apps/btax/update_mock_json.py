@@ -19,6 +19,6 @@ for h in list(data.keys()):
                 j['major_grouping'] = random.choice(cats)
                 j['summary_c'] = -999
                 j['summary_nc'] = -999
-    
-with open('mock_btax_result.json','w') as f:
+
+with open('mock_btax_result.json', 'w') as f:
     f.write(json.dumps(data))

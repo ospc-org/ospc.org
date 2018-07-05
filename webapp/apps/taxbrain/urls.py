@@ -4,7 +4,6 @@ from .views import (personal_results, output_detail, csv_input, csv_output,
                     pdf_view, edit_personal_results, submit_micro, file_input)
 
 
-
 urlpatterns = [
     url(r'^$', personal_results, name='tax_form'),
     url(r'^file/$', file_input, name='json_file'),

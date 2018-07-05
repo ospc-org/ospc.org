@@ -9,7 +9,7 @@ import time
 import six
 import re
 
-#Mock some module for imports because we can't fit them on Heroku slugs
+# Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
 import sys
 
@@ -43,11 +43,11 @@ MORE_VALUES = COMMON + VALUE
 
 BOOL = WILDCARD | TRUE | FALSE
 MORE_BOOLS = COMMON + BOOL
-INPUT = (pp.Optional(REVERSE)
-         + BOOL
-         + pp.ZeroOrMore(MORE_BOOLS) | pp.Optional(REVERSE)
-         + VALUE
-         + pp.ZeroOrMore(MORE_VALUES))
+INPUT = (pp.Optional(REVERSE) +
+         BOOL +
+         pp.ZeroOrMore(MORE_BOOLS) | pp.Optional(REVERSE) +
+         VALUE +
+         pp.ZeroOrMore(MORE_VALUES))
 
 TRUE_REGEX = re.compile('(?i)true')
 FALSE_REGEX = re.compile('(?i)false')
@@ -98,6 +98,7 @@ def make_bool(x):
             "Expected case insensitive 'true' or 'false' but got {}".format(x)
         )
 
+
 def convert_val(x):
     if is_wildcard(x):
         return x
@@ -118,8 +119,10 @@ def int_to_nth(x):
         # we need to use an inflection library to support any value
         raise NotImplementedError("Not implemented for x > 10")
 
+
 def is_number(x):
     return isinstance(x, numbers.Number)
+
 
 def is_string(x):
     if PYTHON_MAJOR_VERSION == 2:
@@ -127,8 +130,10 @@ def is_string(x):
     elif PYTHON_MAJOR_VERSION == 3:
         return isinstance(x, str)
 
+
 def string_to_float(x):
     return float(x.replace(',', ''))
+
 
 def string_to_float_array(s):
     if len(s) > 0:
@@ -136,9 +141,11 @@ def string_to_float_array(s):
     else:
         return []
 
+
 def same_version(v1, v2):
     idx = v1.rfind('.')
     return v1[:idx] == v2[:idx]
+
 
 def arrange_totals_by_row(tots, keys):
     out = {}
@@ -146,11 +153,12 @@ def arrange_totals_by_row(tots, keys):
         order_map = {}
         for name in tots:
             if name.startswith(key):
-                year_num = int(name[name.rfind('_')+1:])
+                year_num = int(name[name.rfind('_') + 1:])
                 order_map[year_num] = tots[name]
         vals = [order_map[i] for i in range(len(order_map))]
         out[key] = vals
     return out
+
 
 def round_gt_one_to_nearest_int(values):
     ''' round every value to the nearest integer '''
@@ -183,6 +191,7 @@ def default_taxcalc_data(cls, start_year, metadata=False):
 #
 # Prepare user params to send to DropQ/Taxcalc
 #
+
 
 tcversion_info = taxcalc._version.get_versions()
 taxcalc_version = tcversion_info['version']
@@ -217,17 +226,17 @@ TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.DIST_TABLE_LABELS[:]
 TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS[:-2]
 TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     #   divisor,   unit,   decimals
-    [      1000,      None, 0], # 'Returns',
+    [1000, None, 0],  # 'Returns',
     [1000000000, 'Dollars', 1],  # 'AGI',
-    [      1000,      None, 0],  # 'Standard Deduction Filers',
+    [1000, None, 0],  # 'Standard Deduction Filers',
     [1000000000, 'Dollars', 1],  # 'Standard Deduction',
-    [      1000,      None, 0],  # 'Itemizers',
+    [1000, None, 0],  # 'Itemizers',
     [1000000000, 'Dollars', 1],  # 'Itemized Deduction',
     [1000000000, 'Dollars', 1],  # 'Personal Exemption',
     [1000000000, 'Dollars', 1],  # 'Taxable Income',
     [1000000000, 'Dollars', 1],  # 'Regular Tax',
     [1000000000, 'Dollars', 1],  # 'AMTI',
-    [      1000,      None, 0],  # 'AMT Filers',
+    [1000, None, 0],  # 'AMT Filers',
     [1000000000, 'Dollars', 1],  # 'AMT',
     [1000000000, 'Dollars', 1],  # 'Tax before Credits',
     [1000000000, 'Dollars', 1],  # 'Non-refundable Credits',
@@ -235,7 +244,8 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'Refundable Credits',
     [1000000000, 'Dollars', 1],  # 'Individual Income Liabilities',
     [1000000000, 'Dollars', 1],  # 'Payroll Tax Liablities',
-    [1000000000, 'Dollars', 1],  # 'Combined Payroll and individual Income Tax Liablities',
+    # 'Combined Payroll and individual Income Tax Liablities',
+    [1000000000, 'Dollars', 1],
     [1000000000, 'Dollars', 1],  # 'Universal Basic Income',
     [1000000000, 'Dollars', 1],  # 'Total Cost of Benefits',
     [1000000000, 'Dollars', 1],  # 'Consumption Value of Benefits',
@@ -243,18 +253,18 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'After-Tax Expanded Income'
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
-    [      1000,      None, 0],    # "Count", --> All Tax Units
-    [      1000,      None, 0],    # "Tax Units with Tax Cut",
-    [         1,        '%',1],    # "Percent Tax Decrease" --> "Percent with Tax Cut"
-    [      1000,      None, 0],    # "Tax Units with Tax Cut",
-    [         1,       '%', 1],    # "Percent Tax Increase" --> "Percent with Tax Increase",
-    [         1, 'Dollars', 0],    # "Average Tax Change",
+    [1000, None, 0],    # "Count", --> All Tax Units
+    [1000, None, 0],    # "Tax Units with Tax Cut",
+    [1, '%', 1],    # "Percent Tax Decrease" --> "Percent with Tax Cut"
+    [1000, None, 0],    # "Tax Units with Tax Cut",
+    [1, '%', 1],    # "Percent Tax Increase" --> "Percent with Tax Increase",
+    [1, 'Dollars', 0],    # "Average Tax Change",
     [1000000000, 'Dollars', 1],    # "Total Tax Difference",
-    [         1,   '%', 1],       # "Share of Overall Change"
+    [1, '%', 1],       # "Share of Overall Change"
     [1000000000, 'Dollars', 1],    # 'Universal Basic Income',
     [1000000000, 'Dollars', 1],    # 'Total Cost of Benefits',
     [1000000000, 'Dollars', 1],    # 'Consumption Value of Benefits',
-    [         1,   '%', 1],        # '% Change in After-Tax Income'
+    [1, '%', 1],        # '% Change in After-Tax Income'
 ]
 TAXCALC_RESULTS_BIN_ROW_KEYS = taxcalc.STANDARD_ROW_NAMES
 TAXCALC_RESULTS_BIN_ROW_KEY_LABELS = {
@@ -314,14 +324,13 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'dist2_xdec': 'User plan tax vars, weighted total by expanded income decile',
     'aggr_1': 'Total Liabilities Baseline by Calendar Year',
     'aggr_d': 'Total Liabilities Change by Calendar Year',
-    'aggr_2': 'Total Liabilities Reform by Calendar Year'
-}
+    'aggr_2': 'Total Liabilities Reform by Calendar Year'}
 
 AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
-    'ind_tax':'Individual Income Tax Liability Change',
-    'payroll_tax':'Payroll Tax Liability Change',
-    'combined_tax':'Combined Payroll and Individual Income Tax Liability Change',
+    'ind_tax': 'Individual Income Tax Liability Change',
+    'payroll_tax': 'Payroll Tax Liability Change',
+    'combined_tax': 'Combined Payroll and Individual Income Tax Liability Change',
 }
 
 REORDER_LT_TC_0130_DIFF_LIST = [1, 3, 0, 5, 6, 4, 2, 7]
@@ -419,15 +428,14 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
 
     num_years = max(len(defaults), len(x))
 
-    is_rate = any([ i < 1.0 for i in x])
+    is_rate = any([i < 1.0 for i in x])
 
     current_policy = Policy(start_year=2013)
     current_policy.set_year(first_budget_year)
     # irates are rates for 2015, 2016, and 2017
     if cpi:
-        irates = current_policy._indexing_rates_for_update(param_name=name,
-                                              calyear=first_budget_year,
-                                              num_years_to_expand=num_years)
+        irates = current_policy._indexing_rates_for_update(
+            param_name=name, calyear=first_budget_year, num_years_to_expand=num_years)
     else:
         irates = [0.0] * num_years
 
@@ -447,7 +455,7 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
         if ans[i] is not None:
             continue
         else:
-            newval = ans[i-1] * (1.0 + irates[i-1])
+            newval = ans[i - 1] * (1.0 + irates[i - 1])
             ans[i] = newval if is_rate else int(newval)
 
     return ans
@@ -471,7 +479,7 @@ def convert_to_floats(tsi):
             return numberfy_one(x)
 
     attrs = vars(tsi)
-    return { k:numberfy(v) for k,v in list(attrs.items()) if v}
+    return {k: numberfy(v) for k, v in list(attrs.items()) if v}
 
 
 def leave_name_in(key, val, dd):
@@ -509,17 +517,20 @@ def leave_name_in(key, val, dd):
 
 
 def package_up_vars(user_values, first_budget_year):
-    dd = default_taxcalc_data(taxcalc.policy.Policy, start_year=first_budget_year)
+    dd = default_taxcalc_data(
+        taxcalc.policy.Policy,
+        start_year=first_budget_year)
     dd_meta = default_taxcalc_data(taxcalc.policy.Policy,
                                    start_year=first_budget_year, metadata=True)
     growth_dd = default_taxcalc_data(taxcalc.growdiff.Growdiff,
                                      start_year=first_budget_year)
 
-    behavior_dd = default_taxcalc_data(taxcalc.Behavior, start_year=first_budget_year)
+    behavior_dd = default_taxcalc_data(
+        taxcalc.Behavior, start_year=first_budget_year)
     dd.update(growth_dd)
     dd.update(behavior_dd)
-    dd.update({"elastic_gdp":[0.54]})
-    dd_meta.update({"elastic_gdp":{'values':[0.54], 'cpi_inflated':False}})
+    dd.update({"elastic_gdp": [0.54]})
+    dd_meta.update({"elastic_gdp": {'values': [0.54], 'cpi_inflated': False}})
     dd_meta.update(default_taxcalc_data(taxcalc.Behavior,
                                         start_year=first_budget_year,
                                         metadata=True))
@@ -548,26 +559,24 @@ def package_up_vars(user_values, first_budget_year):
             cpi_flag = cpi_flag_from_user
         return cpi_flag
 
-
-
     name_stems = {}
     ans = {}
-    #Find the 'broken out' array values, these have special treatment
+    # Find the 'broken out' array values, these have special treatment
     for k, v in list(user_values.items()):
-        if (k.endswith("_0") or k.endswith("_1") or k.endswith("_2")
-                or k.endswith("_3")):
+        if (k.endswith("_0") or k.endswith("_1") or k.endswith("_2") or
+                k.endswith("_3")):
             vals = name_stems.setdefault(k[:-2], [])
             vals.append(k)
 
-    #For each array value, expand as necessary based on default data
-    #then add user values. It is acceptable to leave 'blanks' as None.
-    #This is handled on the taxcalc side
+    # For each array value, expand as necessary based on default data
+    # then add user values. It is acceptable to leave 'blanks' as None.
+    # This is handled on the taxcalc side
     for k, vals in list(name_stems.items()):
         if k in dd:
             default_data = dd[k]
             param = k
         else:
-            #add a leading underscore
+            # add a leading underscore
             default_data = dd["_" + k]
             param = "_" + k
 
@@ -581,24 +590,26 @@ def package_up_vars(user_values, first_budget_year):
             if num_years > _max:
                 _max = num_years
         expnded_defaults = expand_list(default_data, _max)
-        #Now copy necessary data to expanded array
+        # Now copy necessary data to expanded array
         for name in sorted(vals):
-            idx = int(name[-1]) # either 0, 1, 2, 3
+            idx = int(name[-1])  # either 0, 1, 2, 3
             user_arr = user_values[name]
             # Handle wildcards from user
             has_wildcards = check_wildcards(user_arr)
             if len(user_arr) < expnded_defaults or has_wildcards:
-                user_arr = propagate_user_list(user_arr, name=param,
-                                               defaults=expnded_defaults,
-                                               cpi=cpi_flag,
-                                               first_budget_year=first_budget_year,
-                                               multi_param_idx=idx)
+                user_arr = propagate_user_list(
+                    user_arr,
+                    name=param,
+                    defaults=expnded_defaults,
+                    cpi=cpi_flag,
+                    first_budget_year=first_budget_year,
+                    multi_param_idx=idx)
             for new_arr, user_val in zip(expnded_defaults, user_arr):
                 new_arr[idx] = int(user_val) if user_val > 1.0 else user_val
             del user_values[name]
         ans[param] = expnded_defaults
 
-    #Process remaining values set by user
+    # Process remaining values set by user
     for k, vals in list(user_values.items()):
         if k in dd:
             param = k
@@ -609,7 +620,7 @@ def package_up_vars(user_values, first_budget_year):
                 ans['_' + k] = vals
             continue
         else:
-            #add a leading underscore
+            # add a leading underscore
             param = "_" + k
 
         # Handle wildcards from user
@@ -626,9 +637,9 @@ def package_up_vars(user_values, first_budget_year):
 
         if len(vals) < len(default_data) or has_wildcards:
             vals = propagate_user_list(vals, name=param,
-                                    defaults=default_data,
-                                    cpi=cpi_flag,
-                                    first_budget_year=first_budget_year)
+                                       defaults=default_data,
+                                       cpi=cpi_flag,
+                                       first_budget_year=first_budget_year)
 
         ans[param] = vals
 
@@ -673,6 +684,7 @@ def rename_keys(rename_dict, map_dict):
                 new_label = k
             rename_dict[new_label] = rename_keys(rename_dict.pop(k), map_dict)
     return rename_dict
+
 
 def json_int_key_encode(rename_dict):
     """
@@ -775,7 +787,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
-            col_formats = [ [1000000000, 'Dollars', 1] for y in years]
+            col_formats = [[1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
 
@@ -784,7 +796,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
-            col_formats = [ [1000000000, 'Dollars', 1] for y in years]
+            col_formats = [[1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
 
@@ -793,7 +805,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
             row_keys = AGG_ROW_NAMES
             row_labels = TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS
             col_labels = years
-            col_formats = [ [1000000000, 'Dollars', 1] for y in years]
+            col_formats = [[1000000000, 'Dollars', 1] for y in years]
             table_data = results[table_id]
             multi_year_cells = False
         else:
@@ -832,7 +844,8 @@ def taxcalc_results_to_tables(results, first_budget_year):
 
                 if multi_year_cells:
                     for yi, year in enumerate(years):
-                        value = table_data["{0}_{1}".format(row_key, yi)][col_key]
+                        value = table_data["{0}_{1}".format(
+                            row_key, yi)][col_key]
                         if value[-1] == "%":
                             value = value[:-1]
                         cell['year_values'][year] = value
@@ -842,7 +855,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
                 else:
                     value = table_data[row_key][col_key]
                     if value[-1] == "%":
-                            value = value[:-1]
+                        value = value[:-1]
                     cell['value'] = value
 
                 row['cells'].append(cell)
@@ -860,6 +873,7 @@ def taxcalc_results_to_tables(results, first_budget_year):
 
     tables['result_years'] = years
     return tables
+
 
 def format_csv(tax_results, url_id, first_budget_year):
     """
@@ -923,10 +937,10 @@ def format_csv(tax_results, url_id, first_budget_year):
     """
     res = []
 
-    #URL
+    # URL
     res.append(["#URL: http://www.ospc.org/taxbrain/" + str(url_id) + "/"])
 
-    #aggr2
+    # aggr2
     res.append(["#aggr_2"])
     ft = tax_results.get('aggr_d', {})
     yrs = [first_budget_year + i for i in range(0, len(ft['ind_tax']))]
@@ -940,7 +954,7 @@ def format_csv(tax_results, url_id, first_budget_year):
         res.append(['ind_tax'])
         res.append(ft['ind_tax'])
 
-    #dist1_xdec
+    # dist1_xdec
     res.append(["#dist1_xdec"])
     mxd = tax_results.get('dist1_xdec', {})
     if mxd:
@@ -948,9 +962,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             res.append([yr])
             res.append(TAXCALC_RESULTS_MTABLE_COL_LABELS)
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
-                res.append(mxd[row+"_" + str(count)])
+                res.append(mxd[row + "_" + str(count)])
 
-    #dist2_xdec
+    # dist2_xdec
     res.append(["#dist2_xdec"])
     myd = tax_results.get('dist2_xdec', {})
     if myd:
@@ -958,9 +972,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             res.append([yr])
             res.append(TAXCALC_RESULTS_MTABLE_COL_LABELS)
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
-                res.append(myd[row+"_" + str(count)])
+                res.append(myd[row + "_" + str(count)])
 
-    #diff_itax_xdec
+    # diff_itax_xdec
     res.append(["#diff_itax_xdec"])
     dfd = tax_results.get('diff_itax_xdec', {})
     if dfd:
@@ -968,9 +982,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             res.append([yr])
             res.append(TAXCALC_RESULTS_DFTABLE_COL_LABELS)
             for row in TAXCALC_RESULTS_DEC_ROW_KEYS:
-                res.append(dfd[row+"_" + str(count)])
+                res.append(dfd[row + "_" + str(count)])
 
-    #dist1_xbin
+    # dist1_xbin
     res.append(["#dist1_xbin"])
     mxb = tax_results.get('mX_bin', {})
     if mxb:
@@ -978,9 +992,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             res.append([yr])
             res.append(TAXCALC_RESULTS_MTABLE_COL_LABELS)
             for row in TAXCALC_RESULTS_BIN_ROW_KEYS:
-                res.append(mxb[row+"_" + str(count)])
+                res.append(mxb[row + "_" + str(count)])
 
-    #dist2_xbin
+    # dist2_xbin
     res.append(["#dist2_xbin"])
     myb = tax_results.get('mY_bin', {})
     if myb:
@@ -988,9 +1002,9 @@ def format_csv(tax_results, url_id, first_budget_year):
             res.append([yr])
             res.append(TAXCALC_RESULTS_MTABLE_COL_LABELS)
             for row in TAXCALC_RESULTS_BIN_ROW_KEYS:
-                res.append(myb[row+"_" + str(count)])
+                res.append(myb[row + "_" + str(count)])
 
-    #diff_itax_xbin
+    # diff_itax_xbin
     res.append(["#diff_itax_xbin"])
     dfb = tax_results.get('diff_itax_xbin', {})
     if dfb:
@@ -998,6 +1012,6 @@ def format_csv(tax_results, url_id, first_budget_year):
             res.append([yr])
             res.append(TAXCALC_RESULTS_DFTABLE_COL_LABELS)
             for row in TAXCALC_RESULTS_BIN_ROW_KEYS:
-                res.append(dfb[row+"_" + str(count)])
+                res.append(dfb[row + "_" + str(count)])
 
     return res

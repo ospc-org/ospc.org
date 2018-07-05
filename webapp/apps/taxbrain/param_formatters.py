@@ -13,6 +13,7 @@ from .helpers import is_wildcard, is_reverse
 MetaParam = namedtuple("MetaParam", ["param_name", "param_meta"])
 CPI_WIDGET = NullBooleanSelect()
 
+
 def parse_value(value, meta_param):
     """
     Parse the value to the type that the upstream package specification
@@ -75,8 +76,9 @@ def parse_value(value, meta_param):
             # rational number that cannot be casted to int without losing info
             # upstream package will handle the error
             return parsed
-    else: # parsed is type float
+    else:  # parsed is type float
         return float(parsed)
+
 
 def parse_fields(param_dict, default_params):
     """
@@ -123,13 +125,15 @@ def parse_fields(param_dict, default_params):
             assert isinstance(values, bool)
         else:
             for item in v.split(","):
-                 values.append(parse_value(item, meta_param))
+                values.append(parse_value(item, meta_param))
         parsed[meta_param.param_name] = values
 
     return parsed, failed_lookups
 
+
 class ParameterLookUpException(Exception):
     pass
+
 
 def get_default_policy_param(param, default_params):
     """
@@ -138,18 +142,18 @@ def get_default_policy_param(param, default_params):
 
     returns: named tuple with taxcalc param name and metadata
     """
-    if '_' + param in default_params: # ex. EITC_indiv --> _EITC_indiv
+    if '_' + param in default_params:  # ex. EITC_indiv --> _EITC_indiv
         return MetaParam('_' + param, default_params['_' + param])
     param_pieces = param.split('_')
     end_piece = param_pieces[-1]
     no_suffix = '_' + '_'.join(param_pieces[:-1])
-    if end_piece == 'cpi': # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
+    if end_piece == 'cpi':  # ex. SS_Earnings_c_cpi --> _SS_Earnings_c_cpi
         if no_suffix in default_params:
             return MetaParam('_' + param, default_params[no_suffix])
         else:
             msg = "Received unexpected parameter: {}"
             raise ParameterLookUpException(msg.format(param))
-    if no_suffix in default_params: # ex. STD_0 --> _STD_single
+    if no_suffix in default_params:  # ex. STD_0 --> _STD_single
         try:
             ix = int(end_piece)
         except ValueError:
@@ -158,9 +162,12 @@ def get_default_policy_param(param, default_params):
         num_columns = len(default_params[no_suffix]['col_label'])
         if ix < 0 or ix >= num_columns:
             msg = "Parsing {}: Index {} not in range ({}, {})"
-            raise ParameterLookUpException(msg.format(param, ix, 0, num_columns))
+            raise ParameterLookUpException(
+                msg.format(param, ix, 0, num_columns))
         col_label = default_params[no_suffix]['col_label'][ix]
-        return MetaParam(no_suffix + '_' + col_label, default_params[no_suffix])
+        return MetaParam(
+            no_suffix + '_' + col_label,
+            default_params[no_suffix])
     msg = "Received unexpected parameter: {}"
     raise ParameterLookUpException(msg.format(param))
 
@@ -251,7 +258,7 @@ def parse_errors_warnings(errors_warnings):
         if len(msgs) == 0:
             continue
         for msg in msgs.split('\n'):
-            if len(msg) == 0: # new line
+            if len(msg) == 0:  # new line
                 continue
             msg_spl = msg.split()
             msg_action = msg_spl[0]
@@ -259,7 +266,7 @@ def parse_errors_warnings(errors_warnings):
             curr_id = msg_spl[2][1:]
             msg_parse = msg_spl[2:]
             parsed[action][curr_id][year] = ' '.join([msg_action] + msg_parse +
-                                                         ['for', year])
+                                                     ['for', year])
 
     return parsed
 
@@ -284,11 +291,13 @@ def read_json_reform(reform, assumptions, use_puf_not_cps=True):
     # project/project module
     errors_warnings = {}
     for project in tc_errors_warnings:
-        errors_warnings[project] = parse_errors_warnings(tc_errors_warnings[project])
+        errors_warnings[project] = parse_errors_warnings(
+            tc_errors_warnings[project])
 
     # separate reform and assumptions
     reform_dict = policy_dict["policy"]
-    assumptions_dict = {k: v for k, v in list(policy_dict.items()) if k != "policy"}
+    assumptions_dict = {k: v for k, v in list(
+        policy_dict.items()) if k != "policy"}
 
     return reform_dict, assumptions_dict, errors_warnings
 

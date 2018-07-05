@@ -16,6 +16,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 
+
 def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
                                   MockComputeObj=MockCompute, **mc_args):
     """
@@ -26,6 +27,7 @@ def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
     module_views = sys.modules[module_import_path]
     setattr(module_views, attr, MockComputeObj(**mc_args))
     return getattr(module_views, attr)
+
 
 def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
                  compute_count=None, post_url='/taxbrain/'):
@@ -42,7 +44,7 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
     returns: response object, taxbrain mock dropq compute object,
              dynamic dropq compute object, primary key for model run
     """
-    #Monkey patch to mock out running of compute jobs
+    # Monkey patch to mock out running of compute jobs
     if tb_dropq_compute is None:
         tb_dropq_compute = get_dropq_compute_from_module(
             'webapp.apps.taxbrain.views',
@@ -71,7 +73,7 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
     return {"response": response,
             "tb_dropq_compute": tb_dropq_compute,
             "dyn_dropq_compute": dyn_dropq_compute,
-            "pk": response.url[idx+1:-1]}
+            "pk": response.url[idx + 1:-1]}
 
 
 def check_posted_params(mock_compute, params_to_check, start_year,
@@ -106,14 +108,18 @@ def check_posted_params(mock_compute, params_to_check, start_year,
             except ValueError:
                 assert exp == act
 
-def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False):
+
+def get_post_data(
+        start_year,
+        _ID_BenefitSurtax_Switches=True,
+        quick_calc=False):
     """
     Convenience function for posting GUI data
     """
     data = {'has_errors': ['False'],
             'start_year': str(start_year),
             'data_source': 'PUF',
-            'csrfmiddlewaretoken':'abc123'}
+            'csrfmiddlewaretoken': 'abc123'}
     if _ID_BenefitSurtax_Switches:
         switches = {'ID_BenefitSurtax_Switch_0': ['True'],
                     'ID_BenefitSurtax_Switch_1': ['True'],
@@ -128,17 +134,19 @@ def get_post_data(start_year, _ID_BenefitSurtax_Switches=True, quick_calc=False)
     return data
 
 
-def get_file_post_data(start_year, reform_text, assumptions_text=None, quick_calc=False):
+def get_file_post_data(start_year, reform_text, assumptions_text=None,
+                       quick_calc=False):
     """
     Convenience function for posting file input data
     """
-    tc_file = SimpleUploadedFile("test_reform.json", reform_text.encode('utf-8'))
+    tc_file = SimpleUploadedFile("test_reform.json",
+                                 reform_text.encode('utf-8'))
     data = {'docfile': tc_file,
             'has_errors': ['False'],
             'start_year': str(start_year),
             'data_source': 'PUF',
             'quick_calc': quick_calc,
-            'csrfmiddlewaretoken':'abc123'}
+            'csrfmiddlewaretoken': 'abc123'}
 
     if assumptions_text is not None:
         tc_file2 = SimpleUploadedFile("test_assumptions.json",
@@ -166,7 +174,7 @@ def get_taxbrain_model(_fields, first_year=2017,
     model = personal_inputs.save(commit=False)
     model.set_fields()
     model.save()
-    model.job_ids = ['1','2','3']
+    model.job_ids = ['1', '2', '3']
     model.json_text = None
     model.first_year = first_year
     model.quick_calc = quick_calc

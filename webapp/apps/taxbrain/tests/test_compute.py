@@ -16,7 +16,13 @@ import msgpack
 class MockComputeTests(MockCompute):
 
     def remote_submit_job(self, theurl, data, timeout, headers=None):
-        return super(MockComputeTests, self).remote_submit_job(theurl, data, timeout, headers=headers)
+        return super(
+            MockComputeTests,
+            self).remote_submit_job(
+            theurl,
+            data,
+            timeout,
+            headers=headers)
 
 
 class ComputeTests(TestCase):

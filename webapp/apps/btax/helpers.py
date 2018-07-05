@@ -8,8 +8,7 @@ import sys
 import time
 import six
 
-#Mock some module for imports because we can't fit them on Heroku slugs
-from mock import Mock
+# Mock some module for imports because we can't fit them on Heroku slugs
 import sys
 
 from ..taxbrain.helpers import (make_bool, convert_val,
@@ -32,11 +31,11 @@ BTAX_BITR = ['btax_betr_corp',
              'btax_betr_entity_Switch']
 BTAX_DEPREC = ['btax_depr_allyr', 'btax_depr_3yr', 'btax_depr_5yr',
                'btax_depr_7yr', 'btax_depr_10yr',
-               'btax_depr_15yr','btax_depr_20yr', 'btax_depr_25yr',
+               'btax_depr_15yr', 'btax_depr_20yr', 'btax_depr_25yr',
                'btax_depr_27_5yr', 'btax_depr_39yr']
 BTAX_OTHER = ['btax_other_hair', 'btax_other_corpeq',
-              'btax_other_proptx','btax_other_invest']
-BTAX_ECON = ['btax_econ_nomint', 'btax_econ_inflat',]
+              'btax_other_proptx', 'btax_other_invest']
+BTAX_ECON = ['btax_econ_nomint', 'btax_econ_inflat']
 
 
 BTAX_VERSION_INFO = btax._version.get_versions()
@@ -59,6 +58,7 @@ class BTaxParam(object):
     """
     coming_soon = False
     inflatable = False
+
     def __init__(self, param_id, attributes, start_year=START_YEAR):
         self.__load_from_json(param_id, attributes, int(start_year))
 
@@ -78,7 +78,7 @@ class BTaxParam(object):
         self.info = " ".join([
             attributes['description'],
             attributes.get('notes') or ""     # sometimes this is blank
-            ]).strip()
+        ]).strip()
 
         # normalize single-year default lists [] to [[]]
         if not isinstance(values_by_year[0], list):
@@ -99,10 +99,7 @@ class BTaxParam(object):
             first_budget_year
         ))
 
-        # we assume we can CPI inflate if first value isn't a ratio
-        first_value = self.col_fields[0].values[0]
-
-        validations_json =  attributes.get('validations')
+        validations_json = attributes.get('validations')
         if validations_json:
             self.max = validations_json.get('max')
             self.min = validations_json.get('min')
@@ -133,16 +130,16 @@ def get_btax_defaults(start_year=START_YEAR):
     defaults = dict(DEFAULTS)
     # Set Bogus default for now
     defaults['btax_betr_pass']['value'] = [0.0]
-    for k,v in list(defaults.items()):
+    for k, v in list(defaults.items()):
         v['col_label'] = ['']
     BTAX_DEFAULTS = {}
 
     for k in (BTAX_BITR + BTAX_OTHER + BTAX_ECON):
-        param = BTaxParam(k,defaults[k], start_year)
+        param = BTaxParam(k, defaults[k], start_year)
         BTAX_DEFAULTS[param.nice_id] = param
     for k in BTAX_DEPREC:
         fields = ['{}_{}_Switch'.format(k, tag)
-                     for tag in ('gds', 'ads',  'tax')]
+                  for tag in ('gds', 'ads', 'tax')]
         for field in fields:
             param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
@@ -150,6 +147,7 @@ def get_btax_defaults(start_year=START_YEAR):
             param = BTaxParam(field, defaults[field], start_year)
             BTAX_DEFAULTS[param.nice_id] = param
     return BTAX_DEFAULTS
+
 
 BTAX_DEFAULTS = get_btax_defaults()
 
@@ -209,7 +207,7 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
                  label=label,
                  td_style_class="table-check-all-item" if yr == 'all' else '')
 
-            )
+        )
     return depr_argument_groups
 
 

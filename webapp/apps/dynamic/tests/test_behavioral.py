@@ -4,9 +4,9 @@ import pytest
 import msgpack
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.models import TaxSaveInputs
-from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                                 format_csv, arrange_totals_by_row, default_taxcalc_data)
+from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
+                                 package_up_vars, format_csv,
+                                 arrange_totals_by_row, default_taxcalc_data)
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
@@ -19,6 +19,7 @@ from ..models import DynamicBehaviorOutputUrl
 from ..forms import DynamicBehavioralInputsModelForm
 
 CLIENT = Client()
+
 
 @pytest.mark.usefixtures("r1")
 @pytest.mark.django_db
@@ -48,8 +49,9 @@ class TestDynamicBehavioralViews(object):
 
         # Now edit this partial equilibrium sim
         # Go to behavioral input page
-        behavior_num = pe_response.url[pe_response.url[:-1].rfind('/')+1:-1]
-        dynamic_behavior_edit = '/dynamic/behavioral/edit/{0}/?start_year={1}'.format(behavior_num, START_YEAR)
+        behavior_num = pe_response.url[pe_response.url[:-1].rfind('/') + 1:-1]
+        dynamic_behavior_edit = ('/dynamic/behavioral/edit/{0}/?start_year={1}'
+                                 .format(behavior_num, START_YEAR))
         # load page
         response = CLIENT.get(dynamic_behavior_edit)
         assert response.status_code == 200
@@ -61,7 +63,8 @@ class TestDynamicBehavioralViews(object):
         idx_ms_num_end = idx_ms_num_start + page[idx_ms_num_start:].find('/')
         microsim_model_num = page[idx_ms_num_start:idx_ms_num_end]
         microsim_url = page[idx:idx_ms_num_end]
-        assert 'dynamic/behavioral/{0}'.format(microsim_model_num) == microsim_url
+        assert ('dynamic/behavioral/{0}'.format(microsim_model_num) ==
+                microsim_url)
 
     def test_behavioral_reform_with_wildcard(self):
         # Do the microsim
@@ -82,7 +85,7 @@ class TestDynamicBehavioralViews(object):
                                use_list=True)
         last_posted = inputs['inputs']
         user_mods = last_posted['user_mods']
-        assert user_mods["policy"][2020]['_SS_Earnings_c'][0]  == 15000.0
+        assert user_mods["policy"][2020]['_SS_Earnings_c'][0] == 15000.0
         assert user_mods["behavior"][2016]["_BE_sub"][0] == 0.25
 
     def test_behavioral_reform_post_gui(self):
@@ -107,7 +110,7 @@ class TestDynamicBehavioralViews(object):
         last_posted = inputs['inputs']
         user_mods = last_posted['user_mods']
         assert last_posted["first_budget_year"] == int(start_year)
-        assert user_mods["policy"][2020]['_SS_Earnings_c'][0]  == 15000.0
+        assert user_mods["policy"][2020]['_SS_Earnings_c'][0] == 15000.0
         assert user_mods["behavior"][2016]["_BE_sub"][0] == 0.25
         assert last_posted['use_puf_not_cps'] == False
 
@@ -194,13 +197,13 @@ class TestDynamicBehavioralViews(object):
         pe_reform = {'BE_sub': ['-0.25'], 'BE_inc': ['0.1']}
 
         idx = microsim_response.url[:-1].rfind('/')
-        model_num = microsim_response.url[idx+1:-1]
+        model_num = microsim_response.url[idx + 1:-1]
         dynamic_behavior = f'/dynamic/behavioral/{model_num}/?start_year={start_year}'
         response = CLIENT.post(dynamic_behavior, pe_reform)
 
         assert response.status_code == 200
         print(response.context.keys())
-        assert response.context['has_errors'] == True
+        assert response.context['has_errors']
 
         print(dir(response))
 
@@ -215,7 +218,7 @@ class TestDynamicBehavioralViews(object):
 
         response = CLIENT.post(dynamic_behavior, data2)
         assert response.status_code == 200
-        assert response.context['has_errors'] == True
+        assert response.context['has_errors']
 
         next_token = str(response.context['csrf_token'])
 

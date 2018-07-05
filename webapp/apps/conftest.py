@@ -31,11 +31,13 @@ def set_fixture_prop(func):
 
     return wrapper
 
+
 @pytest.fixture()
 @set_fixture_prop
 def r1(request):
     with open(os.path.join(CUR_PATH, 'r1.json')) as f:
         return f.read()
+
 
 @pytest.fixture()
 def regression_sample_reform():
@@ -97,8 +99,8 @@ def test_coverage_gui_fields(request):
     _test_coverage_gui_fields = {
         'cpi_offset': ['<', -0.0025],
         'CG_nodiff': [False],
-        'FICA_ss_trt': ['<',0.1,'*',0.15,0.2],
-        'FICA_mc_trt': ['<',0.1,0.15],
+        'FICA_ss_trt': ['<', 0.1, '*', 0.15, 0.2],
+        'FICA_mc_trt': ['<', 0.1, 0.15],
         'STD_0': [8000.0, '*', 10000.0],
         'ID_BenefitSurtax_Switch_0': [True],
         'ID_Charity_c_cpi': True,
@@ -172,11 +174,11 @@ def test_coverage_reform():
 @pytest.fixture()
 def errors_warnings_gui_fields(fields_base):
     _errors_warnings_gui_fields = {
-            'STD_0': [7000.0],
-            'FICA_ss_trt': [-1.0,'*',0.1],
-            'II_brk4_0': [500.0],
-            'STD_3': [10000.0, '*', '*', 150.0],
-            'ID_BenefitSurtax_Switch_0': [True],
+        'STD_0': [7000.0],
+        'FICA_ss_trt': [-1.0, '*', 0.1],
+        'II_brk4_0': [500.0],
+        'STD_3': [10000.0, '*', '*', 150.0],
+        'ID_BenefitSurtax_Switch_0': [True],
     }
 
     return _errors_warnings_gui_fields
@@ -229,14 +231,14 @@ def test_coverage_exp_read_json_reform():
                '_ID_Charity_c_cpi': True,
                '_NIIT_PT_taxed': [False],
                '_CTC_new_refund_limited': [False],
-               '_ID_BenefitSurtax_Switch': [[True,False,False, False,
+               '_ID_BenefitSurtax_Switch': [[True, False, False, False,
                                              False, False, False]],
                '_ID_BenefitCap_Switch': [[False, False, False, False,
                                           False, False, False]],
                '_STD': [[15000.0, 24000.0, 12000.0, 18000.0, 24000.0]],
                '_EITC_rt': [[0.0765, 0.34, 1.0, 0.45]]},
-         2020: {'_FICA_ss_trt': [0.2]},
-         2019: {'_FICA_ss_trt': [0.1]}
+        2020: {'_FICA_ss_trt': [0.2]},
+        2019: {'_FICA_ss_trt': [0.1]}
     }
 
     return _test_coverage_exp_read_json_reform
@@ -295,7 +297,7 @@ def errors_warnings(warnings, errors):
 def errors_warnings_policy_behavior(errors, warnings, warnings_behavior,
                                     errors_behavior):
     return {
-        'policy':{
+        'policy': {
             'errors': errors,
             'warnings': warnings
         },
@@ -325,6 +327,7 @@ def exp_errors_warnings():
     with open(os.path.join(CUR_PATH, 'exp_errors_warnings_policy.json')) as f:
         return json.loads(f.read())
 
+
 @pytest.fixture()
 def exp_errors_warnings_policy_behavior():
     with open(os.path.join(CUR_PATH,
@@ -347,9 +350,9 @@ def exp_assumptions_text():
         'behavior': {
             2018: {
                 '_BE_sub': [1.0],
-                 '_BE_inc': [-0.6],
-                 '_BE_cg': [-0.67]}
-            },
+                '_BE_inc': [-0.6],
+                '_BE_cg': [-0.67]}
+        },
         'growdiff_baseline': {},
         'growmodel': {}
     }
@@ -386,6 +389,7 @@ def errors_warnings_exp_read_json_assumptions():
     }
 
     return _ew_assumptions
+
 
 @pytest.fixture()
 @set_fixture_prop

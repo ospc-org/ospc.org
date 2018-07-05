@@ -33,21 +33,26 @@ def default_params_Policy():
 #   2. "_" + param name + index name (i.e. STD_0 --> _STD_single)
 #   3. "_" + param name minus "_cpi"
 @pytest.mark.parametrize("param,exp_param",
-                         [("FICA_ss_trt", "_FICA_ss_trt"),
-                          ("ID_BenefitSurtax_Switch_0", "_ID_BenefitSurtax_Switch_medical"),
-                          ("CG_brk3_cpi", "_CG_brk3_cpi")])
-def test_get_default_policy_param_passing(param, exp_param, default_params_Policy):
+                         [("FICA_ss_trt",
+                           "_FICA_ss_trt"),
+                          ("ID_BenefitSurtax_Switch_0",
+                           "_ID_BenefitSurtax_Switch_medical"),
+                             ("CG_brk3_cpi",
+                              "_CG_brk3_cpi")])
+def test_get_default_policy_param_passing(
+        param, exp_param, default_params_Policy):
     act_param = get_default_policy_param(param, default_params_Policy)
     assert isinstance(act_param, MetaParam)
     np.testing.assert_equal(act_param.param_name, exp_param)
     assert isinstance(act_param.param_meta, (dict, OrderedDict))
+
 
 @pytest.mark.parametrize("param", ["CG_brk3_extra_cpi", "not_a_param"])
 def test_get_default_policy_param_failing0(param, default_params_Policy):
     """
     Check that non-recognized parameters throw a ValueError
     """
-    match="Received unexpected parameter: {0}".format(param)
+    match = "Received unexpected parameter: {0}".format(param)
     with pytest.raises(ParameterLookUpException, match=match):
         get_default_policy_param(param, default_params_Policy)
 
@@ -58,7 +63,8 @@ def test_get_default_policy_param_failing1(default_params_Policy):
     throws ValueError
     """
     param = "ID_BenefitSurtax_Switch_idx"
-    match = "Parsing {}: Expected integer for index but got {}".format(param, "idx")
+    match = "Parsing {}: Expected integer for index but got {}".format(
+        param, "idx")
     with pytest.raises(ParameterLookUpException, match=match):
         get_default_policy_param(param, default_params_Policy)
 
@@ -77,6 +83,8 @@ def test_get_default_policy_param_failing2(default_params_Policy):
 
 ##############################################################################
 # Test meta_apram construction and attribute access
+
+
 def test_meta_param():
     name_part = 'param_name'
     dict_part = {'dict': 'has some meta info'}
@@ -86,6 +94,8 @@ def test_meta_param():
 
 ##############################################################################
 # Test parse_value
+
+
 @pytest.mark.parametrize(
     "name,value,exp",
     [("FICA_ss_trt", "0.10", 0.10), ("ID_BenefitCap_Switch_0", "True", True),
@@ -96,31 +106,36 @@ def test_meta_param():
      ("EITC_MinEligAge", "22.0", 22),
      ("ID_BenefitCap_Switch_0", "fAlse", False),
      ("ID_Medical_frt_add4aged", "-0.01", -0.01),
-    ]
+     ]
 )
 def test_parse_values(name, value, exp, default_params_Policy):
     meta_param = get_default_policy_param(name, default_params_Policy)
     act = parse_value(value, meta_param)
-    assert act == exp and type(act) == type(exp)
+    assert act == exp and isinstance(act, type(exp))
 
 # Test meta_param construction and attribute access
+
+
 def test_parse_fields(default_params_Policy):
-    params = {"FICA_ss_trt": "<,0.10", "ID_BenefitCap_Switch_0": "True,*,False",
-              "EITC_MinEligAge": "22",
-              "AMEDT_ec_0": "300000,*,250000.0",
-              "STD_0": "", "STD_1": "15000,<",
-              "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true",
-              "ID_Charity_c_cpi": "True",
-              "ID_Medical_c_cpi": "1",
-              "SS_Earnings_c_cpi": "2",
-              "not-a-param": "fake"}
+    params = {
+        "FICA_ss_trt": "<,0.10",
+        "ID_BenefitCap_Switch_0": "True,*,False",
+        "EITC_MinEligAge": "22",
+        "AMEDT_ec_0": "300000,*,250000.0",
+        "STD_0": "",
+        "STD_1": "15000,<",
+        "ID_BenefitCap_Switch_1": "True,fALse,<,TRUE, true",
+        "ID_Charity_c_cpi": "True",
+        "ID_Medical_c_cpi": "1",
+        "SS_Earnings_c_cpi": "2",
+        "not-a-param": "fake"}
     act, failed_lookups = parse_fields(params, default_params_Policy)
     exp = {
         '_AMEDT_ec_single': [300000.0, '*', 250000.0],
         '_EITC_MinEligAge': [22],
         '_FICA_ss_trt': ['<', 0.1],
         '_ID_BenefitCap_Switch_medical': [True, '*', False],
-        "_STD_joint": [15000.0,"<"],
+        "_STD_joint": [15000.0, "<"],
         "_ID_BenefitCap_Switch_statelocal": [True, False, "<", True, True],
         "_ID_Charity_c_cpi": True,
         "_SS_Earnings_c_cpi": True
@@ -129,6 +144,8 @@ def test_parse_fields(default_params_Policy):
     assert failed_lookups == ["not-a-param"]
 
 # test NullBooleanSelect.value_from_datadict
+
+
 @pytest.mark.parametrize(
     "val, exp",
     [('2', True), ('3', False), ('True', True), ('False', False),
@@ -142,6 +159,8 @@ def test_cpi_widget(val, exp):
 # 2 Cases:
 #   1. Fields do not cause errors
 #   2. Fields cause errors
+
+
 @pytest.mark.parametrize(
     ("_fields,_exp_reform"),
     [("test_coverage_gui_fields", "test_coverage_reform"),
@@ -157,6 +176,8 @@ def test_to_json_reform(request, _fields, _exp_reform, default_params_Policy):
 
 ###############################################################################
 # Test parse_errors_warnings
+
+
 def test_parse_errors_warnings(errors_warnings_policy_behavior,
                                exp_errors_warnings_policy_behavior):
     for project in ['policy', 'behavior']:
@@ -172,9 +193,12 @@ def test_append_ew_file_input():
     Tests append_errors_warnings when add warning/error messages from the
     file input interface
     """
-    errors_warnings = {"warnings": {"param1": {"2017": "msg2", "2016": "msg1"}},
-                       "errors": {"param2": {"2018": "msg3", "2019": "msg4"}}
-                       }
+    errors_warnings = {
+        "warnings": {
+            "param1": {
+                "2017": "msg2", "2016": "msg1"}}, "errors": {
+            "param2": {
+                "2018": "msg3", "2019": "msg4"}}}
     errors = []
     exp = ["msg1", "msg2", "msg3", "msg4"]
 
@@ -185,15 +209,20 @@ def test_append_ew_file_input():
 
     assert errors == exp
 
+
 def test_append_ew_personal_inputs():
     """
     Tests append_errors_warnings when adding warning/error messages from the
     GUI input interface
     """
-    errors_warnings = {"warnings": {"param1": {"2017": "msg2", "2016": "msg1"}},
-                       "errors": {"param2": {"2018": "msg3", "2019": "msg4"}}
-                       }
+    errors_warnings = {
+        "warnings": {
+            "param1": {
+                "2017": "msg2", "2016": "msg1"}}, "errors": {
+            "param2": {
+                "2018": "msg3", "2019": "msg4"}}}
     # fake PersonalExemptionForm object to simulate add_error method
+
     class FakeForm:
         def __init__(self):
             self.errors = defaultdict(list)
@@ -244,7 +273,6 @@ def test_read_json_reform(request, _test_reform, _test_assump,
     exp_reform = request.getfixturevalue(_exp_reform)
     exp_assump = request.getfixturevalue(_exp_assump)
     exp_errors_warnings = request.getfixturevalue(_exp_errors_warnings)
-
 
     act_reform, act_assump, act_errors_warnings = read_json_reform(
         test_reform,

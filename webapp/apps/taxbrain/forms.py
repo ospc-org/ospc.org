@@ -20,20 +20,24 @@ import taxcalc
 
 
 def bool_like(x):
-    b = True if x == 'True' or x == True else False
+    b = True if x == 'True' or x else False
     return b
+
 
 def parameter_name(param):
     if not param.startswith("_"):
         param = "_" + param
 
-    is_multi_param = any(param.endswith("_" + suffix) for suffix in ("0", "1", "2", "3"))
+    is_multi_param = any(param.endswith("_" + suffix)
+                         for suffix in ("0", "1", "2", "3"))
     if is_multi_param:
         return param[:-2]
     else:
         return param
 
-def expand_unless_empty(param_values, param_name, param_column_name, form, new_len):
+
+def expand_unless_empty(param_values, param_name, param_column_name, form,
+                        new_len):
     ''' Take a list of parameters and, unless the list is empty, fill in any
     wildcards and/or expand the list to the desired number of years, using
     the proper inflation rates if necessary
@@ -54,7 +58,7 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
 
     has_wildcards = check_wildcards(param_values)
     if len(param_values) < new_len or has_wildcards:
-        #Only process wildcards and floats from this point on
+        # Only process wildcards and floats from this point on
         param_values = [convert_val(x) for x in param_values]
         # Discover the CPI setting for this parameter
         cpi_flag = form.discover_cpi_flag(param_name, form.cleaned_data)
@@ -62,23 +66,23 @@ def expand_unless_empty(param_values, param_name, param_column_name, form, new_l
         default_data = form._default_taxcalc_data[param_name]
         expnded_defaults = expand_list(default_data, new_len)
 
-        is_multi_param = any(param_column_name.endswith("_" + suffix) for suffix in ("0", "1", "2", "3"))
+        is_multi_param = any(param_column_name.endswith("_" + suffix)
+                             for suffix in ("0", "1", "2", "3"))
         if is_multi_param:
             idx = int(param_column_name[-1])
         else:
             idx = -1
 
         param_values = propagate_user_list(param_values,
-                                            name=param_name,
-                                            defaults=expnded_defaults,
-                                            cpi=cpi_flag,
-                                            first_budget_year=form._first_year,
-                                            multi_param_idx=idx)
+                                           name=param_name,
+                                           defaults=expnded_defaults,
+                                           cpi=cpi_flag,
+                                           first_budget_year=form._first_year,
+                                           multi_param_idx=idx)
 
         param_values = [float(x) for x in param_values]
 
     return param_values
-
 
 
 class PolicyBrainForm:
@@ -139,7 +143,8 @@ class PolicyBrainForm:
                     INPUT.parseString(value)
                 except (ParseException, AssertionError):
                     # Parse Error - we don't recognize what they gave us
-                    self.add_error(param_name, "Unrecognized value: {}".format(value))
+                    self.add_error(param_name,
+                                   "Unrecognized value: {}".format(value))
                 try:
                     # reverse character is not at the beginning
                     assert value.find('<') <= 0
@@ -172,7 +177,8 @@ class PolicyBrainForm:
                     attrs['disabled'] = True
 
                 if param.tc_id in boolean_fields:
-                    checkbox = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                    checkbox = forms.CheckboxInput(
+                        attrs=attrs, check_test=bool_like)
                     widgets[field.id] = checkbox
                     update_fields[field.id] = forms.BooleanField(
                         label=field.label,
@@ -289,14 +295,18 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         attribute wasn't created after `is_valid` was called. This ensures
         that the `cleaned_data` attribute is there.
         """
-        if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
+        if getattr(
+            self,
+            "cleaned_data",
+                None) is None or self.cleaned_data is None:
             self.cleaned_data = {}
         ModelForm.add_error(self, field, error)
 
     def set_form_data(self, start_year, use_puf_not_cps):
         defaults_key = (start_year, use_puf_not_cps)
         if defaults_key not in TAXCALC_DEFAULTS:
-            TAXCALC_DEFAULTS[defaults_key] = default_policy(start_year, use_puf_not_cps)
+            TAXCALC_DEFAULTS[defaults_key] = default_policy(
+                start_year, use_puf_not_cps)
         defaults = TAXCALC_DEFAULTS[defaults_key]
         (self.widgets, self.labels,
             self.update_fields) = PolicyBrainForm.set_form(defaults)
@@ -309,9 +319,9 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                   'input_fields']
         start_year = int(START_YEAR)
         default_policy = taxcalc.Policy.default_data(
-                             start_year=int(START_YEAR),
-                             metadata=True
-                         )
+            start_year=int(START_YEAR),
+            metadata=True
+        )
         defaults_key = (start_year, True)
         if defaults_key not in TAXCALC_DEFAULTS:
             TAXCALC_DEFAULTS[defaults_key] = default_policy(
@@ -322,6 +332,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             update_fields) = PolicyBrainForm.set_form(
             TAXCALC_DEFAULTS[defaults_key]
         )
+
 
 def has_field_errors(form, include_parse_errors=False):
     """

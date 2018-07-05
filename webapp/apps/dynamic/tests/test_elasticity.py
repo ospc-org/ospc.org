@@ -7,8 +7,9 @@ import msgpack
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.models import TaxSaveInputs
-from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                                 format_csv, arrange_totals_by_row, default_taxcalc_data)
+from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
+                                 package_up_vars, format_csv,
+                                 arrange_totals_by_row, default_taxcalc_data)
 from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
 import taxcalc
 from taxcalc import Policy
@@ -19,6 +20,7 @@ from ...test_assets.utils import (check_posted_params, do_micro_sim,
 
 
 import pytest
+
 
 @pytest.mark.usefixtures("r1")
 class DynamicElasticityViewsTests(TestCase):
@@ -54,13 +56,15 @@ class DynamicElasticityViewsTests(TestCase):
 
         # Do the elasticity of GDP simulation based on the third microsim
         egdp_reform = {'elastic_gdp': ['0.4']}
-        egdp_response = do_dynamic_sim(self.client, 'macro', micro3, egdp_reform)
+        egdp_response = do_dynamic_sim(
+            self.client, 'macro', micro3, egdp_reform)
         orig_micro_model_num = micro3.url[-2:-1]
 
         # Now edit this elasticity of gdp sim
         # Go to macro input page
-        egdp_num = egdp_response.url[egdp_response.url[:-1].rfind('/')+1:-1]
-        dynamic_macro_edit = '/dynamic/macro/edit/{0}/?start_year={1}'.format(egdp_num, START_YEAR)
+        egdp_num = egdp_response.url[egdp_response.url[:-1].rfind('/') + 1:-1]
+        dynamic_macro_edit = '/dynamic/macro/edit/{0}/?start_year={1}'.format(
+            egdp_num, START_YEAR)
         # get edit page.
         response = self.client.get(dynamic_macro_edit)
         self.assertEqual(response.status_code, 200)
@@ -89,8 +93,8 @@ class DynamicElasticityViewsTests(TestCase):
 
         # Do the elasticity of GDP simulation based on the third microsim
         egdp_reform = {'elastic_gdp': ['0.4']}
-        egdp_response = do_dynamic_sim(self.client,'macro', micro1['response'],
-                                          egdp_reform)
+        egdp_response = do_dynamic_sim(self.client, 'macro',
+                                       micro1['response'], egdp_reform)
         from webapp.apps.dynamic import views
         last_posted = views.dropq_compute.last_posted
         inputs = msgpack.loads(last_posted, encoding='utf8',
@@ -125,5 +129,7 @@ class DynamicElasticityViewsTests(TestCase):
         post = views.dropq_compute.last_posted
         # Verify that partial equilibrium job submitted with proper
         # SS_Earnings_c with wildcards filled in properly
-        beh_params = json.loads(json.loads(post["behavior_params"])['elasticity_params'])
-        assert beh_params["elastic_gdp"][0]  == 0.4
+        beh_params = json.loads(
+            json.loads(
+                post["behavior_params"])['elasticity_params'])
+        assert beh_params["elastic_gdp"][0] == 0.4

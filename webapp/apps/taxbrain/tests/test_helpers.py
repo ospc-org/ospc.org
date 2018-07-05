@@ -59,6 +59,7 @@ CURRENT_LAW_POLICY = """
 }
 """
 
+
 @pytest.fixture
 def mock_current_law_policy():
     return json.loads(CURRENT_LAW_POLICY)
@@ -140,6 +141,7 @@ def test_json_int_key_encode():
     act = json_int_key_encode(json_str)
     assert exp == act
 
+
 def test_reorder_lists():
     reorder_map = [1, 0, 2]
     data = {"table_label_0": {"bin_0": [1, 0, 2], "bin_1": [1, 2, 0]},
@@ -161,7 +163,7 @@ def test_reorder_lists():
      '*', '1,*', '1,*,1,1,*',
      '-2,*', '-7,*,*,2,*',
      'True', 'true', 'TRUE', 'tRue',
-     'False', 'false', 'FALSE','faLSe',
+     'False', 'false', 'FALSE', 'faLSe',
      'true,*', '*, true', '*,*,false',
      'true,*,false,*,*,true',
      '1,*,False', '0.0,True', '1.0,False',
@@ -170,10 +172,14 @@ def test_reorder_lists():
 def test_parsing_pass(item):
     INPUT.parseString(item)
 
-@pytest.mark.parametrize('item', ['abc', '<,', '<', '1,<', '0,<,1', 'True,<', '-0.002,<,-0.001'])
+
+@pytest.mark.parametrize(
+    'item', [
+        'abc', '<,', '<', '1,<', '0,<,1', 'True,<', '-0.002,<,-0.001'])
 def test_parsing_fail(item):
     with pytest.raises(pp.ParseException):
         INPUT.parseString('abc')
+
 
 @pytest.mark.parametrize(
     'item,exp',
@@ -185,6 +191,7 @@ def test_parsing_fail(item):
 def test_make_bool(item, exp):
     assert make_bool(item) is exp
 
+
 @pytest.mark.parametrize(
     'item',
     ['abc', 10, '10', '00', 2]
@@ -193,11 +200,13 @@ def test_make_bool_fail(item):
     with pytest.raises((ValueError, TypeError)):
         make_bool(item)
 
+
 @pytest.mark.parametrize(
     'item,exp',
     [('<', True), ('a', False), ('1', False), (1, False), (False, False)])
 def test_is_reverse(item, exp):
     assert is_reverse(item) is exp
+
 
 def test_taxbrain_TaxCalcParam():
     """

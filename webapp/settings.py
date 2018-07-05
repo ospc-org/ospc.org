@@ -118,10 +118,10 @@ TEST_DATABASE = {
         'PASSWORD': os.environ.get('DATABASE_PW', ''),
     }
 }
-if os.environ.get('DATABASE_URL', None): # DATABASE_URL var is set
+if os.environ.get('DATABASE_URL', None):  # DATABASE_URL var is set
     DATABASES = {'default': dj_database_url.config()}
     DATABASES.update(TEST_DATABASE)
-else: # DATABASE_URL is not set--try default
+else:  # DATABASE_URL is not set--try default
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -150,10 +150,12 @@ USE_TZ = True
 
 # Use whitenoise to serve static files
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-SENDGRID_API_KEY=os.environ.get("SENDGRID_API_KEY", "not-specified")
+SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "not-specified")
 EMAIL_BACKEND = "sgbackend.SendGridBackend"
 BLOG_URL = os.environ.get('BLOG_URL', 'http://news.ospc.org/')
 
-GOOGLE_ANALYTICS_PROPERTY_ID = os.environ.get("GOOGLE_ANALYTICS_PROPERTY_ID", "")
-GOOGLE_ANALYTICS_EMBEDDED_ID = os.environ.get("GOOGLE_ANALYTICS_EMBEDDED_ID", "")
+GOOGLE_ANALYTICS_PROPERTY_ID = os.environ.get("GOOGLE_ANALYTICS_PROPERTY_ID",
+                                              "")
+GOOGLE_ANALYTICS_EMBEDDED_ID = os.environ.get("GOOGLE_ANALYTICS_EMBEDDED_ID",
+                                              "")
 GOOGLE_ANALYTICS_DOMAIN = os.environ.get("GOOGLE_ANALYTICS_DOMAIN", "")
