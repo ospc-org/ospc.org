@@ -4,6 +4,7 @@ from celery.result import AsyncResult
 import redis
 import json
 import msgpack
+import os
 
 from api.celery_tasks import (dropq_task_async,
                               dropq_task_small_async,
