@@ -2,6 +2,7 @@
 
 
 from django.db import models, migrations
+import uuid
 import django.core.validators
 import webapp.apps.taxbrain.models
 

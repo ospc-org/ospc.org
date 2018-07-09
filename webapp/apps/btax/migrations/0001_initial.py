@@ -4,6 +4,7 @@
 from django.db import models, migrations
 import datetime
 from django.conf import settings
+import uuid
 import webapp.apps.taxbrain.models
 
 
