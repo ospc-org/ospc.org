@@ -1,10 +1,5 @@
 from functools import partial
 import os
-from ..taxbrain.models import WorkerNodesCounter
-import json
-import requests
-from requests.exceptions import Timeout, RequestException
-from .helpers import arrange_totals_by_row
 from ..taxbrain.compute import (DropqCompute,
                                 MockCompute,
                                 MockFailedCompute,

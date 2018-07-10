@@ -1,15 +1,6 @@
-from collections import namedtuple
-import numbers
-import os
-import pandas as pd
-import json
-import string
 import sys
-import time
-import six
 
 #Mock some module for imports because we can't fit them on Heroku slugs
-from mock import Mock
 import sys
 
 from ..taxbrain.helpers import (make_bool, convert_val,
@@ -23,7 +14,6 @@ from ..taxbrain.param_displayers import TaxCalcField
 from ..constants import START_YEAR
 
 import btax
-from btax.util import read_from_egg
 
 PYTHON_MAJOR_VERSION = sys.version_info.major
 
@@ -70,7 +60,6 @@ class BTaxParam(object):
         # make here
         self.start_year = first_budget_year = start_year
         values_by_year = attributes['value']
-        col_labels = attributes['col_label']
 
         self.tc_id = param_id
         self.nice_id = param_id[1:] if param_id[0] == '_' else param_id
@@ -98,9 +87,6 @@ class BTaxParam(object):
             self,
             first_budget_year
         ))
-
-        # we assume we can CPI inflate if first value isn't a ratio
-        first_value = self.col_fields[0].values[0]
 
         validations_json =  attributes.get('validations')
         if validations_json:
@@ -167,7 +153,6 @@ def hover_args_to_btax_depr():
 
 
 def group_args_to_btax_depr(btax_default_params, asset_yr_str):
-    depr_field_order = ('gds', 'ads', 'exp', 'tax')
     depr_argument_groups = []
     for yr in asset_yr_str:
         gds_id = 'btax_depr_{}yr_gds_Switch'.format(yr)
@@ -182,10 +167,8 @@ def group_args_to_btax_depr(btax_default_params, asset_yr_str):
             pretty = "Check all"
             is_check_all = True
             label = ''
-            td_style_class = 'table-check-all-item'
             tr_style_class = 'tr-check-all'
         else:
-            td_style_class = ''
             is_check_all = False
             label = ''
             tr_style_class = ''

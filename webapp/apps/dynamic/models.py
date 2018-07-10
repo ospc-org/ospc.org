@@ -1,12 +1,7 @@
-import re
 import uuid
-from distutils.version import LooseVersion
 
 from django.db import models
-from django.core import validators
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
 from django.contrib.postgres.fields import JSONField, ArrayField
@@ -17,7 +12,6 @@ from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
                                TaxSaveInputs, OutputUrl)
 from ..taxbrain.behaviors import (Resultable, Fieldable, DataSourceable,
                                   Hostnameable)
-from ..taxbrain import helpers as taxbrain_helpers
 from ..taxbrain import param_formatters
 
 import datetime

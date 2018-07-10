@@ -1,15 +1,10 @@
 from django.test import Client
 import pytest
-import mock
-import os
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.models import TaxSaveInputs
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                                  format_csv, arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute, MockFailedCompute
-import taxcalc
-from taxcalc import Policy
+from ...taxbrain.compute import ElasticMockCompute, MockCompute, MockFailedCompute
 
 START_YEAR = '2016'
 
@@ -31,10 +26,8 @@ class DynamicViewsTests(object):
     def behavioral_post_helper(self):
         #Monkey patch to mock out running of compute jobs
         import sys
-        from webapp.apps.taxbrain import views
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
         dynamic_views.dropq_compute = MockCompute(num_times_to_wait=2)
 
@@ -102,10 +95,8 @@ class DynamicViewsTests(object):
     def test_elastic_post(self, el_data):
         #Monkey patch to mock out running of compute jobs
         import sys
-        from webapp.apps.taxbrain import views
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
         dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
@@ -151,10 +142,8 @@ class DynamicViewsTests(object):
     def test_elastic_failed_job(self):
         #Monkey patch to mock out running of compute jobs
         import sys
-        from webapp.apps.taxbrain import views
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
-        from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
         #dynamic_views.dropq_compute = ElasticFailedMockCompute(num_times_to_wait=1)
         dynamic_views.dropq_compute = MockFailedCompute(num_times_to_wait=1)

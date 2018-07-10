@@ -7,7 +7,6 @@ http://blog.kevinastone.com/django-model-behaviors.html
 
 from django.db import models
 
-import taxcalc
 
 from distutils.version import LooseVersion
 from .helpers import (rename_keys, reorder_lists, PRE_TC_0130_RES_MAP,

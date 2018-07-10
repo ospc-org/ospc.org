@@ -1,14 +1,11 @@
 import os
 import sys
-import uuid
-from multiprocessing import Process
 import time
 
 OGUSA_PATH = os.environ.get("OGUSA_PATH", "../../ospc-dynamic/dynamic/Python")
 
 sys.path.append(OGUSA_PATH)
 
-import ogusa
 from ogusa.scripts import postprocess
 from ogusa.scripts.execute import runner
 

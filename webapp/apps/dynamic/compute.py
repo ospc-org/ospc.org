@@ -1,14 +1,13 @@
 import os
-from ..taxbrain.helpers import package_up_vars, arrange_totals_by_row
+from ..taxbrain.helpers import package_up_vars
 import json
 import requests
 from requests.exceptions import Timeout, RequestException
 import requests_mock
 import taxcalc
-from ..taxbrain.compute import DropqCompute, MockCompute
+from ..taxbrain.compute import DropqCompute
 from .models import OGUSAWorkerNodesCounter
 from .helpers import filter_ogusa_only
-from ..constants import START_YEAR
 
 dqversion_info = taxcalc._version.get_versions()
 dropq_version = dqversion_info['version']

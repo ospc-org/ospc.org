@@ -1,13 +1,12 @@
 from django.contrib import auth
 from django.template.context_processors import csrf
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response, render, redirect
-from django.template import RequestContext, Template
-from django.template.loader import render_to_string
+from django.template import RequestContext
 
 from django.contrib.auth.models import Permission
 
-from webapp.apps.register.forms import MyRegistrationForm, LoginForm, SubscribeForm
+from webapp.apps.register.forms import LoginForm, MyRegistrationForm
 from webapp.apps.register.models import Subscriber
 
 def login(request):
