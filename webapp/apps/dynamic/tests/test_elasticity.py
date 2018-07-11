@@ -6,13 +6,10 @@ import sys
 import msgpack
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.models import TaxSaveInputs
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
                                  package_up_vars, format_csv,
                                  arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
-import taxcalc
-from taxcalc import Policy
+from ...taxbrain.compute import ElasticMockCompute, MockCompute
 
 from .utils import do_dynamic_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
@@ -31,7 +28,6 @@ class DynamicElasticityViewsTests(TestCase):
         self.client = Client()
 
     def test_elasticity_edit(self):
-        from webapp.apps.taxbrain import views
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
 
@@ -40,17 +36,16 @@ class DynamicElasticityViewsTests(TestCase):
         data = get_post_data(start_year)
         data['II_em'] = ['4333']
 
-        micro1 = do_micro_sim(self.client, data)["response"]
+        do_micro_sim(self.client, data)
 
         # Do another microsim
         data['II_em'] += ['4334']
-        micro2 = do_micro_sim(self.client, data)["response"]
+        do_micro_sim(self.client, data)
 
         # Do a third microsim
         data['II_em'] += ['4335']
         micro3 = do_micro_sim(self.client, data)["response"]
 
-        from webapp.apps.dynamic import views
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
         dynamic_views.dropq_compute = ElasticMockCompute(num_times_to_wait=1)
 
@@ -123,7 +118,7 @@ class DynamicElasticityViewsTests(TestCase):
 
         # Do the partial equilibrium simulation based on the microsim
         el_reform = {'elastic_gdp': ['0.4']}
-        el_response = do_dynamic_sim(self.client, 'macro', micro1, el_reform)
+        do_dynamic_sim(self.client, 'macro', micro1, el_reform)
         orig_micro_model_num = micro1.url[-2:-1]
         from webapp.apps.dynamic import views
         post = views.dropq_compute.last_posted

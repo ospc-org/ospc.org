@@ -1,4 +1,4 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import url
 
 from .views import (personal_results, output_detail, csv_input, csv_output,
                     pdf_view, edit_personal_results, submit_micro, file_input)

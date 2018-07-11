@@ -7,7 +7,7 @@ from ..helpers import (rename_keys, json_int_key_encode, INPUT, make_bool,
                        is_reverse,
                        reorder_lists)
 from ..param_formatters import parse_value, MetaParam
-from ..param_displayers import TaxCalcParam, TaxCalcField, nested_form_parameters
+from ..param_displayers import TaxCalcParam, nested_form_parameters
 
 
 CURRENT_LAW_POLICY = """

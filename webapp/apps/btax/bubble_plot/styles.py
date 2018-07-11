@@ -1,4 +1,3 @@
-from bokeh.plotting import figure
 
 DATETIME_FORMAT = dict(
     microseconds=["%m/%d %X"],

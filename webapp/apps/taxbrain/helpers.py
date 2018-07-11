@@ -1,16 +1,10 @@
-from collections import namedtuple
 import numbers
-import os
-import pandas as pd
-import numpy as np
 import pyparsing as pp
 import sys
-import time
 import six
 import re
 
 # Mock some module for imports because we can't fit them on Heroku slugs
-from mock import Mock
 import sys
 
 from ..constants import (START_YEAR,
@@ -439,7 +433,6 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
     else:
         irates = [0.0] * num_years
 
-    last_val = x[-1]
     ans = [None] * num_years
     for i in range(num_years):
         if i < len(x):

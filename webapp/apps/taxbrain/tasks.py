@@ -1,4 +1,3 @@
-import taxcalc
 import pandas as pd
 import os
 import json
@@ -6,9 +5,7 @@ from taxcalc import *
 import dropq
 
 from celery import Celery
-import time
 
-import boto
 from boto.s3.connection import S3Connection
 import os
 
@@ -40,7 +37,6 @@ def get_tax_results_async(mods, inputs_pk):
     user_mods = package_up_vars(mods)
     print("user_mods is ", user_mods)
     print("begin work")
-    cur_path = os.path.abspath(os.path.dirname(__file__))
     tax_dta = pd.read_csv("puf.csv.gz", compression='gzip')
     (mY_dec, mX_dec, df_dec, mY_bin,
      mX_bin, df_bin, fiscal_tots) = dropq.run_models(

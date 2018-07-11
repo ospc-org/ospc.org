@@ -1,7 +1,6 @@
 from __future__ import print_function
 # python manage.py dumpdata flatblocks --output flatblocks_heroku.json
 
-import boto
 from boto.s3.connection import S3Connection
 import os
 

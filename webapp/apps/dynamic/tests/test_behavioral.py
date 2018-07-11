@@ -7,9 +7,6 @@ import msgpack
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
                                  package_up_vars, format_csv,
                                  arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.compute import DropqCompute, MockCompute, ElasticMockCompute
-import taxcalc
-from taxcalc import Policy
 
 from .utils import do_dynamic_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
@@ -32,11 +29,11 @@ class TestDynamicBehavioralViews(object):
         data = get_post_data(start_year)
         data['II_em'] = ['4333']
 
-        micro1 = do_micro_sim(CLIENT, data)["response"]
+        do_micro_sim(CLIENT, data)
 
         # Do another microsim
         data['II_em'] += ['4334']
-        micro2 = do_micro_sim(CLIENT, data)["response"]
+        do_micro_sim(CLIENT, data)
 
         # Do a third microsim
         data['II_em'] += ['4335']
@@ -112,7 +109,7 @@ class TestDynamicBehavioralViews(object):
         assert last_posted["first_budget_year"] == int(start_year)
         assert user_mods["policy"][2020]['_SS_Earnings_c'][0] == 15000.0
         assert user_mods["behavior"][2016]["_BE_sub"][0] == 0.25
-        assert last_posted['use_puf_not_cps'] == False
+        assert last_posted['use_puf_not_cps'] is False
 
     def test_behavioral_reform_from_file(self):
         # Do the microsim from file

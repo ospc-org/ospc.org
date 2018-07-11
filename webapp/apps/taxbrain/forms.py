@@ -1,7 +1,6 @@
 
 from django import forms
 from django.forms import ModelForm
-from django.utils.translation import ugettext_lazy as _
 from pyparsing import ParseException
 import six
 import json
@@ -13,7 +12,7 @@ from .helpers import (is_number,
                       int_to_nth, is_string, string_to_float_array,
                       check_wildcards, default_taxcalc_data, expand_list,
                       propagate_user_list, convert_val, INPUT, INPUTS_META)
-from .param_displayers import TaxCalcField, TaxCalcParam, default_policy
+from .param_displayers import default_policy
 from .param_formatters import (get_default_policy_param,
                                ParameterLookUpException)
 import taxcalc

@@ -1,12 +1,10 @@
 import pandas as pd
-from os import path
-import json
 pd.options.mode.chained_assignment = None
 
 # importing Bokeh libraries
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, Title, CustomJS, LabelSet
-from bokeh.models.widgets import Select, Panel, Tabs, RadioButtonGroup
+from bokeh.models import ColumnDataSource, CustomJS, LabelSet
+from bokeh.models.widgets import Panel, RadioButtonGroup, Tabs
 from bokeh.models import HoverTool, WheelZoomTool, ResetTool, SaveTool
 from bokeh.models import NumeralTickFormatter
 from bokeh.layouts import gridplot, column

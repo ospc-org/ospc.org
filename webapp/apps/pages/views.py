@@ -1,10 +1,7 @@
 
 import os
 
-from django.http import Http404
-from django.shortcuts import render, render_to_response, redirect
-from django.template import RequestContext
-from django.views.generic import TemplateView, DetailView
+from django.shortcuts import redirect, render
 from webapp.apps.register.forms import SubscribeForm
 from django.template.context_processors import csrf
 from django.conf import settings
@@ -45,7 +42,6 @@ def check_email(request):
 
 def homepage(request):
     form = subscribeform(request)
-    csrf_token = csrf(request)
     if request.method == 'POST' and form.is_valid():
         return check_email(request)
 

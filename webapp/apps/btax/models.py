@@ -1,14 +1,9 @@
-import re
 import uuid
 
 from django.db import models
-from django.core import validators
 from django.core.urlresolvers import reverse
-from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from django.contrib.auth.models import User
 
-from django.contrib.postgres.fields import JSONField
 import datetime
 from django.utils.timezone import make_aware
 

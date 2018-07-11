@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import ast
@@ -9,8 +8,6 @@ from ..taxbrain.compute import MockCompute
 from ..taxbrain.models import OutputUrl
 from ..taxbrain.forms import TaxBrainForm
 
-from ..dynamic import views
-from ..taxbrain import views
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 

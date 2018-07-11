@@ -1,5 +1,3 @@
-import csv
-import pdfkit
 import json
 import traceback
 import sys
@@ -14,27 +12,20 @@ from urllib.parse import urlparse, parse_qs
 from ipware.ip import get_real_ip
 
 from django.core import serializers
-from django.template.context_processors import csrf
-from django.core.exceptions import ValidationError
-from django.contrib.auth.decorators import login_required, permission_required
-from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
-from django.shortcuts import render, render_to_response, get_object_or_404, redirect
-from django.template import loader, Context
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import redirect, render, render_to_response
 from django.template.context import RequestContext
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
-from django import forms
 
 from .forms import BTaxExemptionForm, has_field_errors
-from .models import BTaxSaveInputs, BTaxOutputUrl
+from .models import BTaxOutputUrl
 from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC, BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr, hover_args_to_btax_depr,
                       make_bool, convert_val)
 from ..taxbrain.helpers import format_csv, is_wildcard
 from ..taxbrain.views import denormalize, normalize
-from .compute import DropqComputeBtax, MockComputeBtax, JobFailError, BTAX_WORKERS
+from .compute import BTAX_WORKERS, DropqComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP,
                          DPRC_TOOLTIP, START_YEAR)
@@ -278,7 +269,6 @@ def edit_btax_results(request, pk):
     # Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
     user_inputs = json.loads(ser_model)
-    inputs = user_inputs[0]['fields']
 
     form_btax_input = BTaxExemptionForm(first_year=start_year, instance=model)
     btax_default_params = get_btax_defaults()

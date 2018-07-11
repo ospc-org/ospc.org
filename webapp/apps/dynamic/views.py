@@ -9,18 +9,11 @@ import taxcalc
 
 from django.core.mail import send_mail
 from django.core import serializers
-from django.template.context_processors import csrf
-from django.core.exceptions import ValidationError
-from django.contrib.auth.decorators import login_required, permission_required
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseServerError, JsonResponse)
-from django.shortcuts import render, render_to_response, get_object_or_404, redirect
-from django.template import loader, Context
+from django.shortcuts import redirect, render, render_to_response
 from django.template.context import RequestContext
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic import DetailView, TemplateView
 from django.contrib.auth.models import User
-from django import forms
 
 from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
                     has_field_errors, DynamicElasticityInputsModelForm)
@@ -71,7 +64,7 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
                          OUT_OF_RANGE_ERROR_MSG)
 
-from ..formatters import format_dynamic_params, get_version
+from ..formatters import get_version
 
 # Mock some module for imports because we can't fit them on Heroku slugs
 from mock import Mock
@@ -450,7 +443,6 @@ def dynamic_elasticities(request, pk):
             )
 
             if not submitted_ids:
-                no_inputs = True
                 form_personal_exemp = personal_inputs
             else:
                 model.job_ids = denormalize(submitted_ids)
@@ -530,7 +522,6 @@ def edit_dynamic_behavioral(request, pk):
     # Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
     user_inputs = json.loads(ser_model)
-    inputs = user_inputs[0]['fields']
 
     form_personal_exemp = DynamicBehavioralInputsModelForm(
         first_year=start_year,
@@ -569,7 +560,6 @@ def edit_dynamic_elastic(request, pk):
     # Get the user-input from the model in a way we can render
     ser_model = serializers.serialize('json', [model])
     user_inputs = json.loads(ser_model)
-    inputs = user_inputs[0]['fields']
 
     form_personal_exemp = DynamicElasticityInputsModelForm(
         first_year=start_year,
@@ -599,7 +589,6 @@ def dynamic_landing(request, pk):
     is linked to the microsim
     """
     outputsurl = OutputUrl.objects.get(pk=pk)
-    taxbrain_model = outputsurl.unique_inputs
     include_ogusa = True
     init_context = {
         'pk': pk,

@@ -1,14 +1,11 @@
 from django.test import TestCase
 from django.test import Client
-import mock
 
 from ..models import BTaxSaveInputs, BTaxOutputUrl
 from ..forms import BTaxExemptionForm
 from ...taxbrain.models import WorkerNodesCounter
 from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
-import taxcalc
-from taxcalc import Policy
 from ...btax import views
 
 from ...constants import START_YEAR

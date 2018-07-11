@@ -1,6 +1,5 @@
 from django import forms
 from django.forms import ModelForm
-from django.utils.translation import ugettext_lazy as _
 
 from .models import BTaxSaveInputs
 from .helpers import (BTaxField, BTaxParam, get_btax_defaults,
@@ -9,7 +8,6 @@ from ..taxbrain.helpers import (is_number, int_to_nth,
                                 is_string, string_to_float_array,
                                 check_wildcards, expand_list,
                                 propagate_user_list)
-import taxcalc
 
 from ..taxbrain.forms import (has_field_errors,
                               bool_like,
@@ -72,10 +70,10 @@ class BTaxExemptionForm(ModelForm):
         Keywords correlate to submitted value array for a different parameter,
         or to the default value array for the validated field.
 
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        We could define these on individual fields instead, but we would need
+        to define all the field data dynamically both here and on the model,
+        and it's not yet possible on the model due to issues with how
+        migrations are detected.
         """
 
         for param_id, param in self._default_params.items():
@@ -90,7 +88,7 @@ class BTaxExemptionForm(ModelForm):
                 try:
                     submitted_col_values = string_to_float_array(
                         submitted_col_values_raw)
-                except ValueError as ve:
+                except ValueError:
                     # Assuming wildcard notation here
                     submitted_col_values_list = submitted_col_values_raw.split(
                         ',')
@@ -102,8 +100,8 @@ class BTaxExemptionForm(ModelForm):
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
-                # validation, we must ensure this is validated even if unchanged
-                # from defaults
+                # validation, we must ensure this is validated even if
+                # unchanged from defaults
                 if submitted_col_values:
                     col_values = submitted_col_values
                 else:

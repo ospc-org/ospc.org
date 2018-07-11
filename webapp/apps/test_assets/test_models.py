@@ -1,6 +1,3 @@
-from django.test import TestCase
-from django.test import Client
-import json
 import os
 import pytest
 import numpy as np
@@ -76,7 +73,7 @@ class TaxBrainFieldsTest(TaxBrainModelsTest):
         model.set_fields()
         model.save()
         # get formatted model specifications
-        results = model.get_model_specs()
+        model.get_model_specs()
         # do some kind of check here using `exp_result`
 
         return model

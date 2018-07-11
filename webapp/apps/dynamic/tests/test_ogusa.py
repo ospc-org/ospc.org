@@ -2,26 +2,20 @@
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import User
-import mock
-import os
 import pytest
 import json
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.models import TaxSaveInputs
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
                                  package_up_vars, format_csv,
                                  arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.compute import DropqCompute, MockCompute
-import taxcalc
-from taxcalc import Policy
 
 from ...dynamic.models import DynamicSaveInputs, OGUSAWorkerNodesCounter
 from ..helpers import dynamic_params_from_model
 
 START_YEAR = 2016
 
-from .utils import do_ogusa_sim, START_YEAR
+from .utils import do_ogusa_sim
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data)
 
@@ -50,7 +44,7 @@ class DynamicOGUSAViewsTests(TestCase):
 
         # Do the ogusa simulation based on this microsim
         ogusa_reform = {'frisch': ['0.42']}
-        ogusa_response = do_ogusa_sim(self.client, micro_2015, ogusa_reform, start_year)
+        do_ogusa_sim(self.client, micro_2015, ogusa_reform, start_year)
 
         # Do a 2016 microsim
         start_year = 2016
@@ -133,7 +127,6 @@ class DynamicOGUSAViewsTests(TestCase):
         start_year = 2015
         self.client.login(username='temporary', password='temporary')
 
-        import sys
         from webapp.apps.dynamic import helpers
         from webapp.apps.dynamic import compute
         # Monkey patch the variables we need to test
