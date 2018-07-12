@@ -109,7 +109,6 @@ WSGI_APPLICATION = 'webapp.wsgi.application'
 
 # if os.environ.get('DATABASE_URL', None):
 # Parse database configuration from $DATABASE_URL
-import dj_database_url
 TEST_DATABASE = {
     'TEST': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -120,7 +119,6 @@ TEST_DATABASE = {
 }
 if os.environ.get('DATABASE_URL', None): # DATABASE_URL var is set
     DATABASES = {'default': dj_database_url.config()}
-    DATABASES.update(TEST_DATABASE)
 else: # DATABASE_URL is not set--try default
     DATABASES = {
         'default': {

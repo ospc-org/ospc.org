@@ -1,24 +1,60 @@
-language: python
+matrix:
+  include:
+  - language: ruby  # Cannot be 'minimal' in order to have PostgreSQL
 
-python:
-  - "3.6"
+    sudo: required
 
-install:
-  # Install conda
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - python -c 'import os,sys,fcntl; flags = fcntl.fcntl(sys.stdout, fcntl.F_GETFL); fcntl.fcntl(sys.stdout, fcntl.F_SETFL, flags&~os.O_NONBLOCK);'
-  - conda clean --all -y
-  - ./python_env_build.sh
-  - source activate pb_env
-  - python manage.py collectstatic --no-input
+    services: docker
 
-addons:
-    postgresql: "9.4"
+    env: TAG=${TRAVIS_COMMIT::6}
 
-before_script:
-  - psql -c 'create database test_db;' -U postgres
+    # Need NEW_RELIC_TOKEN to be defined in Travis settings
+    install:
+      - make NEW_RELIC_TOKEN=$NEW_RELIC_TOKEN webapp-build
+      - pip install --user git-lint pylint pycodestyle
+      - export PATH=$PATH:/$HOME/.local/bin
 
-script:
-  - py.test webapp/apps/
+    addons:
+      postgresql: "9.4"
+
+    before_script: psql -c 'create database mypb;' -U postgres
+
+    script:
+      - >
+        docker run --net host -e PORT=80 -e DJANGO_SETTINGS_MODULE=webapp.settings
+        -e DROPQ_WORKERS=127.0.0.1:5050
+        -e DATABASE_URL=postgresql://postgres@localhost/mypb
+        -it opensourcepolicycenter/web:$TAG
+        /bin/bash -c "pip install -q pytest-django && py.test webapp/apps"
+      - if git reset --soft ${TRAVIS_COMMIT_RANGE%...*}; then git lint; fi
+
+    before_deploy:
+      # Need HEROKU_TOKEN to be defined in Travis settings
+      - curl https://cli-assets.heroku.com/install.sh | sh
+      - echo "machine api.heroku.com password $HEROKU_TOKEN" > ~/.netrc
+      - docker login --username=_ --password=$HEROKU_TOKEN registry.heroku.com
+
+    deploy:
+      provider: script
+      script: make MODE=test webapp-release
+      on:
+        branch: travis
+
+  - language: minimal
+
+    sudo: required
+
+    services: docker
+
+    # Also need OSPC_ANACONDA_TOKEN, AWS_ACCOUNT_ID, AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to be defined in settings
+    env: TAG=${TRAVIS_COMMIT::6}
+
+    install: make OSPC_ANACONDA_TOKEN=$OSPC_ANACONDA_TOKEN dist-build
+
+    script: make dist-test
+
+    deploy:
+      provider: script
+      script: bash distributed/deploy.sh staging
+      on:
+        branch: travis
