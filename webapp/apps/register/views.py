@@ -69,10 +69,12 @@ def register_user(request):
     else:
         if not confirm_key:
             raise NotImplementedError(
-                "We do not handle the case where the user does not have a registration key.")
+                "We do not handle the case where the user does not have a "
+                "registration key.")
         elif not Subscriber.objects.filter(confirm_key=confirm_key).exists():
             raise NotImplementedError(
-                "We do not handle the case where the user has an incorrect registration key.")
+                "We do not handle the case where the user has an incorrect "
+                "registration key.")
         else:
             subscriber.active = True
             subscriber.save()

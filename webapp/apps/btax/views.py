@@ -164,8 +164,8 @@ def btax_results(request):
                 print("BEGIN DROPQ WORK FROM: unknown IP")
 
             # start calc job
-            submitted_ids, max_q_length = dropq_compute.submit_btax_calculation(
-                worker_data, start_year)
+            submitted_ids, max_q_length = (
+                dropq_compute.submit_btax_calculation(worker_data, start_year))
 
             print('submitted_ids', submitted_ids, max_q_length)
             if not submitted_ids:
@@ -368,8 +368,8 @@ def output_detail(request, pk):
                 "coc": COC_TOOLTIP,
                 "dprc": DPRC_TOOLTIP,
             }
-            bubble_js, bubble_div, cdn_js, cdn_css, widget_js, widget_css = bubble_plot_tabs(
-                tables['dataframes'])
+            bubble_js, bubble_div, cdn_js, cdn_css, widget_js, widget_css = (
+                bubble_plot_tabs(tables['dataframes']))
         except Exception as e:
             print('Exception rendering pk', pk, e)
             traceback.print_exc()
@@ -461,10 +461,12 @@ def output_detail(request, pk):
                 exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
                 if exp_num_minutes > 0:
                     return JsonResponse(
-                        {'eta': exp_num_minutes, 'wait_interval': 7000}, status=202)
+                        {'eta': exp_num_minutes, 'wait_interval': 7000},
+                        status=202)
                 else:
                     return JsonResponse(
-                        {'eta': exp_num_minutes, 'wait_interval': 7000}, status=200)
+                        {'eta': exp_num_minutes, 'wait_interval': 7000},
+                        status=200)
 
             else:
                 print("rendering not ready yet")

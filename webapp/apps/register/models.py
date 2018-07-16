@@ -25,12 +25,13 @@ class Subscriber(models.Model):
         hostname = os.environ.get('BASE_IRI', 'http://www.ospc.org')
         print(self.email)
         send_mail(
-            subject="Thank you for joining the conversation on American tax policy",
+            subject=("Thank you for joining the conversation on American tax "
+                     "policy"),
             message="""Welcome!
 
-            Thank you for registering with ospc.org. This is the best way to stay up to date on
-            the latest news from the Open Source Policy Center. We also invite you to try
-            the TaxBrain webapp.
+            Thank you for registering with ospc.org. This is the best way to
+            stay up to date on the latest news from the Open Source Policy
+            Center. We also invite you to try the TaxBrain webapp.
 
 
             Please visit {url} to confirm your subscription""".format(

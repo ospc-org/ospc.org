@@ -12,5 +12,6 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/', output_detail, name='output_detail'),
     url(r'^submit/(?P<pk>\d+)/', submit_micro, name='submit_micro'),
     url(r'^pdf/$', pdf_view),
-    url(r'^edit/(?P<pk>\d+)/', edit_personal_results, name='edit_personal_results'),
+    url(r'^edit/(?P<pk>\d+)/', edit_personal_results,
+        name='edit_personal_results'),
 ]

@@ -911,7 +911,8 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable, Hostnameable,
 
         if param.inflatable:
             exec(param.cpi_field.id + \
-                " = models.NullBooleanField(default=None, blank=True, null=True)")
+                " = models.NullBooleanField(default=None, blank=True,
+                                            null=True)")
 
     """
 

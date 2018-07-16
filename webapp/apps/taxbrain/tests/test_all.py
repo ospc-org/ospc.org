@@ -21,25 +21,28 @@ def test_compute():
         singleton_enforce=1)
     dropq_worker_offset = wnc.current_offset
     hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-                                      dropq_worker_offset + compute.NUM_BUDGET_YEARS]
+                                      dropq_worker_offset +
+                                      compute.NUM_BUDGET_YEARS]
     assert hostnames == [1, 2, 3, 4, 5]
-    wnc.current_offset = (dropq_worker_offset +
-                          compute.NUM_BUDGET_YEARS) % len(compute.DROPQ_WORKERS)
+    wnc.current_offset = ((dropq_worker_offset + compute.NUM_BUDGET_YEARS) %
+                          len(compute.DROPQ_WORKERS))
     wnc.save()
 
     assert wnc.current_offset == 5
     dropq_worker_offset = wnc.current_offset
     hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-                                      dropq_worker_offset + compute.NUM_BUDGET_YEARS]
+                                      dropq_worker_offset +
+                                      compute.NUM_BUDGET_YEARS]
     assert hostnames == [6, 7, 8, 9, 10]
-    wnc.current_offset = (dropq_worker_offset +
-                          compute.NUM_BUDGET_YEARS) % len(compute.DROPQ_WORKERS)
+    wnc.current_offset = ((dropq_worker_offset + compute.NUM_BUDGET_YEARS) %
+                          len(compute.DROPQ_WORKERS))
     wnc.save()
 
     assert wnc.current_offset == 0
     dropq_worker_offset = wnc.current_offset
     hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-                                      dropq_worker_offset + compute.NUM_BUDGET_YEARS]
+                                      dropq_worker_offset +
+                                      compute.NUM_BUDGET_YEARS]
     assert hostnames == [1, 2, 3, 4, 5]
     # Reset to original values
     compute.DROPQ_WORKERS = ['localhost:5050']

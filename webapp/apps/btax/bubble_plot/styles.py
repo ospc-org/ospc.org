@@ -1,4 +1,3 @@
-
 DATETIME_FORMAT = dict(
     microseconds=["%m/%d %X"],
     milliseconds=["%X"],

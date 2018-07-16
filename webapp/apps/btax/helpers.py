@@ -147,7 +147,8 @@ def hover_args_to_btax_depr():
     defaults = dict(DEFAULTS)
     hover_notes['gds_note'] = defaults['btax_depr_hover_gds_Switch']['notes']
     hover_notes['ads_note'] = defaults['btax_depr_hover_ads_Switch']['notes']
-    hover_notes['economic_note'] = defaults['btax_depr_hover_tax_Switch']['notes']
+    hover_notes['economic_note'] = (defaults['btax_depr_hover_tax_Switch']
+                                            ['notes'])
     hover_notes['bonus_note'] = defaults['btax_depr_hover_exp']['notes']
     return hover_notes
 

@@ -153,7 +153,8 @@ class DynamicViewsTests(object):
         webapp_views = sys.modules['webapp.apps.taxbrain.views']
         webapp_views.dropq_compute = MockCompute()
         dynamic_views = sys.modules['webapp.apps.dynamic.views']
-        #dynamic_views.dropq_compute = ElasticFailedMockCompute(num_times_to_wait=1)
+        # dynamic_views.dropq_compute = (
+        #     ElasticFailedMockCompute(num_times_to_wait=1))
         dynamic_views.dropq_compute = MockFailedCompute(num_times_to_wait=1)
 
         # Do the microsim

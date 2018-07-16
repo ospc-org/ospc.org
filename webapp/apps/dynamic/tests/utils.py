@@ -1,4 +1,3 @@
-
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
@@ -17,7 +16,7 @@ def do_dynamic_sim(client, base_name, microsim_response, pe_reform,
     idx = microsim_response.url[:-1].rfind('/')
     model_num = microsim_response.url[idx + 1:-1]
     dynamic_landing = '/dynamic/{1}/?start_year={2}'.format(
-         base_name, model_num, start_year)
+        base_name, model_num, start_year)
     response = client.get(dynamic_landing)
     assert response.status_code == 200
 

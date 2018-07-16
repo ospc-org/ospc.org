@@ -5,8 +5,6 @@ import pytest
 import os
 import msgpack
 
-NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
-
 from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                        format_csv, arrange_totals_by_row, default_taxcalc_data)
@@ -21,8 +19,7 @@ from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_taxbrain_model)
 
 CLIENT = Client()
-
-
+NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 START_YEAR = 2016
 
 
@@ -285,9 +282,11 @@ class TestTaxBrainViews(object):
                                                                  START_YEAR)
         edit_page = CLIENT.get(edit_micro)
         assert edit_page.status_code == 200
-        cpi_flag = edit_page.context['form']['AMT_CG_brk2_cpi'].field.widget.attrs['placeholder']
-        assert cpi_flag == False
-        cpi_flag = edit_page.context['form']['AMEDT_ec_cpi'].field.widget.attrs['placeholder']
+        cpi_flag = (edit_page.context['form']['AMT_CG_brk2_cpi']
+                    .field.widget.attrs['placeholder'])
+        assert cpi_flag is False
+        cpi_flag = (edit_page.context['form']['AMEDT_ec_cpi']
+                    .field.widget.attrs['placeholder'])
         assert cpi_flag
 
     def test_taxbrain_edit_benefitsurtax_switch_show_correctly(self):
@@ -329,7 +328,8 @@ class TestTaxBrainViews(object):
         out2 = OutputUrl.objects.get(pk=result2["pk"])
         tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
         assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_0'] == 'False'
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_1'] == 'False,*,True'
+        assert (tsi2.raw_input_fields['ID_BenefitSurtax_Switch_1'] ==
+                'False,*,True')
         assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_3'] == 'True'
 
     def test_taxbrain_wildcard_params_with_validation_is_OK(self):

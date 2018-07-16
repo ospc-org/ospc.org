@@ -1,4 +1,3 @@
-
 from django.test import Client
 import pytest
 import msgpack
@@ -195,7 +194,8 @@ class TestDynamicBehavioralViews(object):
 
         idx = microsim_response.url[:-1].rfind('/')
         model_num = microsim_response.url[idx + 1:-1]
-        dynamic_behavior = f'/dynamic/behavioral/{model_num}/?start_year={start_year}'
+        dynamic_behavior = (f'/dynamic/behavioral/{model_num}/?start_year=' +
+                            f'{start_year}')
         response = CLIENT.post(dynamic_behavior, pe_reform)
 
         assert response.status_code == 200

@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 from django.test import Client
 
@@ -23,7 +22,8 @@ class ComputeTests(TestCase):
     def setUp(self):
         # Every test needs a client.
         self.dropq_compute = MockComputeTests()
-        # self.dropq_compute.remote_submit_job = MockCompute().remote_submit_job
+        # self.dropq_compute.remote_submit_job = (MockCompute()
+        #                                         .remote_submit_job)
         self.client = Client()
 
     def test_submit_calculation(self):

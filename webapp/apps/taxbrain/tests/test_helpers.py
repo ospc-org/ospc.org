@@ -4,8 +4,7 @@ import numpy as np
 import taxcalc
 import pyparsing as pp
 from ..helpers import (rename_keys, json_int_key_encode, INPUT, make_bool,
-                       is_reverse,
-                       reorder_lists)
+                       is_reverse, reorder_lists)
 from ..param_formatters import parse_value, MetaParam
 from ..param_displayers import TaxCalcParam, nested_form_parameters
 
@@ -72,14 +71,16 @@ def test_nested_form_parameters(monkeypatch, mock_current_law_policy):
     """
     params = nested_form_parameters(2017, use_puf_not_cps=True,
                                     defaults=mock_current_law_policy)
-    res = params[0]['Above The Line Deductions'][0]['Misc. Adjustment Haircuts']
+    res = (params[0]['Above The Line Deductions'][0]
+                    ['Misc. Adjustment Haircuts'])
     res = {k: v for r in res for k, v in r.items()}
     assert (not res["ALD_EarlyWithdraw_hc"].gray_out and
             not res["ALD_IRAContributions_hc"].gray_out)
 
     params = nested_form_parameters(2017, use_puf_not_cps=False,
                                     defaults=mock_current_law_policy)
-    res = params[0]['Above The Line Deductions'][0]['Misc. Adjustment Haircuts']
+    res = (params[0]['Above The Line Deductions'][0]
+                    ['Misc. Adjustment Haircuts'])
     res = {k: v for r in res for k, v in r.items()}
     assert (res["ALD_EarlyWithdraw_hc"].gray_out and
             not res["ALD_IRAContributions_hc"].gray_out)

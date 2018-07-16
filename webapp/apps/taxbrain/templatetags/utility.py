@@ -1,4 +1,3 @@
-
 import json
 
 from django import template

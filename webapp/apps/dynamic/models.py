@@ -20,10 +20,9 @@ from django.utils.timezone import make_aware
 
 class DynamicSaveInputs(DataSourceable, models.Model):
     """
-    This model contains all the parameters for the dynamic tax model and the tax
-    result.
-
-   """
+    This model contains all the parameters for the dynamic tax model and the
+    tax result.
+    """
 
     # Parameters used for the dynamic model
     g_y_annual = CommaSeparatedField(default=None, null=True, blank=True)

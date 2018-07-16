@@ -31,16 +31,19 @@ class RegisterTestCase(TestCase):
             email='test@example.com',
         )
         self.assertEqual(subscriber.confirm_url("http://ospc-taxes.org"),
-                         "http://ospc-taxes.org/register/?k={}".format(subscriber.confirm_key))
+                         ("http://ospc-taxes.org/register/?k={}"
+                          .format(subscriber.confirm_key)))
 
     # Tests to write:
-    # User enters in a username that already exists, then changes it and resubmits
+    # User enters in a username that already exists, then changes it and
+    #     resubmits
     # User enters an email that is the same as an existing email.
 
 #    def test_patching_works(self):
 #        with patch('django.core.mail.send_mail') as mocked_send_mail:
 #            from django.core.mail import send_mail
-#            send_mail(subject="foo", message="bar", from_email="andrew <amfarrell@mit.edu>",
+#            send_mail(subject="foo", message="bar",
+#                from_email="andrew <amfarrell@mit.edu>",
 #                recipient_list = ['farrell <afarrell@mit.edu>',])
 #            self.assertTrue(mocked_send_mail.called)
 #
@@ -53,5 +56,7 @@ class RegisterTestCase(TestCase):
 #            subscriber.save()
 #            self.assertFalse(subscriber.active)
 #            self.assertTrue(mocked_send_mail.called)
-#            self.assertEqual(mocked_send_mail.call_args['recipient_list'], 'test@example.com')
-#            self.assertIn(mocked_send_mail.call_args['message'], subscriber.confirm_key)
+#            self.assertEqual(mocked_send_mail.call_args['recipient_list'],
+#                             'test@example.com')
+#            self.assertIn(mocked_send_mail.call_args['message'],
+#                          subscriber.confirm_key)

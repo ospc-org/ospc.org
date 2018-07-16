@@ -1,4 +1,3 @@
-
 import csv
 import pdfkit
 import json
@@ -304,15 +303,13 @@ def submit_reform(request, user=None, json_reform_id=None):
                 'use_puf_not_cps': use_puf_not_cps}
         if do_full_calc:
             data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                data_list
-            )
+            submitted_ids, max_q_length = (
+                dropq_compute.submit_dropq_calculation(data_list))
         else:
             data_list = [dict(year=i, **data)
                          for i in range(NUM_BUDGET_YEARS_QUICK)]
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                data_list
-            )
+            submitted_ids, max_q_length = (
+                dropq_compute.submit_dropq_small_calculation(data_list))
 
     return PostMeta(
         request=request,
@@ -414,7 +411,8 @@ def file_input(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
-        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+        if ('data_source' in params and
+                params['data_source'][0] in DATA_SOURCES):
             data_source = params['data_source'][0]
 
         json_reform = None
@@ -475,7 +473,8 @@ def personal_results(request):
 
         # use puf by default
         use_puf_not_cps = True
-        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+        if ('data_source' in params and
+                params['data_source'][0] in DATA_SOURCES):
             data_source = params['data_source'][0]
             if data_source != 'PUF':
                 use_puf_not_cps = False

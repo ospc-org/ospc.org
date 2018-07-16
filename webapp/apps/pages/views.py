@@ -1,4 +1,3 @@
-
 import os
 
 from django.shortcuts import redirect, render
@@ -120,7 +119,8 @@ def gettingstartedpage(request):
 
 
 def _discover_widgets():
-    '''stubbed out data I wish to recieve from some widget discovery mechanism'''
+    '''stubbed out data I wish to recieve from some widget discovery
+       mechanism'''
 
     manifest_url = os.environ.get('TAXPLOT_MANIFEST_URL')
 

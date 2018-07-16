@@ -98,9 +98,9 @@ class DynamicCompute(DropqCompute):
                     submitted = True
                     resp_data = json.loads(response.text)
                     job_ids.append((resp_data['job_id'],
-                                   hostnames[hostname_idx]))
+                                    hostnames[hostname_idx]))
                     guids.append((resp_data['job_id'],
-                                 resp_data.get('guid', 'None')))
+                                  resp_data.get('guid', 'None')))
                 else:
                     print("FAILED: ", hostnames[hostname_idx])
                     attempts += 1

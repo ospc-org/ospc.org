@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 from django.test import Client
 import json
@@ -95,7 +94,7 @@ class DynamicElasticityViewsTests(TestCase):
         inputs = msgpack.loads(last_posted, encoding='utf8',
                                use_list=True)
         last_posted = inputs['inputs']
-        assert last_posted['use_puf_not_cps'] == False
+        assert last_posted['use_puf_not_cps'] is False
 
     @pytest.mark.xfail
     def test_elasticity_reform_from_file(self):

@@ -2,6 +2,7 @@ from __future__ import print_function
 # python manage.py dumpdata flatblocks --output flatblocks_heroku.json
 
 from boto.s3.connection import S3Connection
+from boto.s3.key import Key
 import os
 
 AWS_KEY_ID = os.environ['AWS_KEY_ID']
@@ -11,7 +12,6 @@ AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
 aws_connection = S3Connection(AWS_KEY_ID, AWS_SECRET_ID)
 bucket = aws_connection.get_bucket(AWS_STORAGE_BUCKET_NAME)
 
-from boto.s3.key import Key
 k = Key(bucket)
 
 content_type = {"css": "text/css",

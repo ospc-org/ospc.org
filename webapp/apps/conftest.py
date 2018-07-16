@@ -373,7 +373,8 @@ def no_assumptions_text_json(no_assumptions_text):
 
 @pytest.fixture()
 def errors_warnings_json_assumptions():
-    with open(os.path.join(CUR_PATH, 'errors_warnings_json_assumptions.json')) as f:
+    with open(os.path.join(CUR_PATH,
+                           'errors_warnings_json_assumptions.json')) as f:
         return f.read()
 
 

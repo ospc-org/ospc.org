@@ -75,7 +75,7 @@ def test_get_default_policy_param_failing2(default_params_Policy):
     """
     param = "ID_BenefitSurtax_Switch_12"
     # comment out "(" since this is treated as a regexp string
-    match = "Parsing {}: Index {} not in range \({}, {}\)"
+    match = "Parsing {}: Index {} not in range \\({}, {}\\)"
     match = match.format(param, 12, 0, 7)
     with pytest.raises(ParameterLookUpException, match=match):
         get_default_policy_param(param, default_params_Policy)
@@ -337,10 +337,13 @@ def test_read_json_reform(request, _test_reform, _test_assump,
 #         act[project] = parse_errors_warnings(_errors_warnings[project])
 #     print('errors_warnings', act)
 #
-#     with open(os.path.join(CUR_PATH, 'exp_errors_warnings_policy_behavior.json'), 'w') as f:
+#     with open(os.path.join(CUR_PATH,
+#                            'exp_errors_warnings_policy_behavior.json'),
+#               'w') as f:
 #         f.write(json.dumps(act, indent=4))
 #
-#     with open(os.path.join(CUR_PATH, 'exp_errors_warnings_policy.json'), 'w') as f:
+#     with open(os.path.join(CUR_PATH,
+#                            'exp_errors_warnings_policy.json'), 'w') as f:
 #         f.write(json.dumps({'policy': act['policy'],
 #                             'behavior': {'warnings': {}, 'errors': {}}},
 #                            indent=4))

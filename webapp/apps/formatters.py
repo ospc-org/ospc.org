@@ -1,5 +1,3 @@
-
-
 def format_dynamic_params(params):
     behavior_params = {}
     behavior_params["behavior"] = {

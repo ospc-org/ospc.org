@@ -67,15 +67,15 @@ class TaxCalcParam(object):
         # data set are used
         if "compatible_data" in attributes:
             self.gray_out = not (
-                (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or (
-                    attributes["compatible_data"]["puf"] and use_puf_not_cps))
+                (attributes["compatible_data"]["cps"] and not use_puf_not_cps)
+                or (attributes["compatible_data"]["puf"] and use_puf_not_cps))
         else:
             # if compatible_data is not specified do not gray out
             self.gray_out = False
 
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
-        #self.start_year = int(attributes['start_year'])
+        # self.start_year = int(attributes['start_year'])
         self.start_year = first_budget_year
 
         self.coming_soon = False

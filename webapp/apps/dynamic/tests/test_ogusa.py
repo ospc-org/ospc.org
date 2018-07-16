@@ -1,4 +1,3 @@
-
 from django.test import TestCase
 from django.test import Client
 from django.contrib.auth.models import User
@@ -13,11 +12,11 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
 from ...dynamic.models import DynamicSaveInputs, OGUSAWorkerNodesCounter
 from ..helpers import dynamic_params_from_model
 
-START_YEAR = 2016
-
 from .utils import do_ogusa_sim
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data)
+
+START_YEAR = 2016
 
 
 @pytest.mark.xfail
@@ -83,7 +82,8 @@ class DynamicOGUSAViewsTests(TestCase):
                                       ogusa_reform, start_year,
                                       exp_status_code=ogusa_status_code)
 
-        msg = 'Dynamic simulation must have an email address to send notification to!'
+        msg = ('Dynamic simulation must have an email address to send '
+               'notification to!')
         assert ogusa_response["response"].content.decode('utf-8') == msg
 
     def test_ogusa_not_logged_with_email_succeeds(self):

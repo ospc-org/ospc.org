@@ -1,13 +1,12 @@
 import os
 import sys
 import time
+from ogusa.scripts import postprocess
+from ogusa.scripts.execute import runner
 
 OGUSA_PATH = os.environ.get("OGUSA_PATH", "../../ospc-dynamic/dynamic/Python")
 
 sys.path.append(OGUSA_PATH)
-
-from ogusa.scripts import postprocess
-from ogusa.scripts.execute import runner
 
 
 def run_micro_macro(reform, user_params, guid):
@@ -49,7 +48,7 @@ def run_micro_macro(reform, user_params, guid):
         'small_open': False,
         'budget_balance': False,
         'baseline_spending': False}
-    #p2 = Process(target=runner, kwargs=kwargs)
+    # p2 = Process(target=runner, kwargs=kwargs)
     # p2.start()
     runner(**kwargs)
 
@@ -74,7 +73,7 @@ def run_micro_macro(reform, user_params, guid):
         'small_open': False,
         'budget_balance': False,
         'baseline_spending': False}
-    #p1 = Process(target=runner, kwargs=kwargs)
+    # p1 = Process(target=runner, kwargs=kwargs)
     # p1.start()
     runner(**kwargs)
 

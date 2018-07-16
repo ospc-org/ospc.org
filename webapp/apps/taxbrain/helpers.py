@@ -306,16 +306,25 @@ PRE_TC_0130_RES_MAP = {
 }
 
 TAXCALC_RESULTS_TABLE_LABELS = {
-    'diff_comb_xbin': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income bin',
-    'diff_comb_xdec': 'Combined Payroll and Individual Income Tax: Difference between Base and User plans by expanded income decile',
-    'diff_itax_xbin': 'Individual Income Tax: Difference between Base and User plans by expanded income bin',
-    'diff_itax_xdec': 'Individual Income Tax: Difference between Base and User plans by expanded income decile',
-    'diff_ptax_xbin': 'Payroll Tax: Difference between Base and User plans by expanded income bin',
-    'diff_ptax_xdec': 'Payroll Tax: Difference between Base and User plans by expanded income decile',
+    'diff_comb_xbin': ('Combined Payroll and Individual Income Tax: Difference'
+                       ' between Base and User plans by expanded income bin'),
+    'diff_comb_xdec': ('Combined Payroll and Individual Income Tax: Difference'
+                       'between Base and User plans by expanded income '
+                       'decile'),
+    'diff_itax_xbin': ('Individual Income Tax: Difference between Base and '
+                       'User plans by expanded income bin'),
+    'diff_itax_xdec': ('Individual Income Tax: Difference between Base and '
+                       'User plans by expanded income decile'),
+    'diff_ptax_xbin': ('Payroll Tax: Difference between Base and User plans '
+                       'by expanded income bin'),
+    'diff_ptax_xdec': ('Payroll Tax: Difference between Base and User plans '
+                       'by expanded income decile'),
     'dist1_xbin': 'Base plan tax vars, weighted total by expanded income bin',
-    'dist1_xdec': 'Base plan tax vars, weighted total by expanded income decile',
+    'dist1_xdec': ('Base plan tax vars, weighted total by expanded income '
+                   'decile'),
     'dist2_xbin': 'User plan tax vars, weighted total by expanded income bin',
-    'dist2_xdec': 'User plan tax vars, weighted total by expanded income decile',
+    'dist2_xdec': ('User plan tax vars, weighted total by expanded income '
+                   'decile'),
     'aggr_1': 'Total Liabilities Baseline by Calendar Year',
     'aggr_d': 'Total Liabilities Change by Calendar Year',
     'aggr_2': 'Total Liabilities Reform by Calendar Year'}
@@ -324,7 +333,8 @@ AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax': 'Individual Income Tax Liability Change',
     'payroll_tax': 'Payroll Tax Liability Change',
-    'combined_tax': 'Combined Payroll and Individual Income Tax Liability Change',
+    'combined_tax': ('Combined Payroll and Individual Income Tax Liability '
+                     'Change'),
 }
 
 REORDER_LT_TC_0130_DIFF_LIST = [1, 3, 0, 5, 6, 4, 2, 7]
@@ -429,7 +439,8 @@ def propagate_user_list(x, name, defaults, cpi, first_budget_year,
     # irates are rates for 2015, 2016, and 2017
     if cpi:
         irates = current_policy._indexing_rates_for_update(
-            param_name=name, calyear=first_budget_year, num_years_to_expand=num_years)
+            param_name=name, calyear=first_budget_year,
+            num_years_to_expand=num_years)
     else:
         irates = [0.0] * num_years
 
@@ -759,7 +770,8 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['diff_itax_xdec', 'diff_ptax_xdec', 'diff_comb_xdec']:
+        elif table_id in ['diff_itax_xdec', 'diff_ptax_xdec',
+                          'diff_comb_xdec']:
             row_keys = TAXCALC_RESULTS_DEC_ROW_KEYS
             row_labels = TAXCALC_RESULTS_DEC_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -767,7 +779,8 @@ def taxcalc_results_to_tables(results, first_budget_year):
             table_data = results[table_id]
             multi_year_cells = True
 
-        elif table_id in ['diff_itax_xbin', 'diff_ptax_xbin', 'diff_comb_xbin']:
+        elif table_id in ['diff_itax_xbin', 'diff_ptax_xbin',
+                          'diff_comb_xbin']:
             row_keys = TAXCALC_RESULTS_BIN_ROW_KEYS
             row_labels = TAXCALC_RESULTS_BIN_ROW_KEY_LABELS
             col_labels = TAXCALC_RESULTS_DFTABLE_COL_LABELS
@@ -843,7 +856,8 @@ def taxcalc_results_to_tables(results, first_budget_year):
                             value = value[:-1]
                         cell['year_values'][year] = value
 
-                    cell['first_value'] = cell['year_values'][first_budget_year]
+                    cell['first_value'] = (cell['year_values']
+                                               [first_budget_year])
 
                 else:
                     value = table_data[row_key][col_key]

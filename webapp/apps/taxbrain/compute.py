@@ -114,7 +114,8 @@ class DropqCompute(object):
                 theurl = url_template.format(hn=hostnames[hostname_idx])
                 try:
                     response = self.remote_submit_job(
-                        theurl, data=packed, timeout=TIMEOUT_IN_SECONDS, headers=BYTES_HEADER)
+                        theurl, data=packed, timeout=TIMEOUT_IN_SECONDS,
+                        headers=BYTES_HEADER)
                     if response.status_code == 200:
                         print("submitted: ", hostnames[hostname_idx])
                         year_submitted = True
@@ -345,7 +346,8 @@ class MockFailedComputeOnOldHost(MockCompute):
     """
 
     def remote_results_ready(self, theurl, params):
-        print('MockFailedComputeOnOldHost remote_results_ready', theurl, params)
+        print('MockFailedComputeOnOldHost remote_results_ready',
+              theurl, params)
         raise requests.ConnectionError()
 
 

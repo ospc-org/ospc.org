@@ -7,10 +7,15 @@ https://docs.djangoproject.com/en/1.7/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.7/ref/settings/
 """
+import os
+import dj_database_url
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
+from django.conf import global_settings
+
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ['HTTP_X_FORWARDED_PROTO', 'https']
-
-import os
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'secret key')
 SITE_ID = os.environ.get('SITE_ID', 1)
@@ -21,8 +26,6 @@ ALLOWED_HOSTS = ['*']
 SITE_ID = 1
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import dj_database_url
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Static files (CSS, JavaScript, Images)
@@ -34,9 +37,6 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
-from django.conf import global_settings
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.environ.get('DEV_DEBUG') == 'True' else False
@@ -49,10 +49,9 @@ TEMPLATES = [
         ],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': global_settings.TEMPLATE_CONTEXT_PROCESSORS + [
-                'webapp.apps.pages.views.settings_context_processor',
-                'webapp.context_processors.google_analytics',
-            ],
+            'context_processors': global_settings.TEMPLATE_CONTEXT_PROCESSORS +
+            ['webapp.apps.pages.views.settings_context_processor',
+             'webapp.context_processors.google_analytics'],
         },
     },
 ]
@@ -109,7 +108,6 @@ WSGI_APPLICATION = 'webapp.wsgi.application'
 
 # if os.environ.get('DATABASE_URL', None):
 # Parse database configuration from $DATABASE_URL
-import dj_database_url
 TEST_DATABASE = {
     'TEST': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

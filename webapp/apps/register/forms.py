@@ -40,12 +40,13 @@ class MyRegistrationForm(UserCreationForm):
         password = self.cleaned_data['password1']
         email = self.cleaned_data['email']
         send_mail(
-            subject="Thank you for joining the conversation on American tax policy",
+            subject=("Thank you for joining the conversation on American tax "
+                     "policy"),
             message="""Welcome!
 
-        Thank you for registering with ospc.org. This is the best way to stay up to date on
-        the latest news from the Open Source Policy Center. We also invite you to try
-        the TaxBrain webapp.
+        Thank you for registering with ospc.org. This is the best way to stay
+        up to date on the latest news from the Open Source Policy Center. We
+        also invite you to try the TaxBrain webapp.
 
         Username: {username}
         Password: {password}

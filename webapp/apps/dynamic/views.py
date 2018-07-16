@@ -7,6 +7,7 @@ import os
 import taxcalc
 
 
+from django.conf import settings
 from django.core.mail import send_mail
 from django.core import serializers
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
@@ -85,7 +86,6 @@ with open(version_path, "r") as f:
     ogversion_info = json.load(f)
 OGUSA_VERSION = ogversion_info['version']
 
-from django.conf import settings
 WEBAPP_VERSION = settings.WEBAPP_VERSION
 
 
@@ -108,7 +108,8 @@ def dynamic_input(request, pk):
 
             # Can't proceed if there is no email address
             if not (request.user.is_authenticated() or model.user_email):
-                msg = 'Dynamic simulation must have an email address to send notification to!'
+                msg = ('Dynamic simulation must have an email address to send '
+                       'notification to!')
                 return HttpResponse(msg, status=403)
 
             curr_dict = dict(model.__dict__)
@@ -150,15 +151,18 @@ def dynamic_input(request, pk):
                     del microsim_data['tax_result']
 
                 # start calc job
-                submitted_ids, guids = dynamic_compute.submit_ogusa_calculation(
-                    worker_data, int(start_year), microsim_data)
+                submitted_ids, guids = (
+                    dynamic_compute.submit_ogusa_calculation(
+                        worker_data, int(start_year), microsim_data))
             else:
                 microsim_data = {
                     "reform": taxbrain_model.json_text.reform_text,
                     "assumptions": taxbrain_model.json_text.assumption_text}
                 # start calc job
-                submitted_ids, guids = dynamic_compute.submit_json_ogusa_calculation(
-                    worker_data, int(start_year), microsim_data, pack_up_user_mods=False)
+                submitted_ids, guids = (
+                    dynamic_compute.submit_json_ogusa_calculation(
+                        worker_data, int(start_year), microsim_data,
+                        pack_up_user_mods=False))
             # TODO: use OutputUrl class
             if submitted_ids:
                 model.job_ids = denormalize(submitted_ids)
@@ -208,8 +212,8 @@ def dynamic_input(request, pk):
 
 def dynamic_behavioral(request, pk):
     """
-    This view handles the dynamic behavioral input page and calls the function that
-    handles the calculation on the inputs.
+    This view handles the dynamic behavioral input page and calls the function
+    that handles the calculation on the inputs.
     """
     start_year = START_YEAR
     has_errors = False
@@ -280,9 +284,8 @@ def dynamic_behavioral(request, pk):
                         'use_puf_not_cps': model.use_puf_not_cps}
                 data_list = [dict(year=i, **data)
                              for i in range(NUM_BUDGET_YEARS)]
-                submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                    data_list
-                )
+                submitted_ids, max_q_length = (
+                    dropq_compute.submit_dropq_calculation(data_list))
 
                 model.job_ids = denormalize(submitted_ids)
                 model.first_year = int(start_year)
@@ -438,9 +441,8 @@ def dynamic_elasticities(request, pk):
             # start calc job
             data_list = [dict(year_n=i, **data)
                          for i in range(NUM_BUDGET_YEARS)]
-            submitted_ids, max_q_length = dropq_compute.submit_elastic_calculation(
-                data_list
-            )
+            submitted_ids, max_q_length = (
+                dropq_compute.submit_elastic_calculation(data_list))
 
             if not submitted_ids:
                 form_personal_exemp = personal_inputs
@@ -880,10 +882,10 @@ def behavior_results(request, pk):
             is_registered = True if request.user.is_authenticated() else False
             microsim_url = "/taxbrain/" + str(model.micro_sim.pk)
 
-            # TODO: Fix the java script mapping problem.  There exists somewhere in
-            # the taxbrain javascript code a mapping to the old table names.  As
-            # soon as this is changed to accept the new table names, this code NEEDS
-            # to be removed.
+            # TODO: Fix the java script mapping problem.  There exists
+            # somewhere in the taxbrain javascript code a mapping to the old
+            # table names.  As soon as this is changed to accept the new table
+            # names, this code NEEDS to be removed.
             tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
             tables['fiscal_currentlaw'] = add_summary_column(
                 tables.pop('aggr_1'))

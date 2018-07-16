@@ -119,10 +119,10 @@ class DynamicElasticityInputsModelForm(ModelForm):
         Keywords correlate to submitted value array for a different parameter,
         or to the default value array for the validated field.
 
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        We could define these on individual fields instead, but we would need
+        to define all the field data dynamically both here and on the model,
+        and it's not yet possible on the model due to issues with how
+        migrations are detected.
         """
 
         for param_id, param in self._default_params.items():
@@ -139,8 +139,8 @@ class DynamicElasticityInputsModelForm(ModelForm):
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
-                # validation, we must ensure this is validated even if unchanged
-                # from defaults
+                # validation, we must ensure this is validated even if
+                # unchanged from defaults
                 if submitted_col_values:
                     col_values = submitted_col_values
                 else:
@@ -386,10 +386,10 @@ class DynamicInputsModelForm(ModelForm):
         Keywords correlate to submitted value array for a different parameter,
         or to the default value array for the validated field.
 
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        We could define these on individual fields instead, but we would need
+        to define all the field data dynamically both here and on the model,
+        and it's not yet possible on the model due to issues with how
+        migrations are detected.
         """
 
         for param_id, param in self._default_params.items():
@@ -406,8 +406,8 @@ class DynamicInputsModelForm(ModelForm):
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
-                # validation, we must ensure this is validated even if unchanged
-                # from defaults
+                # validation, we must ensure this is validated even if
+                # unchanged from defaults
                 if submitted_col_values:
                     col_values = submitted_col_values
                 else:
