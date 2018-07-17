@@ -168,6 +168,3 @@ texinfo_documents = [
      author, 'PolicyBrain', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-
-

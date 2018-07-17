@@ -2,12 +2,12 @@ from django.contrib import admin
 from django.conf.urls import include, url
 
 from webapp.apps.register.views import (
-  login,
-  logout,
-  loggedin,
-  invalid_login,
-  register_user,
-  register_success,
+    login,
+    logout,
+    loggedin,
+    invalid_login,
+    register_user,
+    register_success,
 )
 
 urlpatterns = [
@@ -29,6 +29,6 @@ urlpatterns = [
     # Third party app urls
     url(r'^account/', include("account.urls")),
 
-    #WHAT DOES THIS DO?
+    # WHAT DOES THIS DO?
     # static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 ]

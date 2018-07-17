@@ -25,7 +25,10 @@ class TaxBrainJSONReformModelTest(TestCase):
         """
         Test get old errors/warnings
         """
-        pre_PB_160 = {'errors': {'1900': 'test'}, 'warnings': {'1770': 'test2'}}
+        pre_PB_160 = {
+            'errors': {
+                '1900': 'test'}, 'warnings': {
+                '1770': 'test2'}}
         reform = JSONReformTaxCalculator(
             errors_warnings_text=json.dumps(pre_PB_160)
         )
@@ -80,8 +83,8 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
         tsi.save()
         tsi.set_fields()
         assert tsi.input_fields['_FICA_ss_trt'] == [0.10]
-        assert tsi.input_fields['_STD_cpi'] == True
-        assert tsi.input_fields['_SS_Earnings_c_cpi'] == True
+        assert tsi.input_fields['_STD_cpi']
+        assert tsi.input_fields['_SS_Earnings_c_cpi']
         assert tsi.input_fields['_ID_AmountCap_Switch_medical'] == [True]
 
     def test_deprecated_fields(self):
@@ -90,7 +93,7 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
         """
         start_year = 2017
         tsi = TaxSaveInputs(
-            raw_input_fields = {
+            raw_input_fields={
                 'FICA_ss_trt': '0.10',
                 'ID_BenefitSurtax_Switch_0': 'True',
                 'STD_cpi': 'True',

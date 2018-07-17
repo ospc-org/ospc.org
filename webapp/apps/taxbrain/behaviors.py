@@ -14,6 +14,7 @@ from .helpers import (rename_keys, reorder_lists, PRE_TC_0130_RES_MAP,
 from ..constants import TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
 from . import param_formatters
 
+
 class Resultable(models.Model):
     """
     Mix-in to provide logic around retrieving model results.
@@ -48,6 +49,7 @@ class Resultable(models.Model):
             return reorder_lists(renamed, REORDER_LT_TC_0130_DIFF_LIST,
                                  DIFF_TABLE_IDs)
 
+
 class Fieldable(models.Model):
     """
     Mix-in for providing logic around formatting raw GUI input fields
@@ -71,9 +73,10 @@ class Fieldable(models.Model):
             self.raw_input_fields = {}
             for field in self._meta.fields:
                 if (getattr(self, field.attname, None) and
-                    field.name not in nonparam_fields):
+                        field.name not in nonparam_fields):
                     raw_val = getattr(self, field.attname)
-                    if field.name.endswith("cpi") and isinstance(raw_val, bool):
+                    if field.name.endswith(
+                            "cpi") and isinstance(raw_val, bool):
                         raw_val = str(raw_val)
                     self.raw_input_fields[field.name] = raw_val
 
@@ -106,7 +109,6 @@ class Fieldable(models.Model):
                     if param not in self.raw_input_fields:
                         errors_warnings[project][action].pop(param)
 
-
     def get_model_specs(self):
         """
         Stub to remind that this part of the API is needed
@@ -123,7 +125,11 @@ class DataSourceable(models.Model):
         abstract = True
 
     # data source for model
-    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
+    data_source = models.CharField(
+        default="PUF",
+        blank=True,
+        null=True,
+        max_length=20)
 
     @property
     def use_puf_not_cps(self):

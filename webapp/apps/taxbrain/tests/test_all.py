@@ -2,7 +2,7 @@ from django.test import TestCase
 
 from ..models import WorkerNodesCounter
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                     format_csv, arrange_totals_by_row, default_taxcalc_data)
+                       format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ..param_displayers import default_policy
 from ...taxbrain import compute as compute
 from ..helpers import convert_val
@@ -11,33 +11,40 @@ import pytest
 
 FBY = 2015
 
+
 @pytest.mark.django_db
 def test_compute():
     assert compute
-    compute.DROPQ_WORKERS = [1,2,3,4,5,6,7,8,9,10]
+    compute.DROPQ_WORKERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     compute.NUM_BUDGET_YEARS = 5
-    wnc, created = WorkerNodesCounter.objects.get_or_create(singleton_enforce=1)
+    wnc, created = WorkerNodesCounter.objects.get_or_create(
+        singleton_enforce=1)
     dropq_worker_offset = wnc.current_offset
     hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-        dropq_worker_offset + compute.NUM_BUDGET_YEARS]
-    assert hostnames == [1,2,3,4,5]
-    wnc.current_offset = (dropq_worker_offset + compute.NUM_BUDGET_YEARS) % len(compute.DROPQ_WORKERS)
+                                      dropq_worker_offset +
+                                      compute.NUM_BUDGET_YEARS]
+    assert hostnames == [1, 2, 3, 4, 5]
+    wnc.current_offset = ((dropq_worker_offset + compute.NUM_BUDGET_YEARS) %
+                          len(compute.DROPQ_WORKERS))
     wnc.save()
 
     assert wnc.current_offset == 5
     dropq_worker_offset = wnc.current_offset
     hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-        dropq_worker_offset + compute.NUM_BUDGET_YEARS]
-    assert hostnames == [6,7,8,9,10]
-    wnc.current_offset = (dropq_worker_offset + compute.NUM_BUDGET_YEARS) % len(compute.DROPQ_WORKERS)
+                                      dropq_worker_offset +
+                                      compute.NUM_BUDGET_YEARS]
+    assert hostnames == [6, 7, 8, 9, 10]
+    wnc.current_offset = ((dropq_worker_offset + compute.NUM_BUDGET_YEARS) %
+                          len(compute.DROPQ_WORKERS))
     wnc.save()
 
     assert wnc.current_offset == 0
     dropq_worker_offset = wnc.current_offset
     hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-        dropq_worker_offset+ compute.NUM_BUDGET_YEARS]
-    assert hostnames == [1,2,3,4,5]
-    #Reset to original values
+                                      dropq_worker_offset +
+                                      compute.NUM_BUDGET_YEARS]
+    assert hostnames == [1, 2, 3, 4, 5]
+    # Reset to original values
     compute.DROPQ_WORKERS = ['localhost:5050']
     wnc.current_offset = 0
     wnc.save()
@@ -65,6 +72,7 @@ def cycler(max):
         yield count
         count = (count + 1) % max
 
+
 class TaxInputTests(TestCase):
 
     def test_expand1d(self):
@@ -87,10 +95,21 @@ class TaxInputTests(TestCase):
 
     def test_format_csv(self):
         c = cycler(40)
-        tab_types = ["dist2_xdec", "dist1_xdec", "diff_itax_xdec", "diff_ptax_xdec",
-                     "diff_comb_xdec", "dist2_xbin", "dist1_xbin", "diff_itax_xbin",
-                     "diff_itax_xbin", "diff_ptax_xbin", "diff_comb_xbin", "aggr_d",
-                     "aggr_1", "aggr_2"]
+        tab_types = [
+            "dist2_xdec",
+            "dist1_xdec",
+            "diff_itax_xdec",
+            "diff_ptax_xdec",
+            "diff_comb_xdec",
+            "dist2_xbin",
+            "dist1_xbin",
+            "diff_itax_xbin",
+            "diff_itax_xbin",
+            "diff_ptax_xbin",
+            "diff_comb_xbin",
+            "aggr_d",
+            "aggr_1",
+            "aggr_2"]
 
         bin_keys = [
             '<$0K_0',
@@ -191,32 +210,45 @@ class TaxInputTests(TestCase):
         tot_keys = ['combined_tax', 'ind_tax', 'payroll_tax']
 
         tax_results = {}
-        tax_results['aggr_d'] = {k:[1,2,3] for k in tot_keys}
-        tax_results['dist2_xbin'] = { k:[next(c)] for k in bin_keys}
-        tax_results['dist1_xbin'] = { k:[next(c)] for k in bin_keys}
-        tax_results['diff_itax_bin'] = { k:[next(c)] for k in bin_keys}
-        tax_results['dist2_xdec'] = { k:[next(c)] for k in dec_keys}
-        tax_results['dist1_xdec'] = { k:[next(c)] for k in dec_keys}
-        tax_results['diff_itax_xdec'] = { k:[next(c)] for k in dec_keys}
+        tax_results['aggr_d'] = {k: [1, 2, 3] for k in tot_keys}
+        tax_results['dist2_xbin'] = {k: [next(c)] for k in bin_keys}
+        tax_results['dist1_xbin'] = {k: [next(c)] for k in bin_keys}
+        tax_results['diff_itax_bin'] = {k: [next(c)] for k in bin_keys}
+        tax_results['dist2_xdec'] = {k: [next(c)] for k in dec_keys}
+        tax_results['dist1_xdec'] = {k: [next(c)] for k in dec_keys}
+        tax_results['diff_itax_xdec'] = {k: [next(c)] for k in dec_keys}
 
         ans = format_csv(tax_results, '42', first_budget_year=FBY)
         assert ans[0] == ['#URL: http://www.ospc.org/taxbrain/42/']
 
-
     def test_arrange_totals_by_row(self):
         total_row_names = ["ind_tax", "payroll_tax", "combined_tax"]
-        tots = {'ind_tax_0': "1", 'ind_tax_1': "2", 'ind_tax_2': "3",
-                'payroll_tax_0': "4", 'payroll_tax_1': "5", 'payroll_tax_2': "6",
-                'combined_tax_0': "7", 'combined_tax_1': "8", 'combined_tax_2': "9"}
+        tots = {
+            'ind_tax_0': "1",
+            'ind_tax_1': "2",
+            'ind_tax_2': "3",
+            'payroll_tax_0': "4",
+            'payroll_tax_1': "5",
+            'payroll_tax_2': "6",
+            'combined_tax_0': "7",
+            'combined_tax_1': "8",
+            'combined_tax_2': "9"}
         ans = arrange_totals_by_row(tots, total_row_names)
-        exp = {'ind_tax': ["1", "2", "3"], 'payroll_tax': ["4", "5", "6"], 'combined_tax': ["7", "8", "9"]}
+        exp = {
+            'ind_tax': [
+                "1", "2", "3"], 'payroll_tax': [
+                "4", "5", "6"], 'combined_tax': [
+                "7", "8", "9"]}
         assert ans == exp
 
     def test_default_taxcalc_data(self):
         import math
         dd = default_taxcalc_data(taxcalc.policy.Policy, start_year=2017)
         dd_raw = taxcalc.policy.Policy.default_data(start_year=2017)
-        dd_meta = default_taxcalc_data(taxcalc.policy.Policy, start_year=2017, metadata=True)
+        dd_meta = default_taxcalc_data(
+            taxcalc.policy.Policy,
+            start_year=2017,
+            metadata=True)
         floored_std_aged = list(map(math.floor, dd['_STD_Aged'][0]))
         assert dd['_STD_Aged'] == [floored_std_aged]
         assert dd_meta['_STD_Aged']['value'] == [floored_std_aged]

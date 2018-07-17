@@ -1,8 +1,8 @@
-
 # os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                                 format_csv, arrange_totals_by_row, default_taxcalc_data)
+from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
+                                 package_up_vars, format_csv,
+                                 arrange_totals_by_row, default_taxcalc_data)
 from ..compute import MockDynamicCompute
 
 from ...test_assets.utils import get_dropq_compute_from_module
@@ -10,16 +10,19 @@ from ...test_assets.utils import get_dropq_compute_from_module
 START_YEAR = '2016'
 
 
-def do_dynamic_sim(client, base_name, microsim_response, pe_reform, start_year=START_YEAR):
+def do_dynamic_sim(client, base_name, microsim_response, pe_reform,
+                   start_year=START_YEAR):
     # Link to dynamic simulation
     idx = microsim_response.url[:-1].rfind('/')
-    model_num = microsim_response.url[idx+1:-1]
-    dynamic_landing = '/dynamic/{1}/?start_year={2}'.format(base_name, model_num, start_year)
+    model_num = microsim_response.url[idx + 1:-1]
+    dynamic_landing = '/dynamic/{1}/?start_year={2}'.format(
+        base_name, model_num, start_year)
     response = client.get(dynamic_landing)
     assert response.status_code == 200
 
     # Go to behavioral input page
-    dynamic_behavior = '/dynamic/{0}/{1}/?start_year={2}'.format(base_name, model_num, start_year)
+    dynamic_behavior = '/dynamic/{0}/{1}/?start_year={2}'.format(
+        base_name, model_num, start_year)
     response = client.get(dynamic_behavior)
     assert response.status_code == 200
 
@@ -86,7 +89,7 @@ def do_ogusa_sim(client, microsim_res, ogusa_reform, start_year,
     idx = None
     if exp_status_code == 302:
         idx = response.url[:-1].rfind('/')
-        ogusa_pk = response.url[idx+1:-1]
+        ogusa_pk = response.url[idx + 1:-1]
 
     return {"response": response,
             "ogusa_dropq_compute": ogusa_dropq_compute,

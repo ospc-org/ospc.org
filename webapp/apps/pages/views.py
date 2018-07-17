@@ -1,4 +1,3 @@
-
 import os
 
 from django.shortcuts import redirect, render
@@ -20,8 +19,10 @@ TAXCALC_VERSION = TAXCALC_VERSION_INFO['version']
 BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
 EMAIL_DEFAULT = '1'
 
+
 def settings_context_processor(request):
     return {'BLOG_URL': settings.BLOG_URL}
+
 
 def subscribeform(request):
     if request.method == 'POST':
@@ -33,8 +34,10 @@ def subscribeform(request):
         subscribeform = SubscribeForm()
     return subscribeform
 
+
 def check_email(request):
     return render(request, 'register/please-check-email.html', {})
+
 
 def homepage(request):
     form = subscribeform(request)
@@ -53,6 +56,7 @@ def homepage(request):
 
     return test
 
+
 def aboutpage(request):
     form = subscribeform(request)
     if request.method == 'POST' and form.is_valid():
@@ -67,6 +71,7 @@ def aboutpage(request):
     })
     return test_1
 
+
 def gallerypage(request):
     return render(request, 'pages/gallery.html', {
         'manifest_url': os.environ.get('TAXPLOT_MANIFEST_URL'),
@@ -75,6 +80,7 @@ def gallerypage(request):
             'title': 'Open Source Policy Center Gallery',
         },
     })
+
 
 def hellopage(request):
     return render(request, 'pages/hello.html', {
@@ -85,11 +91,14 @@ def hellopage(request):
         },
     })
 
+
 def newspage(request):
     return redirect(BLOG_URL)
 
+
 def newsdetailpage(request):
     return redirect(BLOG_URL)
+
 
 def docspage(request):
     return render(request, 'pages/docs.html', {
@@ -99,6 +108,7 @@ def docspage(request):
         },
     })
 
+
 def gettingstartedpage(request):
     return render(request, 'pages/gettingstarted.html', {
         'section': {
@@ -107,8 +117,10 @@ def gettingstartedpage(request):
         },
     })
 
+
 def _discover_widgets():
-    '''stubbed out data I wish to recieve from some widget discovery mechanism'''
+    '''stubbed out data I wish to recieve from some widget discovery
+       mechanism'''
 
     manifest_url = os.environ.get('TAXPLOT_MANIFEST_URL')
 
@@ -119,7 +131,8 @@ def _discover_widgets():
     resp.raise_for_status()
 
     widgets = resp.json()
-    return { w['plot_id'] : w for w in widgets }
+    return {w['plot_id']: w for w in widgets}
+
 
 def widgetpage(request, widget_id):
 
@@ -135,7 +148,12 @@ def widgetpage(request, widget_id):
         return check_email(request)
 
     request.get_host()
-    embed_url = os.path.join('http://',request.get_host(), 'gallery', 'embed', widget_id)
+    embed_url = os.path.join(
+        'http://',
+        request.get_host(),
+        'gallery',
+        'embed',
+        widget_id)
 
     if request.method == 'GET':
         include_email = request.GET.get('includeEmail', EMAIL_DEFAULT) == '1'
@@ -162,12 +180,14 @@ def widgetpage(request, widget_id):
         }
     })
 
+
 def border_adjustment_plot(request):
     return render(request, 'pages/border_adjustment.html', {
         'section': {
             'title': 'Widget',
         }
     })
+
 
 @xframe_options_exempt
 def embedpage(request, widget_id, layout='landscape'):
@@ -189,40 +209,45 @@ def embedpage(request, widget_id, layout='landscape'):
     else:
         include_email = False
 
-    gallery_link = os.path.join('http://',request.get_host(), 'gallery', widget_id)
+    gallery_link = os.path.join(
+        'http://',
+        request.get_host(),
+        'gallery',
+        widget_id)
     if layout == 'portrait':
         response_obj = {
-	    'best_width': widget.get('best_width_portrait'),
-	    'best_height': widget.get('best_height_portrait'),
-	    'widget_title': widget['plot_name'],
-	    'widget_url': widget['plot_url'].replace('landscape','portrait'),
-	    'email_form': form,
-	    'include_email': include_email,
-	    'long_description': widget['long_description'],
-	    'Concept_credit': widget['Concept_credit'],
-	    'Development_credit': widget['Development_credit'],
-	    'OSS_credit': widget['OSS_credit'],
-	    'gallery_link': gallery_link,
+            'best_width': widget.get('best_width_portrait'),
+            'best_height': widget.get('best_height_portrait'),
+            'widget_title': widget['plot_name'],
+            'widget_url': widget['plot_url'].replace('landscape', 'portrait'),
+            'email_form': form,
+            'include_email': include_email,
+            'long_description': widget['long_description'],
+            'Concept_credit': widget['Concept_credit'],
+            'Development_credit': widget['Development_credit'],
+            'OSS_credit': widget['OSS_credit'],
+            'gallery_link': gallery_link,
         }
     else:
         response_obj = {
-	    'best_width': widget.get('best_width'),
-	    'best_height': widget.get('best_height'),
-	    'widget_title': widget['plot_name'],
-	    'widget_url': widget['plot_url'],
-	    'email_form': form,
-	    'include_email': include_email,
-	    'long_description': widget['long_description'],
-	    'Concept_credit': widget['Concept_credit'],
-	    'Development_credit': widget['Development_credit'],
-	    'OSS_credit': widget['OSS_credit'],
-	    'gallery_link': gallery_link,
+            'best_width': widget.get('best_width'),
+            'best_height': widget.get('best_height'),
+            'widget_title': widget['plot_name'],
+            'widget_url': widget['plot_url'],
+            'email_form': form,
+            'include_email': include_email,
+            'long_description': widget['long_description'],
+            'Concept_credit': widget['Concept_credit'],
+            'Development_credit': widget['Development_credit'],
+            'OSS_credit': widget['OSS_credit'],
+            'gallery_link': gallery_link,
         }
 
     return render(request, 'pages/embed.html', response_obj)
 
+
 def apps_landing_page(request):
     context = {'btax_version': BTAX_VERSION,
                'taxcalc_version': TAXCALC_VERSION,
-              }
+               }
     return render(request, 'pages/apps.html', context)

@@ -1,7 +1,10 @@
 import taxcalc
 
-from .helpers import (default_taxcalc_data, TAXCALC_COMING_SOON_INDEXED_BY_MARS,
-                      string_to_float, is_string)
+from .helpers import (
+    default_taxcalc_data,
+    TAXCALC_COMING_SOON_INDEXED_BY_MARS,
+    string_to_float,
+    is_string)
 from .param_formatters import MetaParam, parse_value
 
 
@@ -10,7 +13,15 @@ class TaxCalcField(object):
     An atomic unit of data for a TaxCalcParam, which can be stored as a field
     Used for both CSV float fields (value column data) and boolean fields (cpi)
     """
-    def __init__(self, id, label, values, param, first_budget_year, meta_param=None):
+
+    def __init__(
+            self,
+            id,
+            label,
+            values,
+            param,
+            first_budget_year,
+            meta_param=None):
         self.id = id
         self.label = label
         self.values = values
@@ -24,6 +35,7 @@ class TaxCalcField(object):
             self.values_by_year[year] = str(value)
 
         self.default_value = self.values_by_year[first_budget_year]
+
 
 class TaxCalcParam(object):
     """
@@ -49,22 +61,21 @@ class TaxCalcParam(object):
             attributes['description'],
             attributes.get('irs_ref') or "",  # sometimes this is blank
             attributes.get('notes') or ""     # sometimes this is blank
-            ]).strip()
+        ]).strip()
 
         # check that only parameters that are compatible with the current
         # data set are used
         if "compatible_data" in attributes:
             self.gray_out = not (
-                (attributes["compatible_data"]["cps"] and not use_puf_not_cps) or
-                (attributes["compatible_data"]["puf"] and use_puf_not_cps)
-            )
+                (attributes["compatible_data"]["cps"] and not use_puf_not_cps)
+                or (attributes["compatible_data"]["puf"] and use_puf_not_cps))
         else:
             # if compatible_data is not specified do not gray out
             self.gray_out = False
 
         # Pretend the start year is 2015 (instead of 2013),
         # until values for that year are provided by taxcalc
-        #self.start_year = int(attributes['start_year'])
+        # self.start_year = int(attributes['start_year'])
         self.start_year = first_budget_year
 
         self.coming_soon = False
@@ -90,8 +101,8 @@ class TaxCalcParam(object):
 
         if self.tc_id in TAXCALC_COMING_SOON_INDEXED_BY_MARS:
             col_labels = ["Single", "Married filing Jointly",
-                              "Married filing Separately", "Head of Household"]
-            values_by_col = ['0','0','0','0']
+                          "Married filing Separately", "Head of Household"]
+            values_by_col = ['0', '0', '0', '0']
 
         elif isinstance(col_labels, list):
             if col_labels == ["0kids", "1kid", "2kids", "3+kids"]:
@@ -105,7 +116,7 @@ class TaxCalcParam(object):
             if col_labels == "NA" or col_labels == "":
                 col_labels = [""]
             elif col_labels == "0kids 1kid  2kids 3+kids":
-                col_labels =  ["0 Kids", "1 Kid", "2 Kids", "3+ Kids"]
+                col_labels = ["0 Kids", "1 Kid", "2 Kids", "3+ Kids"]
 
         # create col params
         self.col_fields = []
@@ -139,7 +150,7 @@ class TaxCalcParam(object):
                                           [cpi_flag], self, first_budget_year)
 
         # Get validation details
-        validations_json =  attributes.get('validations')
+        validations_json = attributes.get('validations')
         if validations_json:
             self.max = validations_json.get('max')
             self.min = validations_json.get('min')
@@ -174,7 +185,8 @@ def parse_sub_category(field_section, budget_year, use_puf_not_cps=True):
             new_param = {y[y.index('_') + 1:]: TaxCalcParam(y, z, budget_year,
                                                             use_puf_not_cps)}
             if section_name:
-                section = next((item for item in output if section_name in item), None)
+                section = next(
+                    (item for item in output if section_name in item), None)
                 if not section:
                     output.append({section_name: [new_param]})
                 else:
@@ -190,7 +202,8 @@ def parse_top_level(ordered_dict):
     for x, y in ordered_dict.items():
         section_name = dict(y).get("section_1")
         if section_name:
-            section = next((item for item in output if section_name in item), None)
+            section = next(
+                (item for item in output if section_name in item), None)
             if not section:
                 output.append({section_name: [{x: dict(y)}]})
             else:
@@ -211,15 +224,16 @@ def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
     return groups
 
 # Create a list of default Behavior parameters
+
+
 def default_behavior(first_budget_year):
 
     default_behavior_params = {}
-    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.Behavior,
-                                                        metadata=True,
-                                                        start_year=first_budget_year)
+    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(
+        taxcalc.Behavior, metadata=True, start_year=first_budget_year)
 
-    for k,v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
-        param = TaxCalcParam(k,v, first_budget_year)
+    for k, v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
+        param = TaxCalcParam(k, v, first_budget_year)
         default_behavior_params[param.nice_id] = param
 
     return default_behavior_params
@@ -228,13 +242,12 @@ def default_behavior(first_budget_year):
 # Create a list of default policy
 def default_policy(first_budget_year, use_puf_not_cps=True):
 
-    TAXCALC_DEFAULT_PARAMS_JSON = default_taxcalc_data(taxcalc.policy.Policy,
-                                                       metadata=True,
-                                                       start_year=first_budget_year)
+    TAXCALC_DEFAULT_PARAMS_JSON = default_taxcalc_data(
+        taxcalc.policy.Policy, metadata=True, start_year=first_budget_year)
 
     default_taxcalc_params = {}
-    for k,v in TAXCALC_DEFAULT_PARAMS_JSON.items():
-        param = TaxCalcParam(k,v, first_budget_year,
+    for k, v in TAXCALC_DEFAULT_PARAMS_JSON.items():
+        param = TaxCalcParam(k, v, first_budget_year,
                              use_puf_not_cps=use_puf_not_cps)
         default_taxcalc_params[param.nice_id] = param
 

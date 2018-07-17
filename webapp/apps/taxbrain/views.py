@@ -1,4 +1,3 @@
-
 import csv
 import pdfkit
 import json
@@ -121,8 +120,8 @@ def save_model(post_meta):
     unique_url.unique_inputs = model
     unique_url.model_pk = model.pk
     cur_dt = timezone.now()
-    future_offset_seconds = ((2 + post_meta.max_q_length)
-                             * JOB_PROC_TIME_IN_SECONDS)
+    future_offset_seconds = ((2 + post_meta.max_q_length) *
+                             JOB_PROC_TIME_IN_SECONDS)
     future_offset = datetime.timedelta(seconds=future_offset_seconds)
     expected_completion = cur_dt + future_offset
     unique_url.exp_comp_datetime = expected_completion
@@ -186,11 +185,12 @@ def submit_reform(request, user=None, json_reform_id=None):
         except Exception:
             msg = "ID {} is not in JSON reform database".format(json_reform_id)
             return BadPost(
-                       http_response_404=HttpResponse(msg, status=400),
-                       has_errors=True
-                   )
+                http_response_404=HttpResponse(msg, status=400),
+                has_errors=True
+            )
         reform_dict = json_int_key_encode(json.loads(json_reform.reform_text))
-        assumptions_dict = json_int_key_encode(json.loads(json_reform.assumption_text))
+        assumptions_dict = json_int_key_encode(
+            json.loads(json_reform.assumption_text))
         reform_text = json_reform.raw_reform_text
         assumptions_text = json_reform.raw_assumption_text
         errors_warnings = json_reform.get_errors_warnings()
@@ -215,7 +215,7 @@ def submit_reform(request, user=None, json_reform_id=None):
 
             has_errors = False
 
-    else: # fresh file upload or GUI run
+    else:  # fresh file upload or GUI run
         if 'docfile' in request_files:
             is_file = True
             (reform_dict, assumptions_dict, reform_text, assumptions_text,
@@ -226,11 +226,11 @@ def submit_reform(request, user=None, json_reform_id=None):
             # raise a 400
             if personal_inputs.non_field_errors():
                 return BadPost(
-                           http_response_404=HttpResponse(
-                               "Bad Input!", status=400
-                           ),
-                           has_errors=True
-                       )
+                    http_response_404=HttpResponse(
+                        "Bad Input!", status=400
+                    ),
+                    has_errors=True
+                )
             is_valid = personal_inputs.is_valid()
             if is_valid:
                 model = personal_inputs.save(commit=False)
@@ -278,8 +278,8 @@ def submit_reform(request, user=None, json_reform_id=None):
             )
             # TODO: parse warnings for file_input
             # only handle GUI errors for now
-            if ((taxcalc_errors or taxcalc_warnings)
-                    and personal_inputs is not None):
+            if ((taxcalc_errors or taxcalc_warnings) and
+                    personal_inputs is not None):
                 # we are only concerned with adding *static* reform errors to
                 # the *static* reform page.
                 append_errors_warnings(
@@ -303,37 +303,36 @@ def submit_reform(request, user=None, json_reform_id=None):
                 'use_puf_not_cps': use_puf_not_cps}
         if do_full_calc:
             data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
-                data_list
-            )
+            submitted_ids, max_q_length = (
+                dropq_compute.submit_dropq_calculation(data_list))
         else:
-            data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS_QUICK)]
-            submitted_ids, max_q_length = dropq_compute.submit_dropq_small_calculation(
-                data_list
-            )
+            data_list = [dict(year=i, **data)
+                         for i in range(NUM_BUDGET_YEARS_QUICK)]
+            submitted_ids, max_q_length = (
+                dropq_compute.submit_dropq_small_calculation(data_list))
 
     return PostMeta(
-               request=request,
-               personal_inputs=personal_inputs,
-               json_reform=json_reform,
-               model=model,
-               stop_submission=stop_submission,
-               has_errors=any([taxcalc_errors, taxcalc_warnings,
-                               not is_valid]),
-               errors_warnings=errors_warnings,
-               start_year=start_year,
-               data_source=data_source,
-               do_full_calc=do_full_calc,
-               is_file=is_file,
-               reform_dict=reform_dict,
-               assumptions_dict=assumptions_dict,
-               reform_text=reform_text,
-               assumptions_text=assumptions_text,
-               submitted_ids=submitted_ids,
-               max_q_length=max_q_length,
-               user=user,
-               url=None
-           )
+        request=request,
+        personal_inputs=personal_inputs,
+        json_reform=json_reform,
+        model=model,
+        stop_submission=stop_submission,
+        has_errors=any([taxcalc_errors, taxcalc_warnings,
+                        not is_valid]),
+        errors_warnings=errors_warnings,
+        start_year=start_year,
+        data_source=data_source,
+        do_full_calc=do_full_calc,
+        is_file=is_file,
+        reform_dict=reform_dict,
+        assumptions_dict=assumptions_dict,
+        reform_text=reform_text,
+        assumptions_text=assumptions_text,
+        submitted_ids=submitted_ids,
+        max_q_length=max_q_length,
+        user=user,
+        url=None
+    )
 
 
 def process_reform(request, user=None, **kwargs):
@@ -412,7 +411,8 @@ def file_input(request):
         if 'start_year' in params and params['start_year'][0] in START_YEARS:
             start_year = params['start_year'][0]
 
-        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+        if ('data_source' in params and
+                params['data_source'][0] in DATA_SOURCES):
             data_source = params['data_source'][0]
 
         json_reform = None
@@ -473,7 +473,8 @@ def personal_results(request):
 
         # use puf by default
         use_puf_not_cps = True
-        if 'data_source' in params and params['data_source'][0] in DATA_SOURCES:
+        if ('data_source' in params and
+                params['data_source'][0] in DATA_SOURCES):
             data_source = params['data_source'][0]
             if data_source != 'PUF':
                 use_puf_not_cps = False
@@ -503,10 +504,10 @@ def submit_micro(request, pk):
     Its primary purpose is to facilitate a mechanism to submit a full microsim
     job after one has submitted parameters for a 'quick calculation'
     """
-    #TODO: get this function to work with process_reform
+    # TODO: get this function to work with process_reform
     try:
         url = OutputUrl.objects.get(pk=pk)
-    except:
+    except BaseException:
         raise Http404
 
     model = url.unique_inputs
@@ -538,8 +539,10 @@ def submit_micro(request, pk):
         )
         json_reform.save()
     else:
-        reform_dict = json_int_key_encode(json.loads(model.json_text.reform_text))
-        assumptions_dict = json_int_key_encode(json.loads(model.json_text.assumption_text))
+        reform_dict = json_int_key_encode(
+            json.loads(model.json_text.reform_text))
+        assumptions_dict = json_int_key_encode(
+            json.loads(model.json_text.assumption_text))
 
     user_mods = dict({'policy': reform_dict}, **assumptions_dict)
     print('data source', model.data_source)
@@ -689,7 +692,8 @@ def get_result_context(model, request, url):
         reform_file_contents = None
         assump_file_contents = None
 
-    is_registered = hasattr(request, 'user') and request.user.is_authenticated()
+    is_registered = (hasattr(request, 'user') and
+                     request.user.is_authenticated())
 
     # TODO: Fix the java script mapping problem.  There exists somewhere in
     # the taxbrain javascript code a mapping to the old table names.  As
@@ -760,11 +764,14 @@ def output_detail(request, pk):
             traceback.print_exc()
             edit_href = '/taxbrain/edit/{}/?start_year={}'.format(
                 pk,
-                model.first_year or START_YEAR # sometimes first_year is None
+                model.first_year or START_YEAR  # sometimes first_year is None
             )
             not_avail_context = dict(edit_href=edit_href,
                                      **context_vers_disp)
-            return render(request, 'taxbrain/not_avail.html', not_avail_context)
+            return render(
+                request,
+                'taxbrain/not_avail.html',
+                not_avail_context)
 
         context.update(context_vers_disp)
         return render(request, 'taxbrain/results.html', context)

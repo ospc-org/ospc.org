@@ -1,5 +1,6 @@
 from django.conf import settings
 
+
 def google_analytics(request):
     """
     Use the variables returned in this function to

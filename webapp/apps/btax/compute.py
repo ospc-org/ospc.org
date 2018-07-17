@@ -28,7 +28,7 @@ def mock_submit_calculation(self, *args, **kwargs):
 
 
 def mock_dropq_results_ready(arg, self, *args, **kwargs):
-    return [arg,]
+    return [arg]
 
 
 def mock_dropq_get_results(is_error, self, *args, **kwargs):
@@ -36,18 +36,18 @@ def mock_dropq_get_results(is_error, self, *args, **kwargs):
         ret = {0: 'Error expected in test'}
         return ret
     ret = {0: {'mY_dec': None,
-                'mX_dec': None,
-                'df_dec': None,
-                'pdf_dec': None,
-                'cdf_dec': None,
-                'mY_bin': None,
-                'mX_bin': None,
-                'df_bin': None,
-                'pdf_bin': None,
-                'cdf_bin': None,
-                'fiscal_tot_diffs': None,
-                'fiscal_tot_base': None,
-                'fiscal_tot_ref': None,}}
+               'mX_dec': None,
+               'df_dec': None,
+               'pdf_dec': None,
+               'cdf_dec': None,
+               'mY_bin': None,
+               'mX_bin': None,
+               'df_bin': None,
+               'pdf_bin': None,
+               'cdf_bin': None,
+               'fiscal_tot_diffs': None,
+               'fiscal_tot_base': None,
+               'fiscal_tot_ref': None, }}
     return ret
 
 
@@ -82,15 +82,12 @@ class MockComputeBtax(MockCompute, DropqComputeBtax):
     dropq_results_ready = partial(mock_dropq_results_ready, "YES")
 
 
-
 class MockFailedComputeBtax(MockFailedCompute, DropqComputeBtax):
     num_budget_years = 1
     package_up_vars = package_up_vars
     dropq_get_results = partial(mock_dropq_get_results, 'Failure message')
     submit_calculation = mock_submit_calculation
     dropq_results_ready = partial(mock_dropq_results_ready, "FAIL")
-
-
 
 
 class NodeDownComputeBtax(NodeDownCompute, DropqComputeBtax):

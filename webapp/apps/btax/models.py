@@ -27,11 +27,12 @@ class BTaxSaveInputs(Hostnameable, models.Model):
     """
 
     btax_betr_corp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_betr_entity_Switch = models.NullBooleanField(default=None, blank=True, null=True)
+    btax_betr_entity_Switch = models.NullBooleanField(
+        default=None, blank=True, null=True)
     btax_betr_pass = CommaSeparatedField(default=None, blank=True, null=True)
 
     btax_depr_allyr = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
+                                       max_length=50)
 
     btax_depr_3yr = models.CharField(blank=True, default=None, null=True,
                                      max_length=50)
@@ -40,70 +41,111 @@ class BTaxSaveInputs(Hostnameable, models.Model):
     btax_depr_7yr = models.CharField(blank=True, default=None, null=True,
                                      max_length=50)
     btax_depr_10yr = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
+                                      max_length=50)
     btax_depr_15yr = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
+                                      max_length=50)
     btax_depr_20yr = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
+                                      max_length=50)
     btax_depr_25yr = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
+                                      max_length=50)
     btax_depr_27_5yr = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
+                                        max_length=50)
     btax_depr_39yr = models.CharField(blank=True, default=None, null=True,
-                                     max_length=50)
+                                      max_length=50)
 
-    btax_depr_allyr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_3yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_5yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_7yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_10yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_15yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_20yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_25yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_27_5yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
-    btax_depr_39yr_gds_Switch = models.CharField(default="True", blank=True, null=True, max_length=50)
+    btax_depr_allyr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_3yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_5yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_7yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_10yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_15yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_20yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_25yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_27_5yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
+    btax_depr_39yr_gds_Switch = models.CharField(
+        default="True", blank=True, null=True, max_length=50)
 
-    btax_depr_allyr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_3yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_5yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_7yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_10yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_15yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_20yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_25yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_27_5yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_39yr_ads_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
+    btax_depr_allyr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_3yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_5yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_7yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_10yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_15yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_20yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_25yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_27_5yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_39yr_ads_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
 
-    btax_depr_allyr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_3yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_5yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_7yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_10yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_15yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_20yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_25yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_27_5yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
-    btax_depr_39yr_tax_Switch = models.CharField(default="False", blank=True, null=True, max_length=50)
+    btax_depr_allyr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_3yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_5yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_7yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_10yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_15yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_20yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_25yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_27_5yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
+    btax_depr_39yr_tax_Switch = models.CharField(
+        default="False", blank=True, null=True, max_length=50)
 
-    btax_depr_allyr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_3yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_5yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_7yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_10yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_15yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_20yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_25yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_27_5yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_depr_39yr_exp = CommaSeparatedField(default=None, null=True, blank=True)
-
+    btax_depr_allyr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_3yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_5yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_7yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_10yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_15yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_20yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_25yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_27_5yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_depr_39yr_exp = CommaSeparatedField(
+        default=None, null=True, blank=True)
 
     btax_other_hair = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_other_corpeq = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_other_proptx = CommaSeparatedField(default=None, null=True, blank=True)
-    btax_other_invest = CommaSeparatedField(default=None, null=True, blank=True)
+    btax_other_corpeq = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_other_proptx = CommaSeparatedField(
+        default=None, null=True, blank=True)
+    btax_other_invest = CommaSeparatedField(
+        default=None, null=True, blank=True)
     btax_econ_nomint = CommaSeparatedField(default=None, null=True, blank=True)
     btax_econ_inflat = CommaSeparatedField(default=None, null=True, blank=True)
-
 
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
@@ -112,20 +154,22 @@ class BTaxSaveInputs(Hostnameable, models.Model):
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
     # data source for model
-    data_source = models.CharField(default="PUF", blank=True, null=True, max_length=20)
+    data_source = models.CharField(
+        default="PUF",
+        blank=True,
+        null=True,
+        max_length=20)
     # Result
     tax_result = models.TextField(default=None, blank=True, null=True)
     # Creation DateTime
     creation_date = models.DateTimeField(
-                        default=make_aware(datetime.datetime(2015, 1, 1))
-                    )
-
+        default=make_aware(datetime.datetime(2015, 1, 1))
+    )
 
     class Meta:
         permissions = (
             ("view_inputs", "Allowed to view Taxbrain."),
         )
-
 
 
 class BTaxOutputUrl(models.Model):
@@ -137,13 +181,24 @@ class BTaxOutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(
-                            default=make_aware(datetime.datetime(2015, 1, 1))
-                        )
-    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
-    btax_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
-    taxcalc_vers = models.CharField(blank=True, default=None, null=True, max_length=50)
-    webapp_vers = models.CharField(blank=True, default=None, null=True,
+        default=make_aware(datetime.datetime(2015, 1, 1))
+    )
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True,
+        editable=False,
+        max_length=32,
+        blank=True,
+        unique=True)
+    btax_vers = models.CharField(
+        blank=True,
+        default=None,
+        null=True,
         max_length=50)
+    taxcalc_vers = models.CharField(
+        blank=True, default=None, null=True, max_length=50)
+    webapp_vers = models.CharField(blank=True, default=None, null=True,
+                                   max_length=50)
 
     def get_absolute_url(self):
         kwargs = {

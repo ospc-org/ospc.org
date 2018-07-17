@@ -20,14 +20,14 @@ from django.utils.timezone import make_aware
 
 class DynamicSaveInputs(DataSourceable, models.Model):
     """
-    This model contains all the parameters for the dynamic tax model and the tax
-    result.
-
-   """
+    This model contains all the parameters for the dynamic tax model and the
+    tax result.
+    """
 
     # Parameters used for the dynamic model
     g_y_annual = CommaSeparatedField(default=None, null=True, blank=True)
-    g_y_annual_cpi = models.NullBooleanField(default=None, blank=True, null=True)
+    g_y_annual_cpi = models.NullBooleanField(
+        default=None, blank=True, null=True)
     upsilon = CommaSeparatedField(default=None, null=True, blank=True)
     upsilon_cpi = models.NullBooleanField(default=None, blank=True, null=True)
     frisch = CommaSeparatedField(default=None, null=True, blank=True)
@@ -43,8 +43,8 @@ class DynamicSaveInputs(DataSourceable, models.Model):
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
     creation_date = models.DateTimeField(
-                        default=make_aware(datetime.datetime(2015, 1, 1))
-                    )
+        default=make_aware(datetime.datetime(2015, 1, 1))
+    )
 
     # Email address for user who started this job
     user_email = models.CharField(blank=True, default=None, null=True,
@@ -72,12 +72,15 @@ class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
     BE_sub = CommaSeparatedField(default=None, blank=True, null=True)
     BE_cg = CommaSeparatedField(default=None, blank=True, null=True)
     BE_CG_trn = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_charity_itemizers = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_charity_non_itemizers = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_charity_itemizers = CommaSeparatedField(
+        default=None, blank=True, null=True)
+    BE_charity_non_itemizers = CommaSeparatedField(
+        default=None, blank=True, null=True)
     BE_charity_0 = CommaSeparatedField(default=None, blank=True, null=True)
     BE_charity_1 = CommaSeparatedField(default=None, blank=True, null=True)
     BE_charity_2 = CommaSeparatedField(default=None, blank=True, null=True)
-    BE_subinc_wrt_earnings = CommaSeparatedField(default=None, blank=True, null=True)
+    BE_subinc_wrt_earnings = CommaSeparatedField(
+        default=None, blank=True, null=True)
 
     # Job IDs when running a job
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
@@ -90,8 +93,8 @@ class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
     creation_date = models.DateTimeField(
-                        default=make_aware(datetime.datetime(2015, 1, 1))
-                    )
+        default=make_aware(datetime.datetime(2015, 1, 1))
+    )
 
     micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
                                   on_delete=models.SET_NULL)
@@ -167,8 +170,8 @@ class DynamicElasticitySaveInputs(DataSourceable, Hostnameable, models.Model):
     tax_result = JSONField(default=None, blank=True, null=True)
     # Creation DateTime
     creation_date = models.DateTimeField(
-                        default=make_aware(datetime.datetime(2015, 1, 1))
-                    )
+        default=make_aware(datetime.datetime(2015, 1, 1))
+    )
 
     micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
                                   on_delete=models.SET_NULL)
@@ -198,11 +201,17 @@ class DynamicOutputUrl(models.Model):
     unique_inputs = models.ForeignKey(DynamicSaveInputs, default=None)
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
-    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True,
+        editable=False,
+        max_length=32,
+        blank=True,
+        unique=True)
     ogusa_vers = models.CharField(blank=True, default=None, null=True,
-        max_length=50)
+                                  max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
-        max_length=50)
+                                   max_length=50)
 
     def get_absolute_url(self):
         kwargs = {
@@ -220,13 +229,19 @@ class DynamicBehaviorOutputUrl(models.Model):
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(
-                            default=make_aware(datetime.datetime(2015, 1, 1))
-                        )
-    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
+        default=make_aware(datetime.datetime(2015, 1, 1))
+    )
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True,
+        editable=False,
+        max_length=32,
+        blank=True,
+        unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
-        max_length=50)
+                                    max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
-        max_length=50)
+                                   max_length=50)
 
     def get_absolute_url(self):
         kwargs = {
@@ -239,19 +254,25 @@ class DynamicElasticityOutputUrl(models.Model):
     """
     This model creates a unique url for the elasticity of gdp dyn. sim
     """
-    unique_inputs = models.ForeignKey(DynamicElasticitySaveInputs, default=None)
+    unique_inputs = models.ForeignKey(
+        DynamicElasticitySaveInputs, default=None)
     user = models.ForeignKey(User, null=True, default=None)
     model_pk = models.IntegerField(default=None, null=True)
     # Expected Completion DateTime
     exp_comp_datetime = models.DateTimeField(
-                            default=make_aware(datetime.datetime(2015, 1, 1))
-                        )
-    uuid = models.UUIDField(default=uuid.uuid4, null=True, editable=False, max_length=32, blank=True, unique=True)
+        default=make_aware(datetime.datetime(2015, 1, 1))
+    )
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        null=True,
+        editable=False,
+        max_length=32,
+        blank=True,
+        unique=True)
     taxcalc_vers = models.CharField(blank=True, default=None, null=True,
-        max_length=50)
+                                    max_length=50)
     webapp_vers = models.CharField(blank=True, default=None, null=True,
-        max_length=50)
-
+                                   max_length=50)
 
     def get_absolute_url(self):
         kwargs = {

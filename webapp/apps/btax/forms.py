@@ -17,6 +17,7 @@ from ..constants import START_YEAR
 
 BTAX_DEFAULTS = get_btax_defaults(START_YEAR)
 
+
 class BTaxExemptionForm(ModelForm):
 
     def __init__(self, first_year, *args, **kwargs):
@@ -53,10 +54,11 @@ class BTaxExemptionForm(ModelForm):
     def add_errors_on_extra_inputs(self):
         ALLOWED_EXTRAS = {'has_errors', 'start_year', 'csrfmiddlewaretoken'}
         all_inputs = set(self.data.keys())
-        allowed_inputs= set(self.fields.keys())
+        allowed_inputs = set(self.fields.keys())
         extra_inputs = all_inputs - allowed_inputs - ALLOWED_EXTRAS
         for _input in extra_inputs:
-            self.add_error(None, "Extra input '{0}' not allowed".format(_input))
+            self.add_error(None,
+                           "Extra input '{0}' not allowed".format(_input))
 
     def do_btax_validations(self):
         """
@@ -68,40 +70,46 @@ class BTaxExemptionForm(ModelForm):
         Keywords correlate to submitted value array for a different parameter,
         or to the default value array for the validated field.
 
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        We could define these on individual fields instead, but we would need
+        to define all the field data dynamically both here and on the model,
+        and it's not yet possible on the model due to issues with how
+        migrations are detected.
         """
 
         for param_id, param in self._default_params.items():
             if any(token in param_id for token in ('gds', 'ads', 'tax')):
-                param.col_fields[0].values[0] = make_bool(param.col_fields[0].values[0])
+                param.col_fields[0].values[0] = make_bool(
+                    param.col_fields[0].values[0])
             if param.max is None and param.min is None:
                 continue
 
             for col, col_field in enumerate(param.col_fields):
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
                 try:
-                    submitted_col_values = string_to_float_array(submitted_col_values_raw)
+                    submitted_col_values = string_to_float_array(
+                        submitted_col_values_raw)
                 except ValueError:
                     # Assuming wildcard notation here
-                    submitted_col_values_list = submitted_col_values_raw.split(',')
+                    submitted_col_values_list = submitted_col_values_raw.split(
+                        ',')
                     param_name = parameter_name(col_field.id)
-                    submitted_col_values = expand_unless_empty(submitted_col_values_list, param_name, col_field.id, self, len(submitted_col_values_list))
+                    submitted_col_values = expand_unless_empty(
+                        submitted_col_values_list, param_name, col_field.id,
+                        self, len(submitted_col_values_list))
 
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
-                # validation, we must ensure this is validated even if unchanged
-                # from defaults
+                # validation, we must ensure this is validated even if
+                # unchanged from defaults
                 if submitted_col_values:
                     col_values = submitted_col_values
                 else:
                     col_values = default_col_values
 
                 if param.max is not None:
-                    comp = self.get_comp_data(param.max, param_id, col, col_values)
+                    comp = self.get_comp_data(
+                        param.max, param_id, col, col_values)
                     source = comp['source']
                     maxes = comp['comp_data']
                     exp_col_values = comp['exp_col_values']
@@ -120,7 +128,8 @@ class BTaxExemptionForm(ModelForm):
                                                    source, maxes[i]))
 
                 if param.min is not None:
-                    comp = self.get_comp_data(param.min, param_id, col, col_values)
+                    comp = self.get_comp_data(
+                        param.min, param_id, col, col_values)
                     source = comp['source']
                     mins = comp['comp_data']
                     exp_col_values = comp['exp_col_values']
@@ -155,7 +164,8 @@ class BTaxExemptionForm(ModelForm):
                     attrs['disabled'] = True
 
                 if '_Switch' in param.tc_id:
-                    item = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                    item = forms.CheckboxInput(attrs=attrs,
+                                               check_test=bool_like)
                     widgets[field.id] = item
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)

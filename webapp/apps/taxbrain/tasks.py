@@ -25,7 +25,11 @@ if not os.path.exists("puf.csv.gz"):
     key.get_contents_to_filename("puf.csv.gz")
     print("done downloading records")
 
-app = Celery('tasks', broker=os.environ['REDISGREEN_URL'], backend=os.environ['REDISGREEN_URL'])
+app = Celery(
+    'tasks',
+    broker=os.environ['REDISGREEN_URL'],
+    backend=os.environ['REDISGREEN_URL'])
+
 
 @app.task
 def get_tax_results_async(mods, inputs_pk):
@@ -34,30 +38,73 @@ def get_tax_results_async(mods, inputs_pk):
     print("user_mods is ", user_mods)
     print("begin work")
     tax_dta = pd.read_csv("puf.csv.gz", compression='gzip')
-    mY_dec, mX_dec, df_dec, mY_bin, mX_bin, df_bin, fiscal_tots = dropq.run_models(tax_dta,
-        num_years=NUM_BUDGET_YEARS, user_mods={START_YEAR:user_mods})
+    (mY_dec, mX_dec, df_dec, mY_bin,
+     mX_bin, df_bin, fiscal_tots) = dropq.run_models(
+        tax_dta, num_years=NUM_BUDGET_YEARS, user_mods={START_YEAR: user_mods})
 
     if DUMP_DEBUG:
         with open("mY_dec.txt", "w") as f1:
-            f1.write(json.dumps(mY_dec, sort_keys=True, indent=4, separators=(',', ': ')) + '\n')
+            f1.write(
+                json.dumps(
+                    mY_dec,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ) + '\n')
 
         with open("mX_dec.txt", "w") as f1:
-            f1.write(json.dumps(mX_dec, sort_keys=True, indent=4, separators=(',', ': ')) + '\n')
+            f1.write(
+                json.dumps(
+                    mX_dec,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ) + '\n')
 
         with open("df_dec.txt", "w") as f1:
-            f1.write(json.dumps(df_dec, sort_keys=True, indent=4, separators=(',', ': ')) + '\n')
+            f1.write(
+                json.dumps(
+                    df_dec,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ) + '\n')
 
         with open("mY_bin.txt", "w") as f1:
-            f1.write(json.dumps(mY_bin, sort_keys=True, indent=4, separators=(',', ': ')) + '\n')
+            f1.write(
+                json.dumps(
+                    mY_bin,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ) + '\n')
 
         with open("mX_bin.txt", "w") as f1:
-            f1.write(json.dumps(mX_bin, sort_keys=True, indent=4, separators=(',', ': ')) + '\n')
+            f1.write(
+                json.dumps(
+                    mX_bin,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ) + '\n')
 
         with open("df_bin.txt", "w") as f1:
-            f1.write(json.dumps(df_bin, sort_keys=True, indent=4, separators=(',', ': ')) + '\n')
+            f1.write(
+                json.dumps(
+                    df_bin,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ) + '\n')
 
         with open("fiscal_tots.txt", "w") as f1:
-            f1.write(json.dumps(fiscal_tots, sort_keys=True, indent=4, separators=(',', ': ')) + '\n')
+            f1.write(
+                json.dumps(
+                    fiscal_tots,
+                    sort_keys=True,
+                    indent=4,
+                    separators=(',', ': ')
+                ) + '\n')
 
     results = {'mY_dec': mY_dec, 'mX_dec': mX_dec, 'df_dec': df_dec,
                'mY_bin': mY_bin, 'mX_bin': mX_bin, 'df_bin': df_bin,

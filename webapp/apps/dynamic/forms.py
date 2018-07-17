@@ -10,13 +10,16 @@ from ..taxbrain.forms import PolicyBrainForm
 from .helpers import (default_parameters, default_behavior_parameters,
                       default_elasticity_parameters)
 
+
 def bool_like(x):
-    b = True if x == 'True' or x == True else False
+    b = True if x == 'True' or x else False
     return b
+
 
 OGUSA_DEFAULT_PARAMS = default_parameters(int(START_YEAR))
 BEHAVIOR_DEFAULT_PARAMS = default_behavior_parameters(int(START_YEAR))
 ELASTICITY_DEFAULT_PARAMS = default_elasticity_parameters(int(START_YEAR))
+
 
 class DynamicElasticityInputsModelForm(ModelForm):
 
@@ -84,7 +87,8 @@ class DynamicElasticityInputsModelForm(ModelForm):
             raise ValueError('Unknown comp keyword "{0}"'.format(comp_key))
 
         if len(comp_data) < 1:
-            raise ValueError('No comparison data found for kw'.format(comp_key))
+            raise ValueError('No comparison data found for kw'
+                             .format(comp_key))
 
         len_diff = required_length - len(comp_data)
         if len_diff > 0:
@@ -115,10 +119,10 @@ class DynamicElasticityInputsModelForm(ModelForm):
         Keywords correlate to submitted value array for a different parameter,
         or to the default value array for the validated field.
 
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        We could define these on individual fields instead, but we would need
+        to define all the field data dynamically both here and on the model,
+        and it's not yet possible on the model due to issues with how
+        migrations are detected.
         """
 
         for param_id, param in self._default_params.items():
@@ -130,19 +134,21 @@ class DynamicElasticityInputsModelForm(ModelForm):
 
             for col, col_field in enumerate(param.col_fields):
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
-                submitted_col_values = string_to_float_array(submitted_col_values_raw)
+                submitted_col_values = string_to_float_array(
+                    submitted_col_values_raw)
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
-                # validation, we must ensure this is validated even if unchanged
-                # from defaults
+                # validation, we must ensure this is validated even if
+                # unchanged from defaults
                 if submitted_col_values:
                     col_values = submitted_col_values
                 else:
                     col_values = default_col_values
 
                 if param.max is not None:
-                    comp = self.get_comp_data(param.max, param_id, col, len(col_values))
+                    comp = self.get_comp_data(
+                        param.max, param_id, col, len(col_values))
                     source = comp['source']
                     maxes = comp['comp_data']
 
@@ -160,7 +166,8 @@ class DynamicElasticityInputsModelForm(ModelForm):
                                                    source, maxes[i]))
 
                 if param.min is not None:
-                    comp = self.get_comp_data(param.min, param_id, col, len(col_values))
+                    comp = self.get_comp_data(
+                        param.min, param_id, col, len(col_values))
                     source = comp['source']
                     mins = comp['comp_data']
 
@@ -177,8 +184,6 @@ class DynamicElasticityInputsModelForm(ModelForm):
                                                    int_to_nth(i + 1),
                                                    source, mins[i]))
 
-
-
     class Meta:
         model = DynamicElasticitySaveInputs
         exclude = ['creation_date']
@@ -194,7 +199,8 @@ class DynamicElasticityInputsModelForm(ModelForm):
                 if param.coming_soon:
                     attrs['disabled'] = True
                     attrs['checked'] = False
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                    widgets[field.id] = forms.CheckboxInput(
+                        attrs=attrs, check_test=bool_like)
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
 
@@ -267,7 +273,8 @@ class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
         attribute wasn't created after `is_valid` was called. This ensures
         that the `cleaned_data` attribute is there.
         """
-        if getattr(self, "cleaned_data", None) is None or self.cleaned_data is None:
+        if (getattr(self, "cleaned_data", None) is None or
+                self.cleaned_data is None):
             self.cleaned_data = {}
         ModelForm.add_error(self, field, error)
 
@@ -347,7 +354,8 @@ class DynamicInputsModelForm(ModelForm):
             raise ValueError('Unknown comp keyword "{0}"'.format(comp_key))
 
         if len(comp_data) < 1:
-            raise ValueError('No comparison data found for kw'.format(comp_key))
+            raise ValueError('No comparison data found for kw'
+                             .format(comp_key))
 
         len_diff = required_length - len(comp_data)
         if len_diff > 0:
@@ -378,10 +386,10 @@ class DynamicInputsModelForm(ModelForm):
         Keywords correlate to submitted value array for a different parameter,
         or to the default value array for the validated field.
 
-        We could define these on individual fields instead, but we would need to
-        define all the field data dynamically both here and on the model,
-        and it's not yet possible on the model due to issues with how migrations
-        are detected.
+        We could define these on individual fields instead, but we would need
+        to define all the field data dynamically both here and on the model,
+        and it's not yet possible on the model due to issues with how
+        migrations are detected.
         """
 
         for param_id, param in self._default_params.items():
@@ -393,19 +401,21 @@ class DynamicInputsModelForm(ModelForm):
 
             for col, col_field in enumerate(param.col_fields):
                 submitted_col_values_raw = self.cleaned_data[col_field.id]
-                submitted_col_values = string_to_float_array(submitted_col_values_raw)
+                submitted_col_values = string_to_float_array(
+                    submitted_col_values_raw)
                 default_col_values = col_field.values
 
                 # If we change a different field which this field relies on for
-                # validation, we must ensure this is validated even if unchanged
-                # from defaults
+                # validation, we must ensure this is validated even if
+                # unchanged from defaults
                 if submitted_col_values:
                     col_values = submitted_col_values
                 else:
                     col_values = default_col_values
 
                 if param.max is not None:
-                    comp = self.get_comp_data(param.max, param_id, col, len(col_values))
+                    comp = self.get_comp_data(
+                        param.max, param_id, col, len(col_values))
                     source = comp['source']
                     maxes = comp['comp_data']
 
@@ -423,7 +433,8 @@ class DynamicInputsModelForm(ModelForm):
                                                    source, maxes[i]))
 
                 if param.min is not None:
-                    comp = self.get_comp_data(param.min, param_id, col, len(col_values))
+                    comp = self.get_comp_data(
+                        param.min, param_id, col, len(col_values))
                     source = comp['source']
                     mins = comp['comp_data']
 
@@ -440,8 +451,6 @@ class DynamicInputsModelForm(ModelForm):
                                                    int_to_nth(i + 1),
                                                    source, mins[i]))
 
-
-
     class Meta:
         model = DynamicSaveInputs
         exclude = ['creation_date']
@@ -457,7 +466,8 @@ class DynamicInputsModelForm(ModelForm):
                 if param.coming_soon:
                     attrs['disabled'] = True
                     attrs['checked'] = False
-                    widgets[field.id] = forms.CheckboxInput(attrs=attrs, check_test=bool_like)
+                    widgets[field.id] = forms.CheckboxInput(
+                        attrs=attrs, check_test=bool_like)
                 else:
                     widgets[field.id] = forms.TextInput(attrs=attrs)
 

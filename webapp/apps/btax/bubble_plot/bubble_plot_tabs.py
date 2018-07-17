@@ -29,8 +29,11 @@ def bubble_plot_tabs(dataframes):
 
     data_sources = {}
     for i, df in enumerate(list_df):
-        # remove data from Intellectual Property, Land, and Inventories Categories
-        df = df[~df['asset_category'].isin(['Intellectual Property','Land','Inventories'])].copy()
+        # remove data from Intellectual Property, Land, and Inventories
+        # Categories
+        df = (df[~df['asset_category']
+                 .isin(['Intellectual Property', 'Land', 'Inventories'])]
+              .copy())
         df = df.dropna()
 
         # define the size DataFrame, if change, use base sizes
@@ -48,8 +51,10 @@ def bubble_plot_tabs(dataframes):
             df['size_nc'] = size_nc
 
         # form the two Categories: Equipment and Structures
-        equipment_df = df[(~df.asset_category.str.contains('Structures')) & (~df.asset_category.str.contains('Buildings'))]
-        structure_df = df[(df.asset_category.str.contains('Structures')) | (df.asset_category.str.contains('Buildings'))]
+        equipment_df = df[(~df.asset_category.str.contains('Structures')) &
+                          (~df.asset_category.str.contains('Buildings'))]
+        structure_df = df[(df.asset_category.str.contains('Structures')) |
+                          (df.asset_category.str.contains('Buildings'))]
 
         format_fields = ['metr_c', 'metr_nc', 'metr_c_d', 'metr_nc_d',
                          'metr_c_e', 'metr_nc_e', 'mettr_c', 'mettr_nc',
@@ -59,49 +64,88 @@ def bubble_plot_tabs(dataframes):
                          'z_nc_e']
 
         # Make short category
-        make_short = {'Instruments and Communications Equipment': 'Instruments and Communications',
-                      'Office and Residential Equipment': 'Office and Residential',
-                      'Other Equipment': 'Other',
-                      'Transportation Equipment': 'Transportation',
-                      'Other Industrial Equipment': 'Other Industrial',
-                      'Nonresidential Buildings': 'Nonresidential Bldgs',
-                      'Residential Buildings': 'Residential Bldgs',
-                      'Mining and Drilling Structures': 'Mining and Drilling',
-                      'Other Structures': 'Other',
-                      'Computers and Software': 'Computers and Software',
-                      'Industrial Machinery': 'Industrial Machinery'}
-        equipment_df['short_category'] = equipment_df['asset_category'].map(make_short)
-        structure_df['short_category'] = structure_df['asset_category'].map(make_short)
+        make_short = {
+            'Instruments and Communications Equipment': 'Instruments and Communications',
+            'Office and Residential Equipment': 'Office and Residential',
+            'Other Equipment': 'Other',
+            'Transportation Equipment': 'Transportation',
+            'Other Industrial Equipment': 'Other Industrial',
+            'Nonresidential Buildings': 'Nonresidential Bldgs',
+            'Residential Buildings': 'Residential Bldgs',
+            'Mining and Drilling Structures': 'Mining and Drilling',
+            'Other Structures': 'Other',
+            'Computers and Software': 'Computers and Software',
+            'Industrial Machinery': 'Industrial Machinery'}
+        equipment_df['short_category'] = equipment_df['asset_category'].map(
+            make_short)
+        structure_df['short_category'] = structure_df['asset_category'].map(
+            make_short)
 
         # Add the Reform and the Baseline to Equipment Asset
         for f in format_fields:
             equipment_copy = equipment_df.copy()
             equipment_copy['rate'] = equipment_copy[f]
-            equipment_copy['hover'] = equipment_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
-            simple_equipment_copy = equipment_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
-            data_sources[list_string[i] + '_equipment_' + f] = ColumnDataSource(simple_equipment_copy)
+            equipment_copy['hover'] = equipment_copy.apply(
+                lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
+            simple_equipment_copy = equipment_copy.filter(
+                items=['size',
+                       'size_c',
+                       'size_nc',
+                       'rate',
+                       'hover',
+                       'short_category',
+                       'Asset'])
+            data_sources[list_string[i] + '_equipment_' +
+                         f] = ColumnDataSource(simple_equipment_copy)
 
         # Add the Reform and the Baseline to Structures Asset
         for f in format_fields:
             structure_copy = structure_df.copy()
             structure_copy['rate'] = structure_copy[f]
-            structure_copy['hover'] = structure_copy.apply(lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
-            simple_structure_copy = structure_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
-            data_sources[list_string[i] + '_structure_' + f] = ColumnDataSource(simple_structure_copy)
+            structure_copy['hover'] = structure_copy.apply(
+                lambda x: "{0:.1f}%".format(x[f] * 100), axis=1)
+            simple_structure_copy = structure_copy.filter(
+                items=['size',
+                       'size_c',
+                       'size_nc',
+                       'rate',
+                       'hover',
+                       'short_category',
+                       'Asset'])
+            data_sources[list_string[i] + '_structure_' +
+                         f] = ColumnDataSource(simple_structure_copy)
 
         # Create initial data sources to plot on load
         if list_string[i] == 'base':
             equipment_copy = equipment_df.copy()
             equipment_copy['rate'] = equipment_copy['mettr_c']
-            equipment_copy['hover'] = equipment_copy.apply(lambda x: "{0:.1f}%".format(x['mettr_c'] * 100), axis=1)
-            simple_equipment_copy = equipment_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
-            data_sources['equip_source'] = ColumnDataSource(simple_equipment_copy)
+            equipment_copy['hover'] = equipment_copy.apply(
+                lambda x: "{0:.1f}%".format(x['mettr_c'] * 100), axis=1)
+            simple_equipment_copy = equipment_copy.filter(
+                items=['size',
+                       'size_c',
+                       'size_nc',
+                       'rate',
+                       'hover',
+                       'short_category',
+                       'Asset'])
+            data_sources['equip_source'] = ColumnDataSource(
+                simple_equipment_copy)
 
             structure_copy = structure_df.copy()
             structure_copy['rate'] = structure_copy['mettr_c']
-            structure_copy['hover'] = structure_copy.apply(lambda x: "{0:.1f}%".format(x['mettr_c'] * 100), axis=1)
-            simple_structure_copy = structure_copy.filter(items=['size', 'size_c', 'size_nc', 'rate', 'hover', 'short_category', 'Asset'])
-            data_sources['struc_source'] = ColumnDataSource(simple_structure_copy)
+            structure_copy['hover'] = structure_copy.apply(
+                lambda x: "{0:.1f}%".format(x['mettr_c'] * 100), axis=1)
+            simple_structure_copy = structure_copy.filter(
+                items=['size',
+                       'size_c',
+                       'size_nc',
+                       'rate',
+                       'hover',
+                       'short_category',
+                       'Asset'])
+            data_sources['struc_source'] = ColumnDataSource(
+                simple_structure_copy)
 
     # Define categories for Equipments assets
     equipment_assets = ['Computers and Software',
@@ -124,7 +168,8 @@ def bubble_plot_tabs(dataframes):
                y_range=list(reversed(equipment_assets)),
                tools='hover',
                background_fill_alpha=0,
-               title='Marginal Effective Total Tax Rates on Corporate Investments in Equipment')
+               title='Marginal Effective Total Tax Rates on '
+                     'Corporate Investments in Equipment')
     p.title.align = 'center'
     p.title.text_color = '#6B6B73'
 
@@ -185,7 +230,8 @@ def bubble_plot_tabs(dataframes):
                 y_range=list(reversed(structure_assets)),
                 tools='hover',
                 background_fill_alpha=0,
-                title='Marginal Effective Total Tax Rates on Corporate Investments in Structures')
+                title='Marginal Effective Total Tax Rates on '
+                      'Corporate Investments in Structures')
     p2.title.align = 'center'
     p2.title.text_color = '#6B6B73'
 
@@ -201,7 +247,6 @@ def bubble_plot_tabs(dataframes):
     p2.xaxis.major_tick_line_color = "firebrick"
     p2.xaxis.major_tick_line_width = 3
     p2.xaxis.minor_tick_line_color = "orange"
-
 
     p2.circle(x='rate',
               y='short_category',
@@ -247,12 +292,23 @@ def bubble_plot_tabs(dataframes):
                                       active=0, callback=controls_callback)
     controls_callback.args['format_buttons'] = format_buttons
 
-    interest_buttons = RadioButtonGroup(labels=['METTR', 'METR', 'Cost of Capital', 'Depreciation'],
-                                        active=0, width=700, callback=controls_callback)
+    interest_buttons = RadioButtonGroup(
+        labels=['METTR',
+                'METR',
+                'Cost of Capital',
+                'Depreciation'],
+        active=0,
+        width=700,
+        callback=controls_callback)
     controls_callback.args['interest_buttons'] = interest_buttons
 
-    type_buttons = RadioButtonGroup(labels=['Typically Financed', 'Equity Financed', 'Debt Financed'],
-                                    active=0, width=700, callback=controls_callback)
+    type_buttons = RadioButtonGroup(
+        labels=['Typically Financed',
+                'Equity Financed',
+                'Debt Financed'],
+        active=0,
+        width=700,
+        callback=controls_callback)
     controls_callback.args['type_buttons'] = type_buttons
 
     # Create Tabs

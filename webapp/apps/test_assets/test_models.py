@@ -15,6 +15,7 @@ START_YEAR = 2016
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
+
 @pytest.mark.usefixtures("test_coverage_fields", "test_coverage_gui_fields",
                          "test_coverage_behavioral_fields")
 class TaxBrainModelsTest:
@@ -77,6 +78,7 @@ class TaxBrainFieldsTest(TaxBrainModelsTest):
 
         return model
 
+
 @pytest.mark.django_db
 class TestHostNames:
 
@@ -96,8 +98,8 @@ class TestHostNames:
         ]
         inputs.jobs_not_ready = inputs.job_ids[:2]
         inputs.save()
-        assert inputs.check_hostnames(['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4'])
-
+        assert inputs.check_hostnames(
+            ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4'])
 
     @pytest.mark.parametrize(
         'Inputs',
