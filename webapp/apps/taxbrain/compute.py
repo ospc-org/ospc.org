@@ -204,11 +204,6 @@ class DropqCompute(object):
             "aggr_d",
             "aggr_1",
             "aggr_2"]
-        results = {name: {} for name in names}
-
-        for result in ans:
-            for name in results:
-                results[name].update(result[name])
 
         if ENFORCE_REMOTE_VERSION_CHECK:
             versions = [r.get('taxcalc_version', None) for r in ans]
@@ -223,14 +218,31 @@ class DropqCompute(object):
                 print(msg)
                 raise IOError(msg)
 
-        results['aggr_d'] = arrange_totals_by_row(results['aggr_d'],
-                                                  AGG_ROW_NAMES)
+        is_new_output = 'renderable' in ans[0]
 
-        results['aggr_1'] = arrange_totals_by_row(results['aggr_1'],
-                                                  AGG_ROW_NAMES)
+        if is_new_output:
+            results = {}
+            for x in ['renderable', 'download_only']:
+                results[x] = {name: '' for name in names}
 
-        results['aggr_2'] = arrange_totals_by_row(results['aggr_2'],
-                                                  AGG_ROW_NAMES)
+                for result in ans:
+                    for name in result[x]:
+                        results[x][name] += result[x][name]
+        else:
+            results = {name: {} for name in names}
+
+            for result in ans:
+                for name in results:
+                    results[name].update(result[name])
+
+            results['aggr_d'] = arrange_totals_by_row(results['aggr_d'],
+                                                      AGG_ROW_NAMES)
+
+            results['aggr_1'] = arrange_totals_by_row(results['aggr_1'],
+                                                      AGG_ROW_NAMES)
+
+            results['aggr_2'] = arrange_totals_by_row(results['aggr_2'],
+                                                      AGG_ROW_NAMES)
 
         return results
 

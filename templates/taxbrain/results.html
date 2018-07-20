@@ -90,7 +90,11 @@
     </div>
   </div>
   <br>
+  {% if renderable %}
+  {{ renderable | safeseq | join:"" }}
+  {% else %}
   <div data-tables="{{tables}}"></div>
+  {% endif %}
   <div id="table-drilldown-container"></div>
   <div class="push"></div>
 </div>

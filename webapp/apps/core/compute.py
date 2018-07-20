@@ -146,4 +146,11 @@ class DropqCompute(object):
 
         ans = self._get_results_base(job_ids, job_failure=job_failure)
 
-        return ans
+        fields = ['renderable', 'download_only']
+        results = {key: {} for key in fields}
+        for x in fields:
+            for result in ans:
+                for name in result[x]:
+                    results[x][name] = (results[x][name] if name in results[x]
+                                        else '') + result[x][name]
+        return results

@@ -28,8 +28,8 @@ from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
-from .compute import (DropqCompute, MockCompute, JobFailError,
-                      NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK, DROPQ_WORKERS)
+from ..core.compute import (DropqCompute, JobFailError, NUM_BUDGET_YEARS,
+                            NUM_BUDGET_YEARS_QUICK)
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -94,7 +94,7 @@ def save_model(post_meta):
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
-    model.job_ids = denormalize(post_meta.submitted_ids)
+    model.job_ids = post_meta.submitted_ids
     model.json_text = post_meta.json_reform
     model.first_year = int(post_meta.start_year)
     model.data_source = post_meta.data_source
@@ -654,27 +654,6 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
-    if 'fiscal_tots' in output:
-        # Use new key/value pairs for old data
-        output['aggr_d'] = output['fiscal_tots']
-        output['aggr_1'] = output['fiscal_tots']
-        output['aggr_2'] = output['fiscal_tots']
-        del output['fiscal_tots']
-
-    tables = taxcalc_results_to_tables(output, first_year)
-    tables["tooltips"] = {
-        'distribution': DISTRIBUTION_TOOLTIP,
-        'difference': DIFFERENCE_TOOLTIP,
-        'payroll': PAYROLL_TOOLTIP,
-        'income': INCOME_TOOLTIP,
-        'base': BASE_TOOLTIP,
-        'reform': REFORM_TOOLTIP,
-        'bins': INCOME_BINS_TOOLTIP,
-        'deciles': INCOME_DECILES_TOOLTIP,
-        'fiscal_current_law': FISCAL_CURRENT_LAW,
-        'fiscal_reform': FISCAL_REFORM,
-        'fiscal_change': FISCAL_CHANGE,
-    }
 
     is_from_file = not model.raw_input_fields
 
@@ -695,31 +674,9 @@ def get_result_context(model, request, url):
     is_registered = (hasattr(request, 'user') and
                      request.user.is_authenticated())
 
-    # TODO: Fix the java script mapping problem.  There exists somewhere in
-    # the taxbrain javascript code a mapping to the old table names.  As
-    # soon as this is changed to accept the new table names, this code NEEDS
-    # to be removed.
-    tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
-    tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
-    tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
-    tables['mY_dec'] = tables.pop('dist2_xdec')
-    tables['mX_dec'] = tables.pop('dist1_xdec')
-    tables['df_dec'] = tables.pop('diff_itax_xdec')
-    tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
-    tables['cdf_dec'] = tables.pop('diff_comb_xdec')
-    tables['mY_bin'] = tables.pop('dist2_xbin')
-    tables['mX_bin'] = tables.pop('dist1_xbin')
-    tables['df_bin'] = tables.pop('diff_itax_xbin')
-    tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
-    tables['cdf_bin'] = tables.pop('diff_comb_xbin')
-
-    json_table = json.dumps(tables)
-    # TODO: Add row labels for decile and income bin tables to the context here
-    # and display these instead of hardcode in the javascript
     context = {
         'locals': locals(),
         'unique_url': url,
-        'tables': json_table,
         'created_on': created_on,
         'first_year': first_year,
         'quick_calc': quick_calc,
@@ -732,6 +689,59 @@ def get_result_context(model, request, url):
         'allow_dyn_links': not is_from_file,
         'results_type': "static"
     }
+
+    if 'renderable' in output:
+        context.update({
+            'renderable': output['renderable'].values(),
+            # 'download_only': output['download_only']
+        })
+    else:
+        if 'fiscal_tots' in output:
+            # Use new key/value pairs for old data
+            output['aggr_d'] = output['fiscal_tots']
+            output['aggr_1'] = output['fiscal_tots']
+            output['aggr_2'] = output['fiscal_tots']
+            del output['fiscal_tots']
+
+        tables = taxcalc_results_to_tables(output, first_year)
+        tables["tooltips"] = {
+            'distribution': DISTRIBUTION_TOOLTIP,
+            'difference': DIFFERENCE_TOOLTIP,
+            'payroll': PAYROLL_TOOLTIP,
+            'income': INCOME_TOOLTIP,
+            'base': BASE_TOOLTIP,
+            'reform': REFORM_TOOLTIP,
+            'bins': INCOME_BINS_TOOLTIP,
+            'deciles': INCOME_DECILES_TOOLTIP,
+            'fiscal_current_law': FISCAL_CURRENT_LAW,
+            'fiscal_reform': FISCAL_REFORM,
+            'fiscal_change': FISCAL_CHANGE,
+        }
+
+        # TODO: Fix the java script mapping problem.  There exists somewhere in
+        # the taxbrain javascript code a mapping to the old table names.  As
+        # soon as this is changed to accept the new table names, this code NEEDS
+        # to be removed.
+        tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
+        tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
+        tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
+        tables['mY_dec'] = tables.pop('dist2_xdec')
+        tables['mX_dec'] = tables.pop('dist1_xdec')
+        tables['df_dec'] = tables.pop('diff_itax_xdec')
+        tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
+        tables['cdf_dec'] = tables.pop('diff_comb_xdec')
+        tables['mY_bin'] = tables.pop('dist2_xbin')
+        tables['mX_bin'] = tables.pop('dist1_xbin')
+        tables['df_bin'] = tables.pop('diff_itax_xbin')
+        tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
+        tables['cdf_bin'] = tables.pop('diff_comb_xbin')
+
+        json_table = json.dumps(tables)
+        # TODO: Add row labels for decile and income bin tables to the context
+        # here and display these instead of hardcode in the javascript
+
+        context['tables'] = json_table
+
     return context
 
 
@@ -779,15 +789,13 @@ def output_detail(request, pk):
         return render(request, 'taxbrain/failed.html',
                       {"error_msg": model.error_text.text})
     else:
-        if not model.check_hostnames(DROPQ_WORKERS):
-            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-            return render_to_response('taxbrain/failed.html')
+        # if not model.check_hostnames(DROPQ_WORKERS):
+        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+        #     return render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
-            jobs_to_check = normalize(job_ids)
-        else:
-            jobs_to_check = normalize(jobs_to_check)
+            jobs_to_check = job_ids
 
         try:
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
@@ -830,7 +838,6 @@ def output_detail(request, pk):
             jobs_not_ready = [sub_id for (sub_id, job_ready)
                               in zip(jobs_to_check, jobs_ready)
                               if job_ready == 'NO']
-            jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
             model.save()
             if request.method == 'POST':
