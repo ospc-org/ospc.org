@@ -28,8 +28,8 @@ from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
-from .compute import (DropqCompute, MockCompute, JobFailError,
-                      NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK, DROPQ_WORKERS)
+from ..core.compute import (DropqCompute, JobFailError, NUM_BUDGET_YEARS,
+                            NUM_BUDGET_YEARS_QUICK)
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -94,7 +94,7 @@ def save_model(post_meta):
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
-    model.job_ids = denormalize(post_meta.submitted_ids)
+    model.job_ids = post_meta.submitted_ids
     model.json_text = post_meta.json_reform
     model.first_year = int(post_meta.start_year)
     model.data_source = post_meta.data_source
@@ -789,15 +789,13 @@ def output_detail(request, pk):
         return render(request, 'taxbrain/failed.html',
                       {"error_msg": model.error_text.text})
     else:
-        if not model.check_hostnames(DROPQ_WORKERS):
-            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-            return render_to_response('taxbrain/failed.html')
+        # if not model.check_hostnames(DROPQ_WORKERS):
+        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+        #     return render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
-            jobs_to_check = normalize(job_ids)
-        else:
-            jobs_to_check = normalize(jobs_to_check)
+            jobs_to_check = job_ids
 
         try:
             jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
@@ -840,7 +838,6 @@ def output_detail(request, pk):
             jobs_not_ready = [sub_id for (sub_id, job_ready)
                               in zip(jobs_to_check, jobs_ready)
                               if job_ready == 'NO']
-            jobs_not_ready = denormalize(jobs_not_ready)
             model.jobs_not_ready = jobs_not_ready
             model.save()
             if request.method == 'POST':
