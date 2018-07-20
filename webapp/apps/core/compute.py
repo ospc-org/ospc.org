@@ -20,8 +20,7 @@ class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''
 
 
-class DropqCompute(object):
-
+class Compute(object):
     num_budget_years = NUM_BUDGET_YEARS
 
     def remote_submit_job(
@@ -48,11 +47,11 @@ class DropqCompute(object):
         job_response = requests.get(theurl, params=params)
         return job_response
 
-    def submit_dropq_calculation(self, data):
+    def submit_calculation_job(self, data):
         url_template = "http://{hn}" + DROPQ_URL
         return self.submit_calculation(data, url_template)
 
-    def submit_dropq_small_calculation(self, data):
+    def submit_small_calculation_job(self, data):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit_calculation(data, url_template,
                                        increment_counter=False
@@ -103,7 +102,7 @@ class DropqCompute(object):
 
         return job_ids, queue_length
 
-    def dropq_results_ready(self, job_ids):
+    def results_ready(self, job_ids):
         jobs_done = []
         for job_id in job_ids:
             result_url = "http://{hn}/dropq_query_result".format(hn=WORKER_HN)
@@ -112,7 +111,8 @@ class DropqCompute(object):
             msg = '{0} failed on host: {1}'.format(job_id, WORKER_HN)
             if job_response.status_code == 200:  # Valid response
                 rep = job_response.text
-                jobs_done.append(rep)
+                if rep == 'YES':
+                    jobs_done.append(job_id)
             else:
                 print(
                     'did not expect response with status_code',
@@ -140,7 +140,7 @@ class DropqCompute(object):
                     raise ValueError(msg)
         return ans
 
-    def dropq_get_results(self, job_ids, job_failure=False):
+    def get_results(self, job_ids, job_failure=False):
         if job_failure:
             return self._get_results_base(job_ids, job_failure=job_failure)
 
@@ -154,3 +154,6 @@ class DropqCompute(object):
                     results[x][name] = (results[x][name] if name in results[x]
                                         else '') + result[x][name]
         return results
+
+    def eta(self, job_ids):
+        return 10

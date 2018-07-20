@@ -66,7 +66,6 @@ def process_reform(request):
         model.save()
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings) = model.get_model_specs()
-
         # TODO: save processed data
 
     user_mods = dict({'policy': reform_dict}, **assumptions_dict)
@@ -77,14 +76,14 @@ def process_reform(request):
     if do_full_calc:
         data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
         submitted_ids, max_q_length = (
-            compute.submit_dropq_calculation(data_list))
+            compute.submit_calculation_job(data_list))
     else:
         data_list = [dict(year=i, **data)
                      for i in range(NUM_BUDGET_YEARS_QUICK)]
         submitted_ids, max_q_length = (
-            compute.submit_dropq_small_calculation(data_list))
+            compute.submit_small_calculation_job(data_list))
 
-    return PostMeta(
+    return unique_url, PostMeta(
         form=form,
         start_year=start_year,
         data_source=data_source
@@ -108,6 +107,8 @@ def gui_inputs(request):
         start_year = post_meta.start_year
         data_source = post_meta.data_source
         use_puf_not_cps = (data_source == 'PUF')
+        if not post_meta.stop_submission:
+            return redirect(obj)
 
     else:
         # Probably a GET request, load a default form
@@ -174,9 +175,9 @@ def outputs(request, id):
         context = {'error': model.error_message}
         return render('failed.html', context)
     else:
-        jobs_to_complete = compute.ready(model.job_ids)
-        if jobs_to_complete == 0:
-            result = compute.get_result(model.job_ids)
+        jobs_ready = compute.results_ready(model.job_ids)
+        if jobs_ready == model.job_ids:
+            result = compute.get_results(model.job_ids)
             model.result = result
             model.save()
             return JsonResponse({'eta': 0}, status=202)

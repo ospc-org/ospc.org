@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
 
     # Apps
+    'webapp.apps.core',
     'webapp.apps.taxbrain',
     'webapp.apps.dynamic',
     'webapp.apps.pages',

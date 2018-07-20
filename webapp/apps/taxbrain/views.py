@@ -28,8 +28,8 @@ from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
-from ..core.compute import (DropqCompute, JobFailError, NUM_BUDGET_YEARS,
-                            NUM_BUDGET_YEARS_QUICK)
+from .compute import (DropqCompute, JobFailError, NUM_BUDGET_YEARS,
+                      NUM_BUDGET_YEARS_QUICK)
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
