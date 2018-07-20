@@ -5,4 +5,5 @@ toolz
 celery
 requests-mock
 requests
+msgpack
 pytest

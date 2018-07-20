@@ -654,27 +654,6 @@ def get_result_context(model, request, url):
     first_year = model.first_year
     quick_calc = model.quick_calc
     created_on = model.creation_date
-    if 'fiscal_tots' in output:
-        # Use new key/value pairs for old data
-        output['aggr_d'] = output['fiscal_tots']
-        output['aggr_1'] = output['fiscal_tots']
-        output['aggr_2'] = output['fiscal_tots']
-        del output['fiscal_tots']
-
-    tables = taxcalc_results_to_tables(output, first_year)
-    tables["tooltips"] = {
-        'distribution': DISTRIBUTION_TOOLTIP,
-        'difference': DIFFERENCE_TOOLTIP,
-        'payroll': PAYROLL_TOOLTIP,
-        'income': INCOME_TOOLTIP,
-        'base': BASE_TOOLTIP,
-        'reform': REFORM_TOOLTIP,
-        'bins': INCOME_BINS_TOOLTIP,
-        'deciles': INCOME_DECILES_TOOLTIP,
-        'fiscal_current_law': FISCAL_CURRENT_LAW,
-        'fiscal_reform': FISCAL_REFORM,
-        'fiscal_change': FISCAL_CHANGE,
-    }
 
     is_from_file = not model.raw_input_fields
 
@@ -695,31 +674,9 @@ def get_result_context(model, request, url):
     is_registered = (hasattr(request, 'user') and
                      request.user.is_authenticated())
 
-    # TODO: Fix the java script mapping problem.  There exists somewhere in
-    # the taxbrain javascript code a mapping to the old table names.  As
-    # soon as this is changed to accept the new table names, this code NEEDS
-    # to be removed.
-    tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
-    tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
-    tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
-    tables['mY_dec'] = tables.pop('dist2_xdec')
-    tables['mX_dec'] = tables.pop('dist1_xdec')
-    tables['df_dec'] = tables.pop('diff_itax_xdec')
-    tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
-    tables['cdf_dec'] = tables.pop('diff_comb_xdec')
-    tables['mY_bin'] = tables.pop('dist2_xbin')
-    tables['mX_bin'] = tables.pop('dist1_xbin')
-    tables['df_bin'] = tables.pop('diff_itax_xbin')
-    tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
-    tables['cdf_bin'] = tables.pop('diff_comb_xbin')
-
-    json_table = json.dumps(tables)
-    # TODO: Add row labels for decile and income bin tables to the context here
-    # and display these instead of hardcode in the javascript
     context = {
         'locals': locals(),
         'unique_url': url,
-        'tables': json_table,
         'created_on': created_on,
         'first_year': first_year,
         'quick_calc': quick_calc,
@@ -732,6 +689,59 @@ def get_result_context(model, request, url):
         'allow_dyn_links': not is_from_file,
         'results_type': "static"
     }
+
+    if 'renderable' in output:
+        context.update({
+            'renderable': output['renderable'].values(),
+            # 'download_only': output['download_only']
+        })
+    else:
+        if 'fiscal_tots' in output:
+            # Use new key/value pairs for old data
+            output['aggr_d'] = output['fiscal_tots']
+            output['aggr_1'] = output['fiscal_tots']
+            output['aggr_2'] = output['fiscal_tots']
+            del output['fiscal_tots']
+
+        tables = taxcalc_results_to_tables(output, first_year)
+        tables["tooltips"] = {
+            'distribution': DISTRIBUTION_TOOLTIP,
+            'difference': DIFFERENCE_TOOLTIP,
+            'payroll': PAYROLL_TOOLTIP,
+            'income': INCOME_TOOLTIP,
+            'base': BASE_TOOLTIP,
+            'reform': REFORM_TOOLTIP,
+            'bins': INCOME_BINS_TOOLTIP,
+            'deciles': INCOME_DECILES_TOOLTIP,
+            'fiscal_current_law': FISCAL_CURRENT_LAW,
+            'fiscal_reform': FISCAL_REFORM,
+            'fiscal_change': FISCAL_CHANGE,
+        }
+
+        # TODO: Fix the java script mapping problem.  There exists somewhere in
+        # the taxbrain javascript code a mapping to the old table names.  As
+        # soon as this is changed to accept the new table names, this code NEEDS
+        # to be removed.
+        tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
+        tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
+        tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
+        tables['mY_dec'] = tables.pop('dist2_xdec')
+        tables['mX_dec'] = tables.pop('dist1_xdec')
+        tables['df_dec'] = tables.pop('diff_itax_xdec')
+        tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
+        tables['cdf_dec'] = tables.pop('diff_comb_xdec')
+        tables['mY_bin'] = tables.pop('dist2_xbin')
+        tables['mX_bin'] = tables.pop('dist1_xbin')
+        tables['df_bin'] = tables.pop('diff_itax_xbin')
+        tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
+        tables['cdf_bin'] = tables.pop('diff_comb_xbin')
+
+        json_table = json.dumps(tables)
+        # TODO: Add row labels for decile and income bin tables to the context
+        # here and display these instead of hardcode in the javascript
+
+        context['tables'] = json_table
+
     return context
 
 
