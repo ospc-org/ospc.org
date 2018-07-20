@@ -1,8 +1,36 @@
+import json
+from collections import namedtuple
+
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import (HttpResponse, JsonResponse)
+
+from ..taxbrain.forms import TaxBrainForm as Form
+from ..taxbrain.param_displayers import nested_form_parameters
+from ..constants import START_YEAR, START_YEARS, DATA_SOURCES, DEFAULT_SOURCE
 
 from .models import CoreRun
-from .compute import Compute
+from .compute import Compute, NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
+
+import taxcalc
+from django.conf import settings
+
+
+WEBAPP_VERSION = settings.WEBAPP_VERSION
+
+tcversion_info = taxcalc._version.get_versions()
+
+TAXCALC_VERSION = tcversion_info['version']
+
+
+PostMeta = namedtuple(
+    'PostMeta',
+    ['form', 'start_year', 'data_source']
+)
+
+BadPost = namedtuple(
+    'BasdPost',
+    ['http_response_404', 'has_errors']
+)
 
 
 def process_reform(request):
@@ -14,52 +42,53 @@ def process_reform(request):
     # TODO: migrate first_year to start_year to get rid of weird stuff like
     # this
     fields['first_year'] = fields['start_year']
-    has_errors = make_bool(fields['has_errors'])
 
-    # which file to use, front-end not yet implemented
     data_source = fields.get('data_source', 'PUF')
     use_puf_not_cps = (data_source == 'PUF')
 
-    personal_inputs = TaxBrainForm(start_year, use_puf_not_cps, fields)
+    # TODO: figure out correct way to grab quick_calc flag
+    do_full_calc = False if fields.get('quick_calc') else True
+
+    form = Form(start_year, use_puf_not_cps, fields)
     # If an attempt is made to post data we don't accept
     # raise a 400
-    if personal_inputs.non_field_errors():
+    if form.non_field_errors():
         return BadPost(
             http_response_404=HttpResponse(
                 "Bad Input!", status=400
             ),
             has_errors=True
         )
-    is_valid = personal_inputs.is_valid()
+    is_valid = form.is_valid()
     if is_valid:
-        model = personal_inputs.save(commit=False)
+        model = form.save(commit=False)
         model.set_fields()
         model.save()
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings) = model.get_model_specs()
 
-        json_reform = JSONReformTaxCalculator(
-            reform_text=json.dumps(reform_dict),
-            assumption_text=json.dumps(assumptions_dict),
-            raw_reform_text=reform_text,
-            raw_assumption_text=assumptions_text,
-            errors_warnings_text=json.dumps(errors_warnings)
-        )
-        json_reform.save()
+        # TODO: save processed data
 
     user_mods = dict({'policy': reform_dict}, **assumptions_dict)
     data = {'user_mods': user_mods,
             'first_budget_year': int(start_year),
             'use_puf_not_cps': use_puf_not_cps}
+    compute = Compute()
     if do_full_calc:
         data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
         submitted_ids, max_q_length = (
-            dropq_compute.submit_dropq_calculation(data_list))
+            compute.submit_dropq_calculation(data_list))
     else:
         data_list = [dict(year=i, **data)
                      for i in range(NUM_BUDGET_YEARS_QUICK)]
         submitted_ids, max_q_length = (
-            dropq_compute.submit_dropq_small_calculation(data_list))
+            compute.submit_dropq_small_calculation(data_list))
+
+    return PostMeta(
+        form=form,
+        start_year=start_year,
+        data_source=data_source
+    )
 
 
 def gui_inputs(request):
@@ -68,55 +97,35 @@ def gui_inputs(request):
     get request
     """
     start_year = START_YEAR
-    has_errors = False
     data_source = DEFAULT_SOURCE
     if request.method == 'POST':
         print('method=POST get', request.GET)
         print('method=POST post', request.POST)
         obj, post_meta = process_reform(request)
-        # case where validation failed in forms.TaxBrainForm
-        # TODO: assert HttpResponse status is 404
         if isinstance(post_meta, BadPost):
             return post_meta.http_response_404
-
-        # No errors--submit to model
-        if not post_meta.stop_submission:
-            return redirect(obj)
-        # Errors from taxcalc.tbi.reform_warnings_errors
-        else:
-            personal_inputs = post_meta.personal_inputs
-            start_year = post_meta.start_year
-            data_source = post_meta.data_source
-            use_puf_not_cps = (data_source == 'PUF')
-            has_errors = post_meta.has_errors
+        form = post_meta.form
+        start_year = post_meta.start_year
+        data_source = post_meta.data_source
+        use_puf_not_cps = (data_source == 'PUF')
 
     else:
         # Probably a GET request, load a default form
         print('method=GET get', request.GET)
         print('method=GET post', request.POST)
-        params = parse_qs(urlparse(request.build_absolute_uri()).query)
-        if 'start_year' in params and params['start_year'][0] in START_YEARS:
-            start_year = params['start_year'][0]
-
-        # use puf by default
-        use_puf_not_cps = True
-        if ('data_source' in params and
-                params['data_source'][0] in DATA_SOURCES):
-            data_source = params['data_source'][0]
-            if data_source != 'PUF':
-                use_puf_not_cps = False
-
-        personal_inputs = TaxBrainForm(first_year=start_year,
-                                       use_puf_not_cps=use_puf_not_cps)
+        start_year = request.GET.get('start_year', START_YEAR)
+        data_source = request.GET.get('data_source', DEFAULT_SOURCE)
+        use_puf_not_cps = (data_source == 'PUF')
+        form = Form(first_year=start_year,
+                    use_puf_not_cps=use_puf_not_cps)
 
     init_context = {
-        'form': personal_inputs,
+        'form': form,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
         'taxcalc_version': TAXCALC_VERSION,
         'webapp_version': WEBAPP_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
-        'has_errors': has_errors,
         'data_sources': DATA_SOURCES,
         'data_source': data_source,
     }
