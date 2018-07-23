@@ -47,19 +47,17 @@ class Compute(object):
         job_response = requests.get(theurl, params=params)
         return job_response
 
-    def submit_calculation_job(self, data):
+    def submit_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(data, url_template)
+        return self.submit(data, url_template)
 
-    def submit_small_calculation_job(self, data):
+    def submit_quick_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(data, url_template,
-                                       increment_counter=False
-                                       )
+        return self.submit(data, url_template, increment_counter=False)
 
     def submit_elastic_calculation(self, data):
         url_template = "http://{hn}/elastic_gdp_start_job"
-        return self.submit_calculation(data, url_template)
+        return self.submit(data, url_template)
 
     def submit_calculation(self,
                            data_list,
@@ -109,9 +107,7 @@ class Compute(object):
                 result_url, params={'job_id': job_id})
             msg = '{0} failed on host: {1}'.format(job_id, WORKER_HN)
             if job_response.status_code == 200:  # Valid response
-                rep = job_response.text
-                if rep == 'YES':
-                    jobs_done.append(job_id)
+                jobs_done.append(job_response.text)
             else:
                 print(
                     'did not expect response with status_code',

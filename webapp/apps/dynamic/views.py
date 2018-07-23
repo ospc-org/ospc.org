@@ -34,7 +34,7 @@ from ..taxbrain.param_displayers import default_behavior
 from ..core.compute import JobFailError
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
-                      failure_text, normalize, denormalize, strip_empty_lists,
+                      failure_text, strip_empty_lists,
                       cc_text_finished, cc_text_failure,
                       dynamic_params_from_model, send_cc_email,
                       default_behavior_parameters, elast_results_to_tables,
@@ -45,8 +45,6 @@ from .helpers import (
     ogusa_results_to_tables,
     success_text,
     failure_text,
-    normalize,
-    denormalize,
     strip_empty_lists,
     cc_text_finished,
     cc_text_failure,
@@ -304,9 +302,9 @@ def dynamic_behavioral(request, pk):
                 data_list = [dict(year=i, **data)
                              for i in range(NUM_BUDGET_YEARS)]
                 submitted_ids, max_q_length = (
-                    dropq_compute.submit_dropq_calculation(data_list))
+                    dropq_compute.submit_calculation(data_list))
 
-                model.job_ids = denormalize(submitted_ids)
+                model.job_ids = submitted_ids
                 model.first_year = int(start_year)
                 model.save()
 
@@ -466,7 +464,7 @@ def dynamic_elasticities(request, pk):
             if not submitted_ids:
                 form_personal_exemp = personal_inputs
             else:
-                model.job_ids = denormalize(submitted_ids)
+                model.job_ids = submitted_ids
                 model.first_year = int(start_year)
                 model.save()
 
@@ -623,79 +621,6 @@ def dynamic_landing(request, pk):
     return render_to_response('dynamic/landing.html', init_context)
 
 
-def dynamic_finished(request):
-    """
-    This view sends an email to the job submitter that the dynamic job
-    is done. It also sends CC emails to the CC list.
-    """
-
-    job_id = request.GET['job_id']
-    status = request.GET['status']
-    qs = DynamicSaveInputs.objects.filter(job_ids__contains=job_id)
-    dsi = qs[0]
-    email_addr = dsi.user_email
-
-    # We know the results are ready so go get them from the server
-    job_ids = dsi.job_ids
-    submitted_ids = normalize(job_ids)
-    result = dynamic_compute.ogusa_get_results(submitted_ids, status=status)
-    dsi.tax_result = result
-    dsi.creation_date = timezone.now()
-    dsi.save()
-
-    params = dynamic_params_from_model(dsi)
-    microsim_url = "/taxbrain/" + str(dsi.micro_sim.pk)
-    # Create a new output model instance
-    if status == "SUCCESS":
-        unique_url = DynamicOutputUrl()
-        if request.user.is_authenticated():
-            current_user = User.objects.get(pk=request.user.id)
-            unique_url.user = current_user
-        unique_url.unique_inputs = dsi
-        unique_url.model_pk = dsi.pk
-        unique_url.save()
-        result_url = "/dynamic/results/{pk}".format(pk=unique_url.pk)
-        text = success_text()
-        text = text.format(url=result_url, microsim_url=microsim_url,
-                           job_id=job_id, params=params)
-        cc_txt, subj_txt = cc_text_finished(url=result_url)
-
-    elif status == "FAILURE":
-        text = failure_text()
-        text = text.format(
-            traceback=result['job_fail'],
-            microsim_url=microsim_url,
-            job_id=job_id,
-            params=params)
-
-        cc_txt, subj_txt = cc_text_failure(traceback=result['job_fail'])
-    else:
-        raise ValueError("status must be either 'SUCCESS' or 'FAILURE'")
-
-    send_mail(subject="Your TaxBrain simulation has completed!",
-              message=text,
-              from_email="Open Source Policy Center <mailing@ospc.org>",
-              recipient_list=[email_addr])
-
-    send_cc_email(cc_txt, subj_txt, dsi)
-    response = HttpResponse('')
-
-    return response
-
-
-def show_job_submitted(request, pk):
-    """
-    This view gives the necessary info to show that a dynamic job was
-    submitted.
-    """
-    model = DynamicSaveInputs.objects.get(pk=pk)
-    job_id = model.job_ids
-    submitted_ids_and_ips = normalize(job_id)
-    submitted_id, submitted_ip = submitted_ids_and_ips[0]
-    return render_to_response('dynamic/submitted.html',
-                              {'job_id': submitted_id})
-
-
 def elastic_results(request, pk):
     """
     This view handles the results page.
@@ -733,18 +658,15 @@ def elastic_results(request, pk):
         return render(request, 'dynamic/elasticity_results.html', context)
 
     else:
-        # if not model.check_hostnames(DROPQ_WORKERS):
-        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-        #     raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
-            jobs_to_check = normalize(job_ids)
+            jobs_to_check = job_ids
         else:
-            jobs_to_check = normalize(jobs_to_check)
+            jobs_to_check = jobs_to_check
 
         try:
-            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+            jobs_ready = dropq_compute.results_ready(jobs_to_check)
         except JobFailError as jfe:
             print(jfe)
             return render_to_response('taxbrain/failed.html')
@@ -755,7 +677,7 @@ def elastic_results(request, pk):
                            if job_ready == 'FAIL']
 
             # Just need the error message from one failed job
-            error_msgs = dropq_compute.dropq_get_results(
+            error_msgs = dropq_compute.get_results(
                 [failed_jobs[0]], job_failure=True)
             error_msg = error_msgs[0]
             val_err_idx = error_msg.rfind("Error")
@@ -769,8 +691,7 @@ def elastic_results(request, pk):
                           {"error_msg": error_contents})
 
         if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.elastic_get_results(
-                normalize(job_ids))
+            model.tax_result = dropq_compute.elastic_get_results(job_ids)
             model.creation_date = timezone.now()
             model.save()
             return redirect(url)
@@ -779,7 +700,7 @@ def elastic_results(request, pk):
             jobs_not_ready = [sub_id for (sub_id, job_ready)
                               in zip(jobs_to_check, jobs_ready)
                               if not job_ready == 'YES']
-            jobs_not_ready = denormalize(jobs_not_ready)
+            jobs_not_ready = jobs_not_ready
             model.jobs_not_ready = jobs_not_ready
             model.save()
             if request.method == 'POST':
@@ -805,122 +726,30 @@ def elastic_results(request, pk):
                     context_instance=RequestContext(request))
 
 
-def ogusa_results(request, pk):
-    """
-    This view handles the results page.
-    """
-    try:
-        url = DynamicOutputUrl.objects.get(pk=pk)
-    except BaseException:
-        raise Http404
-
-    output = url.unique_inputs.tax_result
-    first_year = url.unique_inputs.first_year
-    created_on = url.unique_inputs.creation_date
-    tables = ogusa_results_to_tables(output, first_year)
-    microsim_url = "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
-
-    ogusa_vers_disp = get_version(url, 'ogusa_vers', OGUSA_VERSION)
-    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
-    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
-
-    context = {
-        'locals': locals(),
-        'unique_url': url,
-        'ogusa_version': ougsa_vers_display,
-        'webapp_version': webapp_vers_disp,
-        'taxcalc_vers': taxcalc_vers_disp,
-        'tables': tables,
-        'created_on': created_on,
-        'first_year': first_year,
-        'microsim_url': microsim_url
-    }
-
-    return render(request, 'dynamic/results.html', context)
-
-
 def behavior_results(request, pk):
     """
-    This view handles the partial equilibrium results page.
+    This view is the single page of diplaying a progress bar for how
+    close the job is to finishing, and then it will also display the
+    job results if the job is done. Finally, it will render a 'job failed'
+    page if the job has failed.
     """
+
     try:
         url = DynamicBehaviorOutputUrl.objects.get(pk=pk)
-    except BaseException:
+    except OutputUrl.DoesNotExist:
         raise Http404
+
+    model = url.unique_inputs
 
     taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
     webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
 
     context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
                          'webapp_version': webapp_vers_disp}
-
-    model = url.unique_inputs
-
-    first_year = model.first_year or int(START_YEAR)
-    micro = model.micro_sim.unique_inputs
-    if (micro.json_text is not None and (micro.json_text.raw_reform_text or
-                                         micro.json_text.raw_assumption_text)):
-        reform_file_contents = micro.json_text.raw_reform_text
-        reform_file_contents = reform_file_contents.replace(" ", "&nbsp;")
-        assump_file_contents = micro.json_text.raw_assumption_text
-        assump_file_contents = assump_file_contents.replace(" ", "&nbsp;")
-    elif micro.input_fields is not None:
-        reform = to_json_reform(first_year, micro.input_fields)
-        reform_file_contents = json.dumps(reform, indent=4)
-        model.set_fields()
-        assump = to_json_reform(first_year, model.input_fields)
-        assump_file_contents = json.dumps(assump, indent=4)
-    else:
-        reform_file_contents = ''
-        assump_file_contents = ''
-
     if model.tax_result:
         # try to render table; if failure render not available page
         try:
-            output = model.get_tax_result()
-            first_year = model.first_year
-            created_on = model.creation_date
-            if 'fiscal_tots' in output:
-                # Use new key/value pairs for old data
-                output['aggr_d'] = output['fiscal_tots']
-                output['aggr_1'] = output['fiscal_tots']
-                output['aggr_2'] = output['fiscal_tots']
-                del output['fiscal_tots']
-
-            tables = taxcalc_results_to_tables(output, first_year)
-            tables["tooltips"] = {
-                'distribution': DISTRIBUTION_TOOLTIP,
-                'difference': DIFFERENCE_TOOLTIP,
-                'payroll': PAYROLL_TOOLTIP,
-                'income': INCOME_TOOLTIP,
-                'base': BASE_TOOLTIP,
-                'reform': REFORM_TOOLTIP,
-                'bins': INCOME_BINS_TOOLTIP,
-                'deciles': INCOME_DECILES_TOOLTIP
-            }
-            is_registered = True if request.user.is_authenticated() else False
-            microsim_url = "/taxbrain/" + str(model.micro_sim.pk)
-
-            # TODO: Fix the java script mapping problem.  There exists
-            # somewhere in the taxbrain javascript code a mapping to the old
-            # table names.  As soon as this is changed to accept the new table
-            # names, this code NEEDS to be removed.
-            tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
-            tables['fiscal_currentlaw'] = add_summary_column(
-                tables.pop('aggr_1'))
-            tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
-            tables['mY_dec'] = tables.pop('dist2_xdec')
-            tables['mX_dec'] = tables.pop('dist1_xdec')
-            tables['df_dec'] = tables.pop('diff_itax_xdec')
-            tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
-            tables['cdf_dec'] = tables.pop('diff_comb_xdec')
-            tables['mY_bin'] = tables.pop('dist2_xbin')
-            tables['mX_bin'] = tables.pop('dist1_xbin')
-            tables['df_bin'] = tables.pop('diff_itax_xbin')
-            tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
-            tables['cdf_bin'] = tables.pop('diff_comb_xbin')
-            json_table = json.dumps(tables)
-
+            context = get_result_context(model, request, url)
         except Exception as e:
             print('Exception rendering pk', pk, e)
             traceback.print_exc()
@@ -935,54 +764,45 @@ def behavior_results(request, pk):
                 'taxbrain/not_avail.html',
                 not_avail_context)
 
-        context = {
-            'locals': locals(),
-            'unique_url': url,
-            'tables': json_table,
-            'created_on': created_on,
-            'first_year': first_year,
-            'is_registered': is_registered,
-            'is_behavior': True,
-            'microsim_url': microsim_url,
-            'reform_file_contents': reform_file_contents,
-            'assump_file_contents': assump_file_contents,
-            'results_type': "behavioral"
-        }
         context.update(context_vers_disp)
         return render(request, 'taxbrain/results.html', context)
-
     else:
-        # if not model.check_hostnames(DROPQ_WORKERS):
-        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-        #     raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
-        jobs_to_check = model.jobs_not_ready
-        if not jobs_to_check:
-            jobs_to_check = normalize(job_ids)
-        else:
-            jobs_to_check = normalize(jobs_to_check)
 
         try:
-            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+            jobs_ready = dropq_compute.results_ready(job_ids)
         except JobFailError as jfe:
             print(jfe)
             return render_to_response('taxbrain/failed.html')
+        print(job_ids)
+        if any(j == 'FAIL' for j in jobs_ready):
+            failed_jobs = [sub_id for (sub_id, job_ready)
+                           in zip(job_ids, jobs_ready)
+                           if job_ready == 'FAIL']
 
-        if all([job == 'YES' for job in jobs_ready]):
-            results = dropq_compute.dropq_get_results(normalize(job_ids))
+            # Just need the error message from one failed job
+            error_msgs = dropq_compute.get_results([failed_jobs[0]],
+                                                         job_failure=True)
+            if error_msgs:
+                error_msg = error_msgs[0]
+            else:
+                error_msg = "Error: stack trace for this error is unavailable"
+            val_err_idx = error_msg.rfind("Error")
+            error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
+            return render(request, 'taxbrain/failed.html',
+                          {"error_msg": error_contents})
+
+        if all(j == 'YES' for j in jobs_ready):
+            results = dropq_compute.dropq_get_results(job_ids)
             model.tax_result = results
             model.creation_date = timezone.now()
             model.save()
-            return redirect('behavior_results', url.pk)
+            context = get_result_context(model, request, url)
+            context.update(context_vers_disp)
+            return render(request, 'taxbrain/results.html', context)
+
         else:
-            jobs_not_ready = [
-                sub_id for (
-                    sub_id,
-                    job_ready) in zip(
-                    jobs_to_check,
-                    jobs_ready) if not job_ready == 'YES']
-            jobs_not_ready = denormalize(jobs_not_ready)
-            model.jobs_not_ready = jobs_not_ready
+            model.job_ids = job_ids
             model.save()
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
@@ -998,10 +818,10 @@ def behavior_results(request, pk):
                     return JsonResponse({'eta': exp_num_minutes}, status=200)
 
             else:
-                print("rendering not ready yet")
                 context = {'eta': '100'}
                 context.update(context_vers_disp)
                 return render_to_response(
-                    'dynamic/not_ready.html',
+                    'taxbrain/not_ready.html',
                     context,
-                    context_instance=RequestContext(request))
+                    context_instance=RequestContext(request)
+                )

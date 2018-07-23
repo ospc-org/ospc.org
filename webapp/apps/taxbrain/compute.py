@@ -1,32 +1,26 @@
 import os
-from .helpers import package_up_vars as _package_up_vars
-from .models import WorkerNodesCounter
 import json
 import requests
 import msgpack
-import taxcalc
 from requests.exceptions import RequestException, Timeout
-from .helpers import arrange_totals_by_row
 import requests_mock
+import taxcalc
+from .helpers import arrange_totals_by_row
+
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
-dqversion_info = taxcalc._version.get_versions()
-dropq_version = dqversion_info['version']
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 NUM_BUDGET_YEARS_QUICK = int(os.environ.get('NUM_BUDGET_YEARS_QUICK', 1))
-# Hard fail on lack of dropq workers
-dropq_workers = os.environ.get('DROPQ_WORKERS', '')
-DROPQ_WORKERS = dropq_workers.split(",")
+WORKER_HN = os.environ.get('DROPQ_WORKERS')
 DROPQ_URL = "/dropq_start_job"
 # URL to perform the dropq algorithm on a sample of the full dataset
 DROPQ_SMALL_URL = "/dropq_small_start_job"
-ENFORCE_REMOTE_VERSION_CHECK = (os.environ.get('ENFORCE_VERSION', 'False') ==
-                                'True')
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
+BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
+
 AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
-BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
 
 
 class JobFailError(Exception):
@@ -34,11 +28,7 @@ class JobFailError(Exception):
 
 
 class DropqCompute(object):
-
     num_budget_years = NUM_BUDGET_YEARS
-
-    def package_up_vars(self, *args, **kwargs):
-        return _package_up_vars(*args, **kwargs)
 
     def remote_submit_job(
             self,
@@ -64,99 +54,69 @@ class DropqCompute(object):
         job_response = requests.get(theurl, params=params)
         return job_response
 
-    def submit_dropq_calculation(self, data):
+    def submit_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_URL
-        return self.submit_calculation(data, url_template)
+        return self.submit(data, url_template)
 
-    def submit_dropq_small_calculation(self, data):
+    def submit_quick_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
-        return self.submit_calculation(data, url_template,
-                                       increment_counter=False
-                                       )
+        return self.submit(data, url_template,
+                           increment_counter=False)
 
     def submit_elastic_calculation(self, data):
         url_template = "http://{hn}/elastic_gdp_start_job"
-        return self.submit_calculation(data, url_template)
+        return self.submit(data, url_template)
 
-    def submit_calculation(self,
-                           data_list,
-                           url_template,
-                           workers=DROPQ_WORKERS,
-                           increment_counter=True,
-                           use_wnc_offset=True):
+    def submit(self,
+               data_list,
+               url_template,
+               increment_counter=True,
+               use_wnc_offset=True):
 
-        if use_wnc_offset:
-            wnc, created = WorkerNodesCounter.objects.get_or_create(
-                singleton_enforce=1)
-            dropq_worker_offset = wnc.current_offset
-            if dropq_worker_offset > len(workers):
-                dropq_worker_offset = 0
-            if increment_counter:
-                wnc.current_offset = (
-                    dropq_worker_offset + len(data_list)) % len(DROPQ_WORKERS)
-                wnc.save()
-        else:
-            dropq_worker_offset = 0
-
-        hostnames = workers[dropq_worker_offset: dropq_worker_offset +
-                            len(data_list)]
-        print("hostnames: ", hostnames)
+        print("hostnames: ", WORKER_HN)
         print("submitting data: ", data_list)
-        num_hosts = len(hostnames)
         job_ids = []
-        hostname_idx = 0
-        max_queue_length = 0
+        queue_length = 0
         for data in data_list:
-            year_submitted = False
+            submitted = False
             attempts = 0
-            while not year_submitted:
+            while not submitted:
                 packed = msgpack.dumps({'inputs': data}, use_bin_type=True)
-                theurl = url_template.format(hn=hostnames[hostname_idx])
+                theurl = url_template.format(hn=WORKER_HN)
                 try:
                     response = self.remote_submit_job(
                         theurl, data=packed, timeout=TIMEOUT_IN_SECONDS,
                         headers=BYTES_HEADER)
                     if response.status_code == 200:
-                        print("submitted: ", hostnames[hostname_idx])
-                        year_submitted = True
+                        print("submitted: ", )
+                        submitted = True
                         response_d = response.json()
-                        job_ids.append(
-                            (response_d['job_id'], hostnames[hostname_idx]))
-                        hostname_idx = (hostname_idx + 1) % num_hosts
-                        if response_d['qlength'] > max_queue_length:
-                            max_queue_length = response_d['qlength']
+                        job_ids.append(response_d['job_id'])
+                        queue_length = response_d['qlength']
                     else:
-                        print("FAILED: ", data, hostnames[hostname_idx])
-                        hostname_idx = (hostname_idx + 1) % num_hosts
+                        print("FAILED: ", data, WORKER_HN)
                         attempts += 1
                 except Timeout:
-                    print("Couldn't submit to: ", hostnames[hostname_idx])
-                    hostname_idx = (hostname_idx + 1) % num_hosts
+                    print("Couldn't submit to: ", WORKER_HN)
                     attempts += 1
                 except RequestException as re:
                     print("Something unexpected happened: ", re)
-                    hostname_idx = (hostname_idx + 1) % num_hosts
                     attempts += 1
                 if attempts > MAX_ATTEMPTS_SUBMIT_JOB:
                     print("Exceeded max attempts. Bailing out.")
                     raise IOError()
 
-        return job_ids, max_queue_length
+        return job_ids, queue_length
 
-    def _get_years(self, num_years, first_budget_year):
-        return list(range(0, num_years))
-
-    def dropq_results_ready(self, job_ids):
-        jobs_done = [None] * len(job_ids)
-        for idx, id_hostname in enumerate(job_ids):
-            id_, hostname = id_hostname
-            result_url = "http://{hn}/dropq_query_result".format(hn=hostname)
+    def results_ready(self, job_ids):
+        jobs_done = []
+        for job_id in job_ids:
+            result_url = "http://{hn}/dropq_query_result".format(hn=WORKER_HN)
             job_response = self.remote_results_ready(
-                result_url, params={'job_id': id_})
-            msg = '{0} failed on host: {1}'.format(id_, hostname)
+                result_url, params={'job_id': job_id})
+            msg = '{0} failed on host: {1}'.format(job_id, WORKER_HN)
             if job_response.status_code == 200:  # Valid response
-                rep = job_response.text
-                jobs_done[idx] = rep
+                jobs_done.append(job_response.text)
             else:
                 print(
                     'did not expect response with status_code',
@@ -166,11 +126,12 @@ class DropqCompute(object):
 
     def _get_results_base(self, job_ids, job_failure=False):
         ans = []
-        for idx, id_hostname in enumerate(job_ids):
-            id_, hostname = id_hostname
-            result_url = "http://{hn}/dropq_get_result".format(hn=hostname)
-            job_response = self.remote_retrieve_results(result_url,
-                                                        params={'job_id': id_})
+        for job_id in job_ids:
+            result_url = "http://{hn}/dropq_get_result".format(hn=WORKER_HN)
+            job_response = self.remote_retrieve_results(
+                result_url,
+                params={'job_id': job_id}
+            )
             if job_response.status_code == 200:  # Valid response
                 try:
                     if job_failure:
@@ -183,7 +144,7 @@ class DropqCompute(object):
                     raise ValueError(msg)
         return ans
 
-    def dropq_get_results(self, job_ids, job_failure=False):
+    def get_results(self, job_ids, job_failure=False):
         if job_failure:
             return self._get_results_base(job_ids, job_failure=job_failure)
 
@@ -210,19 +171,6 @@ class DropqCompute(object):
             for name in results:
                 results[name].update(result[name])
 
-        if ENFORCE_REMOTE_VERSION_CHECK:
-            versions = [r.get('taxcalc_version', None) for r in ans]
-            if not all([ver == taxcalc_version for ver in versions]):
-                msg = ("Got different taxcalc versions from workers. "
-                       "Bailing out")
-                print(msg)
-                raise IOError(msg)
-            versions = [r.get('dropq_version', None) for r in ans]
-            if not all([same_version(ver, dropq_version) for ver in versions]):
-                msg = "Got different dropq versions from workers. Bailing out"
-                print(msg)
-                raise IOError(msg)
-
         results['aggr_d'] = arrange_totals_by_row(results['aggr_d'],
                                                   AGG_ROW_NAMES)
 
@@ -231,41 +179,6 @@ class DropqCompute(object):
 
         results['aggr_2'] = arrange_totals_by_row(results['aggr_2'],
                                                   AGG_ROW_NAMES)
-
-        return results
-
-    def elastic_get_results(self, job_ids):
-        ans = []
-        for idx, id_hostname in enumerate(job_ids):
-            id_, hostname = id_hostname
-            result_url = "http://{hn}/dropq_get_result".format(hn=hostname)
-            job_response = self.remote_retrieve_results(result_url,
-                                                        params={'job_id': id_})
-            if job_response.status_code == 200:  # Valid response
-                ans.append(job_response.json())
-
-        elasticity_gdp = {}
-        for result in ans:
-            elasticity_gdp.update(result['elasticity_gdp'])
-
-        if ENFORCE_REMOTE_VERSION_CHECK:
-            versions = [r.get('taxcalc_version', None) for r in ans]
-            if not all([ver == taxcalc_version for ver in versions]):
-                msg = ("Got different taxcalc versions from workers. "
-                       "Bailing out")
-                print(msg)
-                raise IOError(msg)
-            versions = [r.get('dropq_version', None) for r in ans]
-            if not all([same_version(ver, dropq_version) for ver in versions]):
-                msg = "Got different dropq versions from workers. Bailing out"
-                print(msg)
-                raise IOError(msg)
-
-        elasticity_gdp['gdp_elasticity_0'] = 'NA'
-        elasticity_gdp = arrange_totals_by_row(elasticity_gdp,
-                                               GDP_ELAST_ROW_NAMES)
-
-        results = {'elasticity_gdp': elasticity_gdp}
 
         return results
 

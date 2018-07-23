@@ -28,8 +28,8 @@ from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
-from ..core.compute import (Compute, JobFailError, NUM_BUDGET_YEARS,
-                            NUM_BUDGET_YEARS_QUICK)
+from ..core.compute import (Compute, MockCompute, JobFailError, NUM_BUDGET_YEARS,
+                            NUM_BUDGET_YEARS_QUICK, WORKER_HN)
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -294,12 +294,12 @@ def submit_reform(request, user=None, json_reform_id=None):
         if do_full_calc:
             data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
             submitted_ids, max_q_length = (
-                dropq_compute.submit_calculation_job(data_list))
+                dropq_compute.submit_calculation(data_list))
         else:
             data_list = [dict(year=i, **data)
                          for i in range(NUM_BUDGET_YEARS_QUICK)]
             submitted_ids, max_q_length = (
-                dropq_compute.submit_small_calculation_job(data_list))
+                dropq_compute.submit_quick_calculation(data_list))
 
     return PostMeta(
         request=request,
@@ -542,7 +542,7 @@ def submit_micro(request, pk):
 
     # start calc job
     data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
-    submitted_ids, max_q_length = dropq_compute.submit_calculation_job(
+    submitted_ids, max_q_length = dropq_compute.submit_calculation(
         data_list
     )
 

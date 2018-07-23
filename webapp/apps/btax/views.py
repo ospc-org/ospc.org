@@ -181,8 +181,7 @@ def btax_results(request):
                 no_inputs = True
                 form_btax_input = btax_inputs
             else:
-                job_ids = denormalize(submitted_ids)
-                model.job_ids = job_ids
+                model.job_ids = submitted_ids
                 model.first_year = int(start_year)
                 model.save()
                 unique_url = BTaxOutputUrl()
@@ -413,53 +412,38 @@ def output_detail(request, pk):
         return render(request, 'btax/results.html', context)
 
     else:
-        if not model.check_hostnames(BTAX_WORKERS):
-            print('bad hostname', model.jobs_not_ready, BTAX_WORKERS)
-            return render_to_response('taxbrain/failed.html',
-                                      context={'is_btax': True})
         job_ids = model.job_ids
-        jobs_to_check = model.jobs_not_ready
-        if not jobs_to_check:
-            jobs_to_check = normalize(job_ids)
-        else:
-            jobs_to_check = normalize(jobs_to_check)
 
         try:
-            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
+            jobs_ready = dropq_compute.results_ready(job_ids)
         except JobFailError as jfe:
             print(jfe)
-            return render_to_response('taxbrain/failed.html',
-                                      context={'is_btax': True})
+            return render_to_response('taxbrain/failed.html')
 
-        if any([j == 'FAIL' for j in jobs_ready]):
+        if any(j == 'FAIL' for j in jobs_ready):
             failed_jobs = [sub_id for (sub_id, job_ready)
-                           in zip(jobs_to_check, jobs_ready)
+                           in zip(job_ids, jobs_ready)
                            if job_ready == 'FAIL']
 
             # Just need the error message from one failed job
-            error_msgs = dropq_compute.dropq_get_results(
-                [failed_jobs[0]], job_failure=True)
-            error_msg = error_msgs[0]
+            error_msgs = dropq_compute.get_results([failed_jobs[0]],
+                                                         job_failure=True)
+            if error_msgs:
+                error_msg = error_msgs[0]
+            else:
+                error_msg = "Error: stack trace for this error is unavailable"
             val_err_idx = error_msg.rfind("Error")
             context = {"error_msg": error_msg[val_err_idx:],
                        "is_btax": True}
             return render(request, 'taxbrain/failed.html', context)
 
         if all([job == 'YES' for job in jobs_ready]):
-            tax_result = dropq_compute.btax_get_results(normalize(job_ids))
-            model.tax_result = json.dumps(tax_result)
+            results = dropq_compute.btax_get_results(job_ids)
+            model.tax_result = json.dumps(results)
             model.creation_date = timezone.now()
-            print('ready')
             model.save()
             return redirect(url)
         else:
-            jobs_not_ready = [sub_id for (sub_id, job_ready)
-                              in zip(jobs_to_check, jobs_ready)
-                              if job_ready != 'YES']
-            jobs_not_ready = denormalize(jobs_not_ready)
-            model.jobs_not_ready = jobs_not_ready
-            print('not ready', jobs_not_ready)
-            model.save()
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
                 exp_comp_dt = url.exp_comp_datetime

@@ -65,22 +65,37 @@ def output_detail(request, pk):
         return render(request, 'taxbrain/failed.html',
                       {"error_msg": model.error_text.text})
     else:
-        # if not model.check_hostnames(DROPQ_WORKERS):
-        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-        #     return render_to_response('taxbrain/failed.html')
-        job_ids = model.job_ids
-        jobs_to_check = model.jobs_not_ready
-        if not jobs_to_check:
-            jobs_to_check = job_ids
+       job_ids = model.job_ids
 
         try:
-            jobs_ready = dropq_compute.results_ready(jobs_to_check)
+            jobs_ready = dropq_compute.results_ready(job_ids)
         except JobFailError as jfe:
             print(jfe)
             return render_to_response('taxbrain/failed.html')
+        print(job_ids)
+        if any(j == 'FAIL' for j in jobs_ready):
+            failed_jobs = [sub_id for (sub_id, job_ready)
+                           in zip(job_ids, jobs_ready)
+                           if job_ready == 'FAIL']
 
-        jobs_not_ready = set(jobs_to_check).difference(set(jobs_ready))
-        if jobs_not_ready == set():
+            # Just need the error message from one failed job
+            error_msgs = dropq_compute.get_results([failed_jobs[0]],
+                                                   job_failure=True)
+            if error_msgs:
+                error_msg = error_msgs[0]
+            else:
+                error_msg = "Error: stack trace for this error is unavailable"
+            val_err_idx = error_msg.rfind("Error")
+            error = ErrorMessageTaxCalculator()
+            error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
+            error.text = error_contents
+            error.save()
+            model.error_text = error
+            model.save()
+            return render(request, 'taxbrain/failed.html',
+                          {"error_msg": error_contents})
+
+        if all(j == 'YES' for j in jobs_ready):
             results = dropq_compute.get_results(job_ids)
             model.tax_result = results
             model.creation_date = timezone.now()
@@ -90,9 +105,6 @@ def output_detail(request, pk):
             return render(request, 'taxbrain/results.html', context)
 
         else:
-            jobs_not_ready = list(jobs_not_ready)
-            model.jobs_not_ready = jobs_not_ready
-            model.save()
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
                 exp_comp_dt = url.exp_comp_datetime
