@@ -777,9 +777,6 @@ def output_detail(request, pk):
         return render(request, 'taxbrain/failed.html',
                       {"error_msg": model.error_text.text})
     else:
-        if not model.check_hostnames(WORKER_HN):
-            print('bad hostname', model.job_ids, WORKER_HN)
-            return render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
 
         try:

@@ -10,8 +10,7 @@ import taxcalc
 
 from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
                                TaxSaveInputs, OutputUrl)
-from ..taxbrain.behaviors import (Resultable, Fieldable, DataSourceable,
-                                  Hostnameable)
+from ..taxbrain.behaviors import (Resultable, Fieldable, DataSourceable)
 from ..taxbrain import param_formatters
 
 import datetime
@@ -60,7 +59,7 @@ class DynamicSaveInputs(DataSourceable, models.Model):
 
 
 class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
-                                Hostnameable, models.Model):
+                                models.Model):
     """
     This model contains all the parameters for the dynamic behavioral tax
     model and the tax result.
@@ -151,7 +150,7 @@ class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
         )
 
 
-class DynamicElasticitySaveInputs(DataSourceable, Hostnameable, models.Model):
+class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
     This model contains all the parameters for the dynamic elasticity
     wrt GDP dynamic macro model and tax result

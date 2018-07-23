@@ -518,9 +518,6 @@ def elastic_results(request, pk):
         return render(request, 'dynamic/elasticity_results.html', context)
 
     else:
-        if not model.check_hostnames(WORKER_HN):
-            print('bad hostname', model.jobs_not_ready, WORKER_HN)
-            return render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
@@ -663,9 +660,6 @@ def behavior_results(request, pk):
         context.update(context_vers_disp)
         return render(request, 'taxbrain/results.html', context)
     else:
-        if not model.check_hostnames(WORKER_HN):
-            print('bad hostname', model.job_ids, WORKER_HN)
-            return render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
 
         try:

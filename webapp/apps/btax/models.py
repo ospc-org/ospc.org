@@ -10,10 +10,8 @@ from django.utils.timezone import make_aware
 from ..taxbrain.models import (SeparatedValuesField,
                                CommaSeparatedField)
 
-from ..taxbrain.behaviors import Hostnameable
 
-
-class BTaxSaveInputs(Hostnameable, models.Model):
+class BTaxSaveInputs(models.Model):
     """
     This model contains all the parameters for the tax model and the tax
     result.
