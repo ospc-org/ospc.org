@@ -25,14 +25,13 @@ from ..taxbrain.models import (TaxSaveInputs, OutputUrl,
                                ErrorMessageTaxCalculator,
                                JSONReformTaxCalculator)
 from ..taxbrain.views import (make_bool, dropq_compute,
-                              JOB_PROC_TIME_IN_SECONDS,
-                              add_summary_column)
+                              JOB_PROC_TIME_IN_SECONDS)
 from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
                                          parse_fields, append_errors_warnings)
 from ..taxbrain.helpers import (taxcalc_results_to_tables,
                                 convert_val, json_int_key_encode)
 from ..taxbrain.param_displayers import default_behavior
-from ..taxbrain.compute import JobFailError, DROPQ_WORKERS
+from ..core.compute import JobFailError
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
                       failure_text, normalize, denormalize, strip_empty_lists,
@@ -87,6 +86,26 @@ with open(version_path, "r") as f:
 OGUSA_VERSION = ogversion_info['version']
 
 WEBAPP_VERSION = settings.WEBAPP_VERSION
+
+
+def add_summary_column(table):
+    import copy
+    summary = copy.deepcopy(table["cols"][-1])
+    summary["label"] = "Total"
+    table["cols"].append(summary)
+    for x in table["rows"]:
+        row_total = 0
+        for y in x["cells"]:
+            row_total += float(y["value"])
+        x["cells"].append({
+            'format': {
+                'decimals': 1,
+                'divisor': 1000000000
+            },
+            'value': str(row_total),
+            'year_values': {}
+        })
+    return table
 
 
 def dynamic_input(request, pk):
@@ -714,9 +733,9 @@ def elastic_results(request, pk):
         return render(request, 'dynamic/elasticity_results.html', context)
 
     else:
-        if not model.check_hostnames(DROPQ_WORKERS):
-            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-            raise render_to_response('taxbrain/failed.html')
+        # if not model.check_hostnames(DROPQ_WORKERS):
+        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+        #     raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:
@@ -933,9 +952,9 @@ def behavior_results(request, pk):
         return render(request, 'taxbrain/results.html', context)
 
     else:
-        if not model.check_hostnames(DROPQ_WORKERS):
-            print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-            raise render_to_response('taxbrain/failed.html')
+        # if not model.check_hostnames(DROPQ_WORKERS):
+        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+        #     raise render_to_response('taxbrain/failed.html')
         job_ids = model.job_ids
         jobs_to_check = model.jobs_not_ready
         if not jobs_to_check:

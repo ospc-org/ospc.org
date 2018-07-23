@@ -5,7 +5,7 @@ import requests
 from requests.exceptions import Timeout, RequestException
 import requests_mock
 import taxcalc
-from ..taxbrain.compute import DropqCompute
+from ..core.compute import Compute
 from .models import OGUSAWorkerNodesCounter
 from .helpers import filter_ogusa_only
 
@@ -28,7 +28,7 @@ ENFORCE_REMOTE_VERSION_CHECK = (os.environ.get('ENFORCE_VERSION', 'False') ==
                                 'True')
 
 
-class DynamicCompute(DropqCompute):
+class DynamicCompute(Compute):
 
     def remote_register_job(self, theurl, data, timeout=TIMEOUT_IN_SECONDS):
         response = requests.post(theurl, data=data, timeout=timeout)

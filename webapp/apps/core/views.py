@@ -1,156 +1,23 @@
-import json
-from collections import namedtuple
-
 from django.shortcuts import render, get_object_or_404
-from django.http import (HttpResponse, JsonResponse)
+from django.http import JsonResponse
 
-from ..taxbrain.forms import TaxBrainForm as Form
-from ..taxbrain.param_displayers import nested_form_parameters
-from ..constants import START_YEAR, START_YEARS, DATA_SOURCES, DEFAULT_SOURCE
-
+from django.utils import timezone
 from .models import CoreRun
-from .compute import Compute, NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
-
-import taxcalc
-from django.conf import settings
-
-
-WEBAPP_VERSION = settings.WEBAPP_VERSION
-
-tcversion_info = taxcalc._version.get_versions()
-
-TAXCALC_VERSION = tcversion_info['version']
+from ..taxbrain.models import OutputUrl
+from .compute import Compute, JobFailError
+from ..formatters import get_version
+from ..taxbrain.views import TAXCALC_VERSION, WEBAPP_VERSION, dropq_compute
+from django.shortcuts import (render, render_to_response, get_object_or_404,
+                              redirect)
+from django.template.context import RequestContext
 
 
-PostMeta = namedtuple(
-    'PostMeta',
-    ['form', 'start_year', 'data_source']
-)
-
-BadPost = namedtuple(
-    'BasdPost',
-    ['http_response_404', 'has_errors']
-)
-
-
-def process_reform(request):
-    fields = dict(request.GET)
-    fields.update(dict(request.POST))
-    fields = {k: v[0] if isinstance(v, list) else v
-              for k, v in list(fields.items())}
-    start_year = fields.get('start_year', START_YEAR)
-    # TODO: migrate first_year to start_year to get rid of weird stuff like
-    # this
-    fields['first_year'] = fields['start_year']
-
-    data_source = fields.get('data_source', 'PUF')
-    use_puf_not_cps = (data_source == 'PUF')
-
-    # TODO: figure out correct way to grab quick_calc flag
-    do_full_calc = False if fields.get('quick_calc') else True
-
-    form = Form(start_year, use_puf_not_cps, fields)
-    # If an attempt is made to post data we don't accept
-    # raise a 400
-    if form.non_field_errors():
-        return BadPost(
-            http_response_404=HttpResponse(
-                "Bad Input!", status=400
-            ),
-            has_errors=True
-        )
-    is_valid = form.is_valid()
-    if is_valid:
-        model = form.save(commit=False)
-        model.set_fields()
-        model.save()
-        (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors_warnings) = model.get_model_specs()
-        # TODO: save processed data
-
-    user_mods = dict({'policy': reform_dict}, **assumptions_dict)
-    data = {'user_mods': user_mods,
-            'first_budget_year': int(start_year),
-            'use_puf_not_cps': use_puf_not_cps}
-    compute = Compute()
-    if do_full_calc:
-        data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
-        submitted_ids, max_q_length = (
-            compute.submit_calculation_job(data_list))
-    else:
-        data_list = [dict(year=i, **data)
-                     for i in range(NUM_BUDGET_YEARS_QUICK)]
-        submitted_ids, max_q_length = (
-            compute.submit_small_calculation_job(data_list))
-
-    return unique_url, PostMeta(
-        form=form,
-        start_year=start_year,
-        data_source=data_source
-    )
-
-
-def gui_inputs(request):
+def output_detail(request, pk):
     """
-    Receive data from GUI interface and returns parsed data or default data if
-    get request
-    """
-    start_year = START_YEAR
-    data_source = DEFAULT_SOURCE
-    if request.method == 'POST':
-        print('method=POST get', request.GET)
-        print('method=POST post', request.POST)
-        obj, post_meta = process_reform(request)
-        if isinstance(post_meta, BadPost):
-            return post_meta.http_response_404
-        form = post_meta.form
-        start_year = post_meta.start_year
-        data_source = post_meta.data_source
-        use_puf_not_cps = (data_source == 'PUF')
-        if not post_meta.stop_submission:
-            return redirect(obj)
-
-    else:
-        # Probably a GET request, load a default form
-        print('method=GET get', request.GET)
-        print('method=GET post', request.POST)
-        start_year = request.GET.get('start_year', START_YEAR)
-        data_source = request.GET.get('data_source', DEFAULT_SOURCE)
-        use_puf_not_cps = (data_source == 'PUF')
-        form = Form(first_year=start_year,
-                    use_puf_not_cps=use_puf_not_cps)
-
-    init_context = {
-        'form': form,
-        'params': nested_form_parameters(int(start_year), use_puf_not_cps),
-        'taxcalc_version': TAXCALC_VERSION,
-        'webapp_version': WEBAPP_VERSION,
-        'start_years': START_YEARS,
-        'start_year': start_year,
-        'data_sources': DATA_SOURCES,
-        'data_source': data_source,
-    }
-
-    return render(request, 'taxbrain/input_form.html', init_context)
-
-
-
-def get_result_context(request, model, url):
-    """
-    generate context from request object and model and url model objects
-
-    returns: context
-    """
-
-    context = {
-        # ...
-    }
-    return context
-
-
-def outputs(request, id):
-    """
-    Query status of jobs, render result upon completion of all jobs
+    This view is the single page of diplaying a progress bar for how
+    close the job is to finishing, and then it will also display the
+    job results if the job is done. Finally, it will render a 'job failed'
+    page if the job has failed.
 
     Cases:
         case 1: result is ready and successful
@@ -160,27 +27,140 @@ def outputs(request, id):
         case 3: query results
           case 3a: all jobs have completed
           case 3b: not all jobs have completed
-
-    returns: data to be rendered and displayed
     """
 
-    model = get_object_or_404(CoreRun, id=id)
+    try:
+        url = OutputUrl.objects.get(pk=pk)
+    except OutputUrl.DoesNotExist:
+        raise Http404
 
-    compute = Compute()
+    model = url.unique_inputs
 
-    if model.result is not None:
-        context = get_result_context(request, model)
-        return render('outputs.html', context)
-    elif model.error_message is not None:
-        context = {'error': model.error_message}
-        return render('failed.html', context)
+    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+
+    context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
+                         'webapp_version': webapp_vers_disp}
+    if model.tax_result:
+        # try to render table; if failure render not available page
+        try:
+            context = get_result_context(model, request, url)
+        except Exception as e:
+            print('Exception rendering pk', pk, e)
+            traceback.print_exc()
+            edit_href = '/taxbrain/edit/{}/?start_year={}'.format(
+                pk,
+                model.first_year or START_YEAR  # sometimes first_year is None
+            )
+            not_avail_context = dict(edit_href=edit_href,
+                                     **context_vers_disp)
+            return render(
+                request,
+                'taxbrain/not_avail.html',
+                not_avail_context)
+
+        context.update(context_vers_disp)
+        return render(request, 'taxbrain/results.html', context)
+    elif model.error_text:
+        return render(request, 'taxbrain/failed.html',
+                      {"error_msg": model.error_text.text})
     else:
-        jobs_ready = compute.results_ready(model.job_ids)
-        if jobs_ready == model.job_ids:
-            result = compute.get_results(model.job_ids)
-            model.result = result
+        # if not model.check_hostnames(DROPQ_WORKERS):
+        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
+        #     return render_to_response('taxbrain/failed.html')
+        job_ids = model.job_ids
+        jobs_to_check = model.jobs_not_ready
+        if not jobs_to_check:
+            jobs_to_check = job_ids
+
+        try:
+            jobs_ready = dropq_compute.results_ready(jobs_to_check)
+        except JobFailError as jfe:
+            print(jfe)
+            return render_to_response('taxbrain/failed.html')
+
+        jobs_not_ready = set(jobs_to_check).difference(set(jobs_ready))
+        if jobs_not_ready == set():
+            results = dropq_compute.get_results(job_ids)
+            model.tax_result = results
+            model.creation_date = timezone.now()
             model.save()
-            return JsonResponse({'eta': 0}, status=202)
+            context = get_result_context(model, request, url)
+            context.update(context_vers_disp)
+            return render(request, 'taxbrain/results.html', context)
+
         else:
-            eta = compute.eta(model.job_ids)
-            return JsonResponse({'eta': eta}, status=202)
+            jobs_not_ready = list(jobs_not_ready)
+            model.jobs_not_ready = jobs_not_ready
+            model.save()
+            if request.method == 'POST':
+                # if not ready yet, insert number of minutes remaining
+                exp_comp_dt = url.exp_comp_datetime
+                utc_now = timezone.now()
+                dt = exp_comp_dt - utc_now
+                exp_num_minutes = dt.total_seconds() / 60.
+                exp_num_minutes = round(exp_num_minutes, 2)
+                exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
+                if exp_num_minutes > 0:
+                    return JsonResponse({'eta': exp_num_minutes}, status=202)
+                else:
+                    return JsonResponse({'eta': exp_num_minutes}, status=200)
+
+            else:
+                context = {'eta': '100'}
+                context.update(context_vers_disp)
+                return render_to_response(
+                    'taxbrain/not_ready.html',
+                    context,
+                    context_instance=RequestContext(request)
+                )
+
+
+def get_result_context(model, request, url):
+    output = model.get_tax_result()
+    first_year = model.first_year
+    quick_calc = model.quick_calc
+    created_on = model.creation_date
+
+    is_from_file = not model.raw_input_fields
+
+    if (model.json_text is not None and (model.json_text.raw_reform_text or
+                                         model.json_text.raw_assumption_text)):
+        reform_file_contents = model.json_text.raw_reform_text
+        reform_file_contents = reform_file_contents.replace(" ", "&nbsp;")
+        assump_file_contents = model.json_text.raw_assumption_text
+        assump_file_contents = assump_file_contents.replace(" ", "&nbsp;")
+    elif model.input_fields is not None:
+        reform = to_json_reform(first_year, model.input_fields)
+        reform_file_contents = json.dumps(reform, indent=4)
+        assump_file_contents = '{}'
+    else:
+        reform_file_contents = None
+        assump_file_contents = None
+
+    is_registered = (hasattr(request, 'user') and
+                     request.user.is_authenticated())
+
+    context = {
+        'locals': locals(),
+        'unique_url': url,
+        'created_on': created_on,
+        'first_year': first_year,
+        'quick_calc': quick_calc,
+        'is_registered': is_registered,
+        'is_micro': True,
+        'reform_file_contents': reform_file_contents,
+        'assump_file_contents': assump_file_contents,
+        'dynamic_file_contents': None,
+        'is_from_file': is_from_file,
+        'allow_dyn_links': not is_from_file,
+        'results_type': "static"
+    }
+
+    if 'renderable' in output:
+        context.update({
+            'renderable': output['renderable'].values(),
+            # 'download_only': output['download_only']
+        })
+
+    return context

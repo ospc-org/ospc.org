@@ -28,8 +28,8 @@ from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
-from .compute import (DropqCompute, JobFailError, NUM_BUDGET_YEARS,
-                      NUM_BUDGET_YEARS_QUICK)
+from ..core.compute import (Compute, JobFailError, NUM_BUDGET_YEARS,
+                            NUM_BUDGET_YEARS_QUICK)
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -51,7 +51,7 @@ MOCK_MODULES = ['matplotlib', 'matplotlib.pyplot', 'mpl_toolkits',
 ENABLE_QUICK_CALC = bool(os.environ.get('ENABLE_QUICK_CALC', ''))
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-dropq_compute = DropqCompute()
+dropq_compute = Compute()
 
 WEBAPP_VERSION = settings.WEBAPP_VERSION
 
@@ -73,16 +73,6 @@ def log_ip(request):
     else:
         # we don't have a real, public ip address for user
         print("BEGIN DROPQ WORK FROM: unknown IP")
-
-
-def denormalize(x):
-    ans = [str("#".join([i[0], i[1]])) for i in x]
-    return ans
-
-
-def normalize(x):
-    ans = [i.split('#') for i in x]
-    return ans
 
 
 def save_model(post_meta):
@@ -304,12 +294,12 @@ def submit_reform(request, user=None, json_reform_id=None):
         if do_full_calc:
             data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
             submitted_ids, max_q_length = (
-                dropq_compute.submit_dropq_calculation(data_list))
+                dropq_compute.submit_calculation_job(data_list))
         else:
             data_list = [dict(year=i, **data)
                          for i in range(NUM_BUDGET_YEARS_QUICK)]
             submitted_ids, max_q_length = (
-                dropq_compute.submit_dropq_small_calculation(data_list))
+                dropq_compute.submit_small_calculation_job(data_list))
 
     return PostMeta(
         request=request,
@@ -552,7 +542,7 @@ def submit_micro(request, pk):
 
     # start calc job
     data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
-    submitted_ids, max_q_length = dropq_compute.submit_dropq_calculation(
+    submitted_ids, max_q_length = dropq_compute.submit_calculation_job(
         data_list
     )
 
@@ -629,265 +619,6 @@ def edit_personal_results(request, pk):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-def add_summary_column(table):
-    import copy
-    summary = copy.deepcopy(table["cols"][-1])
-    summary["label"] = "Total"
-    table["cols"].append(summary)
-    for x in table["rows"]:
-        row_total = 0
-        for y in x["cells"]:
-            row_total += float(y["value"])
-        x["cells"].append({
-            'format': {
-                'decimals': 1,
-                'divisor': 1000000000
-            },
-            'value': str(row_total),
-            'year_values': {}
-        })
-    return table
-
-
-def get_result_context(model, request, url):
-    output = model.get_tax_result()
-    first_year = model.first_year
-    quick_calc = model.quick_calc
-    created_on = model.creation_date
-
-    is_from_file = not model.raw_input_fields
-
-    if (model.json_text is not None and (model.json_text.raw_reform_text or
-                                         model.json_text.raw_assumption_text)):
-        reform_file_contents = model.json_text.raw_reform_text
-        reform_file_contents = reform_file_contents.replace(" ", "&nbsp;")
-        assump_file_contents = model.json_text.raw_assumption_text
-        assump_file_contents = assump_file_contents.replace(" ", "&nbsp;")
-    elif model.input_fields is not None:
-        reform = to_json_reform(first_year, model.input_fields)
-        reform_file_contents = json.dumps(reform, indent=4)
-        assump_file_contents = '{}'
-    else:
-        reform_file_contents = None
-        assump_file_contents = None
-
-    is_registered = (hasattr(request, 'user') and
-                     request.user.is_authenticated())
-
-    context = {
-        'locals': locals(),
-        'unique_url': url,
-        'created_on': created_on,
-        'first_year': first_year,
-        'quick_calc': quick_calc,
-        'is_registered': is_registered,
-        'is_micro': True,
-        'reform_file_contents': reform_file_contents,
-        'assump_file_contents': assump_file_contents,
-        'dynamic_file_contents': None,
-        'is_from_file': is_from_file,
-        'allow_dyn_links': not is_from_file,
-        'results_type': "static"
-    }
-
-    if 'renderable' in output:
-        context.update({
-            'renderable': output['renderable'].values(),
-            # 'download_only': output['download_only']
-        })
-    else:
-        if 'fiscal_tots' in output:
-            # Use new key/value pairs for old data
-            output['aggr_d'] = output['fiscal_tots']
-            output['aggr_1'] = output['fiscal_tots']
-            output['aggr_2'] = output['fiscal_tots']
-            del output['fiscal_tots']
-
-        tables = taxcalc_results_to_tables(output, first_year)
-        tables["tooltips"] = {
-            'distribution': DISTRIBUTION_TOOLTIP,
-            'difference': DIFFERENCE_TOOLTIP,
-            'payroll': PAYROLL_TOOLTIP,
-            'income': INCOME_TOOLTIP,
-            'base': BASE_TOOLTIP,
-            'reform': REFORM_TOOLTIP,
-            'bins': INCOME_BINS_TOOLTIP,
-            'deciles': INCOME_DECILES_TOOLTIP,
-            'fiscal_current_law': FISCAL_CURRENT_LAW,
-            'fiscal_reform': FISCAL_REFORM,
-            'fiscal_change': FISCAL_CHANGE,
-        }
-
-        # TODO: Fix the java script mapping problem.  There exists somewhere in
-        # the taxbrain javascript code a mapping to the old table names.  As
-        # soon as this is changed to accept the new table names, this code NEEDS
-        # to be removed.
-        tables['fiscal_change'] = add_summary_column(tables.pop('aggr_d'))
-        tables['fiscal_currentlaw'] = add_summary_column(tables.pop('aggr_1'))
-        tables['fiscal_reform'] = add_summary_column(tables.pop('aggr_2'))
-        tables['mY_dec'] = tables.pop('dist2_xdec')
-        tables['mX_dec'] = tables.pop('dist1_xdec')
-        tables['df_dec'] = tables.pop('diff_itax_xdec')
-        tables['pdf_dec'] = tables.pop('diff_ptax_xdec')
-        tables['cdf_dec'] = tables.pop('diff_comb_xdec')
-        tables['mY_bin'] = tables.pop('dist2_xbin')
-        tables['mX_bin'] = tables.pop('dist1_xbin')
-        tables['df_bin'] = tables.pop('diff_itax_xbin')
-        tables['pdf_bin'] = tables.pop('diff_ptax_xbin')
-        tables['cdf_bin'] = tables.pop('diff_comb_xbin')
-
-        json_table = json.dumps(tables)
-        # TODO: Add row labels for decile and income bin tables to the context
-        # here and display these instead of hardcode in the javascript
-
-        context['tables'] = json_table
-
-    return context
-
-
-def output_detail(request, pk):
-    """
-    This view is the single page of diplaying a progress bar for how
-    close the job is to finishing, and then it will also display the
-    job results if the job is done. Finally, it will render a 'job failed'
-    page if the job has failed.
-    """
-
-    try:
-        url = OutputUrl.objects.get(pk=pk)
-    except OutputUrl.DoesNotExist:
-        raise Http404
-
-    model = url.unique_inputs
-
-    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
-    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
-
-    context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
-                         'webapp_version': webapp_vers_disp}
-    if model.tax_result:
-        # try to render table; if failure render not available page
-        try:
-            context = get_result_context(model, request, url)
-        except Exception as e:
-            print('Exception rendering pk', pk, e)
-            traceback.print_exc()
-            edit_href = '/taxbrain/edit/{}/?start_year={}'.format(
-                pk,
-                model.first_year or START_YEAR  # sometimes first_year is None
-            )
-            not_avail_context = dict(edit_href=edit_href,
-                                     **context_vers_disp)
-            return render(
-                request,
-                'taxbrain/not_avail.html',
-                not_avail_context)
-
-        context.update(context_vers_disp)
-        return render(request, 'taxbrain/results.html', context)
-    elif model.error_text:
-        return render(request, 'taxbrain/failed.html',
-                      {"error_msg": model.error_text.text})
-    else:
-        # if not model.check_hostnames(DROPQ_WORKERS):
-        #     print('bad hostname', model.jobs_not_ready, DROPQ_WORKERS)
-        #     return render_to_response('taxbrain/failed.html')
-        job_ids = model.job_ids
-        jobs_to_check = model.jobs_not_ready
-        if not jobs_to_check:
-            jobs_to_check = job_ids
-
-        try:
-            jobs_ready = dropq_compute.dropq_results_ready(jobs_to_check)
-        except JobFailError as jfe:
-            print(jfe)
-            return render_to_response('taxbrain/failed.html')
-
-        if any(j == 'FAIL' for j in jobs_ready):
-            failed_jobs = [sub_id for (sub_id, job_ready)
-                           in zip(jobs_to_check, jobs_ready)
-                           if job_ready == 'FAIL']
-
-            # Just need the error message from one failed job
-            error_msgs = dropq_compute.dropq_get_results([failed_jobs[0]],
-                                                         job_failure=True)
-            if error_msgs:
-                error_msg = error_msgs[0]
-            else:
-                error_msg = "Error: stack trace for this error is unavailable"
-            val_err_idx = error_msg.rfind("Error")
-            error = ErrorMessageTaxCalculator()
-            error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
-            error.text = error_contents
-            error.save()
-            model.error_text = error
-            model.save()
-            return render(request, 'taxbrain/failed.html',
-                          {"error_msg": error_contents})
-
-        if all(j == 'YES' for j in jobs_ready):
-            results = dropq_compute.dropq_get_results(normalize(job_ids))
-            model.tax_result = results
-            model.creation_date = timezone.now()
-            model.save()
-            context = get_result_context(model, request, url)
-            context.update(context_vers_disp)
-            return render(request, 'taxbrain/results.html', context)
-
-        else:
-            jobs_not_ready = [sub_id for (sub_id, job_ready)
-                              in zip(jobs_to_check, jobs_ready)
-                              if job_ready == 'NO']
-            model.jobs_not_ready = jobs_not_ready
-            model.save()
-            if request.method == 'POST':
-                # if not ready yet, insert number of minutes remaining
-                exp_comp_dt = url.exp_comp_datetime
-                utc_now = timezone.now()
-                dt = exp_comp_dt - utc_now
-                exp_num_minutes = dt.total_seconds() / 60.
-                exp_num_minutes = round(exp_num_minutes, 2)
-                exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
-                if exp_num_minutes > 0:
-                    return JsonResponse({'eta': exp_num_minutes}, status=202)
-                else:
-                    return JsonResponse({'eta': exp_num_minutes}, status=200)
-
-            else:
-                context = {'eta': '100'}
-                context.update(context_vers_disp)
-                return render_to_response(
-                    'taxbrain/not_ready.html',
-                    context,
-                    context_instance=RequestContext(request)
-                )
-
-
-@permission_required('taxbrain.view_inputs')
-def csv_output(request, pk):
-    try:
-        url = OutputUrl.objects.get(pk=pk)
-    except OutputUrl.DoesNotExist:
-        raise Http404
-
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type='text/csv')
-    now = timezone.now()
-    suffix = "".join(map(str, [now.year, now.month, now.day, now.hour,
-                               now.minute, now.second]))
-    filename = "taxbrain_outputs_" + suffix + ".csv"
-    response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
-
-    results = url.unique_inputs.get_tax_result()
-    first_year = url.unique_inputs.first_year
-    csv_results = format_csv(results, pk, first_year)
-    writer = csv.writer(response)
-    for csv_row in csv_results:
-        writer.writerow(csv_row)
-
-    return response
-
-
 @permission_required('taxbrain.view_inputs')
 def csv_input(request, pk):
     try:
@@ -920,17 +651,5 @@ def csv_input(request, pk):
     writer = csv.writer(response)
     writer.writerow(field_names)
     writer.writerow([getattr(inputs, field) for field in field_names])
-
-    return response
-
-
-@permission_required('taxbrain.view_inputs')
-def pdf_view(request):
-    """
-    This view creates the pdfs.
-    """
-    pdf = pdfkit.from_url(request.META['HTTP_REFERER'], False)
-    response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="tax_results.pdf"'
 
     return response

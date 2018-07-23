@@ -7,7 +7,6 @@ from mock import Mock
 import sys
 from ..taxbrain.helpers import default_taxcalc_data
 from ..taxbrain.param_displayers import TaxCalcParam
-from ..taxbrain.compute import GDP_ELAST_ROW_NAMES
 from django.core.mail import send_mail
 
 import taxcalc
@@ -40,6 +39,7 @@ OGUSA_RESULTS_TOTAL_ROW_KEYS = [
 OGUSA_RESULTS_TOTAL_ROW_KEY_LABELS = {
     n: n for n in OGUSA_RESULTS_TOTAL_ROW_KEYS}
 
+GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
 GDP_ELAST_ROW_KEY_LABELS = {
     n: '% Difference in GDP' for n in GDP_ELAST_ROW_NAMES}
 GDP_ELAST_RESULTS_TABLE_LABELS = {

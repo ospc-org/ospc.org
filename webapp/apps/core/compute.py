@@ -66,7 +66,6 @@ class Compute(object):
                            url_template,
                            increment_counter=True,
                            use_wnc_offset=True):
-
         print("hostnames: ", WORKER_HN)
         print("submitting data: ", data_list)
         job_ids = []
@@ -154,6 +153,3 @@ class Compute(object):
                     results[x][name] = (results[x][name] if name in results[x]
                                         else '') + result[x][name]
         return results
-
-    def eta(self, job_ids):
-        return 10

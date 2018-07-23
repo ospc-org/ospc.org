@@ -24,7 +24,6 @@ from .helpers import (get_btax_defaults,
                       group_args_to_btax_depr, hover_args_to_btax_depr,
                       make_bool, convert_val)
 from ..taxbrain.helpers import format_csv, is_wildcard
-from ..taxbrain.views import denormalize, normalize
 from .compute import BTAX_WORKERS, DropqComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP,
@@ -56,6 +55,16 @@ TAXCALC_VERSION = tcversion_info['version']
 
 
 JOB_PROC_TIME_IN_SECONDS = 30
+
+
+def denormalize(x):
+    ans = [str("#".join([i[0], i[1]])) for i in x]
+    return ans
+
+
+def normalize(x):
+    ans = [i.split('#') for i in x]
+    return ans
 
 
 def make_bool_gds_ads(form_btax_input):
