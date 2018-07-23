@@ -62,14 +62,6 @@ TAXCALC_VERSION = tcversion_info['version']
 JOB_PROC_TIME_IN_SECONDS = 35
 
 
-def normalize(x):
-    pass
-
-
-def denormalize(x):
-    pass
-
-
 def log_ip(request):
     """
     Attempt to get the IP address of this request and log it
