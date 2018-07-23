@@ -3,7 +3,7 @@ import sys
 import ast
 import msgpack
 
-from ..taxbrain.compute import MockCompute
+from ..core.compute import MockCompute
 
 from ..taxbrain.models import OutputUrl
 from ..taxbrain.forms import TaxBrainForm

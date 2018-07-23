@@ -1,12 +1,16 @@
+import traceback
+import json
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
 from django.utils import timezone
-from .models import CoreRun
+# from .models import CoreRun
 from ..taxbrain.models import OutputUrl
 from .compute import Compute, JobFailError
 from ..formatters import get_version
 from ..taxbrain.views import TAXCALC_VERSION, WEBAPP_VERSION, dropq_compute
+from ..taxbrain.param_formatters import to_json_reform
+from ..constants import START_YEAR
 from django.shortcuts import (render, render_to_response, get_object_or_404,
                               redirect)
 from django.template.context import RequestContext
@@ -43,21 +47,7 @@ def output_detail(request, pk):
                          'webapp_version': webapp_vers_disp}
     if model.tax_result:
         # try to render table; if failure render not available page
-        try:
-            context = get_result_context(model, request, url)
-        except Exception as e:
-            print('Exception rendering pk', pk, e)
-            traceback.print_exc()
-            edit_href = '/taxbrain/edit/{}/?start_year={}'.format(
-                pk,
-                model.first_year or START_YEAR  # sometimes first_year is None
-            )
-            not_avail_context = dict(edit_href=edit_href,
-                                     **context_vers_disp)
-            return render(
-                request,
-                'taxbrain/not_avail.html',
-                not_avail_context)
+        context = get_result_context(model, request, url)
 
         context.update(context_vers_disp)
         return render(request, 'taxbrain/results.html', context)
@@ -65,8 +55,7 @@ def output_detail(request, pk):
         return render(request, 'taxbrain/failed.html',
                       {"error_msg": model.error_text.text})
     else:
-       job_ids = model.job_ids
-
+        job_ids = model.job_ids
         try:
             jobs_ready = dropq_compute.results_ready(job_ids)
         except JobFailError as jfe:
