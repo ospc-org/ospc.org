@@ -586,39 +586,6 @@ def elastic_results(request, pk):
                     context_instance=RequestContext(request))
 
 
-def ogusa_results(request, pk):
-    """
-    This view handles the results page.
-    """
-    try:
-        url = DynamicOutputUrl.objects.get(pk=pk)
-    except BaseException:
-        raise Http404
-
-    output = url.unique_inputs.tax_result
-    first_year = url.unique_inputs.first_year
-    created_on = url.unique_inputs.creation_date
-    tables = ogusa_results_to_tables(output, first_year)
-    microsim_url = "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
-
-    ogusa_vers_disp = get_version(url, 'ogusa_vers', OGUSA_VERSION)
-    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
-    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
-
-    context = {
-        'locals': locals(),
-        'unique_url': url,
-        'ogusa_version': ougsa_vers_display,
-        'webapp_version': webapp_vers_disp,
-        'taxcalc_vers': taxcalc_vers_disp,
-        'tables': tables,
-        'created_on': created_on,
-        'first_year': first_year,
-        'microsim_url': microsim_url
-    }
-
-    return render(request, 'dynamic/results.html', context)
-
 def behavior_results(request, pk):
     """
     This view is the single page of diplaying a progress bar for how

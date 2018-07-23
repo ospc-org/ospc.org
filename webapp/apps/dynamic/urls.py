@@ -1,13 +1,11 @@
 from django.conf.urls import url
 
-from .views import (
-                    ogusa_results, dynamic_landing, dynamic_behavioral,
+from .views import (dynamic_landing, dynamic_behavioral,
                     behavior_results, edit_dynamic_behavioral, elastic_results,
                     dynamic_elasticities, edit_dynamic_elastic)
 
 
 urlpatterns = [
-    url(r'^results/(?P<pk>\d+)/', ogusa_results, name='ogusa_results'),
     url(r'^(?P<pk>\d+)/', dynamic_landing, name='dynamic_landing'),
     url(r'^behavioral/(?P<pk>\d+)/', dynamic_behavioral,
         name='dynamic_behavioral'),
