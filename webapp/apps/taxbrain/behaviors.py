@@ -152,10 +152,9 @@ class Hostnameable(models.Model):
         Make sure all hostnames are valid before posting to/getting data from
         them
         """
-        if self.jobs_not_ready is None:
+        if self.job_ids is None:
             return True
-        for id in self.jobs_not_ready:
-            hn = id.split('#')[1]
-            if hn not in current_hostnames:
+        for id in self.job_ids:
+            if id not in current_hostnames:
                 return False
         return True

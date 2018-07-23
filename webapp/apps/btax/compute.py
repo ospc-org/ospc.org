@@ -4,10 +4,7 @@ from ..taxbrain.compute import (DropqCompute,
                                 MockCompute,
                                 MockFailedCompute,
                                 NodeDownCompute,
-                                JobFailError,
-                                ENFORCE_REMOTE_VERSION_CHECK,
-                                TIMEOUT_IN_SECONDS,
-                                dropq_version)
+                                JobFailError)
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 btax_workers = os.environ.get('BTAX_WORKERS', '')

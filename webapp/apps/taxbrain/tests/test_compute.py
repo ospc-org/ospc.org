@@ -31,6 +31,6 @@ class ComputeTests(TestCase):
             'param1': {'stuff': {'more stuff': 1, 2: 'other stuff'}},
             'param2': {'params': 'values'}
         }
-        self.dropq_compute.submit_calculation(
+        self.dropq_compute.submit(
             data, 'http://{hn}/dropq_start_job'
         )
