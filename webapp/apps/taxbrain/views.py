@@ -808,7 +808,7 @@ def output_detail(request, pk):
                           {"error_msg": error_contents})
 
         if all(j == 'YES' for j in jobs_ready):
-            results = dropq_compute.dropq_get_results(job_ids)
+            results = dropq_compute.get_results(job_ids)
             model.tax_result = results
             model.creation_date = timezone.now()
             model.save()
@@ -817,8 +817,6 @@ def output_detail(request, pk):
             return render(request, 'taxbrain/results.html', context)
 
         else:
-            model.job_ids = job_ids
-            model.save()
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
                 exp_comp_dt = url.exp_comp_datetime

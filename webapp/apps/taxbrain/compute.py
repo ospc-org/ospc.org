@@ -68,10 +68,10 @@ class DropqCompute(object):
         return self.submit(data, url_template)
 
     def submit(self,
-                           data_list,
-                           url_template,
-                           increment_counter=True,
-                           use_wnc_offset=True):
+               data_list,
+               url_template,
+               increment_counter=True,
+               use_wnc_offset=True):
 
         print("hostnames: ", WORKER_HN)
         print("submitting data: ", data_list)
@@ -148,7 +148,7 @@ class DropqCompute(object):
                     raise ValueError(msg)
         return ans
 
-    def dropq_get_results(self, job_ids, job_failure=False):
+    def get_results(self, job_ids, job_failure=False):
         if job_failure:
             return self._get_results_base(job_ids, job_failure=job_failure)
 
