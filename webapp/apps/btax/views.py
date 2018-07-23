@@ -411,7 +411,6 @@ def output_detail(request, pk):
             return render_to_response('taxbrain/failed.html')
 
         if any(j == 'FAIL' for j in jobs_ready):
-            print('failed...')
             failed_jobs = [sub_id for (sub_id, job_ready)
                            in zip(job_ids, jobs_ready)
                            if job_ready == 'FAIL']
