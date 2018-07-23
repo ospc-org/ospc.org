@@ -62,10 +62,9 @@ class DropqComputeBtax(DropqCompute):
         data['user_mods'] = user_mods
         data['start_year'] = int(first_budget_year)
         print('submitting btax data:', data)
-        return self.submit_calculation([data], url_template,
-                                       workers=BTAX_WORKERS,
-                                       increment_counter=False,
-                                       use_wnc_offset=False)
+        return self.submit([data], url_template,
+                           increment_counter=False,
+                           use_wnc_offset=False)
 
     def btax_get_results(self, job_ids, job_failure=False):
         return self._get_results_base(job_ids, job_failure=job_failure)
