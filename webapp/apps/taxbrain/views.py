@@ -784,7 +784,7 @@ def output_detail(request, pk):
 
             # Just need the error message from one failed job
             error_msgs = dropq_compute.get_results([failed_jobs[0]],
-                                                         job_failure=True)
+                                                   job_failure=True)
             if error_msgs:
                 error_msg = error_msgs[0]
             else:

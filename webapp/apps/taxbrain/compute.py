@@ -5,6 +5,7 @@ import msgpack
 from requests.exceptions import RequestException, Timeout
 import requests_mock
 import taxcalc
+from .helpers import arrange_totals_by_row
 
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
@@ -18,9 +19,9 @@ TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
 BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
 
-from .helpers import arrange_totals_by_row
 AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
 GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
+
 
 class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''
@@ -60,8 +61,7 @@ class DropqCompute(object):
     def submit_quick_calculation(self, data):
         url_template = "http://{hn}" + DROPQ_SMALL_URL
         return self.submit(data, url_template,
-                                       increment_counter=False
-                                       )
+                           increment_counter=False)
 
     def submit_elastic_calculation(self, data):
         url_template = "http://{hn}/elastic_gdp_start_job"
@@ -171,19 +171,6 @@ class DropqCompute(object):
             for name in results:
                 results[name].update(result[name])
 
-        # if ENFORCE_REMOTE_VERSION_CHECK:
-        #     versions = [r.get('taxcalc_version', None) for r in ans]
-        #     if not all([ver == taxcalc_version for ver in versions]):
-        #         msg = ("Got different taxcalc versions from workers. "
-        #                "Bailing out")
-        #         print(msg)
-        #         raise IOError(msg)
-        #     versions = [r.get('dropq_version', None) for r in ans]
-        #     if not all([same_version(ver, dropq_version) for ver in versions]):
-        #         msg = "Got different dropq versions from workers. Bailing out"
-        #         print(msg)
-        #         raise IOError(msg)
-
         results['aggr_d'] = arrange_totals_by_row(results['aggr_d'],
                                                   AGG_ROW_NAMES)
 
@@ -195,8 +182,6 @@ class DropqCompute(object):
 
         return results
 
-    def eta(self, job_ids):
-        return 10
 
 class MockCompute(DropqCompute):
 
