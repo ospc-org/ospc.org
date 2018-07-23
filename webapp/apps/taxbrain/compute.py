@@ -116,11 +116,7 @@ class DropqCompute(object):
                 result_url, params={'job_id': job_id})
             msg = '{0} failed on host: {1}'.format(job_id, WORKER_HN)
             if job_response.status_code == 200:  # Valid response
-                rep = job_response.text
-                if rep == 'YES':
-                    jobs_done.append('YES')
-                else:
-                    jobs_done.append('NO')
+                jobs_done.append(job_response.text)
             else:
                 print(
                     'did not expect response with status_code',
