@@ -3,7 +3,7 @@ import sys
 import ast
 import msgpack
 
-from ..core.compute import MockCompute
+from ..taxbrain.mock_compute import MockCompute
 
 from ..taxbrain.models import OutputUrl
 from ..taxbrain.forms import TaxBrainForm
@@ -21,6 +21,10 @@ def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
 
     returns: mocked dropq compute object
     """
+    # Temporary hack
+    if module_import_path == "webapp.apps.taxbrain.views":
+        get_dropq_compute_from_module("webapp.apps.core.views", attr,
+                                      MockComputeObj, **mc_args)
     module_views = sys.modules[module_import_path]
     setattr(module_views, attr, MockComputeObj(**mc_args))
     return getattr(module_views, attr)

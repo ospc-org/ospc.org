@@ -8,8 +8,9 @@ import msgpack
 from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                        format_csv, arrange_totals_by_row, default_taxcalc_data)
-from ...core.compute import (Compute, MockCompute, MockFailedCompute,
-                             NodeDownCompute, MockFailedComputeOnOldHost)
+from ...core.compute import Compute
+from ..mock_compute import (MockCompute, MockFailedCompute,
+                            NodeDownCompute, MockFailedComputeOnOldHost)
 from ...core.views import get_result_context
 import taxcalc
 

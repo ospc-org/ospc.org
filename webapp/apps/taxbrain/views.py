@@ -2,7 +2,6 @@ import csv
 import pdfkit
 import json
 import os
-import traceback
 
 
 from mock import Mock
@@ -28,8 +27,9 @@ from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
-from ..core.compute import (Compute, MockCompute, JobFailError,
+from ..core.compute import (Compute, JobFailError,
                             NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK)
+from .mock_compute import MockCompute
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
