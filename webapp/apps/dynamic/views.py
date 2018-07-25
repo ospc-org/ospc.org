@@ -22,8 +22,7 @@ from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
 from ..taxbrain.models import (TaxSaveInputs, OutputUrl,
-                               ErrorMessageTaxCalculator,
-                               JSONReformTaxCalculator)
+                               ErrorMessageTaxCalculator)
 from ..taxbrain.views import (make_bool, dropq_compute,
                               JOB_PROC_TIME_IN_SECONDS)
 from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
@@ -32,6 +31,7 @@ from ..taxbrain.helpers import (taxcalc_results_to_tables,
                                 convert_val, json_int_key_encode)
 from ..taxbrain.param_displayers import default_behavior
 from ..core.compute import JobFailError
+from ..core.models import JSONReformTaxCalculator
 from .helpers import (default_parameters, job_submitted,
                       ogusa_results_to_tables, success_text,
                       failure_text, strip_empty_lists,

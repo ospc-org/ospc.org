@@ -22,13 +22,13 @@ from django.template.context import RequestContext
 from django.contrib.auth.models import User
 
 from .forms import TaxBrainForm
-from .models import (TaxSaveInputs, OutputUrl, JSONReformTaxCalculator,
-                     ErrorMessageTaxCalculator)
+from .models import TaxSaveInputs
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
 from ..core.compute import (Compute, JobFailError,
                             NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK)
+from ..core.models import CoreRun, JSONReformTaxCalculator
 from .mock_compute import MockCompute
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
@@ -84,7 +84,6 @@ def save_model(post_meta):
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
-    model.job_ids = post_meta.submitted_ids
     model.json_text = post_meta.json_reform
     model.first_year = int(post_meta.start_year)
     model.data_source = post_meta.data_source
@@ -93,22 +92,24 @@ def save_model(post_meta):
 
     # create OutputUrl object
     if post_meta.url is None:
-        unique_url = OutputUrl()
+        unique_url = CoreRun()
+        unique_url.job_ids = post_meta.submitted_ids
+        unique_url.inputs = model
+        unique_url.save()
     else:
-        unique_url = post_meta.url
+        raise Exception("not implemented")
+
     if post_meta.user:
         unique_url.user = post_meta.user
     elif post_meta.request and post_meta.request.user.is_authenticated():
         current_user = User.objects.get(pk=post_meta.request.user.id)
         unique_url.user = current_user
 
-    if unique_url.taxcalc_vers is None:
-        unique_url.taxcalc_vers = TAXCALC_VERSION
-    if unique_url.webapp_vers is None:
-        unique_url.webapp_vers = WEBAPP_VERSION
+    # if unique_url.taxcalc_vers is None:
+    #     unique_url.taxcalc_vers = TAXCALC_VERSION
+    # if unique_url.webapp_vers is None:
+    #     unique_url.webapp_vers = WEBAPP_VERSION
 
-    unique_url.unique_inputs = model
-    unique_url.model_pk = model.pk
     cur_dt = timezone.now()
     future_offset_seconds = ((2 + post_meta.max_q_length) *
                              JOB_PROC_TIME_IN_SECONDS)

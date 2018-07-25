@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 import datetime
 from django.utils.timezone import make_aware
+from ..core.models import CoreInputs, CoreRun, SeparatedValuesField
 
 import taxcalc
 
@@ -38,58 +39,6 @@ class CommaSeparatedField(models.CharField):
         return name, path, args, kwargs
 
 
-class SeparatedValuesField(models.TextField):
-
-    def __init__(self, *args, **kwargs):
-        self.token = kwargs.pop('token', ',')
-        super(SeparatedValuesField, self).__init__(*args, **kwargs)
-
-    def to_python(self, value):
-        if not value:
-            return
-        if isinstance(value, list):
-            return value
-        return value.split(self.token)
-
-    def get_db_prep_value(self, value, connection=None, prepared=False):
-        if not value:
-            return
-        assert(isinstance(value, list) or isinstance(value, tuple))
-        return self.token.join([str(s) for s in value])
-
-    def value_to_string(self, obj):
-        value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
-
-    def from_db_value(self, value, expression, connection, context):
-        return self.to_python(value)
-
-
-class JSONReformTaxCalculator(models.Model):
-    '''
-    This class holds all of the text for a JSON-based reform input
-    for TaxBrain. A TaxSavesInput Model will have a foreign key to
-    an instance of this model if the user created the TaxBrain job
-    through the JSON iput page.
-    '''
-    reform_text = models.TextField(blank=True, null=False)
-    raw_reform_text = models.TextField(blank=True, null=False)
-    assumption_text = models.TextField(blank=True, null=False)
-    raw_assumption_text = models.TextField(blank=True, null=False)
-    errors_warnings_text = models.TextField(blank=True, null=False)
-
-    def get_errors_warnings(self):
-        """
-        Errors were only stored for the taxcalc.Policy class until PB 1.6.0
-        This method ensures that old runs are parsed correctly
-        """
-        ew = json.loads(self.errors_warnings_text)
-        if 'errors' in ew:
-            return {'policy': ew}
-        else:
-            return ew
-
-
 class ErrorMessageTaxCalculator(models.Model):
     '''
     This class holds all of the text for an error message on
@@ -100,8 +49,7 @@ class ErrorMessageTaxCalculator(models.Model):
     text = models.CharField(blank=True, null=False, max_length=4000)
 
 
-class TaxSaveInputs(DataSourceable, Fieldable, Resultable,
-                    models.Model):
+class TaxSaveInputs(DataSourceable, Fieldable, Resultable, CoreInputs):
     """
     This model contains all the parameters for the tax model and the tax
     result.
@@ -889,15 +837,6 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable,
     factor_target = CommaSeparatedField(default=None, blank=True, null=True)
     growth_choice = models.CharField(blank=True, default=None, null=True,
                                      max_length=50)
-    # Job IDs when running a job
-    job_ids = SeparatedValuesField(blank=True, default=None, null=True)
-    jobs_not_ready = SeparatedValuesField(blank=True, default=None, null=True)
-
-    # Starting Year of the reform calculation
-    first_year = models.IntegerField(default=None, null=True)
-
-    # Record whether or not this was a quick calculation on a sample of data
-    quick_calc = models.BooleanField(default=False)
 
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up
@@ -919,36 +858,11 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable,
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
 
-    # # raw gui input
-    raw_input_fields = JSONField(default=None, blank=True, null=True)
-    #
-    # # validated gui input
-    input_fields = JSONField(default=None, blank=True, null=True)
-
     # deprecated fields list
     deprecated_fields = ArrayField(
         models.CharField(max_length=100, blank=True),
         blank=True,
         null=True
-    )
-
-    # JSON input text
-    json_text = models.ForeignKey(
-        JSONReformTaxCalculator,
-        null=True,
-        default=None,
-        blank=True)
-
-    # Error text
-    error_text = models.ForeignKey(
-        ErrorMessageTaxCalculator,
-        null=True,
-        default=None,
-        blank=True)
-
-    # Creation DateTime
-    creation_date = models.DateTimeField(
-        default=make_aware(datetime.datetime(2015, 1, 1))
     )
 
     def get_tax_result(self):

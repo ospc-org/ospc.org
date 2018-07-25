@@ -4,12 +4,12 @@ from django.http import JsonResponse
 import json
 from django.utils import timezone
 # from .models import CoreRun
-from ..taxbrain.models import OutputUrl
+from .models import CoreRun
 from .compute import Compute, JobFailError
 from ..formatters import get_version
 from ..taxbrain.views import TAXCALC_VERSION, WEBAPP_VERSION, dropq_compute
 from ..taxbrain.param_formatters import to_json_reform
-from ..taxbrain.models import ErrorMessageTaxCalculator
+from ..taxbrain.models import TaxSaveInputs
 from django.shortcuts import (render, render_to_response, get_object_or_404,
                               redirect)
 from django.template.context import RequestContext
@@ -32,35 +32,20 @@ def output_detail(request, pk):
           case 3b: not all jobs have completed
     """
 
-    try:
-        url = OutputUrl.objects.get(pk=pk)
-    except OutputUrl.DoesNotExist:
-        raise Http404
+    model = get_object_or_404(CoreRun, uuid=pk)
 
-    model = url.unique_inputs
-
-    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
-    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
-
-    context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
-                         'webapp_version': webapp_vers_disp}
-    if model.tax_result:
-        # try to render table; if failure render not available page
-        context = get_result_context(model, request, url)
-
-        context.update(context_vers_disp)
+    if model.renderable_outputs:
+        context = get_result_context(model, request)
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
         return render(request, 'taxbrain/failed.html',
-                      {"error_msg": model.error_text.text})
+                      {"error_msg": model.error_text})
     else:
         job_ids = model.job_ids
         try:
             jobs_ready = dropq_compute.results_ready(job_ids)
         except JobFailError as jfe:
-            print(jfe)
             return render_to_response('taxbrain/failed.html')
-        print(job_ids)
         if any(j == 'FAIL' for j in jobs_ready):
             failed_jobs = [sub_id for (sub_id, job_ready)
                            in zip(job_ids, jobs_ready)
@@ -74,28 +59,24 @@ def output_detail(request, pk):
             else:
                 error_msg = "Error: stack trace for this error is unavailable"
             val_err_idx = error_msg.rfind("Error")
-            error = ErrorMessageTaxCalculator()
             error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
-            error.text = error_contents
-            error.save()
-            model.error_text = error
+            model.error_text = error_contents
             model.save()
             return render(request, 'taxbrain/failed.html',
                           {"error_msg": error_contents})
 
         if all(j == 'YES' for j in jobs_ready):
             results = dropq_compute.get_results(job_ids)
-            model.tax_result = results
+            model.renderable_outputs = results['renderable']
+            model.download_only_outputs = results['download_only']
             model.creation_date = timezone.now()
             model.save()
-            context = get_result_context(model, request, url)
-            context.update(context_vers_disp)
+            context = get_result_context(model, request)
             return render(request, 'taxbrain/results.html', context)
-
         else:
             if request.method == 'POST':
                 # if not ready yet, insert number of minutes remaining
-                exp_comp_dt = url.exp_comp_datetime
+                exp_comp_dt = model.exp_comp_datetime
                 utc_now = timezone.now()
                 dt = exp_comp_dt - utc_now
                 exp_num_minutes = dt.total_seconds() / 60.
@@ -108,7 +89,6 @@ def output_detail(request, pk):
 
             else:
                 context = {'eta': '100'}
-                context.update(context_vers_disp)
                 return render_to_response(
                     'taxbrain/not_ready.html',
                     context,
@@ -116,22 +96,23 @@ def output_detail(request, pk):
                 )
 
 
-def get_result_context(model, request, url):
-    output = model.get_tax_result()
-    first_year = model.first_year
-    quick_calc = model.quick_calc
-    created_on = model.creation_date
+def get_result_context(model, request):
+    inputs = model.inputs
+    first_year = inputs.first_year
+    quick_calc = inputs.quick_calc
+    created_on = inputs.creation_date
 
-    is_from_file = not model.raw_input_fields
+    is_from_file = not inputs.raw_input_fields
 
-    if (model.json_text is not None and (model.json_text.raw_reform_text or
-                                         model.json_text.raw_assumption_text)):
-        reform_file_contents = model.json_text.raw_reform_text
+    if (inputs.json_text is not None and
+        (inputs.json_text.raw_reform_text or
+         inputs.json_text.raw_assumption_text)):
+        reform_file_contents = inputs.json_text.raw_reform_text
         reform_file_contents = reform_file_contents.replace(" ", "&nbsp;")
-        assump_file_contents = model.json_text.raw_assumption_text
+        assump_file_contents = inputs.json_text.raw_assumption_text
         assump_file_contents = assump_file_contents.replace(" ", "&nbsp;")
-    elif model.input_fields is not None:
-        reform = to_json_reform(first_year, model.input_fields)
+    elif inputs.input_fields is not None:
+        reform = to_json_reform(first_year, inputs.input_fields)
         reform_file_contents = json.dumps(reform, indent=4)
         assump_file_contents = '{}'
     else:
@@ -143,7 +124,7 @@ def get_result_context(model, request, url):
 
     context = {
         'locals': locals(),
-        'unique_url': url,
+        'unique_url': model,
         'created_on': created_on,
         'first_year': first_year,
         'quick_calc': quick_calc,
@@ -154,13 +135,9 @@ def get_result_context(model, request, url):
         'dynamic_file_contents': None,
         'is_from_file': is_from_file,
         'allow_dyn_links': not is_from_file,
-        'results_type': "static"
+        'results_type': "static",
+        'renderable': model.renderable_outputs.values()
+        # 'download_only': model.download_only_outputs.values()
     }
-
-    if 'renderable' in output:
-        context.update({
-            'renderable': output['renderable'].values(),
-            # 'download_only': output['download_only']
-        })
 
     return context
