@@ -28,7 +28,7 @@ from .helpers import (taxcalc_results_to_tables, format_csv,
 from .param_displayers import nested_form_parameters
 from ..core.compute import (Compute, JobFailError,
                             NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK)
-from ..core.models import CoreRun, JSONReformTaxCalculator
+from ..taxbrain.models import TaxBrainRun, JSONReformTaxCalculator
 from .mock_compute import MockCompute
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
@@ -92,7 +92,7 @@ def save_model(post_meta):
 
     # create OutputUrl object
     if post_meta.url is None:
-        unique_url = CoreRun()
+        unique_url = TaxBrainRun()
         unique_url.job_ids = post_meta.submitted_ids
         unique_url.inputs = model
         unique_url.save()

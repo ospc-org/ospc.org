@@ -39,6 +39,31 @@ class CommaSeparatedField(models.CharField):
         return name, path, args, kwargs
 
 
+class JSONReformTaxCalculator(models.Model):
+    '''
+    This class holds all of the text for a JSON-based reform input
+    for TaxBrain. A TaxSavesInput Model will have a foreign key to
+    an instance of this model if the user created the TaxBrain job
+    through the JSON iput page.
+    '''
+    reform_text = models.TextField(blank=True, null=False)
+    raw_reform_text = models.TextField(blank=True, null=False)
+    assumption_text = models.TextField(blank=True, null=False)
+    raw_assumption_text = models.TextField(blank=True, null=False)
+    errors_warnings_text = models.TextField(blank=True, null=False)
+
+    def get_errors_warnings(self):
+        """
+        Errors were only stored for the taxcalc.Policy class until PB 1.6.0
+        This method ensures that old runs are parsed correctly
+        """
+        ew = json.loads(self.errors_warnings_text)
+        if 'errors' in ew:
+            return {'policy': ew}
+        else:
+            return ew
+
+
 class ErrorMessageTaxCalculator(models.Model):
     '''
     This class holds all of the text for an error message on
@@ -838,6 +863,12 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable, CoreInputs):
     growth_choice = models.CharField(blank=True, default=None, null=True,
                                      max_length=50)
 
+    # Starting Year of the reform calculation
+    first_year = models.IntegerField(default=None, null=True)
+
+    # Record whether or not this was a quick calculation on a sample of data
+    quick_calc = models.BooleanField(default=False)
+
     # generate fields from default param data
     # this may eventually be useful if we're able to ensure syncdb picks up
     # field changes and automatically create migrations
@@ -858,11 +889,29 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable, CoreInputs):
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
 
+    # # raw gui input
+    raw_input_fields = JSONField(default=None, blank=True, null=True)
+    #
+    # # validated gui input
+    input_fields = JSONField(default=None, blank=True, null=True)
+
     # deprecated fields list
     deprecated_fields = ArrayField(
         models.CharField(max_length=100, blank=True),
         blank=True,
         null=True
+    )
+
+    # JSON input text
+    json_text = models.ForeignKey(
+        JSONReformTaxCalculator,
+        null=True,
+        default=None,
+        blank=True)
+
+    # Creation DateTime
+    creation_date = models.DateTimeField(
+        default=make_aware(datetime.datetime(2015, 1, 1))
     )
 
     def get_tax_result(self):
@@ -923,6 +972,10 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable, CoreInputs):
         permissions = (
             ("view_inputs", "Allowed to view Taxbrain."),
         )
+
+
+class TaxBrainRun(CoreRun):
+    inputs = models.OneToOneField(TaxSaveInputs)
 
 
 class OutputUrl(models.Model):

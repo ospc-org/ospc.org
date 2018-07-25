@@ -33,57 +33,14 @@ class SeparatedValuesField(models.TextField):
         return self.to_python(value)
 
 
-class JSONReformTaxCalculator(models.Model):
-    '''
-    This class holds all of the text for a JSON-based reform input
-    for TaxBrain. A TaxSavesInput Model will have a foreign key to
-    an instance of this model if the user created the TaxBrain job
-    through the JSON iput page.
-    '''
-    reform_text = models.TextField(blank=True, null=False)
-    raw_reform_text = models.TextField(blank=True, null=False)
-    assumption_text = models.TextField(blank=True, null=False)
-    raw_assumption_text = models.TextField(blank=True, null=False)
-    errors_warnings_text = models.TextField(blank=True, null=False)
-
-    def get_errors_warnings(self):
-        """
-        Errors were only stored for the taxcalc.Policy class until PB 1.6.0
-        This method ensures that old runs are parsed correctly
-        """
-        ew = json.loads(self.errors_warnings_text)
-        if 'errors' in ew:
-            return {'policy': ew}
-        else:
-            return ew
-
-
 class CoreInputs(models.Model):
-    # Starting Year of the reform calculation
-    first_year = models.IntegerField(default=None, null=True)
-    # JSON input text
-    json_text = models.ForeignKey(
-        JSONReformTaxCalculator,
-        null=True,
-        default=None,
-        blank=True)
-    # Record whether or not this was a quick calculation on a sample of data
-    quick_calc = models.BooleanField(default=False)
-    # Creation DateTime
-    creation_date = models.DateTimeField(
-        default=make_aware(datetime.datetime(2015, 1, 1))
-    )
-    # validated gui input
-    input_fields = JSONField(default=None, blank=True, null=True)
-    # raw gui input
-    raw_input_fields = JSONField(default=None, blank=True, null=True)
+    class Meta:
+        abstract = True
 
 
 class CoreRun(models.Model):
-    inputs = models.OneToOneField(
-        CoreInputs,
-        on_delete=models.CASCADE
-    )
+    # Subclasses must implement:
+    # inputs = models.OneToOneField(CoreInputs)
     renderable_outputs = JSONField(default=None, blank=True, null=True)
     download_only_outputs = JSONField(default=None, blank=True, null=True)
     uuid = models.UUIDField(
@@ -106,3 +63,6 @@ class CoreRun(models.Model):
             'pk': self.pk
         }
         return reverse('output_detail', kwargs=kwargs)
+
+    class Meta:
+        abstract = True

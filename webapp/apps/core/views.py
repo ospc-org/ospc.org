@@ -3,7 +3,6 @@ from django.http import JsonResponse
 
 import json
 from django.utils import timezone
-# from .models import CoreRun
 from .models import CoreRun
 from .compute import Compute, JobFailError
 from ..formatters import get_version
@@ -15,7 +14,7 @@ from django.shortcuts import (render, render_to_response, get_object_or_404,
 from django.template.context import RequestContext
 
 
-def output_detail(request, pk):
+def output_detail(request, pk, model_class=CoreRun):
     """
     This view is the single page of diplaying a progress bar for how
     close the job is to finishing, and then it will also display the
@@ -32,7 +31,7 @@ def output_detail(request, pk):
           case 3b: not all jobs have completed
     """
 
-    model = get_object_or_404(CoreRun, uuid=pk)
+    model = get_object_or_404(model_class, uuid=pk)
 
     if model.renderable_outputs:
         context = get_result_context(model, request)
