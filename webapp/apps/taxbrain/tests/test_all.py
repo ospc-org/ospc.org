@@ -1,6 +1,5 @@
 from django.test import TestCase
 
-from ..models import WorkerNodesCounter
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                        format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ..param_displayers import default_policy
@@ -10,45 +9,6 @@ import taxcalc
 import pytest
 
 FBY = 2015
-
-
-@pytest.mark.django_db
-def test_compute():
-    assert compute
-    compute.DROPQ_WORKERS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    compute.NUM_BUDGET_YEARS = 5
-    wnc, created = WorkerNodesCounter.objects.get_or_create(
-        singleton_enforce=1)
-    dropq_worker_offset = wnc.current_offset
-    hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-                                      dropq_worker_offset +
-                                      compute.NUM_BUDGET_YEARS]
-    assert hostnames == [1, 2, 3, 4, 5]
-    wnc.current_offset = ((dropq_worker_offset + compute.NUM_BUDGET_YEARS) %
-                          len(compute.DROPQ_WORKERS))
-    wnc.save()
-
-    assert wnc.current_offset == 5
-    dropq_worker_offset = wnc.current_offset
-    hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-                                      dropq_worker_offset +
-                                      compute.NUM_BUDGET_YEARS]
-    assert hostnames == [6, 7, 8, 9, 10]
-    wnc.current_offset = ((dropq_worker_offset + compute.NUM_BUDGET_YEARS) %
-                          len(compute.DROPQ_WORKERS))
-    wnc.save()
-
-    assert wnc.current_offset == 0
-    dropq_worker_offset = wnc.current_offset
-    hostnames = compute.DROPQ_WORKERS[dropq_worker_offset:
-                                      dropq_worker_offset +
-                                      compute.NUM_BUDGET_YEARS]
-    assert hostnames == [1, 2, 3, 4, 5]
-    # Reset to original values
-    compute.DROPQ_WORKERS = ['localhost:5050']
-    wnc.current_offset = 0
-    wnc.save()
-    compute.NUM_BUDGET_YEARS = 2
 
 
 def test_convert_val():

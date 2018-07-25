@@ -5,7 +5,7 @@ import pytest
 import os
 import msgpack
 
-from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
+from ..models import TaxSaveInputs, OutputUrl
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                        format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ...core.compute import Compute
@@ -78,18 +78,8 @@ class TestTaxBrainViews(object):
         data['II_em'] = ['4333']
         data['ID_AmountCap_Switch_0'] = ['0']
         data['data_source'] = data_source
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        current_dropq_worker_offset = wnc.current_offset
 
         result = do_micro_sim(CLIENT, data, compute_count=1)
-
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        next_dropq_worker_offset = wnc.current_offset
-
-        # Check that quick calc does not advance the counter
-        assert current_dropq_worker_offset == next_dropq_worker_offset
 
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
@@ -126,9 +116,6 @@ class TestTaxBrainViews(object):
         data = get_file_post_data(START_YEAR, self.r1, quick_calc=False)
         data.pop('data_source')
         data.pop('start_year')
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        current_dropq_worker_offset = wnc.current_offset
 
         post_url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(
             START_YEAR, data_source)
@@ -139,13 +126,6 @@ class TestTaxBrainViews(object):
             compute_count=1,
             post_url=post_url
         )
-
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        next_dropq_worker_offset = wnc.current_offset
-
-        # Check that quick calc does not advance the counter
-        assert current_dropq_worker_offset == next_dropq_worker_offset
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
@@ -798,6 +778,7 @@ class TestTaxBrainViews(object):
         'start_year,start_year_is_none',
         [(2018, False), (2017, True)]
     )
+    @pytest.mark.xfail  # Feature removed in new outputs module
     def test_get_not_avail_page_renders(self, start_year, start_year_is_none):
         """
         Make sure not_avail.html page is rendered if exception is thrown

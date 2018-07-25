@@ -1011,18 +1011,6 @@ class TaxSaveInputs(DataSourceable, Fieldable, Resultable,
         )
 
 
-class WorkerNodesCounter(models.Model):
-    '''
-    This class specifies a counter for which set of worker nodes we have
-    just deployed a TaxBrain job to. It is a singleton class to enforce
-    round robin behavior with multiple dynos running simultaneously. The
-    database becomes the single source of truth for which set of nodes
-    just got the last dispatch
-    '''
-    singleton_enforce = models.IntegerField(default=1, unique=True)
-    current_offset = models.IntegerField(default=0)
-
-
 class OutputUrl(models.Model):
     """
     This model creates a unique url for each calculation.

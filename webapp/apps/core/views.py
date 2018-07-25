@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 
+import json
 from django.utils import timezone
 # from .models import CoreRun
 from ..taxbrain.models import OutputUrl
@@ -8,7 +9,7 @@ from .compute import Compute, JobFailError
 from ..formatters import get_version
 from ..taxbrain.views import TAXCALC_VERSION, WEBAPP_VERSION, dropq_compute
 from ..taxbrain.param_formatters import to_json_reform
-from ..constants import START_YEAR
+from ..taxbrain.models import ErrorMessageTaxCalculator
 from django.shortcuts import (render, render_to_response, get_object_or_404,
                               redirect)
 from django.template.context import RequestContext

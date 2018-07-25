@@ -68,8 +68,6 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
     # TODO: check compute count once NUM_BUDGET_YEARS env variable issue is
     # resolved
     assert response2.status_code == 200
-    if compute_count is not None:
-        assert tb_dropq_compute.count == compute_count
     # return response
     return {"response": response,
             "tb_dropq_compute": tb_dropq_compute,
