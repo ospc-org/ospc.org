@@ -93,11 +93,11 @@ def save_model(post_meta):
     # create OutputUrl object
     if post_meta.url is None:
         unique_url = TaxBrainRun()
-        unique_url.job_ids = post_meta.submitted_ids
-        unique_url.inputs = model
-        unique_url.save()
     else:
-        raise Exception("not implemented")
+        unique_url = post_meta.url
+    unique_url.job_ids = post_meta.submitted_ids
+    unique_url.inputs = model
+    unique_url.save()
 
     if post_meta.user:
         unique_url.user = post_meta.user
@@ -496,12 +496,9 @@ def submit_micro(request, pk):
     job after one has submitted parameters for a 'quick calculation'
     """
     # TODO: get this function to work with process_reform
-    try:
-        url = OutputUrl.objects.get(pk=pk)
-    except BaseException:
-        raise Http404
+    url = get_object_or_404(TaxBrainRun, pk=pk)
 
-    model = url.unique_inputs
+    model = url.inputs
     start_year = model.start_year
     # This will be a new model instance so unset the primary key
     model.pk = None
@@ -580,12 +577,9 @@ def edit_personal_results(request, pk):
     """
     This view handles the editing of previously entered inputs
     """
-    try:
-        url = OutputUrl.objects.get(pk=pk)
-    except OutputUrl.DoesNotExist:
-        raise Http404
+    url = get_object_or_404(TaxBrainRun, pk=pk)
 
-    model = url.unique_inputs
+    model = url.inputs
     start_year = model.first_year
     model.set_fields()
 
@@ -601,14 +595,14 @@ def edit_personal_results(request, pk):
         for dep in model.deprecated_fields:
             form_personal_exemp.add_error(None, msg.format(dep))
 
-    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
-    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+    # taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    # webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
 
     init_context = {
         'form': form_personal_exemp,
         'params': nested_form_parameters(int(form_personal_exemp._first_year)),
-        'taxcalc_version': taxcalc_vers_disp,
-        'webapp_version': webapp_vers_disp,
+        # 'taxcalc_version': taxcalc_vers_disp,
+        # 'webapp_version': webapp_vers_disp,
         'start_years': START_YEARS,
         'start_year': str(form_personal_exemp._first_year),
         'is_edit_page': True,
@@ -622,10 +616,7 @@ def edit_personal_results(request, pk):
 
 @permission_required('taxbrain.view_inputs')
 def csv_input(request, pk):
-    try:
-        url = OutputUrl.objects.get(pk=pk)
-    except OutputUrl.DoesNotExist:
-        raise Http404
+    url = get_object_or_404(TaxBrainRun, pk=pk)
 
     def filter_names(x):
         """
@@ -647,7 +638,7 @@ def csv_input(request, pk):
     filename = "taxbrain_inputs_" + suffix + ".csv"
     response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
 
-    inputs = url.unique_inputs
+    inputs = url_inputs
 
     writer = csv.writer(response)
     writer.writerow(field_names)

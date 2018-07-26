@@ -30,7 +30,6 @@ def output_detail(request, pk, model_class=CoreRun):
           case 3a: all jobs have completed
           case 3b: not all jobs have completed
     """
-
     model = get_object_or_404(model_class, uuid=pk)
 
     if model.renderable_outputs:

@@ -4,7 +4,7 @@ import numpy as np
 from django.utils import timezone
 
 from ..taxbrain.models import (JSONReformTaxCalculator,
-                               OutputUrl, TaxSaveInputs)
+                               TaxBrainRun, TaxSaveInputs)
 from ..dynamic.models import (DynamicBehaviorSaveInputs,
                               DynamicElasticitySaveInputs)
 from ..btax.models import BTaxSaveInputs
@@ -28,32 +28,32 @@ class TaxBrainModelsTest:
                          "skelaton_res_gt_0130")
 class TaxBrainTableResults(TaxBrainModelsTest):
 
-    def tc_lt_0130(self, fields, Form=TaxBrainForm, UrlModel=OutputUrl):
+    def tc_lt_0130(self, fields, Form=TaxBrainForm, UrlModel=TaxBrainRun):
         unique_url = get_taxbrain_model(fields,
                                         taxcalc_vers="0.10.2.abc",
                                         webapp_vers="1.1.1",
                                         Form=Form, UrlModel=UrlModel)
 
-        model = unique_url.unique_inputs
+        model = unique_url.inputs
         model.tax_result = self.skelaton_res_lt_0130
         model.creation_date = timezone.now()
         model.save()
 
-        np.testing.assert_equal(model.get_tax_result(),
+        np.testing.assert_equal(model.taxbrainrun,
                                 self.skelaton_res_gt_0130)
 
-    def tc_gt_0130(self, fields, Form=TaxBrainForm, UrlModel=OutputUrl):
+    def tc_gt_0130(self, fields, Form=TaxBrainForm, UrlModel=TaxBrainRun):
         unique_url = get_taxbrain_model(fields,
                                         taxcalc_vers="0.13.0",
                                         webapp_vers="1.2.0",
                                         Form=Form, UrlModel=UrlModel)
 
-        model = unique_url.unique_inputs
+        model = unique_url.inputs
         model.tax_result = self.skelaton_res_gt_0130
         model.creation_date = timezone.now()
         model.save()
 
-        np.testing.assert_equal(model.get_tax_result(),
+        np.testing.assert_equal(model.taxbrainrun,
                                 self.skelaton_res_gt_0130)
 
 

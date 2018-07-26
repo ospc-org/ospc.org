@@ -9,8 +9,8 @@ from django.contrib.postgres.fields import JSONField, ArrayField
 import taxcalc
 
 from ..taxbrain.models import (CommaSeparatedField, SeparatedValuesField,
-                               TaxSaveInputs, OutputUrl)
-from ..taxbrain.behaviors import (Resultable, Fieldable, DataSourceable)
+                               TaxSaveInputs, TaxBrainRun)
+from ..taxbrain.behaviors import (Fieldable, DataSourceable)
 from ..taxbrain import param_formatters
 
 import datetime
@@ -49,7 +49,7 @@ class DynamicSaveInputs(DataSourceable, models.Model):
     user_email = models.CharField(blank=True, default=None, null=True,
                                   max_length=50)
 
-    micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
+    micro_run = models.ForeignKey(TaxBrainRun, blank=True, null=True,
                                   on_delete=models.SET_NULL)
 
     class Meta:
@@ -58,8 +58,7 @@ class DynamicSaveInputs(DataSourceable, models.Model):
         )
 
 
-class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
-                                models.Model):
+class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, models.Model):
     """
     This model contains all the parameters for the dynamic behavioral tax
     model and the tax result.
@@ -95,7 +94,7 @@ class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
         default=make_aware(datetime.datetime(2015, 1, 1))
     )
 
-    micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
+    micro_run = models.ForeignKey(TaxBrainRun, blank=True, null=True,
                                   on_delete=models.SET_NULL)
 
     # # raw gui input
@@ -117,7 +116,8 @@ class DynamicBehaviorSaveInputs(DataSourceable, Fieldable, Resultable,
         If taxcalc version is less than 0.13.0, then rename keys to new names
         and then return table
         """
-        return Resultable.get_tax_result(self, DynamicBehaviorOutputUrl)
+        # TODO: Fix this
+        pass
 
     NONPARAM_FIELDS = set(["job_ids", "jobs_not_ready", "first_year",
                            "tax_result", "raw_input_fields", "input_fields",
@@ -172,7 +172,7 @@ class DynamicElasticitySaveInputs(DataSourceable, models.Model):
         default=make_aware(datetime.datetime(2015, 1, 1))
     )
 
-    micro_sim = models.ForeignKey(OutputUrl, blank=True, null=True,
+    micro_run = models.ForeignKey(TaxBrainRun, blank=True, null=True,
                                   on_delete=models.SET_NULL)
 
     class Meta:

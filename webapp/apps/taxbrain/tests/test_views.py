@@ -5,7 +5,7 @@ import pytest
 import os
 import msgpack
 
-from ..models import TaxSaveInputs, OutputUrl
+from ..models import TaxSaveInputs, TaxBrainRun
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                        format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ...core.compute import Compute
@@ -279,8 +279,8 @@ class TestTaxBrainViews(object):
 
         result = do_micro_sim(CLIENT, data)
 
-        out = OutputUrl.objects.get(pk=result["pk"])
-        tsi = TaxSaveInputs.objects.get(pk=out.model_pk)
+        out = TaxBrainRun.objects.get(pk=result["pk"])
+        tsi = out.inputs
         _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
         # only posted param is stored
         assert ([_id in tsi.raw_input_fields for _id in _ids] ==
@@ -306,8 +306,8 @@ class TestTaxBrainViews(object):
 
         result2 = do_micro_sim(CLIENT, data2)
 
-        out2 = OutputUrl.objects.get(pk=result2["pk"])
-        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
+        out2 = TaxBrainRun.objects.get(pk=result2["pk"])
+        tsi2 = out2.inputs
         assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_0'] == 'False'
         assert (tsi2.raw_input_fields['ID_BenefitSurtax_Switch_1'] ==
                 'False,*,True')
@@ -516,7 +516,7 @@ class TestTaxBrainViews(object):
                                         taxcalc_vers="0.10.0",
                                         webapp_vers="1.1.0")
 
-        tsi = unique_url.unique_inputs
+        tsi = unique_url.inputs
         old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   "example_old_result.json")
 
@@ -748,7 +748,7 @@ class TestTaxBrainViews(object):
         unique_url = get_taxbrain_model(fields,
                                         taxcalc_vers="0.14.2",
                                         webapp_vers="1.3.0")
-        model = unique_url.unique_inputs
+        model = unique_url.inputs
         model.raw_input_fields = None
         model.input_fields = None
         model.deprecated_fields = None
@@ -756,7 +756,7 @@ class TestTaxBrainViews(object):
         model.PT_exclusion_rt = "0.2,*,*,*,*,*,*,*,0.0"
         model.PT_exclusion_wage_limit = "0.5,*,*,*,*,*,*,*,9e99"
         model.save()
-        unique_url.unique_inputs = model
+        unique_url.inputs = model
         unique_url.save()
 
         pk = unique_url.pk
@@ -790,12 +790,12 @@ class TestTaxBrainViews(object):
                                         first_year=start_year,
                                         taxcalc_vers="0.14.2",
                                         webapp_vers="1.3.0")
-        model = unique_url.unique_inputs
+        model = unique_url.inputs
         model.tax_result = "unrenderable"
         if start_year_is_none:
             model.first_year = None
         model.save()
-        unique_url.unique_inputs = model
+        unique_url.inputs = model
         unique_url.save()
 
         pk = unique_url.pk

@@ -5,7 +5,7 @@ import msgpack
 
 from ..taxbrain.mock_compute import MockCompute
 
-from ..taxbrain.models import OutputUrl
+from ..taxbrain.models import TaxBrainRun
 from ..taxbrain.forms import TaxBrainForm
 
 
@@ -159,7 +159,7 @@ def get_taxbrain_model(_fields, first_year=2017,
                        quick_calc=False, taxcalc_vers="0.13.0",
                        webapp_vers="1.2.0",
                        exp_comp_datetime="2017-10-10T00:00:00+00:00",
-                       Form=TaxBrainForm, UrlModel=OutputUrl,
+                       Form=TaxBrainForm, UrlModel=TaxBrainRun,
                        use_puf_not_cps=True):
     fields = _fields.copy()
     fields.pop('_state', None)
@@ -180,10 +180,10 @@ def get_taxbrain_model(_fields, first_year=2017,
     model.save()
 
     unique_url = UrlModel()
-    unique_url.taxcalc_vers = taxcalc_vers
-    unique_url.webapp_vers = webapp_vers
-    unique_url.unique_inputs = model
-    unique_url.model_pk = model.pk
+    # unique_url.taxcalc_vers = taxcalc_vers
+    # unique_url.webapp_vers = webapp_vers
+    unique_url.inputs = model
+    # unique_url.model_pk = model.pk
     unique_url.exp_comp_datetime = exp_comp_datetime
     unique_url.save()
 

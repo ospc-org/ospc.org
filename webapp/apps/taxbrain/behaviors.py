@@ -15,41 +15,6 @@ from ..constants import TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
 from . import param_formatters
 
 
-class Resultable(models.Model):
-    """
-    Mix-in to provide logic around retrieving model results.
-    """
-
-    class Meta:
-        abstract = True
-
-    def get_tax_result(self, OutputUrlCls):
-        """
-        If taxcalc version is greater than or equal to 0.13.0, return table
-        If taxcalc version is less than 0.13.0, then rename keys to new names
-        and then return table
-        """
-        outputurl = OutputUrlCls.objects.get(unique_inputs__pk=self.pk)
-        taxcalc_vers = outputurl.taxcalc_vers
-        # only the older (pre 0.13.0) taxcalc versions are null
-        if taxcalc_vers:
-            taxcalc_vers = LooseVersion(taxcalc_vers)
-        else:
-            return rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
-
-        # older PB versions stored commit reference too
-        # e.g. taxcalc_vers = "0.9.0.d79abf"
-        backwards_incompatible = LooseVersion(
-            TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
-        )
-        if taxcalc_vers >= backwards_incompatible:
-            return self.tax_result
-        else:
-            renamed = rename_keys(self.tax_result, PRE_TC_0130_RES_MAP)
-            return reorder_lists(renamed, REORDER_LT_TC_0130_DIFF_LIST,
-                                 DIFF_TABLE_IDs)
-
-
 class Fieldable(models.Model):
     """
     Mix-in for providing logic around formatting raw GUI input fields

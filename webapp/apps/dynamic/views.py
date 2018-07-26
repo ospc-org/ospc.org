@@ -12,7 +12,8 @@ from django.core.mail import send_mail
 from django.core import serializers
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseServerError, JsonResponse)
-from django.shortcuts import redirect, render, render_to_response
+from django.shortcuts import (redirect, render, render_to_response,
+                              get_object_or_404)
 from django.template.context import RequestContext
 from django.contrib.auth.models import User
 
@@ -21,7 +22,7 @@ from .forms import (DynamicInputsModelForm, DynamicBehavioralInputsModelForm,
 from .models import (DynamicSaveInputs, DynamicOutputUrl,
                      DynamicBehaviorSaveInputs, DynamicBehaviorOutputUrl,
                      DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
-from ..taxbrain.models import (TaxSaveInputs, OutputUrl,
+from ..taxbrain.models import (TaxSaveInputs, TaxBrainRun,
                                ErrorMessageTaxCalculator,
                                JSONReformTaxCalculator)
 from ..taxbrain.views import (make_bool, dropq_compute,
@@ -140,9 +141,9 @@ def dynamic_input(request, pk):
                     '', None, [])}
 
             # get microsim data
-            outputsurl = OutputUrl.objects.get(pk=pk)
-            model.micro_sim = outputsurl
-            taxbrain_model = outputsurl.unique_inputs
+            outputsurl = TaxBrainRun.objects.get(pk=pk)
+            model.micro_run = outputsurl
+            taxbrain_model = outputsurl.inputs
             submitted_ids = None
 
             if not taxbrain_model.json_text:
@@ -255,9 +256,9 @@ def dynamic_behavioral(request, pk):
             model.set_fields()
 
             # get microsim data
-            outputsurl = OutputUrl.objects.get(pk=pk)
-            model.micro_sim = outputsurl
-            taxbrain_model = outputsurl.unique_inputs
+            outputsurl = TaxBrainRun.objects.get(pk=pk)
+            model.micro_run = outputsurl
+            taxbrain_model = outputsurl.inputs
             model.data_source = taxbrain_model.data_source
             model.save()
             # get taxbrain data
@@ -418,9 +419,9 @@ def dynamic_elasticities(request, pk):
             gdp_elasticity = float(model.elastic_gdp)
 
             # get microsim data
-            outputsurl = OutputUrl.objects.get(pk=pk)
-            model.micro_sim = outputsurl
-            taxbrain_model = outputsurl.unique_inputs
+            outputsurl = TaxBrainRun.objects.get(pk=pk)
+            model.micro_run = outputsurl
+            taxbrain_model = outputsurl.inputs
             model.data_source = taxbrain_model.data_source
             # get taxbrain data
             # necessary for simulations before PR 641
@@ -558,7 +559,7 @@ def edit_dynamic_behavioral(request, pk):
         'taxcalc_version': taxcalc_vers_disp,
         'webapp_version': webapp_vers_disp,
         'start_year': str(start_year),
-        'pk': model.micro_sim.pk
+        'pk': model.micro_run.pk
     }
 
     return render(request, 'dynamic/behavior.html', init_context)
@@ -596,7 +597,7 @@ def edit_dynamic_elastic(request, pk):
         'taxcalc_version': taxcalc_vers_disp,
         'webapp_version': webapp_vers_disp,
         'start_year': str(start_year),
-        'pk': model.micro_sim.pk
+        'pk': model.micro_run.pk
     }
 
     return render(request, 'dynamic/elasticity.html', init_context)
@@ -607,7 +608,8 @@ def dynamic_landing(request, pk):
     This view gives a landing page to choose a type of dynamic simulation that
     is linked to the microsim
     """
-    outputsurl = OutputUrl.objects.get(pk=pk)
+
+    outputsurl = TaxBrainRun.objects.get(pk=pk)
     include_ogusa = True
     init_context = {
         'pk': pk,
@@ -642,7 +644,7 @@ def elastic_results(request, pk):
         first_year = model.first_year
         created_on = model.creation_date
         tables = elast_results_to_tables(output, first_year)
-        microsim_url = "/taxbrain/" + str(url.unique_inputs.micro_sim.pk)
+        microsim_url = "/taxbrain/" + str(url.unique_inputs.micro_run.pk)
 
         context = {
             'locals': locals(),
@@ -734,10 +736,7 @@ def behavior_results(request, pk):
     page if the job has failed.
     """
 
-    try:
-        url = DynamicBehaviorOutputUrl.objects.get(pk=pk)
-    except OutputUrl.DoesNotExist:
-        raise Http404
+    url = get_object_or_404(DynamicBehaviorOutputUrl, pk=pk)
 
     model = url.unique_inputs
 

@@ -286,7 +286,7 @@ def send_cc_email(email_txt, subject_txt, model):
         CC_EMAIL_ADDRESSES list
     '''
 
-    pk = model.micro_sim.pk
+    pk = model.micro_run.pk
     job_ids = model.job_ids
     submitted_ids = normalize(job_ids)
     # Get the celery ID and IP address of the job

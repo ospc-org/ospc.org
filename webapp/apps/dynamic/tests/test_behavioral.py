@@ -156,7 +156,7 @@ class TestDynamicBehavioralViews(object):
         micro_sim_fields = get_post_data(start_year,
                                          _ID_BenefitSurtax_Switches=False)
         micro_sim_fields['first_year'] = start_year
-        model.micro_sim = get_taxbrain_model(micro_sim_fields,
+        model.micro_run = get_taxbrain_model(micro_sim_fields,
                                              taxcalc_vers="0.14.2",
                                              webapp_vers="1.4.0")
         model.save()
