@@ -96,9 +96,6 @@ def output_detail(request, pk, model_class=CoreRun):
 
 def get_result_context(model, request):
     inputs = model.inputs
-    first_year = inputs.first_year
-    quick_calc = inputs.quick_calc
-    created_on = inputs.creation_date
 
     is_from_file = not inputs.raw_input_fields
 
@@ -123,9 +120,9 @@ def get_result_context(model, request):
     context = {
         'locals': locals(),
         'unique_url': model,
-        'created_on': created_on,
-        'first_year': first_year,
-        'quick_calc': quick_calc,
+        'created_on': inputs.creation_date,
+        'first_year': inputs.first_year,
+        'quick_calc': inputs.quick_calc,
         'is_registered': is_registered,
         'is_micro': True,
         'reform_file_contents': reform_file_contents,
@@ -134,8 +131,10 @@ def get_result_context(model, request):
         'is_from_file': is_from_file,
         'allow_dyn_links': not is_from_file,
         'results_type': "static",
-        'renderable': model.renderable_outputs.values()
-        # 'download_only': model.download_only_outputs.values()
+        'renderable': model.renderable_outputs.values(),
+        # 'download_only': model.download_only_outputs.values(),
+        'upstream_version': model.upstream_vers,
+        'webapp_version': model.webapp_vers,
     }
 
     return context

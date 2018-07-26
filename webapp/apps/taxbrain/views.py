@@ -105,10 +105,10 @@ def save_model(post_meta):
         current_user = User.objects.get(pk=post_meta.request.user.id)
         unique_url.user = current_user
 
-    # if unique_url.taxcalc_vers is None:
-    #     unique_url.taxcalc_vers = TAXCALC_VERSION
-    # if unique_url.webapp_vers is None:
-    #     unique_url.webapp_vers = WEBAPP_VERSION
+    if unique_url.upstream_vers is None:
+        unique_url.upstream_vers = TAXCALC_VERSION
+    if unique_url.webapp_vers is None:
+        unique_url.webapp_vers = WEBAPP_VERSION
 
     cur_dt = timezone.now()
     future_offset_seconds = ((2 + post_meta.max_q_length) *
@@ -412,7 +412,7 @@ def file_input(request):
         'form_id': json_reform.id if json_reform is not None else None,
         'errors': errors,
         'has_errors': has_errors,
-        'taxcalc_version': TAXCALC_VERSION,
+        'upstream_version': TAXCALC_VERSION,
         'webapp_version': WEBAPP_VERSION,
         'params': None,
         'start_years': START_YEARS,
@@ -476,7 +476,7 @@ def personal_results(request):
     init_context = {
         'form': personal_inputs,
         'params': nested_form_parameters(int(start_year), use_puf_not_cps),
-        'taxcalc_version': TAXCALC_VERSION,
+        'upstream_version': TAXCALC_VERSION,
         'webapp_version': WEBAPP_VERSION,
         'start_years': START_YEARS,
         'start_year': start_year,
@@ -595,14 +595,14 @@ def edit_personal_results(request, pk):
         for dep in model.deprecated_fields:
             form_personal_exemp.add_error(None, msg.format(dep))
 
-    # taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
-    # webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
+    taxcalc_vers_disp = get_version(url, 'upstream_vers', TAXCALC_VERSION)
+    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
 
     init_context = {
         'form': form_personal_exemp,
         'params': nested_form_parameters(int(form_personal_exemp._first_year)),
-        # 'taxcalc_version': taxcalc_vers_disp,
-        # 'webapp_version': webapp_vers_disp,
+        'upstream_version': taxcalc_vers_disp,
+        'webapp_version': webapp_vers_disp,
         'start_years': START_YEARS,
         'start_year': str(form_personal_exemp._first_year),
         'is_edit_page': True,

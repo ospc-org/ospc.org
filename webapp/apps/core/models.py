@@ -57,6 +57,10 @@ class CoreRun(models.Model):
     exp_comp_datetime = models.DateTimeField(
         default=make_aware(datetime.datetime(2015, 1, 1)))
     job_ids = SeparatedValuesField(blank=True, default=None, null=True)
+    upstream_vers = models.CharField(blank=True, default=None, null=True,
+                                     max_length=50)
+    webapp_vers = models.CharField(blank=True, default=None, null=True,
+                                   max_length=50)
 
     def get_absolute_url(self):
         kwargs = {
