@@ -6,6 +6,7 @@
 {{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
 <link href="text/javascript" src="{% static 'js/vendor/DataTables/datatables.min.css' %}"></link>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.2/css/responsive.dataTables.css"/>
 <style>
   .btn {
     color: black;
@@ -34,6 +35,9 @@
       margin-top: 40px;
       margin-bottom: 40px;
       text-align: left;
+  }
+  .dataTables_wrapper {
+    width: 75%;
   }
 </style>
 {% endblock %}
@@ -91,11 +95,31 @@
   </div>
   <br>
   {% if renderable %}
-  {{ renderable | safeseq | join:"" }}
+  <div id="table-drilldown-container">
+    <div>
+        <div class="container" style="width:95%">
+            <div class="row">
+                <div class="col-md-12" id="fiscal-totals-container"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-6" id="table-select-container"></div>
+                <div class="col-md-6" id="column-select-container"></div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" id="table-container"></div>
+                  <div class="panel panel-default">
+                      <div class="panel-body" style="overflow: scroll">
+                          {{ renderable | safeseq | join:"" }}
+                      </div>
+                  </div>
+            </div>
+        </div>
+    </div>
+  </div>
   {% else %}
   <div data-tables="{{tables}}"></div>
-  {% endif %}
   <div id="table-drilldown-container"></div>
+  {% endif %}
   <div class="push"></div>
 </div>
   <div class="modal fade" id="block-link-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -118,10 +142,9 @@
 
 {% block bottom_scripts %}
 {{ block.super }}
-<script src="{% static 'js/vendor/underscore/underscore-min.js' %}"></script>
-<script src="{% static 'js/vendor/backbone/backbone-min.js' %}"></script>
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
-<script src="{% static 'js/taxbrain-tablebuilder.js' %}"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.2/js/dataTables.responsive.js"></script>
 <script>
     function buttonAction() {
         if ({{allow_dyn_links|yesno:"true,false,true"}} ) {
@@ -130,6 +153,17 @@
             $('#block-link-modal').modal('show');
         }
     }
+    $(document).ready(function () {
+        $('.panel-body > table').DataTable({
+            "paging": false,
+            "ordering": false,
+            "searching": false,
+            "bInfo": false,
+            "buttons": [],
+            "responsive": true
+        });
+        $('.panel-body table').addClass('table').addClass('table-striped');
+    });
 </script>
 
 
