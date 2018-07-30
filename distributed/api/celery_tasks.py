@@ -45,6 +45,7 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
     # Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version']
+    # TODO: Make this the distributed app version, not the TC version
     results['dropq_version'] = vinfo['version']
 
     json_res = json.dumps(results)
@@ -89,6 +90,7 @@ def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
     # Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version']
+    # TODO: Make this the distributed app version, not the TC version
     results['dropq_version'] = vinfo['version']
 
     json_res = json.dumps(results)
@@ -117,6 +119,7 @@ def btax_async(user_mods, start_year):
         results.update(tables)
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version']
+    # TODO: Make this the distributed app version, not the TC version
     results['dropq_version'] = vinfo['version']
     binfo = btax._version.get_versions()
     results['btax_version'] = binfo['version']

@@ -18,6 +18,8 @@ from . import param_formatters
 
 from .behaviors import Fieldable, DataSourceable
 
+from .. import constants
+
 
 # digit or true/false (case insensitive)
 COMMASEP_REGEX = "(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
@@ -889,12 +891,6 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
     # Result
     tax_result = JSONField(default=None, blank=True, null=True)
 
-    # # raw gui input
-    raw_input_fields = JSONField(default=None, blank=True, null=True)
-    #
-    # # validated gui input
-    input_fields = JSONField(default=None, blank=True, null=True)
-
     # deprecated fields list
     deprecated_fields = ArrayField(
         models.CharField(max_length=100, blank=True),
@@ -976,6 +972,49 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
 
 class TaxBrainRun(CoreRun):
     inputs = models.OneToOneField(TaxSaveInputs)
+    tags = [
+        {"key": "table_type",
+         "values": [
+            {"value": "dist",
+             "title": "Distribution Table",
+             "tooltip": constants.DISTRIBUTION_TOOLTIP,
+             "children": [
+                {"key": "law",
+                 "values": [
+                    {"value": "current",
+                     "title": "Current Law",
+                     "tooltip": constants.BASE_TOOLTIP},
+                    {"value": "reform",
+                     "title": "Reform",
+                     "tooltip": constants.REFORM_TOOLTIP},
+                 ]}]},
+            {"value": "diff",
+             "title": "Difference Table",
+             "tooltip": constants.DIFFERENCE_TOOLTIP,
+             "children": [
+                {"key": "tax_type",
+                 "values": [
+                    {"value": "payroll",
+                     "title": "Payroll Tax",
+                     "tooltip": constants.PAYROLL_TOOLTIP},
+                    {"value": "ind_income",
+                     "title": "Income Tax",
+                     "tooltip": constants.INCOME_TOOLTIP},
+                    {"value": "combined",
+                     "title": "Combined",
+                     "tooltip": ""}  # TODO
+                 ]}]}
+         ]},
+        {"key": "grouping",
+         "values": [
+            {"value": "bins",
+             "title": "Income Bins",
+             "tooltip": constants.INCOME_BINS_TOOLTIP},
+            {"value": "deciles",
+             "title": "Income Deciles",
+             "tooltip": constants.INCOME_DECILES_TOOLTIP}
+         ]}
+    ]
 
 
 class OutputUrl(models.Model):

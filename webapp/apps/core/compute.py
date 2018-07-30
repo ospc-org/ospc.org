@@ -141,11 +141,11 @@ class Compute(object):
 
         ans = self._get_results_base(job_ids, job_failure=job_failure)
 
-        fields = ['renderable', 'download_only']
-        results = {key: {} for key in fields}
-        for x in fields:
-            for result in ans:
-                for name in result[x]:
-                    results[x][name] = (results[x][name] if name in results[x]
-                                        else '') + result[x][name]
+        results = {'outputs': []}
+        for result in ans:
+            for key in result:
+                if key == 'outputs':
+                    results['outputs'] += result['outputs']
+                else:
+                    results[key] = result[key]
         return results

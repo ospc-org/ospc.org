@@ -32,7 +32,7 @@ def output_detail(request, pk, model_class=CoreRun):
     """
     model = get_object_or_404(model_class, uuid=pk)
 
-    if model.renderable_outputs:
+    if model.outputs:
         context = get_result_context(model, request)
         return render(request, 'taxbrain/results.html', context)
     elif model.error_text:
@@ -65,8 +65,7 @@ def output_detail(request, pk, model_class=CoreRun):
 
         if all(j == 'YES' for j in jobs_ready):
             results = dropq_compute.get_results(job_ids)
-            model.renderable_outputs = results['renderable']
-            model.download_only_outputs = results['download_only']
+            model.outputs = results['outputs']
             model.creation_date = timezone.now()
             model.save()
             context = get_result_context(model, request)
@@ -96,6 +95,7 @@ def output_detail(request, pk, model_class=CoreRun):
 
 def get_result_context(model, request):
     inputs = model.inputs
+    outputs = [i for i in model.outputs if not i['title'].startswith('Total')]
 
     is_from_file = not inputs.raw_input_fields
 
@@ -117,6 +117,18 @@ def get_result_context(model, request):
     is_registered = (hasattr(request, 'user') and
                      request.user.is_authenticated())
 
+    # TODO: Store list of years in CoreRun model
+    years = sorted(set(i['year'] for i in outputs))
+
+    tags_flattened = []
+    for tag in model.tags:
+        tags_flattened.append(tag)
+        for index, value in enumerate(tag['values']):
+            if 'children' in value:
+                for child in value['children']:
+                    child['hidden'] = False if index == 0 else True
+                    tags_flattened.append(child)
+
     context = {
         'locals': locals(),
         'unique_url': model,
@@ -131,10 +143,11 @@ def get_result_context(model, request):
         'is_from_file': is_from_file,
         'allow_dyn_links': not is_from_file,
         'results_type': "static",
-        'renderable': model.renderable_outputs.values(),
-        # 'download_only': model.download_only_outputs.values(),
+        'outputs': outputs,
         'upstream_version': model.upstream_vers,
         'webapp_version': model.webapp_vers,
+        'years': years,
+        'tags_flattened': tags_flattened
     }
 
     return context

@@ -34,6 +34,12 @@ class SeparatedValuesField(models.TextField):
 
 
 class CoreInputs(models.Model):
+    # Raw GUI input
+    raw_input_fields = JSONField(default=None, blank=True, null=True)
+
+    # Validated GUI input that has been parsed to have the correct data types
+    input_fields = JSONField(default=None, blank=True, null=True)
+
     class Meta:
         abstract = True
 
@@ -41,8 +47,7 @@ class CoreInputs(models.Model):
 class CoreRun(models.Model):
     # Subclasses must implement:
     # inputs = models.OneToOneField(CoreInputs)
-    renderable_outputs = JSONField(default=None, blank=True, null=True)
-    download_only_outputs = JSONField(default=None, blank=True, null=True)
+    outputs = JSONField(default=None, blank=True, null=True)
     uuid = models.UUIDField(
         default=uuid.uuid1,
         editable=False,

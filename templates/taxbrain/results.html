@@ -5,7 +5,7 @@
 {% load results %}
 {{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
-<link href="text/javascript" src="{% static 'js/vendor/DataTables/datatables.min.css' %}"></link>
+<link href="{% static 'js/vendor/DataTables/datatables.min.css' %}" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.2/css/responsive.dataTables.css"/>
 <style>
   .btn {
@@ -38,6 +38,27 @@
   }
   .dataTables_wrapper {
     width: 75%;
+  }
+  .container {
+    width: 95%;
+  }
+  .output {
+    display: none;
+  }
+  .output:first-child {
+    display: block;
+  }
+  .container > .row {
+    padding: 10px 0;
+  }
+  .output h1 {
+    text-transform: uppercase;
+  }
+  .nav-pills li {
+    padding-top: 40px;
+  }
+  .nav-pills li:first-child {
+    padding-top: 0;
   }
 </style>
 {% endblock %}
@@ -94,33 +115,69 @@
     </div>
   </div>
   <br>
-  {% if renderable %}
   <div id="table-drilldown-container">
     <div>
-        <div class="container" style="width:95%">
-            <div class="row">
-                <div class="col-md-12" id="fiscal-totals-container"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-6" id="table-select-container"></div>
-                <div class="col-md-6" id="column-select-container"></div>
-            </div>
-            <div class="row">
-                <div class="col-md-12" id="table-container"></div>
-                  <div class="panel panel-default">
-                      <div class="panel-body" style="overflow: scroll">
-                          {{ renderable | safeseq | join:"" }}
-                      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6" id="table-select-container">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">Build Table</h3>
+              </div>
+              <div class="panel-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <h1 class="text-center">For Year: </h1>
                   </div>
+                  <div class="col-md-6">
+                    <h1 class="text-center">
+                      <div class="dropdown dropdown-select dropdown-inline data-switch">
+                        {% for year in years %}
+                        {% if forloop.first %}
+                        <a class="dropdown-toggle" type="button" id="years" data-toggle="dropdown" aria-expanded="true">
+                          {{ year }}
+                          <span class="caret"></span>
+                        </a>
+                        {% endif %}
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="years">
+                          <li role="presentation">
+                          <a role="menuitem" tabindex="-1" href="#" data-year="{{ year }}">
+                          {{ year }}
+                          </a>
+                          </li>
+                        </ul>
+                        {% endfor %}
+                      </div>
+                    </h1>
+                  </div>
+                </div>
+                {% for tag in tags_flattened %}
+                <ul class="nav nav-pills nav-justified{% if tag.hidden %} hidden{% endif %}" id="tag-{{ tag.key }}">
+                  {% for value in tag.values %}
+                  <li data-tag-{{ tag.key }}="{{ value.value }}" data-children-keys="{% for child in value.children %}{{ child.key }} {% endfor %}"{% if forloop.first %} class="active"{% endif %}><a data-toggle="tooltip" data-placement="bottom" title="{{ value.tooltip }}" href="#">{{ value.title }}</a></li>
+                  {% endfor %}
+                </ul>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12" id="table-container"></div>
+            <div class="panel panel-default">
+                <div class="panel-body" style="overflow: scroll">
+                  {% for x in outputs %}
+                  <div class="output"{% for key, value in x.tags.items %} data-tag-{{ key }}="{{ value }}"{% endfor %}>
+                    <h1 class="text-center">{{ x.title }}</h1>
+                    {{ x.renderable | safe }}
+                  </div>
+                  {% endfor %}
+                </div>
             </div>
         </div>
+      </div>
     </div>
   </div>
-  {% else %}
-  <div data-tables="{{tables}}"></div>
-  <div id="table-drilldown-container"></div>
-  {% endif %}
-  <div class="push"></div>
 </div>
   <div class="modal fade" id="block-link-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
@@ -144,26 +201,93 @@
 {{ block.super }}
 <script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
 <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.2/js/dataTables.responsive.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.flash.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.js"></script>
 <script>
-    function buttonAction() {
-        if ({{allow_dyn_links|yesno:"true,false,true"}} ) {
-            window.location.href = "/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}";
-            } else {
-            $('#block-link-modal').modal('show');
-        }
+var buttonAction = function () {
+  if ({{allow_dyn_links|yesno:"true,false,true"}} ) {
+    window.location.href = "/dynamic/{{ unique_url.pk }}/?start_year={{ first_year }}";
+    } else {
+    $('#block-link-modal').modal('show');
+  }
+};
+var dataTableOptions = {
+  "paging": false,
+  "ordering": false,
+  "searching": false,
+  "bInfo": false,
+  'dom': 'tB', /* Display the table before the buttons */
+  "buttons": [
+    'print',
+    'copy',
+    'colvis'
+  ],
+  "language": {
+    "buttons": {
+      "copy": "Copy table",
+      "colvis": 'Select columns'
     }
-    $(document).ready(function () {
-        $('.panel-body > table').DataTable({
-            "paging": false,
-            "ordering": false,
-            "searching": false,
-            "bInfo": false,
-            "buttons": [],
-            "responsive": true
-        });
-        $('.panel-body table').addClass('table').addClass('table-striped');
+  }
+};
+var initDataTable = function (el) {
+  var dt = el.dataTable(dataTableOptions);
+  dt.parent().find("div.dt-buttons.btn-group").addClass('btn-group-justified');
+};
+$(document).ready(function () {
+  var tables = $('.panel-body table');
+  tables.addClass('table').addClass('table-striped');
+  initDataTable(tables.first());
+  $(".nav li a").click(function (e) {
+    /* Toggle the visible selection */
+    e.preventDefault();
+    var target_li = $(e.target).parent('li');
+    target_li.addClass('active');
+    var unselected = target_li.parent('.nav').find('li').not(target_li);
+    unselected.removeClass('active');
+
+    /* Deactivate child tags for unselected options */
+    unselected.each(function (_index, el) {
+      var children_keys = $(el).attr('data-children-keys').trim().split(" ");
+      $(children_keys.map(function (key) {
+          return "#tag-" + key;
+        }).join(", "))
+        .addClass('hidden');
     });
+
+    /* Activate child tags */
+    var children_keys = target_li.attr('data-children-keys').trim().split(" ");
+    $(children_keys.map(function (key) {
+        return "#tag-" + key;
+      }).join(", "))
+      .removeClass('hidden');
+
+    /* Get the current set of tags */
+    var tags_to_match = {};
+    $('.nav:visible li.active').each(function (_index, el) {
+      $.each(el.attributes, function (_index, attr) {
+        if (attr.name.startsWith('data-tag-')) {
+          tags_to_match[attr.name] = attr.value;
+        }
+      })
+    });
+
+    /* Find and display the table matching that set of tags */
+    var selector = '.output';
+    $.each(tags_to_match, function (key, value) {
+      selector += '[' + key + '="' + value + '"]'
+    });
+    var container_to_show = $(selector);
+    var table_to_show = $(selector).find("table").first();
+    /* Make sure we don't initialize the DataTable twice */
+    if ( ! $.fn.DataTable.isDataTable(table_to_show) ) {
+      initDataTable(table_to_show);
+    }
+    container_to_show.show();
+    $('.output').not(container_to_show).hide();
+  });
+});
 </script>
 
 
