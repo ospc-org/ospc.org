@@ -34,7 +34,7 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
         )
     )
 
-    results = taxcalc.tbi.run_nth_year_taxcalc_model(
+    results, pdfs = taxcalc.tbi.run_nth_year_taxcalc_model(
         year_n=year_n,
         start_year=int(first_budget_year),
         use_puf_not_cps=use_puf_not_cps,
@@ -48,8 +48,24 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
     # TODO: Make this the distributed app version, not the TC version
     results['dropq_version'] = vinfo['version']
 
-    json_res = json.dumps(results)
-    return json_res
+    return results, pdfs
+
+
+@celery_app.task(name='api.celery_tasks.aggregate_yearly_results')
+def aggregate_yearly_results(ans):
+    results = {'outputs': []}
+    all_pdfs_to_aggregate = {key: [] for key in ('aggr_d', 'aggr_1', 'aggr_2')}
+    for formatted_result, pdfs_to_aggregate in ans:
+        for key in formatted_result:
+            if key == 'outputs':
+                results['outputs'] += result['outputs']
+            else:
+                results[key] = result[key]
+        # for key, value in pdfs_to_aggregate.items():
+        #     all_pdfs_to_aggregate[key].append(value)
+    results['aggr_outputs'] = taxcalc.tbi.run_taxcalc_years_aggregation(
+        all_pdfs_to_aggregate)
+    return json.dumps(results)
 
 
 @celery_app.task(name='api.celery_tasks.dropq_task_async')

@@ -39,22 +39,16 @@ def output_detail(request, pk, model_class=CoreRun):
         return render(request, 'taxbrain/failed.html',
                       {"error_msg": model.error_text})
     else:
-        job_ids = model.job_ids
+        job_id = str(model.job_id)
         try:
-            jobs_ready = dropq_compute.results_ready(job_ids)
+            job_ready = dropq_compute.results_ready(job_id)
         except JobFailError as jfe:
             return render_to_response('taxbrain/failed.html')
-        if any(j == 'FAIL' for j in jobs_ready):
-            failed_jobs = [sub_id for (sub_id, job_ready)
-                           in zip(job_ids, jobs_ready)
-                           if job_ready == 'FAIL']
-
+        if job_ready == 'FAIL':
             # Just need the error message from one failed job
-            error_msgs = dropq_compute.get_results([failed_jobs[0]],
+            error_msgs = dropq_compute.get_results(job_id,
                                                    job_failure=True)
-            if error_msgs:
-                error_msg = error_msgs[0]
-            else:
+            if not error_msg:
                 error_msg = "Error: stack trace for this error is unavailable"
             val_err_idx = error_msg.rfind("Error")
             error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
@@ -63,8 +57,9 @@ def output_detail(request, pk, model_class=CoreRun):
             return render(request, 'taxbrain/failed.html',
                           {"error_msg": error_contents})
 
-        if all(j == 'YES' for j in jobs_ready):
-            results = dropq_compute.get_results(job_ids)
+        if job_ready == 'YES':
+            results = dropq_compute.get_results(job_id)
+            import pdb; pdb.set_trace()
             model.outputs = results['outputs']
             model.creation_date = timezone.now()
             model.save()

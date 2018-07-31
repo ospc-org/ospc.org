@@ -1,12 +1,14 @@
 from flask import Blueprint, request, make_response
 from celery.result import AsyncResult
+from celery import group, chord
 
 import redis
 import json
 import msgpack
 import os
 
-from api.celery_tasks import (dropq_task_async,
+from api.celery_tasks import (aggregate_yearly_results,
+                              dropq_task_async,
                               dropq_task_small_async,
                               elasticity_gdp_task_async,
                               btax_async)
@@ -31,9 +33,23 @@ def dropq_endpoint(dropq_task):
     return json.dumps(data)
 
 
+def aggr_endpoint(task, callback):
+    print('aggregating endpoint')
+    data = request.get_data()
+    inputs = msgpack.loads(data, encoding='utf8',
+                           use_list=True)
+    print('inputs', inputs)
+    result = (chord(task.signature(kwargs=i,
+                                   serializer='msgpack') for i in inputs)
+              (callback.s()))
+    length = client.llen(queue_name) + 1
+    data = {'job_id': str(result), 'qlength': length}
+    return json.dumps(data)
+
+
 @bp.route("/dropq_start_job", methods=['POST'])
 def dropq_endpoint_full():
-    return dropq_endpoint(dropq_task_async)
+    return aggr_endpoint(dropq_task_async, aggregate_yearly_results)
 
 
 @bp.route("/dropq_small_start_job", methods=['POST'])

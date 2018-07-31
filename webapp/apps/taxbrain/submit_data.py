@@ -17,7 +17,7 @@ PostMeta = namedtuple(
      'assumptions_dict',
      'reform_text',
      'assumptions_text',
-     'submitted_ids',
+     'submitted_id',
      'max_q_length',
      'user',
      'url']

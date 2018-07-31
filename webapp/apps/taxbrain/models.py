@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 import datetime
 from django.utils.timezone import make_aware
-from ..core.models import CoreInputs, CoreRun, SeparatedValuesField
+from ..core.models import CoreInputs, CoreRun
 
 import taxcalc
 

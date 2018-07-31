@@ -95,7 +95,7 @@ def save_model(post_meta):
         unique_url = TaxBrainRun()
     else:
         unique_url = post_meta.url
-    unique_url.job_ids = post_meta.submitted_ids
+    unique_url.job_id = post_meta.submitted_id
     unique_url.inputs = model
     unique_url.save()
 
@@ -158,7 +158,7 @@ def submit_reform(request, user=None, json_reform_id=None):
     personal_inputs = None
     model = None
     is_file = False
-    submitted_ids = None
+    submitted_id = None
     max_q_length = None
     # Assume we do the full calculation unless we find out otherwise
     do_full_calc = False if fields.get('quick_calc') else True
@@ -294,12 +294,12 @@ def submit_reform(request, user=None, json_reform_id=None):
                 'use_puf_not_cps': use_puf_not_cps}
         if do_full_calc:
             data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
-            submitted_ids, max_q_length = (
+            submitted_id, max_q_length = (
                 dropq_compute.submit_calculation(data_list))
         else:
             data_list = [dict(year=i, **data)
                          for i in range(NUM_BUDGET_YEARS_QUICK)]
-            submitted_ids, max_q_length = (
+            submitted_id, max_q_length = (
                 dropq_compute.submit_quick_calculation(data_list))
 
     return PostMeta(
@@ -319,7 +319,7 @@ def submit_reform(request, user=None, json_reform_id=None):
         assumptions_dict=assumptions_dict,
         reform_text=reform_text,
         assumptions_text=assumptions_text,
-        submitted_ids=submitted_ids,
+        submitted_id=submitted_id,
         max_q_length=max_q_length,
         user=user,
         url=None
@@ -504,7 +504,7 @@ def submit_micro(request, pk):
     model.pk = None
     # Unset the computed results, set quick_calc to False
     # (this new model instance will be saved in process_model)
-    model.job_ids = None
+    model.job_id = None
     model.jobs_not_ready = None
     model.quick_calc = False
     model.tax_result = None
@@ -540,7 +540,7 @@ def submit_micro(request, pk):
 
     # start calc job
     data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
-    submitted_ids, max_q_length = dropq_compute.submit_calculation(
+    submitted_id, max_q_length = dropq_compute.submit_calculation(
         data_list
     )
 
@@ -560,7 +560,7 @@ def submit_micro(request, pk):
                      if model.json_text else ""),
         assumptions_text=(model.json_text.raw_assumption_text
                           if model.json_text else ""),
-        submitted_ids=submitted_ids,
+        submitted_id=submitted_id,
         max_q_length=max_q_length,
         user=None,
         personal_inputs=None,
