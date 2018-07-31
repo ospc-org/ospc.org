@@ -5,8 +5,9 @@
 {% load results %}
 {{block.super}}
 <link href="{% static 'css/vendor/bootstrap3-block-grid.min.css' %}" rel="stylesheet">
-<link href="{% static 'js/vendor/DataTables/datatables.min.css' %}" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.2/css/responsive.dataTables.css"/>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.5.2/css/buttons.bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.2/css/responsive.bootstrap.min.css">
 <style>
   .btn {
     color: black;
@@ -36,16 +37,13 @@
       margin-bottom: 40px;
       text-align: left;
   }
-  .dataTables_wrapper {
-    width: 75%;
-  }
   .container {
     width: 95%;
   }
   .output {
     display: none;
   }
-  .output:first-child {
+  .output.selected-table-year.selected-table-tag {
     display: block;
   }
   .container > .row {
@@ -59,6 +57,9 @@
   }
   .nav-pills li:first-child {
     padding-top: 0;
+  }
+  .dt-btn-wrapper {
+    text-align: center;
   }
 </style>
 {% endblock %}
@@ -119,7 +120,10 @@
     <div>
       <div class="container">
         <div class="row">
-          <div class="col-md-6" id="table-select-container">
+          <div class="col-md-12" id="fiscal-totals-container"></div>
+        </div>
+        <div class="row">
+          <div class="col-md-8 col-md-push-2" id="table-select-container">
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h3 class="panel-title">Build Table</h3>
@@ -132,32 +136,24 @@
                   <div class="col-md-6">
                     <h1 class="text-center">
                       <div class="dropdown dropdown-select dropdown-inline data-switch">
-                        {% for year in years %}
-                        {% if forloop.first %}
-                        <a class="dropdown-toggle" type="button" id="years" data-toggle="dropdown" aria-expanded="true">
-                          {{ year }}
+                        <a class="dropdown-toggle" id="selected-year" type="button" data-toggle="dropdown" aria-expanded="true">
+                          {{ years.0 }}
                           <span class="caret"></span>
                         </a>
-                        {% endif %}
-                        <ul class="dropdown-menu" role="menu" aria-labelledby="years">
+                        <ul class="dropdown-menu" id="year-selector" role="menu" aria-labelledby="years">
+                          {% for year in years %}
                           <li role="presentation">
-                          <a role="menuitem" tabindex="-1" href="#" data-year="{{ year }}">
-                          {{ year }}
-                          </a>
+                            <a role="menuitem" tabindex="-1" href="#" data-year="{{ year }}">
+                            {{ year }}
+                            </a>
                           </li>
+                          {% endfor %}
                         </ul>
-                        {% endfor %}
                       </div>
                     </h1>
                   </div>
                 </div>
-                {% for tag in tags_flattened %}
-                <ul class="nav nav-pills nav-justified{% if tag.hidden %} hidden{% endif %}" id="tag-{{ tag.key }}">
-                  {% for value in tag.values %}
-                  <li data-tag-{{ tag.key }}="{{ value.value }}" data-children-keys="{% for child in value.children %}{{ child.key }} {% endfor %}"{% if forloop.first %} class="active"{% endif %}><a data-toggle="tooltip" data-placement="bottom" title="{{ value.tooltip }}" href="#">{{ value.title }}</a></li>
-                  {% endfor %}
-                </ul>
-                {% endfor %}
+                {% include "taxbrain/select_tags.html" with tags=tags only %}
               </div>
             </div>
           </div>
@@ -167,7 +163,7 @@
             <div class="panel panel-default">
                 <div class="panel-body" style="overflow: scroll">
                   {% for x in outputs %}
-                  <div class="output"{% for key, value in x.tags.items %} data-tag-{{ key }}="{{ value }}"{% endfor %}>
+                  <div class="output" data-year="{{ x.year }}" {% for key, value in x.tags.items %} data-tag-{{ key }}="{{ value }}"{% endfor %}>
                     <h1 class="text-center">{{ x.title }}</h1>
                     {{ x.renderable | safe }}
                   </div>
@@ -199,12 +195,16 @@
 
 {% block bottom_scripts %}
 {{ block.super }}
-<script src="{% static 'js/vendor/DataTables/datatables.js' %}"></script>
-<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.flash.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.bootstrap.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.flash.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.2/js/dataTables.responsive.min.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.2/js/responsive.bootstrap.min.js"></script>
 <script>
 var buttonAction = function () {
   if ({{allow_dyn_links|yesno:"true,false,true"}} ) {
@@ -213,12 +213,13 @@ var buttonAction = function () {
     $('#block-link-modal').modal('show');
   }
 };
+
 var dataTableOptions = {
   "paging": false,
   "ordering": false,
   "searching": false,
   "bInfo": false,
-  'dom': 'tB', /* Display the table before the buttons */
+  'dom': 'Bt', /* Display the buttons before the table */
   "buttons": [
     'print',
     'copy',
@@ -229,17 +230,70 @@ var dataTableOptions = {
       "copy": "Copy table",
       "colvis": 'Select columns'
     }
-  }
+  },
+  "responsive": true
 };
+
 var initDataTable = function (el) {
   var dt = el.dataTable(dataTableOptions);
-  dt.parent().find("div.dt-buttons.btn-group").addClass('btn-group-justified');
+  dt.parent().find("div.dt-buttons.btn-group")
+    .wrap("<div class='dt-btn-wrapper'></div>");
 };
+
+var initVisibleTable = function () {
+  /* We only expect one table to be visible at once, i.e. if the right year is
+     selected, and the right tag is selected */
+  var table_to_show = $("table:visible");
+  /* Make sure we don't initialize the DataTable twice */
+  if ( ! $.fn.DataTable.isDataTable(table_to_show) ) {
+    initDataTable(table_to_show);
+  }
+};
+
+var activateTablesBySelectedYear = function () {
+  var containers_to_show = $('.output[data-year="' + $("#selected-year").text().trim() + '"]');
+  containers_to_show.addClass('selected-table-year');
+  $('.output').not(containers_to_show).removeClass('selected-table-year');
+};
+
+var activateTablesBySelectedTags = function () {
+  /* Get the current set of tags */
+  var tags_to_match = {};
+  $('.tag-selector:visible li.active').each(function (_index, el) {
+    $.each(el.attributes, function (_index, attr) {
+      if (attr.name.startsWith('data-tag-')) {
+        tags_to_match[attr.name] = attr.value;
+      }
+    })
+  });
+
+  /* Find the tables matching that set of tags */
+  var selector = '.output';
+  $.each(tags_to_match, function (key, value) {
+    selector += '[' + key + '="' + value + '"]'
+  });
+  var containers_to_show = $(selector);
+
+  /* Label these tables as selected (subject to a year selection) and
+     unlabel the rest, then initialize visible tables */
+  containers_to_show.addClass('selected-table-tag');
+  $('.output').not(containers_to_show).removeClass('selected-table-tag');
+};
+
 $(document).ready(function () {
   var tables = $('.panel-body table');
   tables.addClass('table').addClass('table-striped');
-  initDataTable(tables.first());
-  $(".nav li a").click(function (e) {
+  activateTablesBySelectedTags();
+  activateTablesBySelectedYear();
+  initVisibleTable();
+
+  $("#year-selector li a").click(function (e) {
+    e.preventDefault();
+    activateTablesBySelectedYear();
+    initVisibleTable();
+  });
+
+  $(".tag-selector li a").click(function (e) {
     /* Toggle the visible selection */
     e.preventDefault();
     var target_li = $(e.target).parent('li');
@@ -263,32 +317,10 @@ $(document).ready(function () {
       }).join(", "))
       .removeClass('hidden');
 
-    /* Get the current set of tags */
-    var tags_to_match = {};
-    $('.nav:visible li.active').each(function (_index, el) {
-      $.each(el.attributes, function (_index, attr) {
-        if (attr.name.startsWith('data-tag-')) {
-          tags_to_match[attr.name] = attr.value;
-        }
-      })
-    });
-
-    /* Find and display the table matching that set of tags */
-    var selector = '.output';
-    $.each(tags_to_match, function (key, value) {
-      selector += '[' + key + '="' + value + '"]'
-    });
-    var container_to_show = $(selector);
-    var table_to_show = $(selector).find("table").first();
-    /* Make sure we don't initialize the DataTable twice */
-    if ( ! $.fn.DataTable.isDataTable(table_to_show) ) {
-      initDataTable(table_to_show);
-    }
-    container_to_show.show();
-    $('.output').not(container_to_show).hide();
+    activateTablesBySelectedTags();
+    initVisibleTable();
   });
 });
 </script>
-
 
 {% endblock %}

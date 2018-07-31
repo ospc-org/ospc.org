@@ -120,14 +120,12 @@ def get_result_context(model, request):
     # TODO: Store list of years in CoreRun model
     years = sorted(set(i['year'] for i in outputs))
 
-    tags_flattened = []
-    for tag in model.tags:
-        tags_flattened.append(tag)
+    tags = model.tags
+    for tag in tags:
         for index, value in enumerate(tag['values']):
             if 'children' in value:
                 for child in value['children']:
                     child['hidden'] = False if index == 0 else True
-                    tags_flattened.append(child)
 
     context = {
         'locals': locals(),
@@ -147,7 +145,7 @@ def get_result_context(model, request):
         'upstream_version': model.upstream_vers,
         'webapp_version': model.webapp_vers,
         'years': years,
-        'tags_flattened': tags_flattened
+        'tags': tags
     }
 
     return context
