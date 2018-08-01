@@ -24,7 +24,7 @@ celery_app.conf.update(
 
 
 def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
-               use_full_sample=True):
+               use_full_sample=True, return_json=True):
     print(
         'keywords to dropq',
         dict(
@@ -50,7 +50,11 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
     # TODO: Make this the distributed app version, not the TC version
     results['dropq_version'] = vinfo['version']
 
-    return results, pdfs
+    if return_json:
+        results['aggr_outputs'] = {}
+        return json.dumps(results)
+    else:
+        return results, pdfs
 
 
 @celery_app.task(name='api.celery_tasks.aggregate_yearly_results')
@@ -71,9 +75,11 @@ def aggregate_yearly_results(ans):
 
 
 @celery_app.task(name='api.celery_tasks.dropq_task_async')
-def dropq_task_async(year, user_mods, first_budget_year, use_puf_not_cps=True):
+def dropq_task_async(year, user_mods, first_budget_year, use_puf_not_cps=True,
+                     return_json=True):
     return dropq_task(year, user_mods, first_budget_year,
-                      use_puf_not_cps=use_puf_not_cps, use_full_sample=True)
+                      use_puf_not_cps=use_puf_not_cps, use_full_sample=True,
+                      return_json=return_json)
 
 
 @celery_app.task(name='api.celery_tasks.dropq_task_small_async')

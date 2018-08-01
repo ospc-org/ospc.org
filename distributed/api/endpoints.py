@@ -26,7 +26,7 @@ def dropq_endpoint(dropq_task):
     inputs = msgpack.loads(data, encoding='utf8',
                            use_list=True)
     print('inputs', inputs)
-    result = dropq_task.apply_async(kwargs=inputs['inputs'],
+    result = dropq_task.apply_async(kwargs=inputs[0],
                                     serializer='msgpack')
     length = client.llen(queue_name) + 1
     data = {'job_id': str(result), 'qlength': length}
@@ -39,7 +39,7 @@ def aggr_endpoint(task, callback):
     inputs = msgpack.loads(data, encoding='utf8',
                            use_list=True)
     print('inputs', inputs)
-    result = (chord(task.signature(kwargs=i,
+    result = (chord(task.signature(kwargs={**i, 'return_json': False},
                                    serializer='msgpack') for i in inputs)
               (callback.s()))
     length = client.llen(queue_name) + 1
