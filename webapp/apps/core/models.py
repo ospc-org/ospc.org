@@ -22,6 +22,7 @@ class CoreRun(models.Model):
     # Subclasses must implement:
     # inputs = models.OneToOneField(CoreInputs)
     outputs = JSONField(default=None, blank=True, null=True)
+    aggr_outputs = JSONField(default=None, blank=True, null=True)
     uuid = models.UUIDField(
         default=uuid.uuid1,
         editable=False,

@@ -131,7 +131,7 @@ class Compute(object):
 
     def get_results(self, job_id, job_failure=False):
         if job_failure:
-            return self._get_results_base(job_ids, job_failure=job_failure)
+            return self._get_results_base(job_id, job_failure=job_failure)
 
         ans = self._get_results_base(job_id, job_failure=job_failure)
 

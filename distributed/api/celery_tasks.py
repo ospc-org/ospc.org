@@ -7,6 +7,8 @@ import btax
 from btax.front_end_util import runner_json_tables
 import taxcalc
 
+from collections import defaultdict
+
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
                                    'redis://localhost:6379')
@@ -54,17 +56,17 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
 @celery_app.task(name='api.celery_tasks.aggregate_yearly_results')
 def aggregate_yearly_results(ans):
     results = {'outputs': []}
-    all_pdfs_to_aggregate = {key: [] for key in ('aggr_d', 'aggr_1', 'aggr_2')}
+    all_pdfs_to_aggregate = defaultdict(list)
     for formatted_result, pdfs_to_aggregate in ans:
         for key in formatted_result:
             if key == 'outputs':
-                results['outputs'] += result['outputs']
+                results['outputs'] += formatted_result['outputs']
             else:
-                results[key] = result[key]
-        # for key, value in pdfs_to_aggregate.items():
-        #     all_pdfs_to_aggregate[key].append(value)
-    results['aggr_outputs'] = taxcalc.tbi.run_taxcalc_years_aggregation(
-        all_pdfs_to_aggregate)
+                results[key] = formatted_result[key]
+        for key, value in pdfs_to_aggregate.items():
+            all_pdfs_to_aggregate[key].append(value)
+    results.update(taxcalc.tbi.run_taxcalc_years_aggregation(
+        all_pdfs_to_aggregate))
     return json.dumps(results)
 
 

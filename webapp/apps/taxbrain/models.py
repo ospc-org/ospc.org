@@ -1015,6 +1015,19 @@ class TaxBrainRun(CoreRun):
              "tooltip": constants.INCOME_DECILES_TOOLTIP}
          ]}
     ]
+    aggr_tags = [
+        {"key": "law",
+         "values": [
+            {"value": "current",
+             "title": "Current Law",
+             "tooltip": ""},
+            {"value": "reform",
+             "title": "Reform",
+             "tooltip": ""},
+            {"value": "change",
+             "title": "Change",
+             "tooltip": ""}
+          ]}]
 
 
 class OutputUrl(models.Model):
