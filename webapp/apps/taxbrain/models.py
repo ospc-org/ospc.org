@@ -987,6 +987,9 @@ class TaxBrainRun(CoreRun):
                     {"value": "reform",
                      "title": "Reform",
                      "tooltip": constants.REFORM_TOOLTIP},
+                    {"value": "other",
+                     "title": "Other",
+                     "tooltip": "heyoooo"},
                  ]}]},
             {"value": "diff",
              "title": "Difference Table",
@@ -1003,7 +1006,20 @@ class TaxBrainRun(CoreRun):
                     {"value": "combined",
                      "title": "Combined",
                      "tooltip": ""}  # TODO
-                 ]}]}
+                 ]}]},
+            {"value": "mtr",
+             "title": "MTR table",
+             "tooltip": "show MTR",
+             "children": [
+                 {"key": "wrt_type",
+                  "values": [
+                      {"value": "primary",
+                       "title": "MTR's wrt Primary Earner",
+                       "tooltip": "Marginal Tax Rates wrt Primary Earner"},
+                      {"value": "spouse",
+                       "title": "MTR's wrt Spouse",
+                       "tooltip": "Marginal Tax Rates wrt Spouse"},
+                  ]}]},
          ]},
         {"key": "grouping",
          "values": [
@@ -1012,7 +1028,10 @@ class TaxBrainRun(CoreRun):
              "tooltip": constants.INCOME_BINS_TOOLTIP},
             {"value": "deciles",
              "title": "Income Deciles",
-             "tooltip": constants.INCOME_DECILES_TOOLTIP}
+             "tooltip": constants.INCOME_DECILES_TOOLTIP},
+            {"value": "percentiles",
+             "title": "Income Percentiles",
+             "tooltip": "Income percentiles"}
          ]}
     ]
     aggr_tags = [
