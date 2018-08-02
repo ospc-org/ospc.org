@@ -94,6 +94,7 @@
         {% if allow_dyn_links %}
         <button onclick="buttonAction()" class="text-white btn btn-secondary">Link to Dynamic Simulations</button>
         {% endif %}
+        <a href="/taxbrain/{{ unique_url.pk }}/download" class="text-white btn btn-secondary">Download Files</a>
         {% endif %}
       </div>
       {% if reform_file_contents and assump_file_contents %}

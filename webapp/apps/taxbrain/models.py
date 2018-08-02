@@ -1048,6 +1048,9 @@ class TaxBrainRun(CoreRun):
              "tooltip": ""}
           ]}]
 
+    def zip_filename(self):
+        return 'taxbrain'
+
 
 class OutputUrl(models.Model):
     """
