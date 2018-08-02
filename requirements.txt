@@ -28,3 +28,4 @@ python-dateutil
 toolz
 whitenoise
 msgpack
+dataclasses  # This will not be needed with Python >=3.7

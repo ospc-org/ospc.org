@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField, ArrayField
 import datetime
 from django.utils.timezone import make_aware
-from ..core.models import CoreInputs, CoreRun
+from ..core.models import CoreInputs, CoreRun, Tag, TagOption
 
 import taxcalc
 
@@ -973,80 +973,88 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
 class TaxBrainRun(CoreRun):
     inputs = models.OneToOneField(TaxSaveInputs)
     tags = [
-        {"key": "table_type",
-         "values": [
-            {"value": "dist",
-             "title": "Distribution Table",
-             "tooltip": constants.DISTRIBUTION_TOOLTIP,
-             "children": [
-                {"key": "law",
-                 "values": [
-                    {"value": "current",
-                     "title": "Current Law",
-                     "tooltip": constants.BASE_TOOLTIP},
-                    {"value": "reform",
-                     "title": "Reform",
-                     "tooltip": constants.REFORM_TOOLTIP},
-                    {"value": "other",
-                     "title": "Other",
-                     "tooltip": "heyoooo"},
-                 ]}]},
-            {"value": "diff",
-             "title": "Difference Table",
-             "tooltip": constants.DIFFERENCE_TOOLTIP,
-             "children": [
-                {"key": "tax_type",
-                 "values": [
-                    {"value": "payroll",
-                     "title": "Payroll Tax",
-                     "tooltip": constants.PAYROLL_TOOLTIP},
-                    {"value": "ind_income",
-                     "title": "Income Tax",
-                     "tooltip": constants.INCOME_TOOLTIP},
-                    {"value": "combined",
-                     "title": "Combined",
-                     "tooltip": ""}  # TODO
-                 ]}]},
-            {"value": "mtr",
-             "title": "MTR table",
-             "tooltip": "show MTR",
-             "children": [
-                 {"key": "wrt_type",
-                  "values": [
-                      {"value": "primary",
-                       "title": "MTR's wrt Primary Earner",
-                       "tooltip": "Marginal Tax Rates wrt Primary Earner"},
-                      {"value": "spouse",
-                       "title": "MTR's wrt Spouse",
-                       "tooltip": "Marginal Tax Rates wrt Spouse"},
-                  ]}]},
-         ]},
-        {"key": "grouping",
-         "values": [
-            {"value": "bins",
-             "title": "Income Bins",
-             "tooltip": constants.INCOME_BINS_TOOLTIP},
-            {"value": "deciles",
-             "title": "Income Deciles",
-             "tooltip": constants.INCOME_DECILES_TOOLTIP},
-            {"value": "percentiles",
-             "title": "Income Percentiles",
-             "tooltip": "Income percentiles"}
-         ]}
-    ]
+        Tag(key="table_type",
+            values=[
+                TagOption(
+                    value="dist",
+                    title="Distribution Table",
+                    tooltip=constants.DISTRIBUTION_TOOLTIP,
+                    children=[
+                        Tag(key="law",
+                            values=[
+                                TagOption(
+                                    value="current",
+                                    title="Current Law",
+                                    tooltip=constants.BASE_TOOLTIP),
+                                TagOption(
+                                    value="reform",
+                                    title="Reform",
+                                    tooltip=constants.REFORM_TOOLTIP)])]),
+                TagOption(
+                    value="diff",
+                    title="Difference Table",
+                    tooltip=constants.DIFFERENCE_TOOLTIP,
+                    children=[
+                        Tag(key="tax_type",
+                            values=[
+                                TagOption(
+                                    value="payroll",
+                                    title="Payroll Tax",
+                                    tooltip=constants.PAYROLL_TOOLTIP),
+                                TagOption(
+                                    value="ind_income",
+                                    title="Income Tax",
+                                    tooltip=constants.INCOME_TOOLTIP),
+                                TagOption(
+                                    value="combined",
+                                    title="Combined",
+                                    tooltip="")  # TODO
+                            ])]),
+                TagOption(
+                    value="mtr",
+                    title="MTR table",
+                    tooltip="show MTR",
+                    children=[
+                        Tag(key="wrt_type",
+                            values=[
+                                TagOption(
+                                    value="primary",
+                                    title="MTR's wrt Primary Earner",
+                                    tooltip="Marginal Tax Rates wrt Primary"
+                                            "Earner"),
+                                TagOption(
+                                    value="spouse",
+                                    title="MTR's wrt Spouse",
+                                    tooltip="Marginal Tax Rates wrt Spouse")
+                            ])])]),
+        Tag(key="grouping",
+            values=[
+                TagOption(
+                    value="bins",
+                    title="Income Bins",
+                    tooltip=constants.INCOME_BINS_TOOLTIP),
+                TagOption(
+                    value="deciles",
+                    title="Income Deciles",
+                    tooltip=constants.INCOME_DECILES_TOOLTIP),
+                TagOption(
+                    value="percentiles",
+                    title="Income Percentiles",
+                    tooltip="Income percentiles")
+            ])]
     aggr_tags = [
-        {"key": "law",
-         "values": [
-            {"value": "current",
-             "title": "Current Law",
-             "tooltip": ""},
-            {"value": "reform",
-             "title": "Reform",
-             "tooltip": ""},
-            {"value": "change",
-             "title": "Change",
-             "tooltip": ""}
-          ]}]
+        Tag(key="law",
+            values=[
+                TagOption(
+                    value="current",
+                    title="Current Law"),
+                TagOption(
+                    value="reform",
+                    title="Reform"),
+                TagOption(
+                    value="change",
+                    title="Change")
+            ])]
 
     def zip_filename(self):
         return 'taxbrain'

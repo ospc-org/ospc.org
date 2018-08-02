@@ -120,12 +120,6 @@ def get_result_context(model, request):
 
     tags = model.tags
     aggr_tags = model.aggr_tags
-    for tag_type in (tags, aggr_tags):
-        for tag in tags:
-            for index, value in enumerate(tag['values']):
-                if 'children' in value:
-                    for child in value['children']:
-                        child['hidden'] = False if index == 0 else True
 
     context = {
         'locals': locals(),

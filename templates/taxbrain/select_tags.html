@@ -3,7 +3,7 @@
   <div class="tag-{{ tag.key }}{% if tag.hidden %} hidden{% endif %}">
     <ul class="nav nav-pills nav-justified tag-selector">
       {% for value in tag.values %}
-      <li data-tag-{{ tag.key }}="{{ value.value }}" data-children-keys="{% for child in value.children %}{{ child.key }} {% endfor %}"{% if forloop.first %} class="active"{% endif %}><a data-toggle="tooltip" data-placement="bottom" title="{{ value.tooltip }}" href="#">{{ value.title }}</a></li>
+      <li data-tag-{{ tag.key }}="{{ value.value }}" data-children-keys="{% for child in value.children %}{{ child.key }} {% endfor %}"{% if forloop.first %} class="active"{% endif %}><a{% if value.tooltip != None %} data-toggle="tooltip"{% endif %} data-placement="bottom" title="{{ value.tooltip }}" href="#">{{ value.title }}</a></li>
       {% endfor %}
     </ul>
     {% comment %}

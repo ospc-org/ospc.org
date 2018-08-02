@@ -5,6 +5,8 @@ import datetime
 from django.utils.timezone import make_aware
 from django.core.urlresolvers import reverse
 import uuid
+from dataclasses import dataclass, field
+from typing import List, Union
 
 
 class CoreInputs(models.Model):
@@ -50,3 +52,23 @@ class CoreRun(models.Model):
 
     class Meta:
         abstract = True
+
+
+@dataclass
+class Tag:
+    key: str
+    values: List['TagOption']
+    hidden: bool = False
+
+    def __post_init__(self):
+        for option in self.values[1:]:
+            for child in option.children:
+                child.hidden = True
+
+
+@dataclass
+class TagOption:
+    value: str
+    title: str
+    tooltip: Union[str, None] = None
+    children: List[Tag] = field(default_factory=list)
