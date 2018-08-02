@@ -11,7 +11,11 @@ from ..taxbrain.param_formatters import to_json_reform
 from ..taxbrain.models import TaxSaveInputs
 from django.shortcuts import (render, render_to_response, get_object_or_404,
                               redirect)
+from django.http import HttpResponse, Http404
 from django.template.context import RequestContext
+import itertools
+from io import BytesIO
+from zipfile import ZipFile
 
 
 def output_detail(request, pk, model_class=CoreRun):
@@ -147,3 +151,30 @@ def get_result_context(model, request):
     }
 
     return context
+
+
+def download_outputs(request, pk, model_class=CoreRun):
+    model = get_object_or_404(model_class, uuid=pk)
+    if not model.outputs or model.error_text:
+        return redirect(model)
+
+    try:
+        downloadables = list(itertools.chain.from_iterable(
+            output['downloadable'] for output in model.outputs
+        ))
+    except KeyError:
+        raise Http404
+    if not downloadables:
+        raise Http404
+
+    s = BytesIO()
+    z = ZipFile(s, mode='w')
+    for i in downloadables:
+        z.writestr(i['filename'], i['text'])
+    z.close()
+
+    resp = HttpResponse(s.getvalue(), content_type="application/zip")
+    resp['Content-Disposition'] = 'attachment; filename={}'.format(
+        model.zip_filename())
+    s.close()
+    return resp
