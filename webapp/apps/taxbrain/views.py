@@ -26,10 +26,12 @@ from .models import TaxSaveInputs
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode, make_bool)
 from .param_displayers import nested_form_parameters
-from ..core.compute import (Compute, JobFailError,
-                            NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK)
+from ..core.compute import (Compute, JobFailError)
 from ..taxbrain.models import TaxBrainRun, JSONReformTaxCalculator
 from .mock_compute import MockCompute
+from .compute import NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
+from ..core.views import CoreRunDetailView, CoreRunDownloadView
+from ..core.models import Tag, TagOption
 
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
@@ -62,6 +64,103 @@ TAXCALC_VERSION = tcversion_info['version']
 JOB_PROC_TIME_IN_SECONDS = 35
 
 
+class TaxBrainRunDetailView(CoreRunDetailView):
+    model = TaxBrainRun
+
+    result_header = "Static Results"
+
+    tags = [
+        Tag(key="table_type",
+            values=[
+                TagOption(
+                    value="dist",
+                    title="Distribution Table",
+                    tooltip=DISTRIBUTION_TOOLTIP,
+                    children=[
+                        Tag(key="law",
+                            values=[
+                                TagOption(
+                                    value="current",
+                                    title="Current Law",
+                                    tooltip=BASE_TOOLTIP),
+                                TagOption(
+                                    value="reform",
+                                    title="Reform",
+                                    tooltip=REFORM_TOOLTIP)])]),
+                TagOption(
+                    value="diff",
+                    title="Difference Table",
+                    tooltip=DIFFERENCE_TOOLTIP,
+                    children=[
+                        Tag(key="tax_type",
+                            values=[
+                                TagOption(
+                                    value="payroll",
+                                    title="Payroll Tax",
+                                    tooltip=PAYROLL_TOOLTIP),
+                                TagOption(
+                                    value="ind_income",
+                                    title="Income Tax",
+                                    tooltip=INCOME_TOOLTIP),
+                                TagOption(
+                                    value="combined",
+                                    title="Combined",
+                                    tooltip="")  # TODO
+                            ])]),
+                TagOption(
+                    value="mtr",
+                    title="MTR table",
+                    tooltip="show MTR",
+                    children=[
+                        Tag(key="wrt_type",
+                            values=[
+                                TagOption(
+                                    value="primary",
+                                    title="MTR's wrt Primary Earner",
+                                    tooltip="Marginal Tax Rates wrt Primary"
+                                            "Earner"),
+                                TagOption(
+                                    value="spouse",
+                                    title="MTR's wrt Spouse",
+                                    tooltip="Marginal Tax Rates wrt Spouse")
+                            ])])]),
+        Tag(key="grouping",
+            values=[
+                TagOption(
+                    value="bins",
+                    title="Income Bins",
+                    tooltip=INCOME_BINS_TOOLTIP),
+                TagOption(
+                    value="deciles",
+                    title="Income Deciles",
+                    tooltip=INCOME_DECILES_TOOLTIP),
+                TagOption(
+                    value="percentiles",
+                    title="Income Percentiles",
+                    tooltip="Income percentiles")
+            ])]
+    aggr_tags = [
+        Tag(key="law",
+            values=[
+                TagOption(
+                    value="current",
+                    title="Current Law"),
+                TagOption(
+                    value="reform",
+                    title="Reform"),
+                TagOption(
+                    value="change",
+                    title="Change")
+            ])]
+
+    def has_link_to_dyn(self):
+        return not self.is_from_file()
+
+
+class TaxBrainRunDownloadView(CoreRunDownloadView):
+    model = TaxBrainRun
+
+
 def log_ip(request):
     """
     Attempt to get the IP address of this request and log it
@@ -88,6 +187,7 @@ def save_model(post_meta):
     model.first_year = int(post_meta.start_year)
     model.data_source = post_meta.data_source
     model.quick_calc = not post_meta.do_full_calc
+    model.years_n = ",".join(str(i) for i in post_meta.years_n)
     model.save()
 
     # create OutputUrl object
@@ -293,12 +393,13 @@ def submit_reform(request, user=None, json_reform_id=None):
                 'first_budget_year': int(start_year),
                 'use_puf_not_cps': use_puf_not_cps}
         if do_full_calc:
-            data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
+            years_n = list(range(NUM_BUDGET_YEARS))
+            data_list = [dict(year=i, **data) for i in years_n]
             submitted_id, max_q_length = (
                 dropq_compute.submit_calculation(data_list))
         else:
-            data_list = [dict(year=i, **data)
-                         for i in range(NUM_BUDGET_YEARS_QUICK)]
+            years_n = list(range(NUM_BUDGET_YEARS_QUICK))
+            data_list = [dict(year=i, **data) for i in years_n]
             submitted_id, max_q_length = (
                 dropq_compute.submit_quick_calculation(data_list))
 
@@ -322,7 +423,8 @@ def submit_reform(request, user=None, json_reform_id=None):
         submitted_id=submitted_id,
         max_q_length=max_q_length,
         user=user,
-        url=None
+        url=None,
+        years_n=years_n
     )
 
 
@@ -539,7 +641,8 @@ def submit_micro(request, pk):
             'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
-    data_list = [dict(year=i, **data) for i in range(NUM_BUDGET_YEARS)]
+    years_n = list(range(NUM_BUDGET_YEARS))
+    data_list = [dict(year=i, **data) for i in years_n]
     submitted_id, max_q_length = dropq_compute.submit_calculation(
         data_list
     )
@@ -565,7 +668,8 @@ def submit_micro(request, pk):
         user=None,
         personal_inputs=None,
         stop_submission=False,
-        errors_warnings=None
+        errors_warnings=None,
+        years_n=years_n
     )
 
     url = save_model(post_meta)

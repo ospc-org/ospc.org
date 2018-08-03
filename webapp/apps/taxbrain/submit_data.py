@@ -20,7 +20,8 @@ PostMeta = namedtuple(
      'submitted_id',
      'max_q_length',
      'user',
-     'url']
+     'url',
+     'years_n']
 )
 
 BadPost = namedtuple('BadPost', ['http_response_404', 'has_errors'])

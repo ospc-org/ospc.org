@@ -5,8 +5,6 @@ from requests.exceptions import RequestException, Timeout
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
-NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
-NUM_BUDGET_YEARS_QUICK = int(os.environ.get('NUM_BUDGET_YEARS_QUICK', 1))
 WORKER_HN = os.environ.get('DROPQ_WORKERS')
 DROPQ_URL = "/dropq_start_job"
 # URL to perform the dropq algorithm on a sample of the full dataset
@@ -21,8 +19,6 @@ class JobFailError(Exception):
 
 
 class Compute(object):
-    num_budget_years = NUM_BUDGET_YEARS
-
     def remote_submit_job(
             self,
             theurl,

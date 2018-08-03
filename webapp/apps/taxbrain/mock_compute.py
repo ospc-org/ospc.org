@@ -2,7 +2,8 @@ import os
 from ..core.compute import Compute
 import requests_mock
 import json
-from ..core.compute import (NUM_BUDGET_YEARS, DROPQ_URL, DROPQ_SMALL_URL)
+from ..core.compute import DROPQ_URL, DROPQ_SMALL_URL
+from .compute import NUM_BUDGET_YEARS
 
 
 class MockCompute(Compute):
