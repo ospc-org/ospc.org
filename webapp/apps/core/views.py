@@ -8,7 +8,7 @@ from ..taxbrain.param_formatters import to_json_reform
 from ..taxbrain.models import TaxSaveInputs
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin, DetailView
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
 from django.template.context import RequestContext
 import itertools
@@ -64,24 +64,27 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
     is_editable = True
     result_header = "Results"
 
+    def fail(self):
+        return render(self.request, 'core/failed.html',
+                      {"error_msg": self.object.error_text})
+
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
 
         if self.object.outputs:
             return super().get(self, request, *args, **kwargs)
-        elif self.object.error_text:
-            return render_to_response(request, 'taxbrain/failed.html',
-                                      {"error_msg": self.object.error_text})
+        elif self.object.error_text is not None:
+            return self.fail()
         else:
             job_id = str(self.object.job_id)
             try:
                 job_ready = self.dropq_compute.results_ready(job_id)
             except JobFailError as jfe:
-                return render_to_response('taxbrain/failed.html')
+                self.object.error_text = ""
+                return self.fail()
             if job_ready == 'FAIL':
-                # Just need the error message from one failed job
-                error_msgs = self.dropq_compute.get_results(job_id,
-                                                            job_failure=True)
+                error_msg = self.dropq_compute.get_results(job_id,
+                                                           job_failure=True)
                 if not error_msg:
                     error_msg = ("Error: stack trace for this error is "
                                  "unavailable")
@@ -89,8 +92,7 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
                 error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
                 self.object.error_text = error_contents
                 self.object.save()
-                return render_to_response(request, 'taxbrain/failed.html',
-                                          {"error_msg": error_contents})
+                return self.fail()
 
             if job_ready == 'YES':
                 results = self.dropq_compute.get_results(job_id)
@@ -118,10 +120,10 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
 
                 else:
                     context = {'eta': '100'}
-                    return render_to_response(
-                        'taxbrain/not_ready.html',
-                        context,
-                        context_instance=RequestContext(request)
+                    return render(
+                        request,
+                        'core/not_ready.html',
+                        context
                     )
 
     def is_from_file(self):

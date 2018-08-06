@@ -47,8 +47,9 @@ class CoreRun(models.Model):
         unique=True,
         primary_key=True)
     error_text = models.CharField(
-        null=False,
+        null=True,
         blank=True,
+        default=None,
         max_length=4000)
     user = models.ForeignKey(User, null=True, default=None)
     creation_date = models.DateTimeField(
