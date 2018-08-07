@@ -24,7 +24,7 @@ def aggr_endpoint(compute_task, postprocess_task):
     inputs = msgpack.loads(data, encoding='utf8',
                            use_list=True)
     print('inputs', inputs)
-    result = (chord(compute_task.signature(kwargs=i)
+    result = (chord(compute_task.signature(kwargs=i, serializer='msgpack')
               for i in inputs))(postprocess_task.s())
     length = client.llen(queue_name) + 1
     data = {'job_id': str(result), 'qlength': length}
