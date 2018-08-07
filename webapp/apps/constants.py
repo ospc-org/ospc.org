@@ -1,5 +1,7 @@
 import os
+import taxcalc
 
+from django.conf import settings
 from django.utils.safestring import mark_safe
 
 DISTRIBUTION_TOOLTIP = "Key variables in the computation of tax liabilities."
@@ -45,3 +47,8 @@ OUT_OF_RANGE_ERROR_MSG = mark_safe("""
     &emsp;- If the field has an error message, then the parameter value must be
     changed so that it is in a valid range.
 </div>""")
+
+
+WEBAPP_VERSION = settings.WEBAPP_VERSION
+tcversion_info = taxcalc._version.get_versions()
+TAXCALC_VERSION = tcversion_info['version']
