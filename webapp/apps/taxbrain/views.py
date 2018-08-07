@@ -106,23 +106,6 @@ class TaxBrainRunDetailView(CoreRunDetailView):
                                     value="combined",
                                     title="Combined",
                                     tooltip="")  # TODO
-                            ])]),
-                TagOption(
-                    value="mtr",
-                    title="MTR table",
-                    tooltip="show MTR",
-                    children=[
-                        Tag(key="wrt_type",
-                            values=[
-                                TagOption(
-                                    value="primary",
-                                    title="MTR's wrt Primary Earner",
-                                    tooltip="Marginal Tax Rates wrt Primary"
-                                            "Earner"),
-                                TagOption(
-                                    value="spouse",
-                                    title="MTR's wrt Spouse",
-                                    tooltip="Marginal Tax Rates wrt Spouse")
                             ])])]),
         Tag(key="grouping",
             values=[
@@ -133,11 +116,7 @@ class TaxBrainRunDetailView(CoreRunDetailView):
                 TagOption(
                     value="deciles",
                     title="Income Deciles",
-                    tooltip=INCOME_DECILES_TOOLTIP),
-                TagOption(
-                    value="percentiles",
-                    title="Income Percentiles",
-                    tooltip="Income percentiles")
+                    tooltip=INCOME_DECILES_TOOLTIP)
             ])]
     aggr_tags = [
         Tag(key="law",
