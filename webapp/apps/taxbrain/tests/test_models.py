@@ -1,24 +1,25 @@
 from django.test import TestCase
 import json
 
+import pytest
+
 from ..models import JSONReformTaxCalculator, TaxSaveInputs
 from ..forms import TaxBrainForm
 from ...test_assets.test_models import TaxBrainTableResults, TaxBrainFieldsTest
 
 
-class TaxBrainJSONReformModelTest(TestCase):
+@pytest.mark.django_db
+class TestTaxBrainJSONReformModel(object):
     """Test taxbrain JSONReformTaxCalculator."""
 
-    def setUp(self):
-        # Every test needs a client.
-        self.test_string = "".join(["1" for x in range(100000)])
+    test_string = "".join(["1" for x in range(100000)])
 
     def test_create_reforms(self):
         self.reforms = JSONReformTaxCalculator.objects.create(
-            reform_text=self.test_string,
-            raw_reform_text=self.test_string,
-            assumption_text=self.test_string,
-            raw_assumption_text=self.test_string
+            reform_text=TestTaxBrainJSONReformModel.test_string,
+            raw_reform_text=TestTaxBrainJSONReformModel.test_string,
+            assumption_text=TestTaxBrainJSONReformModel.test_string,
+            raw_assumption_text=TestTaxBrainJSONReformModel.test_string
         )
 
     def test_get_errors_warnings_pre_PB_160(self):
@@ -50,20 +51,28 @@ class TaxBrainJSONReformModelTest(TestCase):
         assert reform.get_errors_warnings() == post_PB_160
 
 
-class TaxBrainStaticResultsTest(TaxBrainTableResults, TestCase):
+class TestTaxBrainStaticResults(TaxBrainTableResults):
 
-    def test_static_tc_lt_0130(self):
-        self.tc_lt_0130(self.test_coverage_fields)
+    def test_static_tc_lt_0130(self, test_coverage_fields, skelaton_res_lt_0130,
+                               skelaton_res_gt_0130):
+        self.tc_table_backcompat(test_coverage_fields, skelaton_res_lt_0130,
+                                 skelaton_res_gt_0130,
+                                 taxcalc_vers="0.10.2.abc",
+                                 webapp_vers="1.1.1")
 
-    def test_static_tc_gt_0130(self):
-        self.tc_gt_0130(self.test_coverage_fields)
+    def test_static_tc_gt_0130(self, test_coverage_fields,
+                               skelaton_res_gt_0130):
+        self.tc_table_backcompat(test_coverage_fields, skelaton_res_gt_0130,
+                                 skelaton_res_gt_0130,
+                                 taxcalc_vers="0.13.0",
+                                 webapp_vers="1.2.0")
 
 
-class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
+class TestTaxBrainStaticFields(TaxBrainFieldsTest):
 
-    def test_set_fields(self):
+    def test_set_fields(self, test_coverage_gui_fields):
         start_year = 2017
-        fields = self.test_coverage_gui_fields.copy()
+        fields = test_coverage_gui_fields.copy()
         fields['first_year'] = start_year
 
         self.parse_fields(start_year, fields, Form=TaxBrainForm)
@@ -112,9 +121,9 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
         assert 'deprecated_param' not in tsi.input_fields
         assert 'yet_another_deprecated_param' not in tsi.input_fields
 
-    def test_data_source_puf(self):
+    def test_data_source_puf(self, test_coverage_gui_fields):
         start_year = 2017
-        fields = self.test_coverage_gui_fields.copy()
+        fields = test_coverage_gui_fields.copy()
         fields['first_year'] = start_year
         fields['data_source'] = 'PUF'
         model = self.parse_fields(start_year, fields,
@@ -122,9 +131,9 @@ class TaxBrainStaticFieldsTest(TaxBrainFieldsTest, TestCase):
 
         assert model.use_puf_not_cps
 
-    def test_data_source_cps(self):
+    def test_data_source_cps(self, test_coverage_gui_fields):
         start_year = 2017
-        fields = self.test_coverage_gui_fields.copy()
+        fields = test_coverage_gui_fields.copy()
         fields['first_year'] = start_year
         fields['data_source'] = 'CPS'
         model = self.parse_fields(start_year, fields,

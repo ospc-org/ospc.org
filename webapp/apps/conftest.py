@@ -9,31 +9,7 @@ CUR_PATH = os.path.join(
 )
 
 
-def set_fixture_prop(func):
-    """
-    Decorator for py.test fixtures that sets a class property if it is called
-    by a class. This is required because you cannot pass py.test fixtures as
-    arguments for class methods
-
-    py.test fixture in class:
-    https://docs.pytest.org/en/latest/unittest.html
-
-    py.test access args for decorated function:
-    https://github.com/pytest-dev/pytest/issues/2782
-    """
-    @functools.wraps(func)
-    def wrapper(request):
-        res = func(request)
-        if request.cls:
-            setattr(request.cls, request.fixturename, res)
-
-        return res
-
-    return wrapper
-
-
 @pytest.fixture()
-@set_fixture_prop
 def r1(request):
     with open(os.path.join(CUR_PATH, 'r1.json')) as f:
         return f.read()
@@ -46,14 +22,12 @@ def regression_sample_reform():
 
 
 @pytest.fixture()
-@set_fixture_prop
 def bad_reform(request):
     with open(os.path.join(CUR_PATH, 'bad_reform.json')) as f:
         return f.read()
 
 
 @pytest.fixture()
-@set_fixture_prop
 def warning_reform(request):
     with open(os.path.join(CUR_PATH, 'warning_reform.json')) as f:
         return f.read()
@@ -94,7 +68,6 @@ def fields_base():
 
 
 @pytest.fixture()
-@set_fixture_prop
 def test_coverage_gui_fields(request):
     _test_coverage_gui_fields = {
         'cpi_offset': ['<', -0.0025],
@@ -111,7 +84,6 @@ def test_coverage_gui_fields(request):
 
 
 @pytest.fixture()
-@set_fixture_prop
 def test_coverage_fields(request):
     # quick work-around to get set_fixture_prop decorator to work with
     # fixture as argument
@@ -126,7 +98,6 @@ def test_coverage_fields(request):
 
 
 @pytest.fixture()
-@set_fixture_prop
 def test_coverage_behavioral_gui_fields(request):
     _test_coverage_behavoiral_gui_fields = {
         'BE_sub': [1.0],
@@ -137,7 +108,6 @@ def test_coverage_behavioral_gui_fields(request):
 
 
 @pytest.fixture()
-@set_fixture_prop
 def test_coverage_behavioral_fields(request):
     # quick work-around to get set_fixture_prop decorator to work with
     # fixture as argument
@@ -336,7 +306,6 @@ def exp_errors_warnings_policy_behavior():
 
 
 @pytest.fixture()
-@set_fixture_prop
 def assumptions_text(request):
     with open(os.path.join(CUR_PATH, 'assumptions_text.txt')) as f:
         return f.read()
@@ -393,7 +362,6 @@ def errors_warnings_exp_read_json_assumptions():
 
 
 @pytest.fixture()
-@set_fixture_prop
 def skelaton_res_lt_0130(request):
     _path = os.path.join(CUR_PATH, "skelaton_res_lt_0130.json")
     with open(_path) as js:
@@ -401,7 +369,6 @@ def skelaton_res_lt_0130(request):
 
 
 @pytest.fixture()
-@set_fixture_prop
 def skelaton_res_gt_0130(request):
     _path = os.path.join(CUR_PATH, "skelaton_res_gt_0130.json")
     with open(_path) as js:
