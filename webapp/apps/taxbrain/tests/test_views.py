@@ -24,8 +24,6 @@ NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
 START_YEAR = 2016
 
 
-@pytest.mark.usefixtures("r1", "assumptions_text", "warning_reform",
-                         "bad_reform", "test_coverage_fields")
 @pytest.mark.django_db
 class TestTaxBrainViews(object):
     ''' Test the views of this app. '''
@@ -108,12 +106,12 @@ class TestTaxBrainViews(object):
                             str(START_YEAR), data_source=data_source)
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
-    def test_taxbrain_file_post_quick_calc(self, data_source):
+    def test_taxbrain_file_post_quick_calc(self, data_source, r1):
         """
         Using file-upload interface, test quick calculation post and full
         post from quick_calc page
         """
-        data = get_file_post_data(START_YEAR, self.r1, quick_calc=False)
+        data = get_file_post_data(START_YEAR, r1, quick_calc=False)
         data.pop('data_source')
         data.pop('start_year')
 
@@ -129,7 +127,7 @@ class TestTaxBrainViews(object):
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
-            self.r1,
+            r1,
             None,
         )
         truth_mods = truth_mods["policy"]
@@ -488,13 +486,14 @@ class TestTaxBrainViews(object):
         'data_source,use_assumptions',
         [('PUF', True), ('CPS', False)]
     )
-    def test_taxbrain_post_file(self, data_source, use_assumptions):
+    def test_taxbrain_post_file(self, data_source, use_assumptions,
+                                assumptions_text, r1):
         if use_assumptions:
-            assumptions_text = self.assumptions_text
+            assumptions_text = assumptions_text
         else:
             assumptions_text = None
         data = get_file_post_data(START_YEAR,
-                                  self.r1,
+                                  r1,
                                   assumptions_text)
         data.pop('start_year')
         data.pop('data_source')
@@ -508,11 +507,11 @@ class TestTaxBrainViews(object):
                             str(START_YEAR), data_source=data_source)
 
     @pytest.mark.xfail
-    def test_taxbrain_view_old_data_model(self):
+    def test_taxbrain_view_old_data_model(self, test_coverage_fields):
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        unique_url = get_taxbrain_model(self.test_coverage_fields,
+        unique_url = get_taxbrain_model(test_coverage_fields,
                                         taxcalc_vers="0.10.0",
                                         webapp_vers="1.1.0")
 
@@ -550,7 +549,7 @@ class TestTaxBrainViews(object):
         assert response.context['has_errors'] is True
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
-    def test_taxbrain_error_reform_file(self, data_source):
+    def test_taxbrain_error_reform_file(self, data_source, bad_reform):
         """
         POST a reform file that causes errors. See PB issue #630
         """
@@ -559,7 +558,7 @@ class TestTaxBrainViews(object):
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = get_file_post_data(START_YEAR, self.bad_reform)
+        data = get_file_post_data(START_YEAR, bad_reform)
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(
@@ -592,7 +591,7 @@ class TestTaxBrainViews(object):
         assert response.context['start_year'] == str(START_YEAR)
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
-    def test_taxbrain_warning_reform_file(self, data_source):
+    def test_taxbrain_warning_reform_file(self, data_source, warning_reform):
         """
         POST a reform file that causes warnings and check that re-submission
         is allowed. See PB issue #630 and #761
@@ -601,7 +600,7 @@ class TestTaxBrainViews(object):
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
-        data = get_file_post_data(START_YEAR, self.warning_reform)
+        data = get_file_post_data(START_YEAR, warning_reform)
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(
@@ -643,7 +642,8 @@ class TestTaxBrainViews(object):
         [('PUF', True), ('CPS', False)]
     )
     def test_taxbrain_reform_file_file_swap(
-            self, data_source, use_assumptions):
+        self, data_source, use_assumptions, assumptions_text,
+        warning_reform, r1):
         """
         POST a reform file that causes warnings, swap files, and make sure
         swapped files are used. See PB issue #630 and #761
@@ -653,11 +653,11 @@ class TestTaxBrainViews(object):
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
         if use_assumptions:
-            assumptions_text = self.assumptions_text
+            assumptions_text = assumptions_text
         else:
             assumptions_text = None
 
-        data = get_file_post_data(start_year, self.warning_reform,
+        data = get_file_post_data(start_year, warning_reform,
                                   assumptions_text)
         data.pop('start_year')
         data.pop('data_source')
@@ -685,7 +685,7 @@ class TestTaxBrainViews(object):
             'has_errors': ['True'],
         }
         data_file = get_file_post_data(START_YEAR,
-                                       self.r1,
+                                       r1,
                                        assumptions_text)
         data2['docfile'] = data_file['docfile']
 
@@ -716,9 +716,9 @@ class TestTaxBrainViews(object):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(start_year))
 
-    def test_taxbrain_file_up_to_2018(self):
+    def test_taxbrain_file_up_to_2018(self, r1):
         start_year = 2018
-        data = get_file_post_data(start_year, self.r1)
+        data = get_file_post_data(start_year, r1)
 
         post_url = '/taxbrain/file/'
 
@@ -730,7 +730,7 @@ class TestTaxBrainViews(object):
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
-            self.r1,
+            r1,
             None,
         )
         truth_mods = truth_mods["policy"]

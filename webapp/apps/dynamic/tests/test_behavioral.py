@@ -17,7 +17,6 @@ from ..forms import DynamicBehavioralInputsModelForm
 CLIENT = Client()
 
 
-@pytest.mark.usefixtures("r1")
 @pytest.mark.django_db
 class TestDynamicBehavioralViews(object):
     ''' Test the partial equilibrium dynamic views of this app. '''
@@ -110,9 +109,9 @@ class TestDynamicBehavioralViews(object):
         assert user_mods["behavior"][2016]["_BE_sub"][0] == 0.25
         assert last_posted['use_puf_not_cps'] is False
 
-    def test_behavioral_reform_from_file(self):
+    def test_behavioral_reform_from_file(self, r1):
         # Do the microsim from file
-        data = get_file_post_data(START_YEAR, self.r1)
+        data = get_file_post_data(START_YEAR, r1)
         micro1 = do_micro_sim(CLIENT, data, post_url='/taxbrain/file/')
         micro1 = micro1["response"]
 

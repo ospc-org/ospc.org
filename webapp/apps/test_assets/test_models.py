@@ -16,48 +16,31 @@ START_YEAR = 2016
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 
-@pytest.mark.usefixtures("test_coverage_fields", "test_coverage_gui_fields",
-                         "test_coverage_behavioral_fields")
-class TaxBrainModelsTest:
-
-    def setUp(self):
-        pass
-
 
 @pytest.mark.usefixtures("skelaton_res_lt_0130",
                          "skelaton_res_gt_0130")
-class TaxBrainTableResults(TaxBrainModelsTest):
+@pytest.mark.django_db
+class TaxBrainTableResults(object):
 
-    def tc_lt_0130(self, fields, Form=TaxBrainForm, UrlModel=TaxBrainRun):
+    def tc_table_backcompat(self, fields, bef, aft, Form=TaxBrainForm,
+                            UrlModel=OutputUrl, taxcalc_vers="0.10.2.abc",
+                            webapp_vers="1.1.1"):
         unique_url = get_taxbrain_model(fields,
-                                        taxcalc_vers="0.10.2.abc",
-                                        webapp_vers="1.1.1",
+                                        taxcalc_vers=taxcalc_vers,
+                                        webapp_vers=webapp_vers,
                                         Form=Form, UrlModel=UrlModel)
 
-        model = unique_url.inputs
-        model.tax_result = self.skelaton_res_lt_0130
+        model = unique_url.unique_inputs
+        model.tax_result = bef
         model.creation_date = timezone.now()
         model.save()
 
-        np.testing.assert_equal(model.taxbrainrun,
-                                self.skelaton_res_gt_0130)
-
-    def tc_gt_0130(self, fields, Form=TaxBrainForm, UrlModel=TaxBrainRun):
-        unique_url = get_taxbrain_model(fields,
-                                        taxcalc_vers="0.13.0",
-                                        webapp_vers="1.2.0",
-                                        Form=Form, UrlModel=UrlModel)
-
-        model = unique_url.inputs
-        model.tax_result = self.skelaton_res_gt_0130
-        model.creation_date = timezone.now()
-        model.save()
-
-        np.testing.assert_equal(model.taxbrainrun,
-                                self.skelaton_res_gt_0130)
+        np.testing.assert_equal(model.get_tax_result(),
+                                aft)
 
 
-class TaxBrainFieldsTest(TaxBrainModelsTest):
+@pytest.mark.django_db
+class TaxBrainFieldsTest(object):
 
     def parse_fields(self, start_year, fields, Form=TaxBrainForm,
                      exp_result=None, use_puf_not_cps=True):
