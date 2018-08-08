@@ -335,7 +335,6 @@ def edit_personal_results(request, pk):
 
     model = url.inputs
     start_year = model.first_year
-    model.set_fields()
 
     msg = ('Field {} has been deprecated. Refer to the Tax-Calculator '
            'documentation for a sensible replacement.')
