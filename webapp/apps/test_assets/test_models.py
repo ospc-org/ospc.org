@@ -7,7 +7,6 @@ from ..taxbrain.models import (JSONReformTaxCalculator,
                                TaxBrainRun, TaxSaveInputs)
 from ..dynamic.models import (DynamicBehaviorSaveInputs,
                               DynamicElasticitySaveInputs)
-from ..btax.models import BTaxSaveInputs
 from .utils import get_taxbrain_model, stringify_fields
 from ..taxbrain.forms import TaxBrainForm
 

@@ -8,10 +8,8 @@ http://blog.kevinastone.com/django-model-behaviors.html
 from django.db import models
 
 
-from distutils.version import LooseVersion
 from .helpers import (rename_keys, reorder_lists, PRE_TC_0130_RES_MAP,
                       REORDER_LT_TC_0130_DIFF_LIST, DIFF_TABLE_IDs)
-from ..constants import TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
 from . import param_formatters
 
 
@@ -34,19 +32,20 @@ class Fieldable(models.Model):
         default_data = upstream_obj.default_data(start_year=self.start_year,
                                                  metadata=True)
 
-        if self.raw_input_fields is None:
-            self.raw_input_fields = {}
-            for field in self._meta.fields:
-                if (getattr(self, field.attname, None) and
+        if self.raw_gui_field_inputs is None:
+            self.raw_gui_field_inputs = {}
+            for field in self._meta.get_fields():
+                if (hasattr(field, 'attname') and
+                        getattr(self, field.attname, None) and
                         field.name not in nonparam_fields):
                     raw_val = getattr(self, field.attname)
                     if field.name.endswith(
                             "cpi") and isinstance(raw_val, bool):
                         raw_val = str(raw_val)
-                    self.raw_input_fields[field.name] = raw_val
+                    self.raw_gui_field_inputs[field.name] = raw_val
 
-        input_fields, failed_lookups = param_formatters.parse_fields(
-            self.raw_input_fields,
+        gui_field_inputs, failed_lookups = param_formatters.parse_fields(
+            self.raw_gui_field_inputs,
             default_data
         )
 
@@ -61,7 +60,7 @@ class Fieldable(models.Model):
             set_failed_lookups.difference_update(self.deprecated_fields)
             self.deprecated_fields += list(set_failed_lookups)
 
-        self.input_fields = input_fields
+        self.gui_field_inputs = gui_field_inputs
 
     def pop_extra_errors(self, errors_warnings):
         """
@@ -71,7 +70,7 @@ class Fieldable(models.Model):
             for action in ['warnings', 'errors']:
                 params = list(errors_warnings[project][action].keys())
                 for param in params:
-                    if param not in self.raw_input_fields:
+                    if param not in self.raw_gui_field_inputs:
                         errors_warnings[project][action].pop(param)
 
     def get_model_specs(self):

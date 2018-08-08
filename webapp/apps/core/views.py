@@ -1,16 +1,11 @@
-import json
 from django.utils import timezone
 from django.db import models
 from .models import CoreRun
 from .compute import Compute, JobFailError
-from ..formatters import get_version
-from ..taxbrain.param_formatters import to_json_reform
-from ..taxbrain.models import TaxSaveInputs
 from django.views.generic.base import View
 from django.views.generic.detail import SingleObjectMixin, DetailView
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404, JsonResponse
-from django.template.context import RequestContext
 import itertools
 from io import BytesIO
 from zipfile import ZipFile
@@ -81,6 +76,7 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
                 job_ready = self.dropq_compute.results_ready(job_id)
             except JobFailError as jfe:
                 self.object.error_text = ""
+                self.object.save()
                 return self.fail()
             if job_ready == 'FAIL':
                 error_msg = self.dropq_compute.get_results(job_id,
@@ -127,7 +123,7 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
                     )
 
     def is_from_file(self):
-        return not self.object.inputs.raw_input_fields
+        return not self.object.inputs.raw_gui_field_inputs
 
     def has_link_to_dyn(self):
         return False

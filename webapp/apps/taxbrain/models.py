@@ -1,5 +1,4 @@
 import uuid
-import json
 
 from django.db import models
 from django.core import validators
@@ -7,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 
-from django.contrib.postgres.fields import JSONField, ArrayField
+from django.contrib.postgres.fields import ArrayField
 import datetime
 from django.utils.timezone import make_aware
 from ..core.models import CoreInputs, CoreRun
@@ -37,41 +36,6 @@ class CommaSeparatedField(models.CharField):
         if kwargs.get("max_length", None) == 1000:
             del kwargs['max_length']
         return name, path, args, kwargs
-
-
-class JSONReformTaxCalculator(models.Model):
-    '''
-    This class holds all of the text for a JSON-based reform input
-    for TaxBrain. A TaxSavesInput Model will have a foreign key to
-    an instance of this model if the user created the TaxBrain job
-    through the JSON iput page.
-    '''
-    reform_text = models.TextField(blank=True, null=False)
-    raw_reform_text = models.TextField(blank=True, null=False)
-    assumption_text = models.TextField(blank=True, null=False)
-    raw_assumption_text = models.TextField(blank=True, null=False)
-    errors_warnings_text = models.TextField(blank=True, null=False)
-
-    def get_errors_warnings(self):
-        """
-        Errors were only stored for the taxcalc.Policy class until PB 1.6.0
-        This method ensures that old runs are parsed correctly
-        """
-        ew = json.loads(self.errors_warnings_text)
-        if 'errors' in ew:
-            return {'policy': ew}
-        else:
-            return ew
-
-
-class ErrorMessageTaxCalculator(models.Model):
-    '''
-    This class holds all of the text for an error message on
-    TaxBrain. A TaxSavesInput Model will have a foreign key to
-    an instance of this model if the user created the TaxBrain job
-    that ends up failing and reporting this failure.
-    '''
-    text = models.CharField(blank=True, null=False, max_length=4000)
 
 
 class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
@@ -883,22 +847,12 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
 
     """
 
-    # Result
-    tax_result = JSONField(default=None, blank=True, null=True)
-
     # deprecated fields list
     deprecated_fields = ArrayField(
         models.CharField(max_length=100, blank=True),
         blank=True,
         null=True
     )
-
-    # JSON input text
-    json_text = models.ForeignKey(
-        JSONReformTaxCalculator,
-        null=True,
-        default=None,
-        blank=True)
 
     def get_tax_result(self):
         """
@@ -908,18 +862,7 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
         """
         return Resultable.get_tax_result(self, OutputUrl)
 
-    NONPARAM_FIELDS = set(["job_ids",
-                           "jobs_not_ready",
-                           "first_year",
-                           "quick_calc",
-                           "tax_result",
-                           "raw_input_fields",
-                           "input_fields",
-                           "json_text",
-                           "error_text",
-                           "creation_date",
-                           "id",
-                           "data_source"])
+    NONPARAM_FIELDS = set(["id", "quick_calc", "data_source"])
 
     def set_fields(self):
         """
@@ -931,7 +874,9 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
             4. Remove errors on undisplayed parameters
         """
         Fieldable.set_fields(self, taxcalc.Policy,
-                             nonparam_fields=self.NONPARAM_FIELDS)
+                             nonparam_fields=self.NONPARAM_FIELDS.union(
+                                f.name
+                                for f in CoreInputs._meta.get_fields()))
 
     def get_model_specs(self):
         """
@@ -942,7 +887,7 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
         (reform_dict, assumptions_dict, reform_text, assumptions_text,
             errors_warnings) = param_formatters.get_reform_from_gui(
             self.start_year,
-            taxbrain_fields=self.input_fields,
+            taxbrain_fields=self.gui_field_inputs,
             use_puf_not_cps=self.use_puf_not_cps
         )
         Fieldable.pop_extra_errors(self, errors_warnings)

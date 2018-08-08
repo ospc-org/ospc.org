@@ -1,6 +1,6 @@
 from flask import Blueprint, request, make_response
 from celery.result import AsyncResult
-from celery import chain, chord
+from celery import chord
 
 import redis
 import json
@@ -25,7 +25,8 @@ def aggr_endpoint(compute_task, postprocess_task):
                            use_list=True)
     print('inputs', inputs)
     result = (chord(compute_task.signature(kwargs=i, serializer='msgpack')
-              for i in inputs))(postprocess_task.s())
+              for i in inputs))(postprocess_task.signature(
+                serializer='msgpack'))
     length = client.llen(queue_name) + 1
     data = {'job_id': str(result), 'qlength': length}
     return json.dumps(data)

@@ -7,7 +7,7 @@ from ipware.ip import get_real_ip
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 
-from ..taxbrain.models import TaxBrainRun, JSONReformTaxCalculator
+from ..taxbrain.models import TaxBrainRun
 from .compute import NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
 from .forms import TaxBrainForm
 from .helpers import make_bool, json_int_key_encode
@@ -21,7 +21,6 @@ PostMeta = namedtuple(
     'PostMeta',
     ['request',
      'personal_inputs',
-     'json_reform',
      'model',
      'stop_submission',
      'has_errors',
@@ -29,11 +28,10 @@ PostMeta = namedtuple(
      'start_year',
      'data_source',
      'do_full_calc',
-     'is_file',
-     'reform_dict',
-     'assumptions_dict',
-     'reform_text',
-     'assumptions_text',
+     'reform_parameters',
+     'assumption_parameters',
+     'reform_inputs_file',
+     'assumption_inputs_file',
      'submitted_id',
      'max_q_length',
      'user',
@@ -75,7 +73,10 @@ def save_model(post_meta):
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
-    model.json_text = post_meta.json_reform
+    model.reform_parameters = post_meta.reform_parameters
+    model.assumption_parameters = post_meta.assumption_parameters
+    model.reform_inputs_file = post_meta.reform_inputs_file
+    model.assumption_inputs_file = post_meta.assumption_inputs_file
     model.first_year = int(post_meta.start_year)
     model.data_source = post_meta.data_source
     model.quick_calc = not post_meta.do_full_calc
@@ -113,7 +114,7 @@ def save_model(post_meta):
     return unique_url
 
 
-def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
+def submit_reform(request, dropq_compute, user=None, inputs_id=None):
     """
     Parses user input data and submits reform
 
@@ -143,13 +144,12 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
     has_parse_errors = False
     _ew = {'warnings': {}, 'errors': {}}
     errors_warnings = {'policy': _ew.copy(), 'behavior': _ew.copy()}
-    reform_dict = {}
-    assumptions_dict = {}
-    reform_text = ""
-    assumptions_text = ""
+    reform_parameters = {}
+    assumption_parameters = {}
+    reform_inputs_file = ""
+    assumption_inputs_file = ""
     personal_inputs = None
     model = None
-    is_file = False
     submitted_id = None
     max_q_length = None
     # Assume we do the full calculation unless we find out otherwise
@@ -160,48 +160,50 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
         del fields['quick_calc']
 
     # re-submission of file for case where file-input generated warnings
-    if json_reform_id:
+    if inputs_id:
         try:
-            json_reform = JSONReformTaxCalculator.objects.get(
-                id=int(json_reform_id)
-            )
+            model = TaxSaveInputs.objects.get(id=int(inputs_id))
         except Exception:
-            msg = "ID {} is not in JSON reform database".format(json_reform_id)
+            msg = "ID {} is not in inputs database".format(inputs_id)
             return BadPost(
                 http_response_404=HttpResponse(msg, status=400),
                 has_errors=True
             )
-        reform_dict = json_int_key_encode(json.loads(json_reform.reform_text))
-        assumptions_dict = json_int_key_encode(
-            json.loads(json_reform.assumption_text))
-        reform_text = json_reform.raw_reform_text
-        assumptions_text = json_reform.raw_assumption_text
-        errors_warnings = json_reform.get_errors_warnings()
+        reform_parameters = json_int_key_encode(
+            json.loads(model.reform_parameters))
+        assumption_parameters = json_int_key_encode(
+            json.loads(model.assumption_parameters))
+        reform_inputs_file = model.reform_inputs_file
+        assumption_inputs_file = model.assumption_inputs_file
+        errors_warnings = model.errors_warnings_text
 
         if "docfile" in request_files or "assumpfile" in request_files:
-            if "docfile" in request_files or len(reform_text) == 0:
-                reform_text = None
-            if "assumpfile" in request_files or len(assumptions_text) == 0:
-                assumptions_text = None
+            if "docfile" in request_files or len(reform_inputs_file) == 0:
+                reform_inputs_file = None
+            if ("assumpfile" in request_files or
+                    len(assumption_inputs_file) == 0):
+                assumption_inputs_file = None
 
-            (reform_dict, assumptions_dict, reform_text, assumptions_text,
+            (reform_dict, assumption_dict, reform_inputs_file,
+                assumption_inputs_file,
                 errors_warnings) = get_reform_from_file(request_files,
-                                                        reform_text,
-                                                        assumptions_text)
+                                                        reform_inputs_file,
+                                                        assumption_inputs_file)
 
-            json_reform.reform_text = json.dumps(reform_dict)
-            json_reform.assumption_text = json.dumps(assumptions_dict)
-            json_reform.raw_reform_text = reform_text
-            json_reform.raw_assumption_text = assumptions_text
-            json_reform.errors_warnings_text = json.dumps(errors_warnings)
-            json_reform.save()
+            model.reform_inputs_file = reform_inputs_file
+            model.assumption_inputs_file = assumption_inputs_file
+            model.reform_parameters = json.dumps(reform_dict)
+            model.assumption_parameters = json.dumps(assumptions_dict)
+            model.errors_warnings_text = json.dumps(errors_warnings)
+            model.save()
 
             has_errors = False
 
     else:  # fresh file upload or GUI run
         if 'docfile' in request_files:
-            is_file = True
-            (reform_dict, assumptions_dict, reform_text, assumptions_text,
+            model = TaxSaveInputs()
+            (reform_dict, assumptions_dict, reform_inputs_file,
+                assumption_inputs_file,
                 errors_warnings) = get_reform_from_file(request_files)
         else:
             personal_inputs = TaxBrainForm(start_year, use_puf_not_cps, fields)
@@ -219,26 +221,25 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
                 model = personal_inputs.save(commit=False)
                 model.set_fields()
                 model.save()
-                (reform_dict, assumptions_dict, reform_text, assumptions_text,
+                (reform_dict, assumptions_dict, reform_inputs_file,
+                    assumption_inputs_file,
                     errors_warnings) = model.get_model_specs()
-        json_reform = JSONReformTaxCalculator(
-            reform_text=json.dumps(reform_dict),
-            assumption_text=json.dumps(assumptions_dict),
-            raw_reform_text=reform_text,
-            raw_assumption_text=assumptions_text,
-            errors_warnings_text=json.dumps(errors_warnings)
-        )
-        json_reform.save()
+
+        model.reform_inputs_file = reform_inputs_file
+        model.assumption_inputs_file = assumption_inputs_file
+        model.reform_parameters = json.dumps(reform_dict)
+        model.assumption_parameters = json.dumps(assumptions_dict)
+        model.errors_warnings_text = json.dumps(errors_warnings)
+        model.save()
 
     # TODO: account for errors
-    # 5 cases:
+    # 4 cases:
     #   0. no warning/error messages --> run model
     #   1. has seen warning/error messages and now there are no errors
     #        --> run model
     #   2. has not seen warning/error messages --> show warning/error messages
     #   3. has seen warning/error messages and there are still error messages
     #        --> show warning/error messages again
-    #   4. no user input --> do not run model
 
     # We need to stop on both! File uploads should stop if there are 'behavior'
     # or 'policy' errors
@@ -248,6 +249,10 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
                      for project in ['policy', 'behavior'])
     stop_errors = not is_valid or error_msgs
     stop_submission = stop_errors or (not has_errors and warn_msgs)
+
+    years_n = (list(range(NUM_BUDGET_YEARS)) if do_full_calc
+               else list(range(NUM_BUDGET_YEARS_QUICK)))
+
     if stop_submission:
         taxcalc_errors = bool(error_msgs)
         taxcalc_warnings = bool(warn_msgs)
@@ -257,7 +262,8 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
             personal_inputs = TaxBrainForm(
                 start_year,
                 use_puf_not_cps,
-                initial=json.loads(personal_inputs.data['raw_input_fields'])
+                initial=json.loads(
+                    personal_inputs.data['raw_gui_field_inputs'])
             )
             # TODO: parse warnings for file_input
             # only handle GUI errors for now
@@ -284,21 +290,17 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
         data = {'user_mods': user_mods,
                 'first_budget_year': int(start_year),
                 'use_puf_not_cps': use_puf_not_cps}
+        data_list = [dict(year=i, **data) for i in years_n]
         if do_full_calc:
-            years_n = list(range(NUM_BUDGET_YEARS))
-            data_list = [dict(year=i, **data) for i in years_n]
             submitted_id, max_q_length = (
                 dropq_compute.submit_calculation(data_list))
         else:
-            years_n = list(range(NUM_BUDGET_YEARS_QUICK))
-            data_list = [dict(year=i, **data) for i in years_n]
             submitted_id, max_q_length = (
                 dropq_compute.submit_quick_calculation(data_list))
 
     return PostMeta(
         request=request,
         personal_inputs=personal_inputs,
-        json_reform=json_reform,
         model=model,
         stop_submission=stop_submission,
         has_errors=any([taxcalc_errors, taxcalc_warnings,
@@ -307,11 +309,10 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
         start_year=start_year,
         data_source=data_source,
         do_full_calc=do_full_calc,
-        is_file=is_file,
-        reform_dict=reform_dict,
-        assumptions_dict=assumptions_dict,
-        reform_text=reform_text,
-        assumptions_text=assumptions_text,
+        reform_parameters=json.dumps(reform_dict),
+        assumption_parameters=json.dumps(assumptions_dict),
+        reform_inputs_file=reform_inputs_file,
+        assumption_inputs_file=assumption_inputs_file,
         submitted_id=submitted_id,
         max_q_length=max_q_length,
         user=user,

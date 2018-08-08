@@ -12,11 +12,19 @@ from typing import List, Union
 
 
 class CoreInputs(models.Model):
-    # Raw GUI input
-    raw_input_fields = JSONField(default=None, blank=True, null=True)
+    raw_gui_field_inputs = JSONField(default=None, blank=True, null=True)
+    gui_field_inputs = JSONField(default=None, blank=True, null=True)
 
-    # Validated GUI input that has been parsed to have the correct data types
-    input_fields = JSONField(default=None, blank=True, null=True)
+    # Validated GUI input that has been parsed to have the correct data types,
+    # or JSON reform uploaded as file
+    reform_inputs_file = JSONField(default=None, blank=True, null=True)
+    assumption_inputs_file = JSONField(default=None, blank=True, null=True)
+
+    errors_warnings_text = JSONField(default=None, blank=True, null=True)
+
+    # The parameters that will be used to run the model
+    reform_parameters = JSONField(default=None, blank=True, null=True)
+    assumption_parameters = JSONField(default=None, blank=True, null=True)
 
     # Starting year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)

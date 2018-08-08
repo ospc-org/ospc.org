@@ -99,11 +99,11 @@
       <div class="file-contents">
           <h3>Reform</h3>
           {%autoescape off %}
-          {{ object.inputs.json_text.raw_reform_text | nbsp | linebreaks | safe}}
+          {{ object.inputs.reform_inputs_file | nbsp | linebreaks | safe}}
           {%endautoescape %}
           <h3>Assumptions</h3>
           {%autoescape off %}
-          {{ object.inputs.json_text.raw_assumption_text | nbsp | linebreaks | safe}}
+          {{ object.inputs.assumption_inputs_file | nbsp | linebreaks | safe}}
           {%endautoescape %}
       </div>
     </div>

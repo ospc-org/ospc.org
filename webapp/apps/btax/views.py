@@ -23,8 +23,7 @@ from .helpers import (get_btax_defaults,
                       BTAX_BITR, BTAX_DEPREC, BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr, hover_args_to_btax_depr,
                       make_bool, convert_val)
-from ..taxbrain.helpers import format_csv, is_wildcard
-from .compute import BTAX_WORKERS, DropqComputeBtax, JobFailError
+from .compute import DropqComputeBtax, JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP,
                          DPRC_TOOLTIP, START_YEAR)

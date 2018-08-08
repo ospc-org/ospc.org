@@ -1,5 +1,3 @@
-import csv
-import pdfkit
 import json
 import os
 
@@ -7,24 +5,17 @@ import os
 from mock import Mock
 import sys
 
-import taxcalc
-from django.utils import timezone
 from urllib.parse import urlparse, parse_qs
 
-from django.contrib.auth.decorators import permission_required
-from django.http import HttpResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from django.template.context import RequestContext
 
 from .forms import TaxBrainForm
-from .models import TaxSaveInputs
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode)
 from .param_displayers import nested_form_parameters
 from ..core.compute import (Compute, JobFailError)
-from ..taxbrain.models import TaxBrainRun, JSONReformTaxCalculator
-from .mock_compute import MockCompute
-from .compute import NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
+from ..taxbrain.models import TaxBrainRun
+from .compute import NUM_BUDGET_YEARS
 from ..core.views import CoreRunDetailView, CoreRunDownloadView
 from ..core.models import Tag, TagOption
 
@@ -153,7 +144,7 @@ def file_input(request):
         # File is not submitted
         if 'docfile' not in dict(request.FILES) and form_id is None:
             errors = ["Please specify a tax-law change before submitting."]
-            json_reform = None
+            inputs = None
         else:
             obj, post_meta = process_reform(request, dropq_compute,
                                             json_reform_id=form_id)
@@ -164,7 +155,7 @@ def file_input(request):
 
             if post_meta.stop_submission:
                 errors_warnings = post_meta.errors_warnings
-                json_reform = post_meta.json_reform
+                inputs = post_meta.inputs
                 has_errors = post_meta.has_errors
                 errors.append(OUT_OF_RANGE_ERROR_MSG)
                 for project in ['policy', 'behavior']:
@@ -186,10 +177,10 @@ def file_input(request):
                 params['data_source'][0] in DATA_SOURCES):
             data_source = params['data_source'][0]
 
-        json_reform = None
+        inputs = None
 
     init_context = {
-        'form_id': json_reform.id if json_reform is not None else None,
+        'form_id': inputs.id if inputs is not None else None,
         'errors': errors,
         'has_errors': has_errors,
         'upstream_version': TAXCALC_VERSION,
@@ -269,7 +260,7 @@ def personal_results(request):
     return render(request, 'taxbrain/input_form.html', init_context)
 
 
-def submit_micro(request, pk):
+def resubmit(request, pk):
     """
     This view handles the re-submission of a previously submitted microsim.
     Its primary purpose is to facilitate a mechanism to submit a full microsim
@@ -292,25 +283,10 @@ def submit_micro(request, pk):
     log_ip(request)
 
     # get microsim data
-    is_file = model.json_text is not None
-    json_reform = model.json_text
-    # necessary for simulations before PR 641
-    if not is_file:
-        model.set_fields()
-        (reform_dict, assumptions_dict, reform_text, assumptions_text,
-            errors_warnings) = model.get_model_specs()
-        json_reform = JSONReformTaxCalculator(
-            reform_text=json.dumps(reform_dict),
-            assumption_text=json.dumps(assumptions_dict),
-            raw_reform_text=reform_text,
-            raw_assumption_text=assumptions_text
-        )
-        json_reform.save()
-    else:
-        reform_dict = json_int_key_encode(
-            json.loads(model.json_text.reform_text))
-        assumptions_dict = json_int_key_encode(
-            json.loads(model.json_text.assumption_text))
+    reform_dict = json_int_key_encode(
+        json.loads(model.reform_parameters))
+    assumptions_dict = json_int_key_encode(
+        json.loads(model.assumption_parameters))
 
     user_mods = dict({'policy': reform_dict}, **assumptions_dict)
     print('data source', model.data_source)
@@ -329,18 +305,14 @@ def submit_micro(request, pk):
         url=url,
         request=request,
         model=model,
-        json_reform=json_reform,
         has_errors=False,
         start_year=start_year,
         data_source=model.data_source,
         do_full_calc=True,
-        is_file=is_file,
-        reform_dict=reform_dict,
-        assumptions_dict=assumptions_dict,
-        reform_text=(model.json_text.raw_reform_text
-                     if model.json_text else ""),
-        assumptions_text=(model.json_text.raw_assumption_text
-                          if model.json_text else ""),
+        reform_parameters=json.dumps(reform_dict),
+        assumption_parameters=json.dumps(assumptions_dict),
+        reform_inputs_file=(model.reform_inputs_file or ""),
+        assumption_inputs_file=(model.assumption_inputs_file or ""),
         submitted_id=submitted_id,
         max_q_length=max_q_length,
         user=None,
@@ -394,36 +366,3 @@ def edit_personal_results(request, pk):
     }
 
     return render(request, 'taxbrain/input_form.html', init_context)
-
-
-@permission_required('taxbrain.view_inputs')
-def csv_input(request, pk):
-    url = get_object_or_404(TaxBrainRun, pk=pk)
-
-    def filter_names(x):
-        """
-        Any of these field names we don't care about
-        """
-        return x not in ['outputurl', 'id', 'inflation', 'inflation_years',
-                         'medical_inflation', 'medical_years', 'tax_result',
-                         'creation_date']
-
-    field_names = [f.name for f
-                   in TaxSaveInputs._meta.get_fields(include_parents=False)]
-    field_names = tuple(filter(filter_names, field_names))
-
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type='text/csv')
-    now = timezone.now()
-    suffix = "".join(map(str, [now.year, now.month, now.day, now.hour,
-                               now.minute, now.second]))
-    filename = "taxbrain_inputs_" + suffix + ".csv"
-    response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
-
-    inputs = url_inputs
-
-    writer = csv.writer(response)
-    writer.writerow(field_names)
-    writer.writerow([getattr(inputs, field) for field in field_names])
-
-    return response

@@ -98,8 +98,8 @@ class PolicyBrainForm:
                 parsed_data[k] = v
             else:
                 pass
-        parsed_data["raw_input_fields"] = json.dumps(raw_fields)
-        parsed_data["input_fields"] = json.dumps("")
+        parsed_data["raw_gui_field_inputs"] = json.dumps(raw_fields)
+        parsed_data["gui_field_inputs"] = json.dumps("")
         return (parsed_data,)
 
     def add_errors_on_extra_inputs(self):
@@ -113,7 +113,7 @@ class PolicyBrainForm:
             self.add_error(None,
                            "Extra input '{0}' not allowed".format(_input))
 
-        all_fields = self.cleaned_data['raw_input_fields']
+        all_fields = self.cleaned_data['raw_gui_field_inputs']
         default_policy = getattr(self.Meta, 'default_policy', None)
         allowed_fields = getattr(self.Meta, 'allowed_fields', None)
         for _field in all_fields:
@@ -131,7 +131,7 @@ class PolicyBrainForm:
         Do minimal type checking to make sure that we did not get any
         malicious input
         """
-        fields = self.cleaned_data['raw_input_fields']
+        fields = self.cleaned_data['raw_gui_field_inputs']
         for param_name, value in fields.items():
             # make sure the text parses OK
             if param_name == 'data_source':
@@ -242,7 +242,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         # Take a look at the source code for more info:
         # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
         if "instance" in kwargs:
-            kwargs["initial"] = kwargs["instance"].raw_input_fields
+            kwargs["initial"] = kwargs["instance"].raw_gui_field_inputs
 
         # Update CPI flags if either
         # 1. initial is specified in `kwargs` (reform has warning/error msgs)
@@ -313,8 +313,8 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         model = TaxSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
-        fields = ['first_year', 'data_source', 'raw_input_fields',
-                  'input_fields']
+        fields = ['first_year', 'data_source', 'raw_gui_field_inputs',
+                  'gui_field_inputs']
         start_year = int(START_YEAR)
         default_policy = taxcalc.Policy.default_data(
             start_year=int(START_YEAR),

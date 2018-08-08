@@ -3,8 +3,6 @@ import os
 
 from celery import Celery
 
-import btax
-from btax.front_end_util import runner_json_tables
 import taxcalc
 
 from collections import defaultdict

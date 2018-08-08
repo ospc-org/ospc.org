@@ -8,7 +8,6 @@ import taxcalc
 
 
 from django.conf import settings
-from django.core.mail import send_mail
 from django.core import serializers
 from django.http import (HttpResponseRedirect, HttpResponse, Http404,
                          HttpResponseServerError, JsonResponse)
@@ -33,7 +32,7 @@ from ..taxbrain.helpers import (taxcalc_results_to_tables, make_bool,
 from ..taxbrain.param_displayers import default_behavior
 from ..core.compute import JobFailError
 
-from ..taxbrain.compute import JobFailError, WORKER_HN
+from ..taxbrain.compute import JobFailError
 from ..taxbrain.submit_data import JOB_PROC_TIME_IN_SECONDS
 
 from .helpers import (default_parameters, job_submitted,
