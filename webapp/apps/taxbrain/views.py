@@ -1,4 +1,3 @@
-import json
 import os
 
 
@@ -283,12 +282,10 @@ def resubmit(request, pk):
     log_ip(request)
 
     # get microsim data
-    reform_dict = json_int_key_encode(
-        json.loads(model.reform_parameters))
-    assumptions_dict = json_int_key_encode(
-        json.loads(model.assumption_parameters))
+    reform_parameters = json_int_key_encode(model.reform_parameters)
+    assumption_parameters = json_int_key_encode(model.assumption_parameters)
 
-    user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+    user_mods = {'policy': reform_parameters, **assumption_parameters}
     print('data source', model.data_source)
     data = {'user_mods': user_mods,
             'first_budget_year': int(start_year),
@@ -309,8 +306,8 @@ def resubmit(request, pk):
         start_year=start_year,
         data_source=model.data_source,
         do_full_calc=True,
-        reform_parameters=json.dumps(reform_dict),
-        assumption_parameters=json.dumps(assumptions_dict),
+        reform_parameters=reform_parameters,
+        assumption_parameters=assumption_parameters,
         reform_inputs_file=(model.reform_inputs_file or ""),
         assumption_inputs_file=(model.assumption_inputs_file or ""),
         submitted_id=submitted_id,

@@ -170,9 +170,9 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                 has_errors=True
             )
         reform_parameters = json_int_key_encode(
-            json.loads(model.reform_parameters))
+            model.reform_parameters)
         assumption_parameters = json_int_key_encode(
-            json.loads(model.assumption_parameters))
+            model.assumption_parameters)
         reform_inputs_file = model.reform_inputs_file
         assumption_inputs_file = model.assumption_inputs_file
         errors_warnings = model.errors_warnings_text
@@ -184,7 +184,7 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                     len(assumption_inputs_file) == 0):
                 assumption_inputs_file = None
 
-            (reform_dict, assumption_dict, reform_inputs_file,
+            (reform_parameters, assumption_parameters, reform_inputs_file,
                 assumption_inputs_file,
                 errors_warnings) = get_reform_from_file(request_files,
                                                         reform_inputs_file,
@@ -192,9 +192,9 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
 
             model.reform_inputs_file = reform_inputs_file
             model.assumption_inputs_file = assumption_inputs_file
-            model.reform_parameters = json.dumps(reform_dict)
-            model.assumption_parameters = json.dumps(assumptions_dict)
-            model.errors_warnings_text = json.dumps(errors_warnings)
+            model.reform_parameters = reform_parameters
+            model.assumption_parameters = assumption_parameters
+            model.errors_warnings_text = errors_warnings
             model.save()
 
             has_errors = False
@@ -202,7 +202,7 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
     else:  # fresh file upload or GUI run
         if 'docfile' in request_files:
             model = TaxSaveInputs()
-            (reform_dict, assumptions_dict, reform_inputs_file,
+            (reform_parameters, assumption_parameters, reform_inputs_file,
                 assumption_inputs_file,
                 errors_warnings) = get_reform_from_file(request_files)
         else:
@@ -221,15 +221,15 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                 model = personal_inputs.save(commit=False)
                 model.set_fields()
                 model.save()
-                (reform_dict, assumptions_dict, reform_inputs_file,
+                (reform_parameters, assumption_parameters, reform_inputs_file,
                     assumption_inputs_file,
                     errors_warnings) = model.get_model_specs()
 
         model.reform_inputs_file = reform_inputs_file
         model.assumption_inputs_file = assumption_inputs_file
-        model.reform_parameters = json.dumps(reform_dict)
-        model.assumption_parameters = json.dumps(assumptions_dict)
-        model.errors_warnings_text = json.dumps(errors_warnings)
+        model.reform_parameters = reform_parameters
+        model.assumption_parameters = assumption_parameters
+        model.errors_warnings_text = errors_warnings
         model.save()
 
     # TODO: account for errors
@@ -286,7 +286,7 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                 personal_inputs.add_error(None, msg)
     else:
         log_ip(request)
-        user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+        user_mods = {'policy': reform_parameters, **assumption_parameters}
         data = {'user_mods': user_mods,
                 'first_budget_year': int(start_year),
                 'use_puf_not_cps': use_puf_not_cps}
@@ -309,8 +309,8 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
         start_year=start_year,
         data_source=data_source,
         do_full_calc=do_full_calc,
-        reform_parameters=json.dumps(reform_dict),
-        assumption_parameters=json.dumps(assumptions_dict),
+        reform_parameters=reform_parameters,
+        assumption_parameters=assumption_parameters,
         reform_inputs_file=reform_inputs_file,
         assumption_inputs_file=assumption_inputs_file,
         submitted_id=submitted_id,
