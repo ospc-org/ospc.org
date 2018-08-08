@@ -49,9 +49,11 @@ def process_reform(request, dropq_compute, user=None, **kwargs):
     and the file input interface.  With some tweaks this model could be used
     to submit reforms for all PolicyBrain models
 
-    returns OutputUrl object with parsed user input and warning/error messages
-            if necessary
-            boolean variable indicating whether this reform has errors or not
+    returns:
+    - url: OutputUrl object with parsed user input and warning/error
+        messages if necessary
+    - post_meta: namedtuple containing data relevant to the parameter
+        submission
     """
     post_meta = submit_reform(request, dropq_compute, user=user, **kwargs)
     if isinstance(post_meta, BadPost) or post_meta.stop_submission:
