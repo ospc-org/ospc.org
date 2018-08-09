@@ -109,7 +109,7 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
                     print('Exception rendering pk', pk, e)
                     traceback.print_exc()
                     return render(request,
-                                  'taxbrain/not_avail.html')
+                                  'core/not_avail.html')
             else:
                 if request.method == 'POST':
                     # if not ready yet, insert number of minutes remaining
