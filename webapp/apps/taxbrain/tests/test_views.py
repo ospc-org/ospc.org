@@ -771,33 +771,3 @@ class TestTaxBrainViews(object):
         for param in ["ALD_Alimony_hc", "PT_exclusion_rt",
                       "PT_exclusion_wage_limit"]:
             assert msg.format(param) in str(response.context["form"].errors)
-
-    @pytest.mark.parametrize(
-        'start_year,start_year_is_none',
-        [(2018, False), (2017, True)]
-    )
-    def test_get_not_avail_page_renders(self, start_year, start_year_is_none):
-        """
-        Make sure not_avail.html page is rendered if exception is thrown
-        while parsing results
-        """
-        fields = get_post_data(start_year)
-        fields["first_year"] = start_year
-        unique_url = get_taxbrain_model(fields,
-                                        first_year=start_year,
-                                        taxcalc_vers="0.14.2",
-                                        webapp_vers="1.3.0")
-        model = unique_url.inputs
-        if start_year_is_none:
-            model.first_year = None
-        model.save()
-        unique_url.outputs = "unrenderable"
-        unique_url.save()
-
-        pk = unique_url.pk
-        url = '/taxbrain/{}/'.format(pk)
-        response = CLIENT.get(url)
-        assert any([t.name == 'taxbrain/not_avail.html'
-                    for t in response.templates])
-        edit_exp = '/taxbrain/edit/{}/?start_year={}'.format(pk, start_year)
-        assert response.context['edit_href'] == edit_exp

@@ -68,13 +68,7 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
         self.object = self.get_object()
 
         if self.object.outputs:
-            try:
-                return super().get(self, request, *args, **kwargs)
-            except BaseException as e:
-                print('Exception rendering pk', pk, e)
-                traceback.print_exc()
-                return render(request,
-                              'core/not_avail.html')
+            return super().get(self, request, *args, **kwargs)
         elif self.object.error_text is not None:
             return self.fail()
         else:
@@ -98,18 +92,12 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
                 return self.fail()
 
             if job_ready == 'YES':
-                try:
-                    results = self.dropq_compute.get_results(job_id)
-                    self.object.outputs = results['outputs']
-                    self.object.aggr_outputs = results['aggr_outputs']
-                    self.object.creation_date = timezone.now()
-                    self.object.save()
-                    return super().get(self, request, *args, **kwargs)
-                except BaseException as e:
-                    print('Exception rendering pk', pk, e)
-                    traceback.print_exc()
-                    return render(request,
-                                  'core/not_avail.html')
+                results = self.dropq_compute.get_results(job_id)
+                self.object.outputs = results['outputs']
+                self.object.aggr_outputs = results['aggr_outputs']
+                self.object.creation_date = timezone.now()
+                self.object.save()
+                return super().get(self, request, *args, **kwargs)
             else:
                 if request.method == 'POST':
                     # if not ready yet, insert number of minutes remaining
