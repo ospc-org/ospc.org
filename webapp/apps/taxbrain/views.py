@@ -12,9 +12,8 @@ from .forms import TaxBrainForm
 from .helpers import (taxcalc_results_to_tables, format_csv,
                       json_int_key_encode)
 from .param_displayers import nested_form_parameters
-from ..core.compute import (Compute, JobFailError)
+from ..core.compute import Compute, JobFailError, NUM_BUDGET_YEARS
 from ..taxbrain.models import TaxBrainRun
-from .compute import NUM_BUDGET_YEARS
 from ..core.views import CoreRunDetailView, CoreRunDownloadView
 from ..core.models import Tag, TagOption
 
@@ -37,7 +36,6 @@ ENABLE_QUICK_CALC = bool(os.environ.get('ENABLE_QUICK_CALC', ''))
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 dropq_compute = Compute()
-
 
 class TaxBrainRunDetailView(CoreRunDetailView):
     model = TaxBrainRun
@@ -146,7 +144,7 @@ def file_input(request):
             inputs = None
         else:
             obj, post_meta = process_reform(request, dropq_compute,
-                                            json_reform_id=form_id)
+                                            inputs_id=form_id)
             if isinstance(post_meta, BadPost):
                 return post_meta.http_response_404
             else:
@@ -154,7 +152,7 @@ def file_input(request):
 
             if post_meta.stop_submission:
                 errors_warnings = post_meta.errors_warnings
-                inputs = post_meta.inputs
+                inputs = post_meta.model
                 has_errors = post_meta.has_errors
                 errors.append(OUT_OF_RANGE_ERROR_MSG)
                 for project in ['policy', 'behavior']:
@@ -332,6 +330,7 @@ def edit_personal_results(request, pk):
 
     model = url.inputs
     start_year = model.first_year
+    model.set_fields()
 
     msg = ('Field {} has been deprecated. Refer to the Tax-Calculator '
            'documentation for a sensible replacement.')

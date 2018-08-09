@@ -2,6 +2,7 @@ import os
 import sys
 import ast
 import msgpack
+import inspect
 
 from ..taxbrain.mock_compute import MockCompute
 
@@ -21,13 +22,15 @@ def get_dropq_compute_from_module(module_import_path, attr='dropq_compute',
 
     returns: mocked dropq compute object
     """
-    # Temporary hack
-    if module_import_path == "webapp.apps.taxbrain.views":
-        get_dropq_compute_from_module("webapp.apps.core.views", attr,
-                                      MockComputeObj, **mc_args)
+    classes = inspect.getmembers(sys.modules[module_import_path],
+                                 inspect.isclass)
     module_views = sys.modules[module_import_path]
     setattr(module_views, attr, MockComputeObj(**mc_args))
-    return getattr(module_views, attr)
+    obj = getattr(module_views, attr)
+    for _, cls in classes:
+        if hasattr(cls, attr):
+            setattr(cls, attr, obj)
+    return obj
 
 
 def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
@@ -51,11 +54,12 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
             'webapp.apps.taxbrain.views',
             num_times_to_wait=0
         )
-    if dyn_dropq_compute is None:
-        dyn_dropq_compute = get_dropq_compute_from_module(
-            'webapp.apps.dynamic.views',
-            num_times_to_wait=1
-        )
+    # TODO: Add back
+    # if dyn_dropq_compute is None:
+    #     dyn_dropq_compute = get_dropq_compute_from_module(
+    #         'webapp.apps.dynamic.views',
+    #         num_times_to_wait=1
+    #    )
 
     response = client.post(post_url, data)
     # Check that redirect happens
@@ -83,10 +87,9 @@ def check_posted_params(mock_compute, params_to_check, start_year,
     params_to_check: gives truth value for parameters that we want to check
                      (formatted as taxcalc dict style reform)
     """
-    last_posted = mock_compute.last_posted
-    inputs = msgpack.loads(last_posted, encoding='utf8',
-                           use_list=True)
-    last_posted = inputs['inputs']
+    # Pick the first of jobs submitted
+    last_posted = msgpack.loads(mock_compute.last_posted, encoding='utf8',
+                                use_list=True)[0]
     user_mods = last_posted['user_mods']
     assert last_posted["first_budget_year"] == int(start_year)
     if data_source is not None:
@@ -174,16 +177,15 @@ def get_taxbrain_model(_fields, first_year=2017,
     model.set_fields()
     model.save()
     model.job_ids = ['1', '2', '3']
-    model.json_text = None
+    # model.json_text = None
     model.first_year = first_year
     model.quick_calc = quick_calc
     model.save()
 
     unique_url = UrlModel()
-    # unique_url.taxcalc_vers = taxcalc_vers
-    # unique_url.webapp_vers = webapp_vers
+    unique_url.upstream_vers = taxcalc_vers
+    unique_url.webapp_vers = webapp_vers
     unique_url.inputs = model
-    # unique_url.model_pk = model.pk
     unique_url.exp_comp_datetime = exp_comp_datetime
     unique_url.save()
 

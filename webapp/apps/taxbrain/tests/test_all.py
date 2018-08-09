@@ -3,10 +3,8 @@ from django.test import TestCase
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                        format_csv, arrange_totals_by_row, default_taxcalc_data)
 from ..param_displayers import default_policy
-from ...taxbrain import compute as compute
 from ..helpers import convert_val
 import taxcalc
-import pytest
 
 FBY = 2015
 

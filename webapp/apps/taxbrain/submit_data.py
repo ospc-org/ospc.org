@@ -7,8 +7,8 @@ from ipware.ip import get_real_ip
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 
-from ..taxbrain.models import TaxBrainRun
-from .compute import NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
+from ..taxbrain.models import TaxBrainRun, TaxSaveInputs
+from ..core.compute import NUM_BUDGET_YEARS, NUM_BUDGET_YEARS_QUICK
 from .forms import TaxBrainForm
 from .helpers import make_bool, json_int_key_encode
 from .param_formatters import get_reform_from_file, append_errors_warnings
@@ -225,12 +225,13 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                     assumption_inputs_file,
                     errors_warnings) = model.get_model_specs()
 
-        model.reform_inputs_file = reform_inputs_file
-        model.assumption_inputs_file = assumption_inputs_file
-        model.reform_parameters = reform_parameters
-        model.assumption_parameters = assumption_parameters
-        model.errors_warnings_text = errors_warnings
-        model.save()
+        if model:
+            model.reform_inputs_file = reform_inputs_file
+            model.assumption_inputs_file = assumption_inputs_file
+            model.reform_parameters = reform_parameters
+            model.assumption_parameters = assumption_parameters
+            model.errors_warnings_text = errors_warnings
+            model.save()
 
     # TODO: account for errors
     # 4 cases:

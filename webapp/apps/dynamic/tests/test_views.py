@@ -7,8 +7,6 @@ from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
                                  arrange_totals_by_row, default_taxcalc_data)
 from ...taxbrain.compute import (ElasticMockCompute, MockCompute,
                                  MockFailedCompute)
-import taxcalc
-from taxcalc import Policy
 
 START_YEAR = '2016'
 

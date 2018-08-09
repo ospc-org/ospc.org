@@ -854,14 +854,6 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
         null=True
     )
 
-    def get_tax_result(self):
-        """
-        If taxcalc version is greater than or equal to 0.13.0, return table
-        If taxcalc version is less than 0.13.0, then rename keys to new names
-        and then return table
-        """
-        return Resultable.get_tax_result(self, OutputUrl)
-
     NONPARAM_FIELDS = set(["id", "quick_calc", "data_source"])
 
     def set_fields(self):
@@ -906,37 +898,7 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
 
 
 class TaxBrainRun(CoreRun):
-    inputs = models.OneToOneField(TaxSaveInputs)
+    inputs = models.OneToOneField(TaxSaveInputs, related_name='outputs')
 
     def zip_filename(self):
         return 'taxbrain.zip'
-
-
-class OutputUrl(models.Model):
-    """
-    This model creates a unique url for each calculation.
-    """
-    unique_inputs = models.ForeignKey(TaxSaveInputs, default=None)
-    user = models.ForeignKey(User, null=True, default=None)
-    model_pk = models.IntegerField(default=None, null=True)
-    # Expected Completion DateTime
-    exp_comp_datetime = models.DateTimeField(
-        default=make_aware(datetime.datetime(2015, 1, 1))
-    )
-    uuid = models.UUIDField(
-        default=uuid.uuid4,
-        null=True,
-        editable=False,
-        max_length=32,
-        blank=True,
-        unique=True)
-    taxcalc_vers = models.CharField(blank=True, default=None, null=True,
-                                    max_length=50)
-    webapp_vers = models.CharField(blank=True, default=None, null=True,
-                                   max_length=50)
-
-    def get_absolute_url(self):
-        kwargs = {
-            'pk': self.pk
-        }
-        return reverse('output_detail', kwargs=kwargs)

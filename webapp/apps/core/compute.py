@@ -12,7 +12,8 @@ DROPQ_SMALL_URL = "/dropq_small_start_job"
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
 BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
-
+NUM_BUDGET_YEARS = int(os.environ.get("NUM_BUDGET_YEARS", "10"))
+NUM_BUDGET_YEARS_QUICK = int(os.environ.get("NUM_BUDGET_YEARS_QUICK", "1"))
 
 class JobFailError(Exception):
     '''An Exception to raise when a remote jobs has failed'''

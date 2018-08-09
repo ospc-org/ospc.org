@@ -74,7 +74,15 @@ class CoreRun(models.Model):
         kwargs = {
             'pk': self.pk
         }
+        # TODO: Generalize away from TB
         return reverse('output_detail', kwargs=kwargs)
+
+    def get_absolute_edit_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        # TODO: Generalize away from TB
+        return reverse('edit_personal_results', kwargs=kwargs)
 
     def zip_filename(self):
         return 'policybrain.zip'

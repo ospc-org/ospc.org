@@ -1,10 +1,10 @@
 import os
-from ..core.compute import Compute
+from ..core.compute import Compute, NUM_BUDGET_YEARS
 import requests_mock
 import json
 from ..core.compute import DROPQ_URL, DROPQ_SMALL_URL
-from .compute import NUM_BUDGET_YEARS
 
+dummy_uuid = "42424200-0000-0000-0000-000000000000"
 
 class MockCompute(Compute):
 
@@ -19,7 +19,7 @@ class MockCompute(Compute):
 
     def remote_submit_job(self, theurl, data, timeout, headers=None):
         with requests_mock.Mocker() as mock:
-            resp = {'job_id': '424242', 'qlength': 2}
+            resp = {'job_id': dummy_uuid, 'qlength': 2}
             resp = json.dumps(resp)
             mock.register_uri('POST', DROPQ_URL, text=resp)
             mock.register_uri('POST', DROPQ_SMALL_URL, text=resp)
@@ -39,7 +39,7 @@ class MockCompute(Compute):
 
     def remote_retrieve_results(self, theurl, params):
         mock_path = os.path.join(os.path.split(__file__)[0], "tests",
-                                 "response_year_{0}.json")
+                                 "distributed_response.json")
         with open(mock_path.format(self.count), 'r') as f:
             text = f.read()
         self.count += 1
@@ -91,7 +91,7 @@ class NodeDownCompute(MockCompute):
 
     def remote_submit_job(self, theurl, data, timeout, headers=None):
         with requests_mock.Mocker() as mock:
-            resp = {'job_id': '424242', 'qlength': 2}
+            resp = {'job_id': dummy_uuid, 'qlength': 2}
             resp = json.dumps(resp)
             if (self.switch % 2 == 0):
                 mock.register_uri('POST', DROPQ_URL, status_code=502)

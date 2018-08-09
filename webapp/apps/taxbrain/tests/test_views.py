@@ -5,14 +5,14 @@ import pytest
 import os
 import msgpack
 
-from ..models import TaxSaveInputs, TaxBrainRun
+from ..models import TaxBrainRun, TaxSaveInputs
 from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
                        format_csv, arrange_totals_by_row, default_taxcalc_data)
-from ...core.compute import Compute
 from ..mock_compute import (MockCompute, MockFailedCompute,
                             NodeDownCompute, MockFailedComputeOnOldHost)
-from ...core.views import get_result_context
 import taxcalc
+
+from .. import views
 
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data,
@@ -281,9 +281,9 @@ class TestTaxBrainViews(object):
         tsi = out.inputs
         _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
         # only posted param is stored
-        assert ([_id in tsi.raw_input_fields for _id in _ids] ==
+        assert ([_id in tsi.raw_gui_field_inputs for _id in _ids] ==
                 [False, False, False, True, False, False, False])
-        assert tsi.raw_input_fields['ID_BenefitSurtax_Switch_3'] == 'True'
+        assert tsi.raw_gui_field_inputs['ID_BenefitSurtax_Switch_3'] == 'True'
         # Now edit this page
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
                                                                  START_YEAR)
@@ -306,10 +306,11 @@ class TestTaxBrainViews(object):
 
         out2 = TaxBrainRun.objects.get(pk=result2["pk"])
         tsi2 = out2.inputs
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_0'] == 'False'
-        assert (tsi2.raw_input_fields['ID_BenefitSurtax_Switch_1'] ==
+        assert (
+            tsi2.raw_gui_field_inputs['ID_BenefitSurtax_Switch_0'] == 'False')
+        assert (tsi2.raw_gui_field_inputs['ID_BenefitSurtax_Switch_1'] ==
                 'False,*,True')
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_3'] == 'True'
+        assert tsi2.raw_gui_field_inputs['ID_BenefitSurtax_Switch_3'] == 'True'
 
     def test_taxbrain_wildcard_params_with_validation_is_OK(self):
         """
@@ -553,8 +554,6 @@ class TestTaxBrainViews(object):
         """
         POST a reform file that causes errors. See PB issue #630
         """
-        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
-
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
@@ -573,7 +572,7 @@ class TestTaxBrainViews(object):
                     for msg in response.context['errors']])
 
         # get most recent object
-        objects = js.objects.order_by('id')
+        objects = TaxSaveInputs.objects.order_by('id')
         obj = objects[len(objects) - 1]
 
         next_token = str(response.context['csrf_token'])
@@ -596,7 +595,6 @@ class TestTaxBrainViews(object):
         POST a reform file that causes warnings and check that re-submission
         is allowed. See PB issue #630 and #761
         """
-        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
@@ -615,7 +613,7 @@ class TestTaxBrainViews(object):
                     for msg in response.context['errors']])
 
         # get most recent object
-        objects = js.objects.order_by('id')
+        objects = TaxSaveInputs.objects.order_by('id')
         obj = objects[len(objects) - 1]
 
         next_token = str(response.context['csrf_token'])
@@ -649,7 +647,6 @@ class TestTaxBrainViews(object):
         swapped files are used. See PB issue #630 and #761
         """
         start_year = 2017
-        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
         if use_assumptions:
@@ -673,7 +670,7 @@ class TestTaxBrainViews(object):
                     for msg in response.context['errors']])
 
         # get most recent object
-        objects = js.objects.order_by('id')
+        objects = TaxSaveInputs.objects.order_by('id')
         obj = objects[len(objects) - 1]
 
         next_token = str(response.context['csrf_token'])
@@ -692,9 +689,10 @@ class TestTaxBrainViews(object):
         result = do_micro_sim(CLIENT, data2, post_url=url)
 
         dropq_compute = result['tb_dropq_compute']
+        # Pick the first of jobs submitted
         inputs = msgpack.loads(dropq_compute.last_posted, encoding='utf8',
-                               use_list=True)
-        user_mods = inputs['inputs']['user_mods']
+                               use_list=True)[0]
+        user_mods = inputs['user_mods']
         if use_assumptions:
             assert user_mods["behavior"][2018]["_BE_sub"][0] == 1.0
         truth_mods = {2018: {'_II_em': [8000.0]}}
@@ -749,8 +747,8 @@ class TestTaxBrainViews(object):
                                         taxcalc_vers="0.14.2",
                                         webapp_vers="1.3.0")
         model = unique_url.inputs
-        model.raw_input_fields = None
-        model.input_fields = None
+        model.raw_gui_field_inputs = None
+        model.gui_field_inputs = None
         model.deprecated_fields = None
         model.ALD_Alimony_hc = "*,1,*,*,*,*,*,*,0"
         model.PT_exclusion_rt = "0.2,*,*,*,*,*,*,*,0.0"
@@ -778,7 +776,6 @@ class TestTaxBrainViews(object):
         'start_year,start_year_is_none',
         [(2018, False), (2017, True)]
     )
-    @pytest.mark.xfail  # Feature removed in new outputs module
     def test_get_not_avail_page_renders(self, start_year, start_year_is_none):
         """
         Make sure not_avail.html page is rendered if exception is thrown
@@ -791,11 +788,10 @@ class TestTaxBrainViews(object):
                                         taxcalc_vers="0.14.2",
                                         webapp_vers="1.3.0")
         model = unique_url.inputs
-        model.tax_result = "unrenderable"
         if start_year_is_none:
             model.first_year = None
         model.save()
-        unique_url.inputs = model
+        unique_url.outputs = "unrenderable"
         unique_url.save()
 
         pk = unique_url.pk
