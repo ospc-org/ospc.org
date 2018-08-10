@@ -2,6 +2,7 @@ from collections import defaultdict, namedtuple
 import six
 import json
 import ast
+import re
 
 from django.forms import NullBooleanSelect
 
@@ -302,8 +303,8 @@ def read_json_reform(reform, assumptions, use_puf_not_cps=True):
     return reform_dict, assumptions_dict, errors_warnings
 
 
-def get_reform_from_file(request_files, reform_text=None,
-                         assumptions_text=None, use_puf_not_cps=True):
+def get_reform_from_file(request_files, some_reform_inputs=None,
+                         some_assumption_inputs=None, use_puf_not_cps=True):
     """
     Parse files from request object and collect errors_warnings
 
@@ -315,18 +316,38 @@ def get_reform_from_file(request_files, reform_text=None,
     """
     if "docfile" in request_files:
         inmemfile_reform = request_files['docfile']
-        reform_text = inmemfile_reform.read().decode('utf-8')
+        some_reform_inputs = inmemfile_reform.read().decode('utf-8')
     if 'assumpfile' in request_files:
         inmemfile_assumption = request_files['assumpfile']
-        assumptions_text = inmemfile_assumption.read().decode('utf-8')
+        some_assumption_inputs = inmemfile_assumption.read().decode('utf-8')
+
+    # strip out //-comments without changing line numbers
+    def strip_comments(s):
+        return re.sub('//.*', ' ', s)
+
+    if isinstance(some_reform_inputs, str):
+        reform_inputs_json = some_reform_inputs
+        reform_inputs = json.loads(strip_comments(reform_inputs_json))
+    else:
+        reform_inputs_json = json.dumps(some_reform_inputs)
+        reform_inputs = some_reform_inputs
+
+    if isinstance(some_assumption_inputs, str):
+        assumption_inputs_json = some_assumption_inputs
+        assumption_inputs = json.loads(strip_comments(assumption_inputs_json))
+    elif some_assumption_inputs is None:
+        assumption_inputs_json = None
+        assumption_inputs = {}
+    else:
+        assumption_inputs_json = json.dumps(some_assumption_inputs)
+        assumption_inputs = some_assumption_inputs
+
     (reform_dict, assumptions_dict,
-        errors_warnings) = read_json_reform(reform_text,
-                                            assumptions_text,
+        errors_warnings) = read_json_reform(reform_inputs_json,
+                                            assumption_inputs_json,
                                             use_puf_not_cps=use_puf_not_cps)
 
-    assumptions_text = assumptions_text or ""
-
-    return (reform_dict, assumptions_dict, reform_text, assumptions_text,
+    return (reform_dict, assumptions_dict, reform_inputs, assumption_inputs,
             errors_warnings)
 
 
@@ -346,33 +367,34 @@ def get_reform_from_gui(start_year, taxbrain_fields=None, behavior_fields=None,
     if taxbrain_fields is None and behavior_fields is None:
         raise ValueError("Neither taxbrain data nor behavior data was given")
 
-    policy_dict_json = {}
-    assumptions_dict_json = {}
+    reform_inputs = {}
+    assumption_inputs = {}
 
     # prepare taxcalc params from TaxSaveInputs model
     if taxbrain_fields is not None:
         # convert GUI input to json style taxcalc reform
-        policy_dict_json = to_json_reform(int(start_year),
-                                          taxbrain_fields)
+        reform_inputs = to_json_reform(int(start_year),
+                                       taxbrain_fields)
     if behavior_fields is not None:
-        assumptions_dict_json = to_json_reform(int(start_year),
-                                               behavior_fields)
+        assumption_inputs = to_json_reform(int(start_year),
+                                           behavior_fields)
 
-    policy_dict_json = {"policy": policy_dict_json}
+    reform_inputs = {"policy": reform_inputs}
 
-    policy_dict_json = json.dumps(policy_dict_json, indent=4)
+    reform_inputs_json = json.dumps(reform_inputs, indent=4)
 
-    assumptions_dict_json = {"behavior": assumptions_dict_json,
-                             "growdiff_response": {},
-                             "consumption": {},
-                             "growdiff_baseline": {},
-                             "growmodel": {}}
-    assumptions_dict_json = json.dumps(assumptions_dict_json, indent=4)
+    assumption_inputs = {"behavior": assumption_inputs,
+                         "growdiff_response": {},
+                         "consumption": {},
+                         "growdiff_baseline": {},
+                         "growmodel": {}}
+
+    assumption_inputs_json = json.dumps(assumption_inputs, indent=4)
 
     (reform_dict, assumptions_dict,
-        errors_warnings) = read_json_reform(policy_dict_json,
-                                            assumptions_dict_json,
+        errors_warnings) = read_json_reform(reform_inputs_json,
+                                            assumption_inputs_json,
                                             use_puf_not_cps=use_puf_not_cps)
 
-    return (reform_dict, assumptions_dict, policy_dict_json,
-            assumptions_dict_json, errors_warnings)
+    return (reform_dict, assumptions_dict, reform_inputs,
+            assumption_inputs, errors_warnings)

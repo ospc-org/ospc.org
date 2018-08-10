@@ -876,15 +876,15 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
 
         returns: reform_dict, assumptions_dict, errors_warnings
         """
-        (reform_dict, assumptions_dict, reform_text, assumptions_text,
+        (reform_dict, assumptions_dict, reform_inputs, assumption_inputs,
             errors_warnings) = param_formatters.get_reform_from_gui(
             self.start_year,
             taxbrain_fields=self.gui_field_inputs,
             use_puf_not_cps=self.use_puf_not_cps
         )
         Fieldable.pop_extra_errors(self, errors_warnings)
-        return (reform_dict, assumptions_dict, reform_text, assumptions_text,
-                errors_warnings)
+        return (reform_dict, assumptions_dict, reform_inputs,
+                assumption_inputs, errors_warnings)
 
     @property
     def start_year(self):

@@ -280,8 +280,10 @@ def resubmit(request, pk):
     log_ip(request)
 
     # get microsim data
-    reform_parameters = json_int_key_encode(model.reform_parameters)
-    assumption_parameters = json_int_key_encode(model.assumption_parameters)
+    reform_parameters = json_int_key_encode(
+        model.upstream_parameters['reform'])
+    assumption_parameters = json_int_key_encode(
+        model.upstream_parameters['assumption'])
 
     user_mods = {'policy': reform_parameters, **assumption_parameters}
     print('data source', model.data_source)
@@ -306,8 +308,8 @@ def resubmit(request, pk):
         do_full_calc=True,
         reform_parameters=reform_parameters,
         assumption_parameters=assumption_parameters,
-        reform_inputs_file=(model.reform_inputs_file or ""),
-        assumption_inputs_file=(model.assumption_inputs_file or ""),
+        reform_inputs_file=(model.inputs_file['reform'] or ""),
+        assumption_inputs_file=(model.inputs_file['assumption'] or ""),
         submitted_id=submitted_id,
         max_q_length=max_q_length,
         user=None,

@@ -73,10 +73,12 @@ def save_model(post_meta):
     # create model for file_input case
     if model is None:
         model = TaxSaveInputs()
-    model.reform_parameters = post_meta.reform_parameters
-    model.assumption_parameters = post_meta.assumption_parameters
-    model.reform_inputs_file = post_meta.reform_inputs_file
-    model.assumption_inputs_file = post_meta.assumption_inputs_file
+    model.upstream_parameters.update({
+        'reform': post_meta.reform_parameters,
+        'assumption': post_meta.assumption_parameters})
+    model.inputs_file.update({
+        'reform': post_meta.reform_inputs_file,
+        'assumption': post_meta.assumption_inputs_file})
     model.first_year = int(post_meta.start_year)
     model.data_source = post_meta.data_source
     model.quick_calc = not post_meta.do_full_calc
@@ -170,11 +172,11 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                 has_errors=True
             )
         reform_parameters = json_int_key_encode(
-            model.reform_parameters)
+            model.upstream_parameters['reform'])
         assumption_parameters = json_int_key_encode(
-            model.assumption_parameters)
-        reform_inputs_file = model.reform_inputs_file
-        assumption_inputs_file = model.assumption_inputs_file
+            model.upstream_parameters['assumption'])
+        reform_inputs_file = model.inputs_file['reform']
+        assumption_inputs_file = model.inputs_file['assumption']
         errors_warnings = model.errors_warnings_text
 
         if "docfile" in request_files or "assumpfile" in request_files:
@@ -190,10 +192,12 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                                                         reform_inputs_file,
                                                         assumption_inputs_file)
 
-            model.reform_inputs_file = reform_inputs_file
-            model.assumption_inputs_file = assumption_inputs_file
-            model.reform_parameters = reform_parameters
-            model.assumption_parameters = assumption_parameters
+            model.upstream_parameters.update({
+                'reform': reform_parameters,
+                'assumption': assumption_parameters})
+            model.inputs_file.update({
+                'reform': reform_inputs_file,
+                'assumption': assumption_inputs_file})
             model.errors_warnings_text = errors_warnings
             model.save()
 
@@ -226,10 +230,12 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                     errors_warnings) = model.get_model_specs()
 
         if model:
-            model.reform_inputs_file = reform_inputs_file
-            model.assumption_inputs_file = assumption_inputs_file
-            model.reform_parameters = reform_parameters
-            model.assumption_parameters = assumption_parameters
+            model.upstream_parameters.update({
+                'reform': reform_parameters,
+                'assumption': assumption_parameters})
+            model.inputs_file.update({
+                'reform': reform_inputs_file,
+                'assumption': assumption_inputs_file})
             model.errors_warnings_text = errors_warnings
             model.save()
 

@@ -17,14 +17,12 @@ class CoreInputs(models.Model):
 
     # Validated GUI input that has been parsed to have the correct data types,
     # or JSON reform uploaded as file
-    reform_inputs_file = JSONField(default=None, blank=True, null=True)
-    assumption_inputs_file = JSONField(default=None, blank=True, null=True)
+    inputs_file = JSONField(default=dict, blank=True, null=True)
 
     errors_warnings_text = JSONField(default=None, blank=True, null=True)
 
     # The parameters that will be used to run the model
-    reform_parameters = JSONField(default=None, blank=True, null=True)
-    assumption_parameters = JSONField(default=None, blank=True, null=True)
+    upstream_parameters = JSONField(default=dict, blank=True, null=True)
 
     # Starting year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)

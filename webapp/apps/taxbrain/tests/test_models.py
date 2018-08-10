@@ -15,10 +15,8 @@ class TestTaxBrainJSONReformModel(object):
 
     def test_create_reforms(self):
         self.reforms = TaxSaveInputs.objects.create(
-            reform_parameters=TestTaxBrainJSONReformModel.test_string,
-            reform_inputs_file=TestTaxBrainJSONReformModel.test_string,
-            assumption_parameters=TestTaxBrainJSONReformModel.test_string,
-            assumption_inputs_file=TestTaxBrainJSONReformModel.test_string
+            upstream_parameters=TestTaxBrainJSONReformModel.test_string,
+            inputs_file=TestTaxBrainJSONReformModel.test_string
         )
 
     def test_get_errors_warnings_post_PB_160(self):

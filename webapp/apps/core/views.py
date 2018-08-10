@@ -10,6 +10,7 @@ import itertools
 from io import BytesIO
 from zipfile import ZipFile
 import traceback
+import json
 
 
 class SuperclassTemplateNameMixin(object):
@@ -128,6 +129,9 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
 
     def has_link_to_dyn(self):
         return False
+
+    def inputs_to_display(self):
+        return json.dumps(self.object.inputs.inputs_file, indent=2)
 
 
 class CoreRunDownloadView(SingleObjectMixin, View):
