@@ -550,7 +550,8 @@ class TestTaxBrainViews(object):
         ans = get_result_context(tsi, req, url)
         assert ans
 
-    @pytest.mark.parametrize('bad_exp', ['XTOT*4500', 'abc', 'abc,123', '01'])
+    @pytest.mark.parametrize('bad_exp',
+                             ['XTOT*4500', 'abc', 'abc,123', '01', 'a' * 200])
     def test_taxbrain_bad_expression(self, bad_exp):
         """
         POST a bad expression for a TaxBrain parameter and verify that

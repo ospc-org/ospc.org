@@ -50,7 +50,8 @@ def is_safe(s):
     Returns:
         success: whether value is "safe" or not
     """
-    assert len(s) < 100
+    if len(s) > 100:
+        return False
     parsers = [VALUE, BOOL, REVERSE]
     tokens = s.split(',')
     success = [False] * len(tokens)
