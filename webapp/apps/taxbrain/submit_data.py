@@ -256,6 +256,7 @@ def submit_reform(request, dropq_compute, user=None, json_reform_id=None):
                 use_puf_not_cps,
                 initial=json.loads(personal_inputs.data['raw_input_fields'])
             )
+            personal_inputs.clean() 
             # TODO: parse warnings for file_input
             # only handle GUI errors for now
             if ((taxcalc_errors or taxcalc_warnings) and

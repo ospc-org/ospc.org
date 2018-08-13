@@ -3,7 +3,7 @@ import json
 import numpy as np
 import taxcalc
 import pyparsing as pp
-from ..helpers import (rename_keys, json_int_key_encode, INPUT, make_bool,
+from ..helpers import (rename_keys, json_int_key_encode, is_safe, make_bool,
                        is_reverse, reorder_lists)
 from ..param_formatters import parse_value, MetaParam
 from ..param_displayers import TaxCalcParam, nested_form_parameters
@@ -164,22 +164,19 @@ def test_reorder_lists():
      '*', '1,*', '1,*,1,1,*',
      '-2,*', '-7,*,*,2,*',
      'True', 'true', 'TRUE', 'tRue',
-     'False', 'false', 'FALSE', 'faLSe',
+     'False', 'false', 'FALSE','faLSe',
      'true,*', '*, true', '*,*,false',
      'true,*,false,*,*,true',
      '1,*,False', '0.0,True', '1.0,False',
      '<,True', '<,1']
 )
 def test_parsing_pass(item):
-    INPUT.parseString(item)
+    assert is_safe(item)
 
 
-@pytest.mark.parametrize(
-    'item', [
-        'abc', '<,', '<', '1,<', '0,<,1', 'True,<', '-0.002,<,-0.001'])
+@pytest.mark.parametrize('item', ['abc', '01', 'abc,def', '<,abc', '1,abc,2'])
 def test_parsing_fail(item):
-    with pytest.raises(pp.ParseException):
-        INPUT.parseString('abc')
+    assert not is_safe(item)
 
 
 @pytest.mark.parametrize(
