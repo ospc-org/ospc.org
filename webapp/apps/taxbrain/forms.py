@@ -10,7 +10,7 @@ from .models import TaxSaveInputs
 from .helpers import (is_number,
                       int_to_nth, is_string, string_to_float_array,
                       check_wildcards, default_taxcalc_data, expand_list,
-                      propagate_user_list, convert_val, INPUT, INPUTS_META)
+                      propagate_user_list, convert_val, is_safe, INPUTS_META)
 from .param_displayers import default_policy
 from .param_formatters import (get_default_policy_param,
                                ParameterLookUpException)
@@ -137,9 +137,7 @@ class PolicyBrainForm:
             if param_name == 'data_source':
                 assert value in ('CPS', 'PUF')
             elif isinstance(value, six.string_types) and len(value) > 0:
-                try:
-                    INPUT.parseString(value)
-                except (ParseException, AssertionError):
+                if not is_safe(value):
                     # Parse Error - we don't recognize what they gave us
                     self.add_error(param_name,
                                    "Unrecognized value: {}".format(value))
@@ -248,7 +246,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         # 1. initial is specified in `kwargs` (reform has warning/error msgs)
         # 2. if `instance` is specified and `initial` is added above
         #    (edit parameters page)
-        if kwargs.get("initial", False):
+        if "initial" in kwargs:
             for k, v in kwargs["initial"].items():
                 if k.endswith("cpi") and v:
                     # raw data is stored as choices 1, 2, 3 with the following
@@ -266,6 +264,9 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                         k
                     )
                     self.widgets[k].attrs["placeholder"] = django_val
+
+            if not hasattr(self, 'cleaned_data'):
+                self.cleaned_data = {'raw_input_fields': kwargs['initial']}
 
         super(TaxBrainForm, self).__init__(*args, **kwargs)
 

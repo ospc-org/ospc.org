@@ -50,9 +50,8 @@ def parse_value(value, meta_param):
     # value is not an integer, float, or boolean string
     try:
         parsed = ast.literal_eval(prepped)
-    except ValueError:
-        return parsed
-
+    except (SyntaxError, ValueError):
+        return prepped
     # Use information given to us by upstream specs to convert this value
     # into desired type or let upstream package throw error
     if boolean_value:
