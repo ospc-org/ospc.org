@@ -550,7 +550,9 @@ class TestTaxBrainViews(object):
         ans = get_result_context(tsi, req, url)
         assert ans
 
-    def test_taxbrain_bad_expression(self):
+    @pytest.mark.parametrize('bad_exp',
+                             ['XTOT*4500', 'abc', 'abc,123', '01', 'a' * 200])
+    def test_taxbrain_bad_expression(self, bad_exp):
         """
         POST a bad expression for a TaxBrain parameter and verify that
         it gives an error
@@ -559,13 +561,14 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {'II_brk1_0': ['XTOT*4500'],
+        mod = {'II_brk1_0': [bad_exp],
                'II_brk2_0': ['*, *, 39500']}
         data.update(mod)
 
         response = CLIENT.post('/taxbrain/', data)
         assert response.status_code == 200
         assert response.context['has_errors'] is True
+        assert bad_exp in str(response.context['form'].errors)
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_error_reform_file(self, data_source, bad_reform):

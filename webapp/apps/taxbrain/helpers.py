@@ -3,6 +3,7 @@ import pyparsing as pp
 import sys
 import six
 import re
+import ast
 
 # Mock some module for imports because we can't fit them on Heroku slugs
 import sys
@@ -30,18 +31,46 @@ FLOAT_LIT = pp.Word(pp.nums + '.')
 DEC_POINT = pp.Word('.', exact=1)
 FLOAT_LIT_FULL = pp.Word(pp.nums + '.' + pp.nums)
 COMMON = pp.Word(",", exact=1)
-REVERSE = pp.Word("<") + COMMON
-
+REVERSE = pp.Word("<")
 VALUE = WILDCARD | NEG_DASH | FLOAT_LIT_FULL | FLOAT_LIT | INT_LIT
-MORE_VALUES = COMMON + VALUE
-
 BOOL = WILDCARD | TRUE | FALSE
-MORE_BOOLS = COMMON + BOOL
-INPUT = (pp.Optional(REVERSE) +
-         BOOL +
-         pp.ZeroOrMore(MORE_BOOLS) | pp.Optional(REVERSE) +
-         VALUE +
-         pp.ZeroOrMore(MORE_VALUES))
+
+
+def is_safe(s):
+    """
+    Test if a string of comma-separated-values is "safe"
+    - is the string less than 100 characters?
+    - is the string boolean?
+    - is the string an integer or float?
+    - is the string a wildcard (*)?
+    - is the string a reverse character (<)?
+    If one of the tokens does not answer one of the above questions in the
+    affirmative, then it is deemed "not safe"
+
+    Returns:
+        success: whether value is "safe" or not
+    """
+    if len(s) > 100:
+        return False
+    parsers = [VALUE, BOOL, REVERSE]
+    tokens = s.split(',')
+    success = [False] * len(tokens)
+    for i, token in enumerate(tokens):
+        token_strip = token.strip()
+        for parser in parsers:
+            try:
+                parser.parseString(token_strip)
+                if parser == VALUE:
+                    # make sure `ast.literal_eval` can parse
+                    # throws ValueError or SyntaxError on failure
+                    ast.literal_eval(token_strip)
+            except (pp.ParseException, ValueError, SyntaxError):
+                pass
+            else:
+                success[i] = True
+                break
+    return all(success)
+
 
 TRUE_REGEX = re.compile('(?i)true')
 FALSE_REGEX = re.compile('(?i)false')
