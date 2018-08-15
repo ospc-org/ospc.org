@@ -266,13 +266,16 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
         if personal_inputs is not None:
             # ensure that parameters causing the warnings are shown on page
             # with warnings/errors
+            # print(personal_inputs.data)
             personal_inputs = TaxBrainForm(
                 start_year,
                 use_puf_not_cps,
                 initial=json.loads(
                     personal_inputs.data['raw_gui_field_inputs'])
             )
-            personal_inputs.clean() 
+            # iv = personal_inputs.is_valid()
+            # print('data',iv, str(personal_inputs.errors), personal_inputs.data)
+            personal_inputs.clean()
             # TODO: parse warnings for file_input
             # only handle GUI errors for now
             if ((taxcalc_errors or taxcalc_warnings) and
@@ -281,6 +284,10 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                 # the *static* reform page.
                 append_errors_warnings(
                     errors_warnings['policy'],
+                    lambda param, msg: personal_inputs.add_error(param, msg)
+                )
+                append_errors_warnings(
+                    errors_warnings['behavior'],
                     lambda param, msg: personal_inputs.add_error(param, msg)
                 )
             has_parse_errors = any('Unrecognize value' in e[0]

@@ -215,8 +215,12 @@ def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
                            defaults=None):
     # defaults are None unless we are testing
     if defaults is None:
-        defaults = taxcalc.Policy.default_data(metadata=True,
+        defaults_pol = taxcalc.Policy.default_data(metadata=True,
                                                start_year=budget_year)
+        defaults_behv = taxcalc.Behavior.default_data(metadata=True,
+                                               start_year=budget_year)
+        defaults = dict(defaults_pol, **defaults_behv)
+
     groups = parse_top_level(defaults)
     for x in groups:
         for y, z in x.items():
@@ -254,3 +258,10 @@ def default_policy(first_budget_year, use_puf_not_cps=True):
     TAXCALC_DEFAULT_PARAMS = default_taxcalc_params
 
     return TAXCALC_DEFAULT_PARAMS
+
+
+def defaults_all(first_budget_year, use_puf_not_cps=True):
+
+    default_behv = default_behavior(first_budget_year)
+    default_pol = default_policy(first_budget_year, use_puf_not_cps)
+    return dict(default_behv, **default_pol)

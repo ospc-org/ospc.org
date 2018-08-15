@@ -11,7 +11,7 @@ from .helpers import (is_number,
                       int_to_nth, is_string, string_to_float_array,
                       check_wildcards, default_taxcalc_data, expand_list,
                       propagate_user_list, convert_val, is_safe, INPUTS_META)
-from .param_displayers import default_policy
+from .param_displayers import default_policy, defaults_all
 from .param_formatters import (get_default_policy_param,
                                ParameterLookUpException)
 import taxcalc
@@ -114,12 +114,12 @@ class PolicyBrainForm:
                            "Extra input '{0}' not allowed".format(_input))
 
         all_fields = self.cleaned_data['raw_gui_field_inputs']
-        default_policy = getattr(self.Meta, 'default_policy', None)
+        default_params = getattr(self.Meta, 'default_params', None)
         allowed_fields = getattr(self.Meta, 'allowed_fields', None)
         for _field in all_fields:
-            if default_policy:
+            if default_params:
                 try:
-                    get_default_policy_param(_field, default_policy)
+                    get_default_policy_param(_field, default_params)
                 except ParameterLookUpException as exn:
                     self.add_error(None, str(exn))
             elif _field not in allowed_fields:
@@ -211,7 +211,7 @@ class PolicyBrainForm:
 
 
 TAXCALC_DEFAULTS = {
-    (int(START_YEAR), True): default_policy(int(START_YEAR),
+    (int(START_YEAR), True): defaults_all(int(START_YEAR),
                                             use_puf_not_cps=True)
 }
 
@@ -266,7 +266,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                     self.widgets[k].attrs["placeholder"] = django_val
 
             if not hasattr(self, 'cleaned_data'):
-                self.cleaned_data = {'raw_input_fields': kwargs['initial']}
+                self.cleaned_data = {'raw_gui_field_inputs': kwargs['initial']}
 
         super(TaxBrainForm, self).__init__(*args, **kwargs)
 
@@ -304,7 +304,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
     def set_form_data(self, start_year, use_puf_not_cps):
         defaults_key = (start_year, use_puf_not_cps)
         if defaults_key not in TAXCALC_DEFAULTS:
-            TAXCALC_DEFAULTS[defaults_key] = default_policy(
+            TAXCALC_DEFAULTS[defaults_key] = defaults_all(
                 start_year, use_puf_not_cps)
         defaults = TAXCALC_DEFAULTS[defaults_key]
         (self.widgets, self.labels,
@@ -321,9 +321,14 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             start_year=int(START_YEAR),
             metadata=True
         )
+        default_behv = taxcalc.Behavior.default_data(
+            start_year=int(START_YEAR),
+            metadata=True
+        )
+        default_params = dict(default_policy, **default_behv)
         defaults_key = (start_year, True)
         if defaults_key not in TAXCALC_DEFAULTS:
-            TAXCALC_DEFAULTS[defaults_key] = default_policy(
+            TAXCALC_DEFAULTS[defaults_key] = defaults_all(
                 start_year,
                 use_puf_not_cps=True
             )
