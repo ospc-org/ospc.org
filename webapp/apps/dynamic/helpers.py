@@ -140,19 +140,6 @@ def convert_to_floats(tsi):
     return {k: numberfy(v) for k, v in list(attrs.items()) if v}
 
 
-def default_behavior_parameters(first_budget_year):
-    ''' Create a list of default Behavior parameters '''
-    default_behavior_params = {}
-    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(
-        taxcalc.Behavior, metadata=True, start_year=first_budget_year)
-
-    for k, v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
-        param = TaxCalcParam(k, v, first_budget_year)
-        default_behavior_params[param.nice_id] = param
-
-    return default_behavior_params
-
-
 def default_elasticity_parameters(first_budget_year):
     ''' Create a list of default Elasticity parameters '''
     default_elasticity_params = {}

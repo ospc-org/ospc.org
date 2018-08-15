@@ -3,12 +3,56 @@ import uuid
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+from django.core import validators
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 import datetime
 from django.utils.timezone import make_aware
 
-from ..taxbrain.models import (SeparatedValuesField,
-                               CommaSeparatedField)
+# digit or true/false (case insensitive)
+COMMASEP_REGEX = "(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
+
+
+class CommaSeparatedField(models.CharField):
+    default_validators = [validators.RegexValidator(regex=COMMASEP_REGEX)]
+    description = "A comma separated field that allows multiple floats."
+
+    def __init__(self, verbose_name=None, name=None, **kwargs):
+        kwargs['max_length'] = kwargs.get('max_length', 200)
+        super(CommaSeparatedField, self).__init__(verbose_name, name, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super(
+            CommaSeparatedField, self).deconstruct()
+        if kwargs.get("max_length", None) == 1000:
+            del kwargs['max_length']
+        return name, path, args, kwargs
+
+class SeparatedValuesField(models.TextField):
+
+    def __init__(self, *args, **kwargs):
+        self.token = kwargs.pop('token', ',')
+        super(SeparatedValuesField, self).__init__(*args, **kwargs)
+
+    def to_python(self, value):
+        if not value:
+            return
+        if isinstance(value, list):
+            return value
+        return value.split(self.token)
+
+    def get_db_prep_value(self, value, connection=None, prepared=False):
+        if not value:
+            return
+        assert(isinstance(value, list) or isinstance(value, tuple))
+        return self.token.join([str(s) for s in value])
+
+    def value_to_string(self, obj):
+        value = self._get_val_from_obj(obj)
+        return self.get_db_prep_value(value)
+
+    def from_db_value(self, value, expression, connection, context):
+        return self.to_python(value)
 
 
 class BTaxSaveInputs(models.Model):

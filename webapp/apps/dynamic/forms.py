@@ -6,7 +6,6 @@ from .models import (DynamicSaveInputs, DynamicBehaviorSaveInputs,
                      DynamicElasticitySaveInputs)
 from ..taxbrain.helpers import (string_to_float_array, int_to_nth,
                                 is_string, is_number)
-from ..taxbrain.forms import PolicyBrainForm
 from .helpers import (default_parameters, default_behavior_parameters,
                       default_elasticity_parameters)
 
@@ -217,75 +216,6 @@ class DynamicElasticityInputsModelForm(ModelForm):
                     attrs['disabled'] = True
 
                 widgets[field.id] = forms.NullBooleanSelect(attrs=attrs)
-
-
-class DynamicBehavioralInputsModelForm(PolicyBrainForm, ModelForm):
-
-    def __init__(self, first_year, use_puf_not_cps, *args, **kwargs):
-        if first_year is None:
-            first_year = START_YEAR
-        self._first_year = int(first_year)
-        # reset form data; form data from the `Meta` class is not updated each
-        # time a new `TaxBrainForm` instance is created
-        self.set_form_data(self._first_year)
-        # move parameter fields into `raw_fields` JSON object
-        args = self.add_fields(args)
-        # Override `initial` with `instance`. The only relevant field
-        # in `instance` is `raw_input_fields` which contains all of the user
-        # input data from the stored run. By overriding the `initial` kw
-        # argument we are making all of the user input from the previous run
-        # as stored in the `raw_input_fields` field of `instance` available
-        # to the fields attribute in django forms. This front-end data is
-        # derived from this fields attribute.
-        # Take a look at the source code for more info:
-        # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
-        if "instance" in kwargs:
-            kwargs["initial"] = kwargs["instance"].raw_input_fields
-
-        super(DynamicBehavioralInputsModelForm, self).__init__(*args, **kwargs)
-
-        # update fields in a similar way as
-        # https://www.pydanny.com/overloading-form-fields.html
-        self.fields.update(self.Meta.update_fields)
-
-    def clean(self):
-        """
-        " This method should be used to provide custom model validation, and to
-        modify attributes on your model if desired. For instance, you could use
-        it to automatically provide a value for a field, or to do validation
-        that requires access to more than a single field."
-        per https://docs.djangoproject.com/en/1.8/ref/models/instances/
-
-        Note that this can be defined both on forms and on the model, but is
-        only automatically called on form submissions.
-        """
-        self.do_taxcalc_validations()
-        self.add_errors_on_extra_inputs()
-
-    def set_form_data(self, start_year):
-        defaults = default_behavior_parameters(start_year)
-        (self.widgets, self.labels,
-            self.update_fields) = PolicyBrainForm.set_form(defaults)
-
-    def add_error(self, field, error):
-        """
-        Safely adds errors. There was an issue where the `cleaned_data`
-        attribute wasn't created after `is_valid` was called. This ensures
-        that the `cleaned_data` attribute is there.
-        """
-        if (getattr(self, "cleaned_data", None) is None or
-                self.cleaned_data is None):
-            self.cleaned_data = {}
-        ModelForm.add_error(self, field, error)
-
-    class Meta:
-        model = DynamicBehaviorSaveInputs
-        # we are only updating the "first_year", "raw_fields", and "fields"
-        # fields
-        fields = ['first_year', 'raw_input_fields', 'input_fields']
-        allowed_fields = BEHAVIOR_DEFAULT_PARAMS
-        (widgets, labels,
-            update_fields) = PolicyBrainForm.set_form(BEHAVIOR_DEFAULT_PARAMS)
 
 
 class DynamicInputsModelForm(ModelForm):

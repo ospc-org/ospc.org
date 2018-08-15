@@ -1,9 +1,7 @@
 import uuid
 
 from django.db import models
-from django.core import validators
 from django.core.urlresolvers import reverse
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 
 from django.contrib.postgres.fields import ArrayField
@@ -16,26 +14,6 @@ import taxcalc
 from . import param_formatters
 
 from .behaviors import Fieldable, DataSourceable
-
-
-# digit or true/false (case insensitive)
-COMMASEP_REGEX = "(<,)|(\\d*\\.\\d+|\\d+)|((?i)(true|false))"
-
-
-class CommaSeparatedField(models.CharField):
-    default_validators = [validators.RegexValidator(regex=COMMASEP_REGEX)]
-    description = "A comma separated field that allows multiple floats."
-
-    def __init__(self, verbose_name=None, name=None, **kwargs):
-        kwargs['max_length'] = kwargs.get('max_length', 200)
-        super(CommaSeparatedField, self).__init__(verbose_name, name, **kwargs)
-
-    def deconstruct(self):
-        name, path, args, kwargs = super(
-            CommaSeparatedField, self).deconstruct()
-        if kwargs.get("max_length", None) == 1000:
-            del kwargs['max_length']
-        return name, path, args, kwargs
 
 
 class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
