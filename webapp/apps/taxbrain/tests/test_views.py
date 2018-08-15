@@ -42,16 +42,23 @@ class TestTaxBrainViews(object):
         """
         data = get_post_data(START_YEAR)
         data['II_em'] = ['4333']
+        data['BE_inc'] = ['-0.3']
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/?start_year={0}&data_source={1}'.format(
             START_YEAR, data_source)
         result = do_micro_sim(CLIENT, data, post_url=url)
 
-        truth_mods = {}
+        truth_mods = {START_YEAR: {'_II_em': [4333.0]}}
 
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
+
+        behv_truth_mods = {START_YEAR: {'_BE_inc': [-0.3]}}
+
+        check_posted_params(result['tb_dropq_compute'], behv_truth_mods,
+                            str(START_YEAR), data_source=data_source,
+                            param_type='behavior')
 
     def test_taxbrain_post_invalid_param(self):
         """
@@ -76,6 +83,7 @@ class TestTaxBrainViews(object):
         data['II_em'] = ['4333']
         data['ID_AmountCap_Switch_0'] = ['0']
         data['data_source'] = data_source
+        data['BE_inc'] = ['-0.3']
 
         result = do_micro_sim(CLIENT, data, compute_count=1)
 
@@ -88,6 +96,12 @@ class TestTaxBrainViews(object):
                       }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
+
+        behv_truth_mods = {START_YEAR: {'_BE_inc': [-0.3]}}
+
+        check_posted_params(result['tb_dropq_compute'], behv_truth_mods,
+                            str(START_YEAR), data_source=data_source,
+                            param_type='behavior')
 
         # reset worker node count without clearing MockCompute session
         result['tb_dropq_compute'].reset_count()
@@ -104,6 +118,12 @@ class TestTaxBrainViews(object):
         # Check that data was saved properly
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
+
+        behv_truth_mods = {START_YEAR: {'_BE_inc': [-0.3]}}
+
+        check_posted_params(result['tb_dropq_compute'], behv_truth_mods,
+                            str(START_YEAR), data_source=data_source,
+                            param_type='behavior')
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_file_post_quick_calc(self, data_source, r1):
@@ -182,18 +202,6 @@ class TestTaxBrainViews(object):
 
         check_posted_params(result2['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
-
-    def test_taxbrain_post_no_behavior_entries(self):
-        # Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
-
-        # Provide behavioral input
-        data = get_post_data(START_YEAR)
-        data['BE_inc'] = ['0.1']
-
-        response = CLIENT.post('/taxbrain/', data)
-        # Check that we get a 400
-        assert response.status_code == 400
 
     def test_taxbrain_nodes_down(self):
         # Monkey patch to mock out running of compute jobs
@@ -532,9 +540,15 @@ class TestTaxBrainViews(object):
         ans = get_result_context(tsi, req, url)
         assert ans
 
-    @pytest.mark.parametrize('bad_exp',
-                             ['XTOT*4500', 'abc', 'abc,123', '01', 'a' * 200])
-    def test_taxbrain_bad_expression(self, bad_exp):
+    @pytest.mark.parametrize('param_name,bad_input',
+                             [('II_brk1_0', 'XTOT*4500'),
+                              ('II_brk1_0', 'abc'),
+                              ('II_brk1_0', 'abc,123'),
+                              ('II_brk1_0', '01'),
+                              ('II_brk1_0', 'a' * 200),
+                              ('II_brk3_0', '0'),
+                              ('BE_inc', '0.3')])
+    def test_taxbrain_bad_input(self, param_name, bad_input):
         """
         POST a bad expression for a TaxBrain parameter and verify that
         it gives an error
@@ -543,14 +557,16 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {'II_brk1_0': [bad_exp],
+        mod = {param_name: [bad_input],
                'II_brk2_0': ['*, *, 39500']}
         data.update(mod)
 
         response = CLIENT.post('/taxbrain/', data)
         assert response.status_code == 200
         assert response.context['has_errors'] is True
-        assert bad_exp in str(response.context['form'].errors)
+
+        err_string = str(response.context['form'].errors)
+        assert bad_input in err_string and param_name in err_string
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_error_reform_file(self, data_source, bad_reform):
@@ -750,12 +766,11 @@ class TestTaxBrainViews(object):
                                         taxcalc_vers="0.14.2",
                                         webapp_vers="1.3.0")
         model = unique_url.inputs
-        model.raw_gui_field_inputs = None
-        model.gui_field_inputs = None
-        model.deprecated_fields = None
-        model.ALD_Alimony_hc = "*,1,*,*,*,*,*,*,0"
-        model.PT_exclusion_rt = "0.2,*,*,*,*,*,*,*,0.0"
-        model.PT_exclusion_wage_limit = "0.5,*,*,*,*,*,*,*,9e99"
+        model.raw_gui_field_inputs = {
+            'ALD_Alimony_hc': '*,1,*,*,*,*,*,*,0',
+            'PT_exclusion_rt': '0.2,*,*,*,*,*,*,*,0.0',
+            'PT_exclusion_wage_limit': '0.5,*,*,*,*,*,*,*,9e99'
+        }
         model.save()
         unique_url.inputs = model
         unique_url.save()

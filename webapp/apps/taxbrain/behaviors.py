@@ -35,17 +35,6 @@ class Fieldable(models.Model):
                                                      metadata=True)
             default_data.update(dd)
 
-        # if self.raw_gui_field_inputs is None:
-        #     self.raw_gui_field_inputs = {}
-        #     for field in self._meta.get_fields():
-        #         if (hasattr(field, 'attname') and
-        #                 getattr(self, field.attname, None) and
-        #                 field.name not in nonparam_fields):
-        #             raw_val = getattr(self, field.attname)
-        #             if field.name.endswith(
-        #                     "cpi") and isinstance(raw_val, bool):
-        #                 raw_val = str(raw_val)
-        #             self.raw_gui_field_inputs[field.name] = raw_val
 
         gui_field_inputs, failed_lookups = param_formatters.parse_fields(
             self.raw_gui_field_inputs,

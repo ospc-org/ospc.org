@@ -44,25 +44,6 @@ class TestTaxBrainStaticFields(TaxBrainFieldsTest):
 
         self.parse_fields(start_year, fields, Form=TaxBrainForm)
 
-    def test_old_runs(self):
-        """
-        Test that the fields JSON objects can be generated dyanamically
-        """
-        start_year = 2017
-        tsi = TaxSaveInputs(
-            ID_AmountCap_Switch_0='True',
-            FICA_ss_trt='0.10',
-            STD_cpi='True',
-            SS_Earnings_c_cpi=True,
-            first_year=start_year
-        )
-        tsi.save()
-        tsi.set_fields()
-        assert tsi.gui_field_inputs['_FICA_ss_trt'] == [0.10]
-        assert tsi.gui_field_inputs['_STD_cpi']
-        assert tsi.gui_field_inputs['_SS_Earnings_c_cpi']
-        assert tsi.gui_field_inputs['_ID_AmountCap_Switch_medical'] == [True]
-
     def test_deprecated_fields(self):
         """
         Test that deprecated fields are added correctly

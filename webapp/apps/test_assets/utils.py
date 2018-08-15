@@ -80,7 +80,8 @@ def do_micro_sim(client, data, tb_dropq_compute=None, dyn_dropq_compute=None,
 
 
 def check_posted_params(mock_compute, params_to_check, start_year,
-                        use_puf_not_cps=True, data_source=None):
+                        use_puf_not_cps=True, data_source=None,
+                        param_type='policy'):
     """
     Make sure posted params match expected results
     user_mods: parameters that are actually passed to taxcalc
@@ -98,7 +99,7 @@ def check_posted_params(mock_compute, params_to_check, start_year,
     print('checking user_mods', user_mods)
     for year in params_to_check:
         for param in params_to_check[year]:
-            act = user_mods["policy"][year][param]
+            act = user_mods[param_type][year][param]
             exp = params_to_check[year][param]
             # more extensive assertion statement
             # catches: [['true', '2']] == [['true', '2']]
