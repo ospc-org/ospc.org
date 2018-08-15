@@ -74,10 +74,10 @@ INSTALLED_APPS = [
     # Apps
     'webapp.apps.core',
     'webapp.apps.taxbrain',
-    # 'webapp.apps.dynamic',
+    'webapp.apps.dynamic',
     'webapp.apps.pages',
     'webapp.apps.register',
-    # 'webapp.apps.btax',
+    'webapp.apps.btax',
 
     # Third party apps
     'flatblocks',

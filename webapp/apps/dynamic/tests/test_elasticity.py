@@ -8,7 +8,8 @@ import msgpack
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
                                  package_up_vars, format_csv,
                                  arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.mock_compute import ElasticMockCompute, MockCompute
+from ...taxbrain.mock_compute import MockCompute
+from ..compute import ElasticMockCompute
 
 from .utils import do_dynamic_sim, START_YEAR
 from ...test_assets.utils import (check_posted_params, do_micro_sim,

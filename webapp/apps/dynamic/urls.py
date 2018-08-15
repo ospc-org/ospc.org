@@ -1,7 +1,6 @@
 from django.conf.urls import url
 
-from .views import (dynamic_landing, dynamic_behavioral,
-                    behavior_results, edit_dynamic_behavioral, elastic_results,
+from .views import (dynamic_landing, elastic_results,
                     dynamic_elasticities, edit_dynamic_elastic)
 
 

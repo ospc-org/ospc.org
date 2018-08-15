@@ -5,8 +5,9 @@ import pytest
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
                                  package_up_vars, format_csv,
                                  arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.mock_compute import (ElasticMockCompute, MockCompute,
-                                 MockFailedCompute)
+from ...taxbrain.mock_compute import (MockCompute,
+                                      MockFailedCompute)
+from ..compute import ElasticMockCompute
 
 START_YEAR = '2016'
 

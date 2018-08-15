@@ -26,11 +26,9 @@ from ..taxbrain.models import (TaxSaveInputs, TaxBrainRun,
 from ..taxbrain.views import dropq_compute
 from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
                                          parse_fields, append_errors_warnings)
-from ..taxbrain.helpers import (taxcalc_results_to_tables, make_bool,
-                                convert_val, json_int_key_encode)
+from ..taxbrain.helpers import make_bool, json_int_key_encode
 from ..core.compute import JobFailError
 
-from ..taxbrain.compute import JobFailError
 from ..taxbrain.submit_data import JOB_PROC_TIME_IN_SECONDS
 
 from .helpers import (default_parameters, job_submitted,
@@ -112,99 +110,8 @@ def dynamic_input(request, pk):
     handles the calculation on the inputs.
     """
 
-    if request.method == 'POST':
-        # Client is attempting to send inputs, validate as form data
-        fields = dict(request.POST)
-        fields['first_year'] = fields['start_year']
-        start_year = fields['start_year']
-        strip_empty_lists(fields)
-        dyn_mod_form = DynamicInputsModelForm(start_year, fields)
-
-        if dyn_mod_form.is_valid():
-            model = dyn_mod_form.save()
-
-            # Can't proceed if there is no email address
-            if not (request.user.is_authenticated() or model.user_email):
-                msg = ('Dynamic simulation must have an email address to send '
-                       'notification to!')
-                return HttpResponse(msg, status=403)
-
-            curr_dict = dict(model.__dict__)
-            for key, value in list(curr_dict.items()):
-                print("got this ", key, value)
-
-            # get macrosim data from form
-            worker_data = {
-                k: v for k, v in list(
-                    curr_dict.items()) if v not in (
-                    '', None, [])}
-
-            # get microsim data
-            outputsurl = TaxBrainRun.objects.get(pk=pk)
-            model.micro_run = outputsurl
-            taxbrain_model = outputsurl.inputs
-            submitted_ids = None
-
-            if not taxbrain_model.json_text:
-                taxbrain_dict = dict(taxbrain_model.__dict__)
-                for key, value in list(taxbrain_dict.items()):
-                    if isinstance(value, type(str())):
-                        try:
-                            taxbrain_dict[key] = [
-                                float(x) for x in value.split(',') if x]
-                        except ValueError:
-                            taxbrain_dict[key] = [
-                                make_bool(x) for x in value.split(',') if x]
-                    else:
-                        print("missing this: ", key)
-
-                microsim_data = {
-                    k: v for k, v
-                    in list(taxbrain_dict.items())
-                    if v != [] and v is not None}
-
-                # Don't need to pass around the microsim results
-                if 'tax_result' in microsim_data:
-                    del microsim_data['tax_result']
-
-                # start calc job
-                submitted_ids, guids = (
-                    dynamic_compute.submit_ogusa_calculation(
-                        worker_data, int(start_year), microsim_data))
-            else:
-                microsim_data = {
-                    "reform": taxbrain_model.json_text.reform_text,
-                    "assumptions": taxbrain_model.json_text.assumption_text}
-                # start calc job
-                submitted_ids, guids = (
-                    dynamic_compute.submit_json_ogusa_calculation(
-                        worker_data, int(start_year), microsim_data,
-                        pack_up_user_mods=False))
-            # TODO: use OutputUrl class
-            if submitted_ids:
-                model.job_ids = denormalize(submitted_ids)
-                model.guids = denormalize(guids)
-                model.first_year = int(start_year)
-                if request.user.is_authenticated():
-                    current_user = User.objects.get(pk=request.user.id)
-                    model.user_email = current_user.email
-
-                model.save()
-                job_submitted(model.user_email, model)
-                return redirect('show_job_submitted', model.pk)
-
-            else:
-                raise HttpResponseServerError
-
-        else:
-            # received POST but invalid results, return to form with errors
-            form_personal_exemp = dyn_mod_form
-
-    else:
-
-        # Probably a GET request, load a default form
-        start_year = request.GET.get('start_year')
-        form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
+    start_year = request.GET.get('start_year')
+    form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
 
     ogusa_default_params = default_parameters(int(start_year))
     disabled_flag = os.environ.get('OGUSA_DISABLED', '')
@@ -270,24 +177,8 @@ def dynamic_elasticities(request, pk):
             model.data_source = taxbrain_model.data_source
             # get taxbrain data
             # necessary for simulations before PR 641
-            if not taxbrain_model.json_text:
-                taxbrain_model.set_fields()
-                (reform_dict, assumptions_dict, reform_text, assumptions_text,
-                    errors_warnings) = taxbrain_model.get_model_specs()
-                json_reform = JSONReformTaxCalculator(
-                    reform_text=json.dumps(reform_dict),
-                    assumption_text=json.dumps(assumptions_dict),
-                    raw_reform_text=reform_text,
-                    raw_assumption_text=assumptions_text
-                )
-                json_reform.save()
-                taxbrain_model.json_text = json_reform
-                taxbrain_model.json_text.save()
-                taxbrain_model.save()
-            else:
-                reform_dict = json_int_key_encode(
-                    json.loads(taxbrain_model.json_text.reform_text)
-                )
+            reform_parameters = json_int_key_encode(
+                taxbrain_model.upstream_parameters['reform'])
             # empty assumptions dictionary
             assumptions_dict = {"behavior": {},
                                 "growdiff_response": {},
@@ -295,7 +186,7 @@ def dynamic_elasticities(request, pk):
                                 "growdiff_baseline": {},
                                 "growmodel": {}}
 
-            user_mods = dict({'policy': reform_dict}, **assumptions_dict)
+            user_mods = dict({'policy': reform_parameters}, **assumptions_dict)
             data = {'user_mods': user_mods,
                     'gdp_elasticity': gdp_elasticity,
                     'first_budget_year': int(start_year),
@@ -422,7 +313,7 @@ def dynamic_landing(request, pk):
         'pk': pk,
         'is_authenticated': request.user.is_authenticated(),
         'include_ogusa': include_ogusa,
-        'start_year': request.GET['start_year'],
+        'start_year': outputsurl.inputs.start_year,
         'taxcalc_version': TAXCALC_VERSION,
         'webapp_version': WEBAPP_VERSION
     }

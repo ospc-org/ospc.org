@@ -2,11 +2,11 @@ from django import forms
 from django.forms import ModelForm
 
 from ..constants import START_YEAR
-from .models import (DynamicSaveInputs, DynamicBehaviorSaveInputs,
+from .models import (DynamicSaveInputs,
                      DynamicElasticitySaveInputs)
 from ..taxbrain.helpers import (string_to_float_array, int_to_nth,
                                 is_string, is_number)
-from .helpers import (default_parameters, default_behavior_parameters,
+from .helpers import (default_parameters,
                       default_elasticity_parameters)
 
 
@@ -16,7 +16,6 @@ def bool_like(x):
 
 
 OGUSA_DEFAULT_PARAMS = default_parameters(int(START_YEAR))
-BEHAVIOR_DEFAULT_PARAMS = default_behavior_parameters(int(START_YEAR))
 ELASTICITY_DEFAULT_PARAMS = default_elasticity_parameters(int(START_YEAR))
 
 

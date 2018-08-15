@@ -1,10 +1,10 @@
 from functools import partial
 import os
-from ..taxbrain.compute import (DropqCompute,
-                                MockCompute,
-                                MockFailedCompute,
-                                NodeDownCompute,
-                                JobFailError)
+from ..core.compute import Compute, JobFailError
+from ..taxbrain.mock_compute import (MockCompute,
+                                     MockFailedCompute,
+                                     NodeDownCompute,
+                                     )
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 btax_workers = os.environ.get('BTAX_WORKERS', '')
@@ -48,7 +48,7 @@ def mock_dropq_get_results(is_error, self, *args, **kwargs):
     return ret
 
 
-class DropqComputeBtax(DropqCompute):
+class DropqComputeBtax(Compute):
     num_budget_years = 1
     package_up_vars = package_up_vars
 
