@@ -9,7 +9,9 @@ import os
 
 from api.celery_tasks import (taxbrain_postprocess,
                               dropq_task_async,
-                              dropq_task_small_async)
+                              dropq_task_small_async,
+                              elasticity_gdp_task_async,
+                              btax_async)
 
 bp = Blueprint('endpoints', __name__)
 
@@ -32,6 +34,20 @@ def aggr_endpoint(compute_task, postprocess_task):
     return json.dumps(data)
 
 
+def endpoint((task):
+    print('dropq endpoint')
+    data = request.get_data()
+    inputs = msgpack.loads(data, encoding='utf8',
+                           use_list=True)
+    print('inputs', inputs)
+    result = dropq_task.apply_async(kwargs=inputs['inputs'],
+                                    serializer='msgpack')
+    length = client.llen(queue_name) + 1
+    data = {'job_id': str(result), 'qlength': length}
+    return json.dumps(data)
+)
+
+
 @bp.route("/dropq_start_job", methods=['POST'])
 def dropq_endpoint_full():
     return aggr_endpoint(dropq_task_async, taxbrain_postprocess)
@@ -40,6 +56,16 @@ def dropq_endpoint_full():
 @bp.route("/dropq_small_start_job", methods=['POST'])
 def dropq_endpoint_small():
     return aggr_endpoint(dropq_task_small_async, taxbrain_postprocess)
+
+
+@bp.route("/btax_start_job", methods=['POST'])
+def btax_endpoint():
+    return dropq_endpoint(btax_async)
+
+
+@bp.route("/elastic_gdp_start_job", methods=['POST'])
+def elastic_endpoint():
+return dropq_endpoint(elasticity_gdp_task_async)
 
 
 @bp.route("/dropq_get_result", methods=['GET'])
