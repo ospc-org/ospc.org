@@ -92,7 +92,7 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
                 behv_fields[k] = v
             else:
                 pol_fields[k] = v
-        print('behv_fields', behv_fields)
+
         (reform_dict, assumptions_dict, reform_inputs, assumption_inputs,
             errors_warnings) = param_formatters.get_reform_from_gui(
             self.start_year,
