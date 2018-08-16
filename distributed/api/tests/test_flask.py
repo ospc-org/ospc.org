@@ -19,7 +19,7 @@ def taxcalc_inputs():
             "growmodel": {}
         },
         'first_budget_year': 2017,
-        'use_puf_not_cps': True,
+        'use_puf_not_cps': False,
         'year': 0
     }]
 
@@ -72,7 +72,7 @@ def test_hello(client):
 def test_dropq_small_start_job(client, taxcalc_inputs):
     resp = post_and_poll(client, '/dropq_small_start_job', taxcalc_inputs)
     result = json.loads(resp.data.decode('utf-8'))
-    assert 'aggr_1' in result
+    assert 'aggr_outputs' in result
 
 
 def test_dropq_job_fails(client, taxcalc_inputs):
