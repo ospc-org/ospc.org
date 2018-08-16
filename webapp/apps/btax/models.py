@@ -190,8 +190,7 @@ class BTaxSaveInputs(models.Model):
     btax_econ_inflat = CommaSeparatedField(default=None, null=True, blank=True)
 
     # Job IDs when running a job
-    job_ids = SeparatedValuesField(blank=True, default=None, null=True)
-    jobs_not_ready = SeparatedValuesField(blank=True, default=None, null=True)
+    job_id = models.UUIDField(blank=True, default=None, null=True)
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
