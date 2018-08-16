@@ -53,7 +53,7 @@ def taxbrain_postprocess(ans):
     for year_data in ans:
         for key, value in year_data.items():
             all_to_process[key] += value
-    results = taxcalc.tbi.run_taxcalc_years_aggregation(all_to_process)
+    results = taxcalc.tbi.postprocess(all_to_process)
     # Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version']
@@ -77,11 +77,11 @@ def dropq_task_small_async(year, user_mods, first_budget_year,
 
 @celery_app.task(name='api.celery_tasks.elasticity_gdp_task_async')
 def elasticity_gdp_task_async(year_n, start_year,
-                                 use_puf_not_cps,
-                                 use_full_sample,
-                                 user_mods,
-                                 gdp_elasticity,
-                                 return_dict=True):
+                              use_puf_not_cps,
+                              use_full_sample,
+                              user_mods,
+                              gdp_elasticity,
+                              return_dict=True):
 
     gdp_elast_i = taxcalc.tbi.run_nth_year_gdp_elast_model(
         year_n=year_n,
@@ -104,7 +104,7 @@ def taxbrain_elast_postprocess(ans):
     for year_data in ans:
         for key, value in year_data.items():
             all_to_process[key] += value
-    results = taxcalc.tbi.run_taxcalc_years_aggregation(all_to_process, ids=('gdp_effect',),
+    results = taxcalc.tbi.postprocess(all_to_process, ids=('gdp_effect',),
                                       labels={'gdp_effect': 'GDP Title'})
     # Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()

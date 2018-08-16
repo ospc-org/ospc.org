@@ -64,7 +64,7 @@ def btax_endpoint():
 
 @bp.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
-    return endpoint(elasticity_gdp_task_async)
+    return aggr_endpoint(elasticity_gdp_task_async, taxbrain_elast_postprocess)
 
 
 @bp.route("/dropq_get_result", methods=['GET'])
