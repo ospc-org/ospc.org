@@ -25,7 +25,7 @@ def test_elast_endpoint(celery_worker):
             'growdiff_baseline': {},
             'growmodel': {}},
         'gdp_elasticity': 0.3,
-        'use_puf_not_cps': True,
+        'use_puf_not_cps': False,
         'start_year': 2017,
         'use_full_sample':True,
         'return_dict': True
@@ -34,11 +34,6 @@ def test_elast_endpoint(celery_worker):
     inputs = []
     for i in range(1, 2):
         inputs.append(dict(elast_params, **{'year_n': i}))
-    print(inputs)
-    # print('celery_worker', celery_worker)
-    # task = elasticity_gdp_task_async.apply_async(kwargs=data)
-    # r = task.get()
-    # print(r)
     compute_task = elasticity_gdp_task_async
     postprocess_task = taxbrain_elast_postprocess
     result = (chord(compute_task.signature(kwargs=i, serializer='msgpack')
@@ -66,11 +61,6 @@ def test_taxcalc_endpoint(celery_worker):
     inputs = []
     for i in range(1, 2):
         inputs.append(dict(tc_params, **{'year': i}))
-    print(inputs)
-    # print('celery_worker', celery_worker)
-    # task = elasticity_gdp_task_async.apply_async(kwargs=data)
-    # r = task.get()
-    # print(r)
     compute_task = dropq_task_small_async
     postprocess_task = taxbrain_postprocess
     result = (chord(compute_task.signature(kwargs=i, serializer='msgpack')
