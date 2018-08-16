@@ -37,7 +37,7 @@ def client(app):
 
 
 def post_and_poll(client, url, data, exp_status='YES', tries=30):
-    packed = msgpack.dumps({'inputs': data}, use_bin_type=True)
+    packed = msgpack.dumps(data, use_bin_type=True)
     resp = client.post(url,
                        data=packed,
                        headers={'Content-Type': 'application/octet-stream'}

@@ -43,7 +43,7 @@ def test_elast_endpoint(celery_worker):
 
 
 def test_taxcalc_endpoint(celery_worker):
-    tc_params = [{
+    tc_params = {
         'user_mods': {
             "policy": {
                 2017: {"_FICA_ss_trt": [0.1]}},
@@ -56,7 +56,7 @@ def test_taxcalc_endpoint(celery_worker):
         'first_budget_year': 2017,
         'use_puf_not_cps': False,
         'year': 0
-    }]
+    }
 
     inputs = []
     for i in range(1, 2):
