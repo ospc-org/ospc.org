@@ -15,7 +15,7 @@ def celery_config():
         'accept_content': ['msgpack', 'json']}
 
 def test_elast_endpoint(celery_worker):
-    elast_params = {
+    elast_params = [{
         'year_n': 1,
         'user_mods': {
             'policy': {2017: {'_FICA_ss_trt': [0.1]}},
@@ -29,7 +29,7 @@ def test_elast_endpoint(celery_worker):
         'start_year': 2017,
         'use_full_sample':True,
         'return_dict': True
-    }
+    }]
 
     inputs = []
     for i in range(1, 2):
@@ -43,7 +43,7 @@ def test_elast_endpoint(celery_worker):
 
 
 def test_taxcalc_endpoint(celery_worker):
-    tc_params = {
+    tc_params = [{
         'user_mods': {
             "policy": {
                 2017: {"_FICA_ss_trt": [0.1]}},
@@ -56,7 +56,7 @@ def test_taxcalc_endpoint(celery_worker):
         'first_budget_year': 2017,
         'use_puf_not_cps': False,
         'year': 0
-    }
+    }]
 
     inputs = []
     for i in range(1, 2):

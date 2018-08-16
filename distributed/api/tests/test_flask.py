@@ -8,7 +8,7 @@ from api import create_app
 
 @pytest.fixture
 def taxcalc_inputs():
-    return {
+    return [{
         'user_mods': {
             "policy": {
                 2017: {"_FICA_ss_trt": [0.1]}},
@@ -21,7 +21,7 @@ def taxcalc_inputs():
         'first_budget_year': 2017,
         'use_puf_not_cps': True,
         'year': 0
-    }
+    }]
 
 
 @pytest.fixture
@@ -76,7 +76,7 @@ def test_dropq_small_start_job(client, taxcalc_inputs):
 
 
 def test_dropq_job_fails(client, taxcalc_inputs):
-    del taxcalc_inputs['user_mods']['policy']
+    del taxcalc_inputs[0]['user_mods']['policy']
     resp = post_and_poll(client, '/dropq_start_job', exp_status='FAIL',
                          data=taxcalc_inputs)
 
