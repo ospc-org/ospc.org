@@ -10,7 +10,7 @@ import os
 from api.celery_tasks import (taxbrain_postprocess,
                               dropq_task_async,
                               dropq_task_small_async,
-                              elasticity_gdp_task_async,
+                              taxbrain_elast_async,
                               btax_async)
 
 bp = Blueprint('endpoints', __name__)
@@ -64,7 +64,7 @@ def btax_endpoint():
 
 @bp.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
-    return aggr_endpoint(elasticity_gdp_task_async, taxbrain_elast_postprocess)
+    return aggr_endpoint(taxbrain_elast_async, taxbrain_elast_postprocess)
 
 
 @bp.route("/dropq_get_result", methods=['GET'])

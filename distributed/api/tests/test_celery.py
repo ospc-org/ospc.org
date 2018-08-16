@@ -1,7 +1,7 @@
 import pytest
 from celery import chord
 
-from api.celery_tasks import (elasticity_gdp_task_async,
+from api.celery_tasks import (taxbrain_elast_async,
                               taxbrain_elast_postprocess,
                               dropq_task_small_async,
                               taxbrain_postprocess)
@@ -32,9 +32,9 @@ def test_elast_endpoint(celery_worker):
     }
 
     inputs = []
-    for i in range(1, 2):
+    for i in range(0, 3):
         inputs.append(dict(elast_params, **{'year_n': i}))
-    compute_task = elasticity_gdp_task_async
+    compute_task = taxbrain_elast_async
     postprocess_task = taxbrain_elast_postprocess
     result = (chord(compute_task.signature(kwargs=i, serializer='msgpack')
               for i in inputs))(postprocess_task.signature(
@@ -42,7 +42,7 @@ def test_elast_endpoint(celery_worker):
     print(result.get())
 
 
-def test_taxcalc_endpoint(celery_worker):
+def test_taxbrain_endpoint(celery_worker):
     tc_params = {
         'user_mods': {
             "policy": {
@@ -59,7 +59,7 @@ def test_taxcalc_endpoint(celery_worker):
     }
 
     inputs = []
-    for i in range(1, 2):
+    for i in range(0, 3):
         inputs.append(dict(tc_params, **{'year': i}))
     compute_task = dropq_task_small_async
     postprocess_task = taxbrain_postprocess
