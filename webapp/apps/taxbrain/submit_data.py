@@ -300,9 +300,9 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
         log_ip(request)
         user_mods = {'policy': reform_parameters, **assumption_parameters}
         data = {'user_mods': user_mods,
-                'first_budget_year': int(start_year),
+                'start_year': int(start_year),
                 'use_puf_not_cps': use_puf_not_cps}
-        data_list = [dict(year=i, **data) for i in years_n]
+        data_list = [dict(year_n=i, **data) for i in years_n]
         if do_full_calc:
             submitted_id, max_q_length = (
                 dropq_compute.submit_calculation(data_list))

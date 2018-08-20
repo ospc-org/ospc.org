@@ -82,9 +82,9 @@ def taxbrain_postprocess(ans):
 @celery_app.task(name='api.celery_tasks.taxbrain_elast_async')
 def taxbrain_elast_async(year_n, start_year,
                          use_puf_not_cps,
-                         use_full_sample,
                          user_mods,
                          gdp_elasticity,
+                         use_full_sample=True,
                          return_dict=True):
 
     gdp_elast_i = taxcalc.tbi.run_nth_year_gdp_elast_model(

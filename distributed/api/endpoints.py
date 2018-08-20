@@ -8,6 +8,7 @@ import msgpack
 import os
 
 from api.celery_tasks import (taxbrain_postprocess,
+                              taxbrain_elast_postprocess,
                               dropq_task_async,
                               dropq_task_small_async,
                               taxbrain_elast_async,
