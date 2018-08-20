@@ -18,47 +18,6 @@ import datetime
 from django.utils.timezone import make_aware
 
 
-class DynamicSaveInputs(DataSourceable, models.Model):
-    """
-    This model contains all the parameters for the dynamic tax model and the
-    tax result.
-    """
-
-    # Parameters used for the dynamic model
-    g_y_annual = CommaSeparatedField(default=None, null=True, blank=True)
-    g_y_annual_cpi = models.NullBooleanField(
-        default=None, blank=True, null=True)
-    upsilon = CommaSeparatedField(default=None, null=True, blank=True)
-    upsilon_cpi = models.NullBooleanField(default=None, blank=True, null=True)
-    frisch = CommaSeparatedField(default=None, null=True, blank=True)
-
-    # Job IDs when running a job
-    job_ids = SeparatedValuesField(blank=True, default=None, null=True)
-    # Globally unique ID for an output path when running a job
-    guids = SeparatedValuesField(blank=True, default=None, null=True)
-
-    # Starting Year of the reform calculation
-    first_year = models.IntegerField(default=None, null=True)
-    # Result
-    tax_result = JSONField(default=None, blank=True, null=True)
-    # Creation DateTime
-    creation_date = models.DateTimeField(
-        default=make_aware(datetime.datetime(2015, 1, 1))
-    )
-
-    # Email address for user who started this job
-    user_email = models.CharField(blank=True, default=None, null=True,
-                                  max_length=50)
-
-    micro_run = models.ForeignKey(TaxBrainRun, blank=True, null=True,
-                                  on_delete=models.SET_NULL)
-
-    class Meta:
-        permissions = (
-            ("view_inputs", "Allowed to view Taxbrain."),
-        )
-
-
 class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
     This model contains all the parameters for the dynamic elasticity
