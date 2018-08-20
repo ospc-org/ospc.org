@@ -23,13 +23,13 @@ celery_app.conf.update(
 )
 
 
-def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
+def dropq_task(year_n, user_mods, start_year, use_puf_not_cps=True,
                use_full_sample=True):
     print(
         'keywords to dropq',
         dict(
-            year_n=year_n,
-            start_year=int(first_budget_year),
+            year_n_n=year_n,
+            start_year=int(start_year),
             use_puf_not_cps=use_puf_not_cps,
             use_full_sample=use_full_sample,
             user_mods=user_mods
@@ -38,7 +38,7 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
 
     raw_data = taxcalc.tbi.run_nth_year_taxcalc_model(
         year_n=year_n,
-        start_year=int(first_budget_year),
+        start_year=int(start_year),
         use_puf_not_cps=use_puf_not_cps,
         use_full_sample=use_full_sample,
         user_mods=user_mods
@@ -62,15 +62,15 @@ def postprocess(ans, postprocess_func):
 
 
 @celery_app.task(name='api.celery_tasks.dropq_task_async')
-def dropq_task_async(year, user_mods, first_budget_year, use_puf_not_cps=True):
-    return dropq_task(year, user_mods, first_budget_year,
+def dropq_task_async(year_n, user_mods, start_year, use_puf_not_cps=True):
+    return dropq_task(year_n, user_mods, start_year,
                       use_puf_not_cps=use_puf_not_cps, use_full_sample=True)
 
 
 @celery_app.task(name='api.celery_tasks.dropq_task_small_async')
-def dropq_task_small_async(year, user_mods, first_budget_year,
+def dropq_task_small_async(year_n, user_mods, start_year,
                            use_puf_not_cps=True):
-    return dropq_task(year, user_mods, first_budget_year,
+    return dropq_task(year_n, user_mods, start_year,
                       use_puf_not_cps=use_puf_not_cps, use_full_sample=False)
 
 

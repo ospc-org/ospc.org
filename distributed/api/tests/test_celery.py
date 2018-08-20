@@ -53,14 +53,14 @@ def test_taxbrain_endpoint(celery_worker):
             "growdiff_response": {},
             "growmodel": {}
         },
-        'first_budget_year': 2017,
+        'start_year': 2017,
         'use_puf_not_cps': False,
-        'year': 0
+        'year_n': 0
     }
 
     inputs = []
     for i in range(0, 3):
-        inputs.append(dict(tc_params, **{'year': i}))
+        inputs.append(dict(tc_params, **{'year_n': i}))
     compute_task = dropq_task_small_async
     postprocess_task = taxbrain_postprocess
     result = (chord(compute_task.signature(kwargs=i, serializer='msgpack')

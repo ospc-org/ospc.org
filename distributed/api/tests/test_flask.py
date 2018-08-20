@@ -18,9 +18,9 @@ def taxcalc_inputs():
             "growdiff_response": {},
             "growmodel": {}
         },
-        'first_budget_year': 2017,
+        'start_year': 2017,
         'use_puf_not_cps': False,
-        'year': 0
+        'year_n': 0
     }]
 
 
