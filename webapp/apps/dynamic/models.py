@@ -49,18 +49,6 @@ class DynamicElasticitySaveInputs(DataSourceable, models.Model):
         )
 
 
-class OGUSAWorkerNodesCounter(models.Model):
-    '''
-    This class specifies a counter for which OGUSA node we have
-    just deployed an OGUSA job to. It is a singleton class to enforce
-    round robin behavior with multiple dynos running simultaneously. The
-    database becomes the single source of truth for which node
-    just got the last dispatch
-    '''
-    singleton_enforce = models.IntegerField(default=1, unique=True)
-    current_idx = models.IntegerField(default=0)
-
-
 class DynamicElasticityOutputUrl(models.Model):
     """
     This model creates a unique url for the elasticity of gdp dyn. sim
