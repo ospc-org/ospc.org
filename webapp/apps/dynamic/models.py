@@ -61,32 +61,6 @@ class OGUSAWorkerNodesCounter(models.Model):
     current_idx = models.IntegerField(default=0)
 
 
-class DynamicOutputUrl(models.Model):
-    """
-    This model creates a unique url for each calculation.
-    """
-    unique_inputs = models.ForeignKey(DynamicSaveInputs, default=None)
-    user = models.ForeignKey(User, null=True, default=None)
-    model_pk = models.IntegerField(default=None, null=True)
-    uuid = models.UUIDField(
-        default=uuid.uuid4,
-        null=True,
-        editable=False,
-        max_length=32,
-        blank=True,
-        unique=True)
-    ogusa_vers = models.CharField(blank=True, default=None, null=True,
-                                  max_length=50)
-    webapp_vers = models.CharField(blank=True, default=None, null=True,
-                                   max_length=50)
-
-    def get_absolute_url(self):
-        kwargs = {
-            'pk': self.pk
-        }
-        return reverse('output_detail', kwargs=kwargs)
-
-
 class DynamicElasticityOutputUrl(models.Model):
     """
     This model creates a unique url for the elasticity of gdp dyn. sim
