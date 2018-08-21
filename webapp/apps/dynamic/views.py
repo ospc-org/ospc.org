@@ -88,7 +88,7 @@ class TaxBrainElastRunDetailView(CoreRunDetailView):
             values=[
                 TagOption(
                     value="gdp_elast",
-                    title="Elast Title"),
+                    title=""),
             ])]
 
     def has_link_to_dyn(self):
