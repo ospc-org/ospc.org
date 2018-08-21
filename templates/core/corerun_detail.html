@@ -81,10 +81,7 @@
     <div class="result-table">
       <div class="result-table-controls">
         {% if view.is_editable and not view.is_from_file %}
-        <a href="/taxbrain/edit/{{ object.pk }}/" class="text-white btn btn-secondary">Edit Parameters</a>
-        {% endif %}
-        {% if is_behavior and not view.is_from_file %}
-        <a href="/dynamic/behavioral/edit/{{ object.pk }}/" class="text-white btn btn-secondary">Edit Parameters</a>
+        <a href="{{ object.get_absolute_edit_url }}" class="text-white btn btn-secondary">Edit Parameters</a>
         {% endif %}
         {% if view.has_link_to_dyn %}
         <button onclick="buttonAction()" class="text-white btn btn-secondary">Link to Dynamic Simulations</button>
@@ -125,6 +122,7 @@
           {% endif %}
         </div>
         <div class="row">
+          {% if object.outputs %}
           <div class="col-md-8 col-md-push-2" id="table-select-container">
             <div class="panel panel-default">
               <div class="panel-heading">
@@ -159,8 +157,10 @@
               </div>
             </div>
           </div>
+        {% endif %}
         </div>
         <div class="row">
+          {% if object.outputs %}
           <div class="col-md-12" id="table-container">
             <div class="panel panel-default">
                 <div class="panel-body" style="overflow: scroll">
@@ -173,6 +173,7 @@
                 </div>
             </div>
           </div>
+        {% endif %}
         </div>
       </div>
     </div>
@@ -210,7 +211,7 @@
 <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.2.2/js/responsive.bootstrap.min.js"></script>
 <script>
 var buttonAction = function () {
-  if ({{allow_dyn_links|yesno:"true,false,true"}} ) {
+  if ({{view.has_link_to_dyn|yesno:"true,false,true"}} ) {
     window.location.href = "/dynamic/{{ object.pk }}/";
     } else {
     $('#block-link-modal').modal('show');
@@ -229,8 +230,8 @@ var dataTableOptions = {
      "extend": "copy"},
     {"text": "Select columns",
      "extend": "colvis"}
-  ],
-  "responsive": true
+  ]
+  // "responsive": true
 };
 
 var initDataTable = function (el) {

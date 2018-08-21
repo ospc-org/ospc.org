@@ -91,7 +91,7 @@ class TestDynamicElasticityViews(object):
         last_posted = views.dropq_compute.last_posted
         inputs = msgpack.loads(last_posted, encoding='utf8',
                                use_list=True)
-        last_posted = inputs['inputs']
+        last_posted = inputs[0]
         assert last_posted['use_puf_not_cps'] is False
 
     @pytest.mark.xfail

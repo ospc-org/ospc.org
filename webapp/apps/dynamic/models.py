@@ -10,6 +10,7 @@ import taxcalc
 
 from ..btax.models import CommaSeparatedField, SeparatedValuesField
 
+from ..core.models import CoreInputs, CoreRun
 from ..taxbrain.models import TaxBrainRun
 from ..taxbrain.behaviors import (Fieldable, DataSourceable)
 from ..taxbrain import param_formatters
@@ -27,19 +28,11 @@ class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     # Elasticity of GDP w.r.t. average marginal tax rates
     elastic_gdp = CommaSeparatedField(default=None, blank=True, null=True)
 
-    # Job IDs when running a job
-    job_ids = SeparatedValuesField(blank=True, default=None, null=True)
-    jobs_not_ready = SeparatedValuesField(blank=True, default=None, null=True)
-
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)
-    # Result
-    tax_result = JSONField(default=None, blank=True, null=True)
-    # Creation DateTime
     creation_date = models.DateTimeField(
         default=make_aware(datetime.datetime(2015, 1, 1))
     )
-
     micro_run = models.ForeignKey(TaxBrainRun, blank=True, null=True,
                                   on_delete=models.SET_NULL)
 
@@ -49,32 +42,24 @@ class DynamicElasticitySaveInputs(DataSourceable, models.Model):
         )
 
 
-class DynamicElasticityOutputUrl(models.Model):
-    """
-    This model creates a unique url for the elasticity of gdp dyn. sim
-    """
-    unique_inputs = models.ForeignKey(
-        DynamicElasticitySaveInputs, default=None)
-    user = models.ForeignKey(User, null=True, default=None)
-    model_pk = models.IntegerField(default=None, null=True)
-    # Expected Completion DateTime
-    exp_comp_datetime = models.DateTimeField(
-        default=make_aware(datetime.datetime(2015, 1, 1))
-    )
-    uuid = models.UUIDField(
-        default=uuid.uuid4,
-        null=True,
-        editable=False,
-        max_length=32,
-        blank=True,
-        unique=True)
-    taxcalc_vers = models.CharField(blank=True, default=None, null=True,
-                                    max_length=50)
-    webapp_vers = models.CharField(blank=True, default=None, null=True,
-                                   max_length=50)
+class TaxBrainElastRun(CoreRun):
+    inputs = models.OneToOneField(DynamicElasticitySaveInputs,
+                                  related_name='outputs')
+
 
     def get_absolute_url(self):
         kwargs = {
             'pk': self.pk
         }
-        return reverse('output_detail', kwargs=kwargs)
+        # TODO: Generalize away from TB
+        return reverse('elast_output_detail', kwargs=kwargs)
+
+    def get_absolute_edit_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        # TODO: Generalize away from TB
+        return reverse('edit_dynamic_elastic', kwargs=kwargs)
+
+    def zip_filename(self):
+        return 'taxbrain.zip'

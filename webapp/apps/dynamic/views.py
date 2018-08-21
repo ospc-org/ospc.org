@@ -16,10 +16,8 @@ from django.shortcuts import (redirect, render, render_to_response,
 from django.template.context import RequestContext
 from django.contrib.auth.models import User
 
-from .forms import (DynamicInputsModelForm,
-                    has_field_errors, DynamicElasticityInputsModelForm)
-from .models import (DynamicSaveInputs, DynamicOutputUrl,
-                     DynamicElasticitySaveInputs, DynamicElasticityOutputUrl)
+from .forms import has_field_errors, DynamicElasticityInputsModelForm
+from .models import DynamicElasticitySaveInputs, TaxBrainElastRun
 from ..taxbrain.models import (TaxSaveInputs, TaxBrainRun,
                                ErrorMessageTaxCalculator,
                                JSONReformTaxCalculator)
@@ -28,6 +26,8 @@ from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
                                          parse_fields, append_errors_warnings)
 from ..taxbrain.helpers import make_bool, json_int_key_encode
 from ..core.compute import JobFailError
+from ..core.views import CoreRunDetailView, CoreRunDownloadView
+from ..core.models import Tag, TagOption
 
 from ..taxbrain.submit_data import JOB_PROC_TIME_IN_SECONDS
 
@@ -52,8 +52,6 @@ from .helpers import (
     elast_results_to_tables,
     default_elasticity_parameters)
 
-from .compute import DynamicCompute, NUM_BUDGET_YEARS
-
 from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
                          PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
                          REFORM_TOOLTIP, INCOME_BINS_TOOLTIP,
@@ -62,15 +60,8 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
 
 from ..formatters import get_version
 
-# Mock some module for imports because we can't fit them on Heroku slugs
-from mock import Mock
 import sys
 import traceback
-MOCK_MODULES = []
-
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
-
-dynamic_compute = DynamicCompute()
 
 tcversion_info = taxcalc._version.get_versions()
 TAXCALC_VERSION = tcversion_info['version']
@@ -83,55 +74,29 @@ OGUSA_VERSION = ogversion_info['version']
 
 WEBAPP_VERSION = settings.WEBAPP_VERSION
 
-
-def add_summary_column(table):
-    import copy
-    summary = copy.deepcopy(table["cols"][-1])
-    summary["label"] = "Total"
-    table["cols"].append(summary)
-    for x in table["rows"]:
-        row_total = 0
-        for y in x["cells"]:
-            row_total += float(y["value"])
-        x["cells"].append({
-            'format': {
-                'decimals': 1,
-                'divisor': 1000000000
-            },
-            'value': str(row_total),
-            'year_values': {}
-        })
-    return table
+NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 
 
-def dynamic_input(request, pk):
-    """
-    This view handles the dynamic input page and calls the function that
-    handles the calculation on the inputs.
-    """
+class TaxBrainElastRunDetailView(CoreRunDetailView):
+    model = TaxBrainElastRun
 
-    start_year = request.GET.get('start_year')
-    form_personal_exemp = DynamicInputsModelForm(first_year=start_year)
+    result_header = "Elastic Results"
 
-    ogusa_default_params = default_parameters(int(start_year))
-    disabled_flag = os.environ.get('OGUSA_DISABLED', '')
+    tags = []
+    aggr_tags = [
+        Tag(key="default",
+            values=[
+                TagOption(
+                    value="gdp_elast",
+                    title="Elast Title"),
+            ])]
 
-    init_context = {
-        'form': form_personal_exemp,
-        'params': ogusa_default_params,
-        'taxcalc_version': TAXCALC_VERSION,
-        'ogusa_version': OGUSA_VERSION,
-        'webapp_version': WEBAPP_VERSION,
-        'start_year': start_year,
-        'pk': pk,
-        'is_disabled': disabled_flag,
-        'not_logged_in': not request.user.is_authenticated()
-    }
+    def has_link_to_dyn(self):
+        return False
 
-    if has_field_errors(form_personal_exemp):
-        form_personal_exemp.add_error(None, "Some fields have errors.")
 
-    return render(request, 'dynamic/dynamic_input_form.html', init_context)
+class TaxBrainElastRunDownloadView(CoreRunDownloadView):
+    model = TaxBrainElastRun
 
 
 def dynamic_elasticities(request, pk):
@@ -142,21 +107,12 @@ def dynamic_elasticities(request, pk):
     start_year = START_YEAR
     if request.method == 'POST':
         # Client is attempting to send inputs, validate as form data
-        init_fields = dict(request.GET)
-        init_fields.update(dict(request.POST))
-
-        fields = {}
-        for k, v in list(init_fields.items()):
-            if isinstance(v, list):
-                v = v[0]
-            if not v:
-                v = (default_elasticity_parameters(int(start_year))[k]
-                     .col_fields[0]
-                     .default_value)
-            fields[k] = v
-
+        fields = dict(dict(request.POST), **dict(request.GET))
+        fields = {k: v[0] if isinstance(v, list) else v
+                  for k, v in list(fields.items())}
         start_year = fields.get('start_year', START_YEAR)
-        print(fields)
+        elast_gdp = fields.get('elastic_gdp')
+        print(fields, start_year, elast_gdp)
         # TODO: migrate first_year to start_year to get rid of weird stuff like
         # this
         fields['first_year'] = fields['start_year']
@@ -164,7 +120,7 @@ def dynamic_elasticities(request, pk):
         # input page. It is there for API consistency
         dyn_mod_form = DynamicElasticityInputsModelForm(start_year, True,
                                                         fields)
-
+        print(str(dyn_mod_form.errors))
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
@@ -191,37 +147,37 @@ def dynamic_elasticities(request, pk):
                     'gdp_elasticity': gdp_elasticity,
                     'start_year': int(start_year),
                     'use_puf_not_cps': model.use_puf_not_cps}
-
+            print(data)
+            # raise ValueError()
             # start calc job
             data_list = [dict(year_n=i, **data)
                          for i in range(NUM_BUDGET_YEARS)]
-            submitted_ids, max_q_length = (
+            submitted_id, max_q_length = (
                 dropq_compute.submit_elastic_calculation(data_list))
 
-            if not submitted_ids:
+            if not submitted_id:
                 form_personal_exemp = personal_inputs
             else:
-                model.job_ids = submitted_ids
                 model.first_year = int(start_year)
                 model.save()
 
-                unique_url = DynamicElasticityOutputUrl()
+                unique_url = TaxBrainElastRun()
                 if request.user.is_authenticated():
                     current_user = User.objects.get(pk=request.user.id)
                     unique_url.user = current_user
 
-                if unique_url.taxcalc_vers is not None:
+                if unique_url.upstream_vers is not None:
                     pass
                 else:
-                    unique_url.taxcalc_vers = TAXCALC_VERSION
+                    unique_url.upstream_vers = TAXCALC_VERSION
 
                 if unique_url.webapp_vers is not None:
                     pass
                 else:
                     unique_url.webapp_vers = WEBAPP_VERSION
 
-                unique_url.unique_inputs = model
-                unique_url.model_pk = model.pk
+                unique_url.inputs = model
+                unique_url.job_id = submitted_id
 
                 cur_dt = timezone.now()
                 future_offset = datetime.timedelta(
@@ -229,7 +185,7 @@ def dynamic_elasticities(request, pk):
                 expected_completion = cur_dt + future_offset
                 unique_url.exp_comp_datetime = expected_completion
                 unique_url.save()
-                return redirect('elastic_results', unique_url.pk)
+                return redirect(unique_url)
 
         else:
             # received POST but invalid results, return to form with errors
@@ -269,15 +225,12 @@ def edit_dynamic_elastic(request, pk):
     dynamic simulation
     """
     try:
-        url = DynamicElasticityOutputUrl.objects.get(pk=pk)
+        url = TaxBrainElastRun.objects.get(pk=pk)
     except BaseException:
         raise Http404
 
-    model = url.unique_inputs
+    model = url.inputs
     start_year = model.first_year
-    # Get the user-input from the model in a way we can render
-    ser_model = serializers.serialize('json', [model])
-    user_inputs = json.loads(ser_model)
 
     form_personal_exemp = DynamicElasticityInputsModelForm(
         first_year=start_year,
@@ -286,7 +239,7 @@ def edit_dynamic_elastic(request, pk):
     )
     elasticity_default_params = default_elasticity_parameters(int(start_year))
 
-    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
+    taxcalc_vers_disp = get_version(url, 'upstream_vers', TAXCALC_VERSION)
     webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
 
     init_context = {
@@ -306,7 +259,6 @@ def dynamic_landing(request, pk):
     This view gives a landing page to choose a type of dynamic simulation that
     is linked to the microsim
     """
-
     outputsurl = TaxBrainRun.objects.get(pk=pk)
     include_ogusa = True
     init_context = {
@@ -318,109 +270,4 @@ def dynamic_landing(request, pk):
         'webapp_version': WEBAPP_VERSION
     }
 
-    return render_to_response('dynamic/landing.html', init_context)
-
-
-def elastic_results(request, pk):
-    """
-    This view handles the results page.
-    """
-    try:
-        url = DynamicElasticityOutputUrl.objects.get(pk=pk)
-    except BaseException:
-        raise Http404
-
-    taxcalc_vers_disp = get_version(url, 'taxcalc_vers', TAXCALC_VERSION)
-    webapp_vers_disp = get_version(url, 'webapp_vers', WEBAPP_VERSION)
-
-    context_vers_disp = {'taxcalc_version': taxcalc_vers_disp,
-                         'webapp_version': webapp_vers_disp}
-
-    model = url.unique_inputs
-    if model.tax_result:
-        output = model.tax_result
-        first_year = model.first_year
-        created_on = model.creation_date
-        tables = elast_results_to_tables(output, first_year)
-        microsim_url = "/taxbrain/" + str(url.unique_inputs.micro_run.pk)
-
-        context = {
-            'locals': locals(),
-            'unique_url': url,
-            'taxcalc_version': taxcalc_vers_disp,
-            'webapp_version': webapp_vers_disp,
-            'tables': tables,
-            'created_on': created_on,
-            'first_year': first_year,
-            'microsim_url': microsim_url
-        }
-
-        return render(request, 'dynamic/elasticity_results.html', context)
-
-    else:
-        job_ids = model.job_ids
-        jobs_to_check = model.jobs_not_ready
-        if not jobs_to_check:
-            jobs_to_check = job_ids
-        else:
-            jobs_to_check = jobs_to_check
-
-        try:
-            jobs_ready = dropq_compute.results_ready(jobs_to_check)
-        except JobFailError as jfe:
-            print(jfe)
-            return render_to_response('taxbrain/failed.html')
-
-        if any([j == 'FAIL' for j in jobs_ready]):
-            failed_jobs = [sub_id for (sub_id, job_ready)
-                           in zip(jobs_to_check, jobs_ready)
-                           if job_ready == 'FAIL']
-
-            # Just need the error message from one failed job
-            error_msgs = dropq_compute.get_results(
-                [failed_jobs[0]], job_failure=True)
-            error_msg = error_msgs[0]
-            val_err_idx = error_msg.rfind("Error")
-            error = ErrorMessageTaxCalculator()
-            error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
-            error.text = error_contents
-            error.save()
-            model.error_text = error
-            model.save()
-            return render(request, 'taxbrain/failed.html',
-                          {"error_msg": error_contents})
-
-        if all([job == 'YES' for job in jobs_ready]):
-            model.tax_result = dropq_compute.elastic_get_results(job_ids)
-            model.creation_date = timezone.now()
-            model.save()
-            return redirect(url)
-
-        else:
-            jobs_not_ready = [sub_id for (sub_id, job_ready)
-                              in zip(jobs_to_check, jobs_ready)
-                              if not job_ready == 'YES']
-            jobs_not_ready = jobs_not_ready
-            model.jobs_not_ready = jobs_not_ready
-            model.save()
-            if request.method == 'POST':
-                # if not ready yet, insert number of minutes remaining
-                exp_comp_dt = url.exp_comp_datetime
-                utc_now = timezone.now()
-                dt = exp_comp_dt - utc_now
-                exp_num_minutes = dt.total_seconds() / 60.
-                exp_num_minutes = round(exp_num_minutes, 2)
-                exp_num_minutes = exp_num_minutes if exp_num_minutes > 0 else 0
-                if exp_num_minutes > 0:
-                    return JsonResponse({'eta': exp_num_minutes}, status=202)
-                else:
-                    return JsonResponse({'eta': exp_num_minutes}, status=200)
-
-            else:
-                print("rendering not ready yet")
-                context = {'eta': '100'}
-                context.update(context_vers_disp)
-                return render_to_response(
-                    'dynamic/not_ready.html',
-                    context,
-                    context_instance=RequestContext(request))
+    return render(request, 'dynamic/landing.html', init_context)

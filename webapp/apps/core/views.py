@@ -67,8 +67,7 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         self.object = self.get_object()
-
-        if self.object.outputs:
+        if self.object.outputs or self.object.aggr_outputs:
             return super().get(self, request, *args, **kwargs)
         elif self.object.error_text is not None:
             return self.fail()
@@ -125,13 +124,16 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
                     )
 
     def is_from_file(self):
-        return not self.object.inputs.raw_gui_field_inputs
-
-    def has_link_to_dyn(self):
-        return False
+        if hasattr(self.object.inputs, 'raw_gui_field_inputs'):
+            return not self.object.inputs.raw_gui_field_inputs
+        else:
+            return False
 
     def inputs_to_display(self):
-        return json.dumps(self.object.inputs.inputs_file, indent=2)
+        if hasattr(self.object.inputs, 'inputs_file'):
+            return json.dumps(self.object.inputs.inputs_file, indent=2)
+        else:
+            return ''
 
 
 class CoreRunDownloadView(SingleObjectMixin, View):

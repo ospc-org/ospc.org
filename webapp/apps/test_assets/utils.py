@@ -92,7 +92,7 @@ def check_posted_params(mock_compute, params_to_check, start_year,
     last_posted = msgpack.loads(mock_compute.last_posted, encoding='utf8',
                                 use_list=True)[0]
     user_mods = last_posted['user_mods']
-    assert last_posted["first_budget_year"] == int(start_year)
+    assert last_posted["start_year"] == int(start_year)
     if data_source is not None:
         use_puf_not_cps = True if data_source == 'PUF' else False
     assert last_posted["use_puf_not_cps"] == use_puf_not_cps

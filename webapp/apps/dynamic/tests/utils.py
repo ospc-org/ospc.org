@@ -3,7 +3,6 @@
 from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
                                  package_up_vars, format_csv,
                                  arrange_totals_by_row, default_taxcalc_data)
-from ..compute import MockDynamicCompute
 
 from ...test_assets.utils import get_dropq_compute_from_module
 
@@ -44,54 +43,3 @@ def do_dynamic_sim(client, base_name, microsim_response, pe_reform,
             raise RuntimeError("unable to load results page")
     assert "results/" in response.url
     return response
-
-
-def do_ogusa_sim(client, microsim_res, ogusa_reform, start_year,
-                 increment=0, exp_status_code=302):
-    """
-    do the proper sequence of HTTP calls to run a dyanamic simulation
-
-    microsim_res: dictionary of results from do_micro_sim
-    dyn_dropq_compute: mocked dynamic dropq_compute object
-    compute_count: number of jobs submitted; only checked in quick_calc tests
-    post_url: url to post data; is also set to /taxbrain/file/ for file_input
-              tests
-
-    returns: response object, dynamic dropq compute object,
-             primary key for model run, micro_sim result dictionary
-    """
-
-    # get mocked dynamic_compute object
-    ogusa_dropq_compute = get_dropq_compute_from_module(
-        'webapp.apps.dynamic.views',
-        attr='dynamic_compute',
-        MockComputeObj=MockDynamicCompute,
-        increment=increment
-    )
-
-    # Go to the dynamic landing page
-    dynamic_landing = '/dynamic/{0}/?start_year={1}'.format(microsim_res["pk"],
-                                                            start_year)
-    response = client.get(dynamic_landing)
-    assert response.status_code == 200
-
-    # Go to OGUSA input page
-    dynamic_ogusa_temp = '/dynamic/ogusa/{0}/?start_year={1}'
-    dynamic_ogusa = dynamic_ogusa_temp.format(microsim_res["pk"], start_year)
-
-    response = client.get(dynamic_ogusa)
-    assert response.status_code == 200
-
-    # Submit the OGUSA job submission
-    response = client.post(dynamic_ogusa, ogusa_reform)
-    assert response.status_code == exp_status_code
-    ogusa_pk = None
-    idx = None
-    if exp_status_code == 302:
-        idx = response.url[:-1].rfind('/')
-        ogusa_pk = response.url[idx + 1:-1]
-
-    return {"response": response,
-            "ogusa_dropq_compute": ogusa_dropq_compute,
-            "ogusa_pk": ogusa_pk,
-            "microsim_res": microsim_res}

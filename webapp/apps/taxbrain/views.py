@@ -106,7 +106,12 @@ class TaxBrainRunDetailView(CoreRunDetailView):
             ])]
 
     def has_link_to_dyn(self):
-        return not self.is_from_file()
+        assumptions = self.object.inputs.upstream_parameters.get('assumptions', None)
+        print('assumptions', assumptions)
+        if assumptions is None:
+            return True
+        else:
+            return all(len(assumptions[d]) == 0 for d in assumptions)
 
 
 class TaxBrainRunDownloadView(CoreRunDownloadView):
@@ -213,6 +218,7 @@ def personal_results(request):
 
         # No errors--submit to model
         if not post_meta.stop_submission:
+            print('redirecting...', obj, obj.get_absolute_url())
             return redirect(obj)
         # Errors from taxcalc.tbi.reform_warnings_errors
         else:
@@ -288,7 +294,7 @@ def resubmit(request, pk):
     user_mods = {'policy': reform_parameters, **assumption_parameters}
     print('data source', model.data_source)
     data = {'user_mods': user_mods,
-            'first_budget_year': int(start_year),
+            'start_year': int(start_year),
             'use_puf_not_cps': model.use_puf_not_cps}
 
     # start calc job
