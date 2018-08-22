@@ -6,13 +6,8 @@ import os
 import msgpack
 
 from ..models import TaxBrainRun, TaxSaveInputs
-from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                       format_csv, arrange_totals_by_row, default_taxcalc_data)
-from ..mock_compute import (MockCompute, MockFailedCompute,
-                            NodeDownCompute, MockFailedComputeOnOldHost)
+from ..mock_compute import NodeDownCompute, MockFailedCompute
 import taxcalc
-
-from .. import views
 
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
                                   get_post_data, get_file_post_data,

@@ -2,16 +2,10 @@ from django import forms
 from django.forms import ModelForm
 
 from .models import BTaxSaveInputs
-from .helpers import (BTaxField, BTaxParam, get_btax_defaults,
-                      convert_val, make_bool)
-from ..taxbrain.helpers import (is_number, int_to_nth,
-                                is_string, string_to_float_array,
-                                check_wildcards, expand_list,
-                                propagate_user_list)
+from .helpers import (get_btax_defaults, make_bool, int_to_nth, parameter_name,
+                      string_to_float_array, expand_unless_empty)
 
-from ..taxbrain.forms import (has_field_errors,
-                              bool_like,
-                              parameter_name)
+from ..taxbrain.forms import bool_like
 
 from ..constants import START_YEAR
 

@@ -97,7 +97,7 @@ class TaxCalcParam(object):
         else:
             meta_param = None
 
-        elif isinstance(col_labels, list):
+        if isinstance(col_labels, list):
             if col_labels == ["0kids", "1kid", "2kids", "3+kids"]:
                 col_labels = ["0 Kids", "1 Kid", "2 Kids", "3+ Kids"]
 
@@ -225,8 +225,7 @@ def default_behavior(first_budget_year):
 
     default_taxcalc_params = {}
     for k, v in behv_defaults.items():
-        param = TaxCalcParam(k, v, first_budget_year,
-                             use_puf_not_cps=use_puf_not_cps)
+        param = TaxCalcParam(k, v, first_budget_year)
         default_taxcalc_params[param.nice_id] = param
 
     return default_taxcalc_params

@@ -6,6 +6,7 @@ from ..core.models import CoreRun
 from django.utils.timezone import make_aware
 
 from ..taxbrain.models import TaxBrainRun
+from ..taxbrain.behaviors import DataSourceable
 
 class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
@@ -14,7 +15,8 @@ class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
 
     # Elasticity of GDP w.r.t. average marginal tax rates
-    elastic_gdp = models.CharField(default=None, blank=True, null=True)
+    elastic_gdp = models.CharField(default="0.0", blank=True, null=True,
+                                   max_length=50)
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)

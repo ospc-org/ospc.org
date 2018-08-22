@@ -1,4 +1,10 @@
+import six
+import ast
+
+from django import forms
 from django.forms import ModelForm
+
+from ..taxbrain.helpers import is_safe
 
 from ..constants import START_YEAR
 from .models import DynamicElasticitySaveInputs
@@ -59,26 +65,38 @@ class DynamicElasticityInputsModelForm(ModelForm):
         and it's not yet possible on the model due to issues with how
         migrations are detected.
         """
-        for param_name, value in self.cleaned_data.items():
-            # make sure the text parses OK
-            if param_name == 'data_source':
-                assert value in ('CPS', 'PUF')
-            elif isinstance(value, six.string_types) and len(value) > 0:
-                if not is_safe(value):
-                    # Parse Error - we don't recognize what they gave us
-                    self.add_error(param_name,
-                                   "Unrecognized value: {}".format(value))
-                try:
-                    # reverse character is not at the beginning
-                    assert value.find('<') <= 0
-                except AssertionError:
-                    self.add_error(
-                        param_name,
-                        ("Operator '<' can only be used "
-                         "at the beginning")
-                    )
-            else:
-                assert isinstance(value, bool) or len(value) == 0
+        exp_keys = {'data_source', 'elastic_gdp', 'first_year', 'micro_run'}
+        assert set(self.cleaned_data.keys()) == exp_keys
+
+        param_name, value = 'elastic_gdp', self.cleaned_data['elastic_gdp']
+        # make sure the text parses OK
+        if isinstance(value, six.string_types) and len(value) > 0:
+            if not is_safe(value):
+                # Parse Error - we don't recognize what they gave us
+                self.add_error(param_name,
+                               "Unrecognized value: {}".format(value))
+            try:
+                # reverse character is not at the beginning
+                assert value.find('<') <= 0
+            except AssertionError:
+                self.add_error(
+                    param_name,
+                    ("Operator '<' can only be used "
+                     "at the beginning")
+                )
+        else:
+            assert isinstance(value, bool) or len(value) == 0
+
+        try:
+            evaled = ast.literal_eval(value)
+            if evaled < 0.0:
+                self.add_error('elastic_gdp', (f'ERROR: {evaled} is less '
+                                               f'than the min value 0.0'))
+            elif evaled > 1.0:
+                self.add_error('elastic_gdp', (f'ERROR: {evaled} is greater '
+                                              f'than the max value 1.0'))
+        except (SyntaxError, ValueError):
+            self.add_error('elastic_gdp', 'ERROR: {evaled} is not an integer')
 
     class Meta:
         model = DynamicElasticitySaveInputs

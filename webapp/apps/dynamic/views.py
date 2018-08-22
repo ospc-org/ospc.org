@@ -1,4 +1,3 @@
-import json
 import datetime
 from django.utils import timezone
 from urllib.parse import urlparse, parse_qs
@@ -8,69 +7,27 @@ import taxcalc
 
 
 from django.conf import settings
-from django.core import serializers
-from django.http import (HttpResponseRedirect, HttpResponse, Http404,
-                         HttpResponseServerError, JsonResponse)
-from django.shortcuts import (redirect, render, render_to_response,
-                              get_object_or_404)
-from django.template.context import RequestContext
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth.models import User
 
+from ..constants import START_YEAR, START_YEARS
+
 from .forms import has_field_errors, DynamicElasticityInputsModelForm
-from .models import DynamicElasticitySaveInputs, TaxBrainElastRun
-from ..taxbrain.models import (TaxSaveInputs, TaxBrainRun,
-                               ErrorMessageTaxCalculator,
-                               JSONReformTaxCalculator)
+from .models import TaxBrainElastRun
+from ..taxbrain.models import TaxBrainRun
 from ..taxbrain.views import dropq_compute
-from ..taxbrain.param_formatters import (to_json_reform, get_reform_from_gui,
-                                         parse_fields, append_errors_warnings)
-from ..taxbrain.helpers import make_bool, json_int_key_encode
-from ..core.compute import JobFailError
+from ..taxbrain.helpers import json_int_key_encode
 from ..core.views import CoreRunDetailView, CoreRunDownloadView
 from ..core.models import Tag, TagOption
 
 from ..taxbrain.submit_data import JOB_PROC_TIME_IN_SECONDS
 
-from .helpers import (default_parameters, job_submitted,
-                      ogusa_results_to_tables, success_text,
-                      failure_text, strip_empty_lists,
-                      cc_text_finished, cc_text_failure,
-                      dynamic_params_from_model, send_cc_email,
-                      elast_results_to_tables,
-                      default_elasticity_parameters)
-from .helpers import (
-    default_parameters,
-    job_submitted,
-    ogusa_results_to_tables,
-    success_text,
-    failure_text,
-    strip_empty_lists,
-    cc_text_finished,
-    cc_text_failure,
-    dynamic_params_from_model,
-    send_cc_email,
-    elast_results_to_tables,
-    default_elasticity_parameters)
-
-from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
-                         PAYROLL_TOOLTIP, INCOME_TOOLTIP, BASE_TOOLTIP,
-                         REFORM_TOOLTIP, INCOME_BINS_TOOLTIP,
-                         INCOME_DECILES_TOOLTIP, START_YEAR, START_YEARS,
-                         OUT_OF_RANGE_ERROR_MSG)
+from .helpers import default_elasticity_parameters
 
 from ..formatters import get_version
 
-import sys
-import traceback
-
 tcversion_info = taxcalc._version.get_versions()
 TAXCALC_VERSION = tcversion_info['version']
-
-# TODO: use import ogusa; ogusa.__version__
-version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
-with open(version_path, "r") as f:
-    ogversion_info = json.load(f)
-OGUSA_VERSION = ogversion_info['version']
 
 WEBAPP_VERSION = settings.WEBAPP_VERSION
 
@@ -156,7 +113,7 @@ def dynamic_elasticities(request, pk):
                 dropq_compute.submit_elastic_calculation(data_list))
 
             if not submitted_id:
-                form_personal_exemp = personal_inputs
+                form_personal_exemp = dyn_mod_form
             else:
                 model.first_year = int(start_year)
                 model.save()
@@ -224,10 +181,7 @@ def edit_dynamic_elastic(request, pk):
     This view handles the editing of previously compute elasticity of GDP
     dynamic simulation
     """
-    try:
-        url = TaxBrainElastRun.objects.get(pk=pk)
-    except BaseException:
-        raise Http404
+    url = get_object_or_404(TaxBrainElastRun, pk=pk)
 
     model = url.inputs
     start_year = model.first_year
@@ -259,7 +213,7 @@ def dynamic_landing(request, pk):
     This view gives a landing page to choose a type of dynamic simulation that
     is linked to the microsim
     """
-    outputsurl = TaxBrainRun.objects.get(pk=pk)
+    outputsurl = get_object_or_404(TaxBrainRun, pk=pk)
     include_ogusa = True
     init_context = {
         'pk': pk,

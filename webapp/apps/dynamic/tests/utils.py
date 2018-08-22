@@ -1,13 +1,4 @@
-# os.environ["NUM_BUDGET_YEARS"] = '2'
-
-from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
-                                 package_up_vars, format_csv,
-                                 arrange_totals_by_row, default_taxcalc_data)
-
-from ...test_assets.utils import get_dropq_compute_from_module
-
 START_YEAR = '2016'
-
 
 def do_dynamic_sim(client, base_name, microsim_response, pe_reform,
                    start_year=START_YEAR):

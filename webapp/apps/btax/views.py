@@ -17,13 +17,13 @@ from django.shortcuts import redirect, render, render_to_response
 from django.template.context import RequestContext
 from django.contrib.auth.models import User
 
-from .forms import BTaxExemptionForm, has_field_errors
+from .forms import BTaxExemptionForm
 from .models import BTaxOutputUrl
 from .helpers import (get_btax_defaults,
-                      BTAX_BITR, BTAX_DEPREC, BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr, hover_args_to_btax_depr,
                       make_bool, convert_val)
-from .compute import DropqComputeBtax, JobFailError
+from .compute import DropqComputeBtax
+from ..core.compute import JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP,
                          DPRC_TOOLTIP, START_YEAR)
@@ -229,7 +229,7 @@ def btax_results(request):
 
     btax_default_params = get_btax_defaults(start_year)
     has_errors = False
-    if has_field_errors(form_btax_input):
+    if form_btax_input.errors:
         msg = ("Some fields have errors. Values outside of suggested ranges "
                " will be accepted if submitted again from this page.")
         form_btax_input.add_error(None, msg)

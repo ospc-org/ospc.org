@@ -3,18 +3,13 @@ import pytest
 import json
 import sys
 import msgpack
-# os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
-                                 package_up_vars, format_csv,
-                                 arrange_totals_by_row, default_taxcalc_data)
 from ...taxbrain.mock_compute import MockCompute
 from ..compute import ElasticMockCompute
 
 from .utils import do_dynamic_sim, START_YEAR
-from ...test_assets.utils import (check_posted_params, do_micro_sim,
-                                  get_post_data, get_file_post_data)
-import pytest
+from ...test_assets.utils import (do_micro_sim, get_post_data,
+                                  get_file_post_data)
 
 
 CLIENT = Client()
