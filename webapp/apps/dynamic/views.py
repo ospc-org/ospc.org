@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 
 from ..constants import START_YEAR, START_YEARS
 
-from .forms import has_field_errors, DynamicElasticityInputsModelForm
+from .forms import DynamicElasticityInputsModelForm
 from .models import TaxBrainElastRun
 from ..taxbrain.models import TaxBrainRun
 from ..taxbrain.views import dropq_compute
@@ -68,8 +68,6 @@ def dynamic_elasticities(request, pk):
         fields = {k: v[0] if isinstance(v, list) else v
                   for k, v in list(fields.items())}
         start_year = fields.get('start_year', START_YEAR)
-        elast_gdp = fields.get('elastic_gdp')
-        print(fields, start_year, elast_gdp)
         # TODO: migrate first_year to start_year to get rid of weird stuff like
         # this
         fields['first_year'] = fields['start_year']
@@ -77,7 +75,6 @@ def dynamic_elasticities(request, pk):
         # input page. It is there for API consistency
         dyn_mod_form = DynamicElasticityInputsModelForm(start_year, True,
                                                         fields)
-        print(str(dyn_mod_form.errors))
         if dyn_mod_form.is_valid():
             model = dyn_mod_form.save()
 
@@ -170,7 +167,7 @@ def dynamic_elasticities(request, pk):
         'pk': pk
     }
 
-    if has_field_errors(form_personal_exemp):
+    if form_personal_exemp.errors:
         form_personal_exemp.add_error(None, "Some fields have errors.")
 
     return render(request, 'dynamic/elasticity.html', init_context)

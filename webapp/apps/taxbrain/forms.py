@@ -266,29 +266,3 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             update_fields) = PolicyBrainForm.set_form(
             TAXCALC_DEFAULTS[defaults_key]
         )
-
-
-def has_field_errors(form, include_parse_errors=False):
-    """
-    This allows us to see if we have field_errors, as opposed to only having
-    form.non_field_errors. I would prefer to put this in a template tag, but
-    getting that working with a conditional statement in a template was very
-    challenging.
-    """
-    if not form.errors:
-        return False
-
-    for field in form:
-        if field.errors:
-            if include_parse_errors:
-                if "Unrecognized value" in field.errors[0]:
-                    return True
-                else:
-                    continue
-            else:
-                if "Unrecognized value" in field.errors[0]:
-                    continue
-                else:
-                    return True
-
-    return False

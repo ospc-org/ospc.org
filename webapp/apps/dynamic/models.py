@@ -8,6 +8,7 @@ from django.utils.timezone import make_aware
 from ..taxbrain.models import TaxBrainRun
 from ..taxbrain.behaviors import DataSourceable
 
+
 class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
     This model contains all the parameters for the dynamic elasticity
@@ -35,7 +36,6 @@ class DynamicElasticitySaveInputs(DataSourceable, models.Model):
 class TaxBrainElastRun(CoreRun):
     inputs = models.OneToOneField(DynamicElasticitySaveInputs,
                                   related_name='outputs')
-
 
     def get_absolute_url(self):
         kwargs = {
