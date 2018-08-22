@@ -1,14 +1,17 @@
 from flask import Blueprint, request, make_response
 from celery.result import AsyncResult
+from celery import chord
 
 import redis
 import json
 import msgpack
 import os
 
-from api.celery_tasks import (dropq_task_async,
+from api.celery_tasks import (taxbrain_postprocess,
+                              taxbrain_elast_postprocess,
+                              dropq_task_async,
                               dropq_task_small_async,
-                              elasticity_gdp_task_async,
+                              taxbrain_elast_async,
                               btax_async)
 
 bp = Blueprint('endpoints', __name__)
@@ -18,14 +21,28 @@ client = redis.StrictRedis.from_url(os.environ.get("CELERY_BROKER_URL",
                                                    "redis://redis:6379/0"))
 
 
-def dropq_endpoint(dropq_task):
+def aggr_endpoint(compute_task, postprocess_task):
+    print('aggregating endpoint')
+    data = request.get_data()
+    inputs = msgpack.loads(data, encoding='utf8',
+                           use_list=True)
+    print('inputs', inputs)
+    result = (chord(compute_task.signature(kwargs=i, serializer='msgpack')
+              for i in inputs))(postprocess_task.signature(
+                serializer='msgpack'))
+    length = client.llen(queue_name) + 1
+    data = {'job_id': str(result), 'qlength': length}
+    return json.dumps(data)
+
+
+def endpoint(task):
     print('dropq endpoint')
     data = request.get_data()
     inputs = msgpack.loads(data, encoding='utf8',
                            use_list=True)
     print('inputs', inputs)
-    result = dropq_task.apply_async(kwargs=inputs['inputs'],
-                                    serializer='msgpack')
+    result = task.apply_async(kwargs=inputs[0],
+                              serializer='msgpack')
     length = client.llen(queue_name) + 1
     data = {'job_id': str(result), 'qlength': length}
     return json.dumps(data)
@@ -33,22 +50,22 @@ def dropq_endpoint(dropq_task):
 
 @bp.route("/dropq_start_job", methods=['POST'])
 def dropq_endpoint_full():
-    return dropq_endpoint(dropq_task_async)
+    return aggr_endpoint(dropq_task_async, taxbrain_postprocess)
 
 
 @bp.route("/dropq_small_start_job", methods=['POST'])
 def dropq_endpoint_small():
-    return dropq_endpoint(dropq_task_small_async)
+    return aggr_endpoint(dropq_task_small_async, taxbrain_postprocess)
 
 
 @bp.route("/btax_start_job", methods=['POST'])
 def btax_endpoint():
-    return dropq_endpoint(btax_async)
+    return endpoint(btax_async)
 
 
 @bp.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
-    return dropq_endpoint(elasticity_gdp_task_async)
+    return aggr_endpoint(taxbrain_elast_async, taxbrain_elast_postprocess)
 
 
 @bp.route("/dropq_get_result", methods=['GET'])

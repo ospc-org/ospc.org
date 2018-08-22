@@ -1,86 +1,16 @@
 from django import forms
 from django.forms import ModelForm
-from pyparsing import ParseException
 import six
 import json
 
 from ..constants import START_YEAR
 
 from .models import TaxSaveInputs
-from .helpers import (is_number,
-                      int_to_nth, is_string, string_to_float_array,
-                      check_wildcards, default_taxcalc_data, expand_list,
-                      propagate_user_list, convert_val, is_safe, INPUTS_META)
-from .param_displayers import default_policy
+from .helpers import (is_safe, INPUTS_META, bool_like)
+from .param_displayers import defaults_all
 from .param_formatters import (get_default_policy_param,
                                ParameterLookUpException)
 import taxcalc
-
-
-def bool_like(x):
-    b = True if x == 'True' or x else False
-    return b
-
-
-def parameter_name(param):
-    if not param.startswith("_"):
-        param = "_" + param
-
-    is_multi_param = any(param.endswith("_" + suffix)
-                         for suffix in ("0", "1", "2", "3"))
-    if is_multi_param:
-        return param[:-2]
-    else:
-        return param
-
-
-def expand_unless_empty(param_values, param_name, param_column_name, form,
-                        new_len):
-    ''' Take a list of parameters and, unless the list is empty, fill in any
-    wildcards and/or expand the list to the desired number of years, using
-    the proper inflation rates if necessary
-
-    If the list is empty, return it.
-
-    param_values: list of current values
-    param_name: name of the parameter
-    param_column_name: eg. _II_brk2_1 (names the sub-field)
-    form: The form object that has some data for the calculation
-    new_len: the new desired length of the return list
-
-    Returns: list of length new_len, unless the empty list is passed
-    '''
-
-    if param_values == []:
-        return param_values
-
-    has_wildcards = check_wildcards(param_values)
-    if len(param_values) < new_len or has_wildcards:
-        # Only process wildcards and floats from this point on
-        param_values = [convert_val(x) for x in param_values]
-        # Discover the CPI setting for this parameter
-        cpi_flag = form.discover_cpi_flag(param_name, form.cleaned_data)
-
-        default_data = form._default_taxcalc_data[param_name]
-        expnded_defaults = expand_list(default_data, new_len)
-
-        is_multi_param = any(param_column_name.endswith("_" + suffix)
-                             for suffix in ("0", "1", "2", "3"))
-        if is_multi_param:
-            idx = int(param_column_name[-1])
-        else:
-            idx = -1
-
-        param_values = propagate_user_list(param_values,
-                                           name=param_name,
-                                           defaults=expnded_defaults,
-                                           cpi=cpi_flag,
-                                           first_budget_year=form._first_year,
-                                           multi_param_idx=idx)
-
-        param_values = [float(x) for x in param_values]
-
-    return param_values
 
 
 class PolicyBrainForm:
@@ -98,8 +28,8 @@ class PolicyBrainForm:
                 parsed_data[k] = v
             else:
                 pass
-        parsed_data["raw_input_fields"] = json.dumps(raw_fields)
-        parsed_data["input_fields"] = json.dumps("")
+        parsed_data["raw_gui_field_inputs"] = json.dumps(raw_fields)
+        parsed_data["gui_field_inputs"] = json.dumps("")
         return (parsed_data,)
 
     def add_errors_on_extra_inputs(self):
@@ -113,13 +43,13 @@ class PolicyBrainForm:
             self.add_error(None,
                            "Extra input '{0}' not allowed".format(_input))
 
-        all_fields = self.cleaned_data['raw_input_fields']
-        default_policy = getattr(self.Meta, 'default_policy', None)
+        all_fields = self.cleaned_data['raw_gui_field_inputs']
+        default_params = getattr(self.Meta, 'default_params', None)
         allowed_fields = getattr(self.Meta, 'allowed_fields', None)
         for _field in all_fields:
-            if default_policy:
+            if default_params:
                 try:
-                    get_default_policy_param(_field, default_policy)
+                    get_default_policy_param(_field, default_params)
                 except ParameterLookUpException as exn:
                     self.add_error(None, str(exn))
             elif _field not in allowed_fields:
@@ -131,7 +61,7 @@ class PolicyBrainForm:
         Do minimal type checking to make sure that we did not get any
         malicious input
         """
-        fields = self.cleaned_data['raw_input_fields']
+        fields = self.cleaned_data['raw_gui_field_inputs']
         for param_name, value in fields.items():
             # make sure the text parses OK
             if param_name == 'data_source':
@@ -211,8 +141,8 @@ class PolicyBrainForm:
 
 
 TAXCALC_DEFAULTS = {
-    (int(START_YEAR), True): default_policy(int(START_YEAR),
-                                            use_puf_not_cps=True)
+    (int(START_YEAR), True): defaults_all(int(START_YEAR),
+                                          use_puf_not_cps=True)
 }
 
 
@@ -240,7 +170,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         # Take a look at the source code for more info:
         # https://github.com/django/django/blob/1.9/django/forms/models.py#L284-L285
         if "instance" in kwargs:
-            kwargs["initial"] = kwargs["instance"].raw_input_fields
+            kwargs["initial"] = kwargs["instance"].raw_gui_field_inputs
 
         # Update CPI flags if either
         # 1. initial is specified in `kwargs` (reform has warning/error msgs)
@@ -266,7 +196,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
                     self.widgets[k].attrs["placeholder"] = django_val
 
             if not hasattr(self, 'cleaned_data'):
-                self.cleaned_data = {'raw_input_fields': kwargs['initial']}
+                self.cleaned_data = {'raw_gui_field_inputs': kwargs['initial']}
 
         super(TaxBrainForm, self).__init__(*args, **kwargs)
 
@@ -304,7 +234,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
     def set_form_data(self, start_year, use_puf_not_cps):
         defaults_key = (start_year, use_puf_not_cps)
         if defaults_key not in TAXCALC_DEFAULTS:
-            TAXCALC_DEFAULTS[defaults_key] = default_policy(
+            TAXCALC_DEFAULTS[defaults_key] = defaults_all(
                 start_year, use_puf_not_cps)
         defaults = TAXCALC_DEFAULTS[defaults_key]
         (self.widgets, self.labels,
@@ -314,16 +244,21 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         model = TaxSaveInputs
         # we are only updating the "first_year", "raw_fields", and "fields"
         # fields
-        fields = ['first_year', 'data_source', 'raw_input_fields',
-                  'input_fields']
+        fields = ['first_year', 'data_source', 'raw_gui_field_inputs',
+                  'gui_field_inputs']
         start_year = int(START_YEAR)
         default_policy = taxcalc.Policy.default_data(
             start_year=int(START_YEAR),
             metadata=True
         )
+        default_behv = taxcalc.Behavior.default_data(
+            start_year=int(START_YEAR),
+            metadata=True
+        )
+        default_params = dict(default_policy, **default_behv)
         defaults_key = (start_year, True)
         if defaults_key not in TAXCALC_DEFAULTS:
-            TAXCALC_DEFAULTS[defaults_key] = default_policy(
+            TAXCALC_DEFAULTS[defaults_key] = defaults_all(
                 start_year,
                 use_puf_not_cps=True
             )
@@ -331,29 +266,3 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
             update_fields) = PolicyBrainForm.set_form(
             TAXCALC_DEFAULTS[defaults_key]
         )
-
-
-def has_field_errors(form, include_parse_errors=False):
-    """
-    This allows us to see if we have field_errors, as opposed to only having
-    form.non_field_errors. I would prefer to put this in a template tag, but
-    getting that working with a conditional statement in a template was very
-    challenging.
-    """
-    if not form.errors:
-        return False
-
-    for field in form:
-        if field.errors:
-            if include_parse_errors:
-                if "Unrecognized value" in field.errors[0]:
-                    return True
-                else:
-                    continue
-            else:
-                if "Unrecognized value" in field.errors[0]:
-                    continue
-                else:
-                    return True
-
-    return False

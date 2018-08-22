@@ -3,9 +3,11 @@ import os
 
 from celery import Celery
 
+import taxcalc
 import btax
 from btax.front_end_util import runner_json_tables
-import taxcalc
+
+from collections import defaultdict
 
 
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL',
@@ -21,83 +23,88 @@ celery_app.conf.update(
 )
 
 
-def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
+def dropq_task(year_n, user_mods, start_year, use_puf_not_cps=True,
                use_full_sample=True):
     print(
         'keywords to dropq',
         dict(
-            year_n=year_n,
-            start_year=int(first_budget_year),
+            year_n_n=year_n,
+            start_year=int(start_year),
             use_puf_not_cps=use_puf_not_cps,
             use_full_sample=use_full_sample,
             user_mods=user_mods
         )
     )
 
-    results = taxcalc.tbi.run_nth_year_taxcalc_model(
+    raw_data = taxcalc.tbi.run_nth_year_taxcalc_model(
         year_n=year_n,
-        start_year=int(first_budget_year),
+        start_year=int(start_year),
         use_puf_not_cps=use_puf_not_cps,
         use_full_sample=use_full_sample,
         user_mods=user_mods
     )
 
+    return raw_data
+
+
+def postprocess(ans, postprocess_func):
+    all_to_process = defaultdict(list)
+    for year_data in ans:
+        for key, value in year_data.items():
+            all_to_process[key] += value
+    results = postprocess_func(all_to_process)
     # Add taxcalc version to results
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version']
+    # TODO: Make this the distributed app version, not the TC version
     results['dropq_version'] = vinfo['version']
-
-    json_res = json.dumps(results)
-    return json_res
+    return json.dumps(results)
 
 
 @celery_app.task(name='api.celery_tasks.dropq_task_async')
-def dropq_task_async(year, user_mods, first_budget_year, use_puf_not_cps=True):
-    return dropq_task(year, user_mods, first_budget_year,
+def dropq_task_async(year_n, user_mods, start_year, use_puf_not_cps=True):
+    return dropq_task(year_n, user_mods, start_year,
                       use_puf_not_cps=use_puf_not_cps, use_full_sample=True)
 
 
 @celery_app.task(name='api.celery_tasks.dropq_task_small_async')
-def dropq_task_small_async(year, user_mods, first_budget_year,
+def dropq_task_small_async(year_n, user_mods, start_year,
                            use_puf_not_cps=True):
-    return dropq_task(year, user_mods, first_budget_year,
+    return dropq_task(year_n, user_mods, start_year,
                       use_puf_not_cps=use_puf_not_cps, use_full_sample=False)
 
 
-@celery_app.task(name='api.celery_tasks.elasticity_gdp_task_async')
-def elasticity_gdp_task_async(year_n, user_mods, first_budget_year,
-                              gdp_elasticity, use_puf_not_cps=True):
-    print("kw to dropq", dict(
-        year_n=year_n,
-        start_year=int(first_budget_year),
-        use_puf_not_cps=use_puf_not_cps,
-        use_full_sample=True,
-        user_mods=user_mods,
-        gdp_elasticity=gdp_elasticity
-    ))
+@celery_app.task(name='api.celery_tasks.taxbrain_postprocess')
+def taxbrain_postprocess(ans):
+    return postprocess(ans, taxcalc.tbi.postprocess)
+
+
+@celery_app.task(name='api.celery_tasks.taxbrain_elast_async')
+def taxbrain_elast_async(year_n, start_year,
+                         use_puf_not_cps,
+                         user_mods,
+                         gdp_elasticity,
+                         use_full_sample=True,
+                         return_dict=True):
 
     gdp_elast_i = taxcalc.tbi.run_nth_year_gdp_elast_model(
         year_n=year_n,
-        start_year=int(first_budget_year),
+        start_year=start_year,
         use_puf_not_cps=use_puf_not_cps,
-        use_full_sample=True,
+        use_full_sample=use_full_sample,
         user_mods=user_mods,
-        gdp_elasticity=gdp_elasticity
+        gdp_elasticity=gdp_elasticity,
+        return_dict=True
     )
+    print(gdp_elast_i)
 
-    results = {'elasticity_gdp': gdp_elast_i}
-    # Add taxcalc version to results
-    vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version']
-    results['dropq_version'] = vinfo['version']
-
-    json_res = json.dumps(results)
-    return json_res
+    return gdp_elast_i
 
 
-# @celery_app.task(name='api.celery_tasks.ogusa_async')
-# def ogusa_async(user_mods, ogusa_params, guid):
-#     pass
+@celery_app.task(name='api.celery_tasks.taxbrain_elast_postprocess')
+def taxbrain_elast_postprocess(ans):
+    return postprocess(ans, taxcalc.tbi.postprocess_elast)
+
 
 @celery_app.task(name='api.celery_tasks.btax_async')
 def btax_async(user_mods, start_year):

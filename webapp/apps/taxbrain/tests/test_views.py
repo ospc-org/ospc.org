@@ -5,12 +5,8 @@ import pytest
 import os
 import msgpack
 
-from ..models import TaxSaveInputs, OutputUrl, WorkerNodesCounter
-from ..helpers import (expand_1D, expand_2D, expand_list, package_up_vars,
-                       format_csv, arrange_totals_by_row, default_taxcalc_data)
-from ..compute import (DropqCompute, MockCompute, MockFailedCompute,
-                       NodeDownCompute, MockFailedComputeOnOldHost)
-from ..views import get_result_context
+from ..models import TaxBrainRun, TaxSaveInputs
+from ..mock_compute import NodeDownCompute, MockFailedCompute
 import taxcalc
 
 from ...test_assets.utils import (check_posted_params, do_micro_sim,
@@ -41,16 +37,23 @@ class TestTaxBrainViews(object):
         """
         data = get_post_data(START_YEAR)
         data['II_em'] = ['4333']
+        data['BE_inc'] = ['-0.3']
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/?start_year={0}&data_source={1}'.format(
             START_YEAR, data_source)
         result = do_micro_sim(CLIENT, data, post_url=url)
 
-        truth_mods = {}
+        truth_mods = {START_YEAR: {'_II_em': [4333.0]}}
 
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
+
+        behv_truth_mods = {START_YEAR: {'_BE_inc': [-0.3]}}
+
+        check_posted_params(result['tb_dropq_compute'], behv_truth_mods,
+                            str(START_YEAR), data_source=data_source,
+                            param_type='behavior')
 
     def test_taxbrain_post_invalid_param(self):
         """
@@ -75,18 +78,9 @@ class TestTaxBrainViews(object):
         data['II_em'] = ['4333']
         data['ID_AmountCap_Switch_0'] = ['0']
         data['data_source'] = data_source
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        current_dropq_worker_offset = wnc.current_offset
+        data['BE_inc'] = ['-0.3']
 
         result = do_micro_sim(CLIENT, data, compute_count=1)
-
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        next_dropq_worker_offset = wnc.current_offset
-
-        # Check that quick calc does not advance the counter
-        assert current_dropq_worker_offset == next_dropq_worker_offset
 
         # Check that data was saved properly
         truth_mods = {START_YEAR: {"_ID_BenefitSurtax_Switch":
@@ -97,6 +91,12 @@ class TestTaxBrainViews(object):
                       }
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
+
+        behv_truth_mods = {START_YEAR: {'_BE_inc': [-0.3]}}
+
+        check_posted_params(result['tb_dropq_compute'], behv_truth_mods,
+                            str(START_YEAR), data_source=data_source,
+                            param_type='behavior')
 
         # reset worker node count without clearing MockCompute session
         result['tb_dropq_compute'].reset_count()
@@ -114,6 +114,12 @@ class TestTaxBrainViews(object):
         check_posted_params(result['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
 
+        behv_truth_mods = {START_YEAR: {'_BE_inc': [-0.3]}}
+
+        check_posted_params(result['tb_dropq_compute'], behv_truth_mods,
+                            str(START_YEAR), data_source=data_source,
+                            param_type='behavior')
+
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_file_post_quick_calc(self, data_source, r1):
         """
@@ -123,9 +129,6 @@ class TestTaxBrainViews(object):
         data = get_file_post_data(START_YEAR, r1, quick_calc=False)
         data.pop('data_source')
         data.pop('start_year')
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        current_dropq_worker_offset = wnc.current_offset
 
         post_url = '/taxbrain/file/?start_year={0}&data_source={1}'.format(
             START_YEAR, data_source)
@@ -136,13 +139,6 @@ class TestTaxBrainViews(object):
             compute_count=1,
             post_url=post_url
         )
-
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        next_dropq_worker_offset = wnc.current_offset
-
-        # Check that quick calc does not advance the counter
-        assert current_dropq_worker_offset == next_dropq_worker_offset
 
         # Check that data was saved properly
         truth_mods = taxcalc.Calculator.read_json_param_objects(
@@ -201,18 +197,6 @@ class TestTaxBrainViews(object):
 
         check_posted_params(result2['tb_dropq_compute'], truth_mods,
                             str(START_YEAR), data_source=data_source)
-
-    def test_taxbrain_post_no_behavior_entries(self):
-        # Monkey patch to mock out running of compute jobs
-        get_dropq_compute_from_module('webapp.apps.taxbrain.views')
-
-        # Provide behavioral input
-        data = get_post_data(START_YEAR)
-        data['BE_inc'] = ['0.1']
-
-        response = CLIENT.post('/taxbrain/', data)
-        # Check that we get a 400
-        assert response.status_code == 400
 
     def test_taxbrain_nodes_down(self):
         # Monkey patch to mock out running of compute jobs
@@ -296,13 +280,13 @@ class TestTaxBrainViews(object):
 
         result = do_micro_sim(CLIENT, data)
 
-        out = OutputUrl.objects.get(pk=result["pk"])
-        tsi = TaxSaveInputs.objects.get(pk=out.model_pk)
+        out = TaxBrainRun.objects.get(pk=result["pk"])
+        tsi = out.inputs
         _ids = ['ID_BenefitSurtax_Switch_' + str(i) for i in range(7)]
         # only posted param is stored
-        assert ([_id in tsi.raw_input_fields for _id in _ids] ==
+        assert ([_id in tsi.raw_gui_field_inputs for _id in _ids] ==
                 [False, False, False, True, False, False, False])
-        assert tsi.raw_input_fields['ID_BenefitSurtax_Switch_3'] == 'True'
+        assert tsi.raw_gui_field_inputs['ID_BenefitSurtax_Switch_3'] == 'True'
         # Now edit this page
         edit_micro = '/taxbrain/edit/{0}/?start_year={1}'.format(result["pk"],
                                                                  START_YEAR)
@@ -323,12 +307,13 @@ class TestTaxBrainViews(object):
 
         result2 = do_micro_sim(CLIENT, data2)
 
-        out2 = OutputUrl.objects.get(pk=result2["pk"])
-        tsi2 = TaxSaveInputs.objects.get(pk=out2.model_pk)
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_0'] == 'False'
-        assert (tsi2.raw_input_fields['ID_BenefitSurtax_Switch_1'] ==
+        out2 = TaxBrainRun.objects.get(pk=result2["pk"])
+        tsi2 = out2.inputs
+        assert (
+            tsi2.raw_gui_field_inputs['ID_BenefitSurtax_Switch_0'] == 'False')
+        assert (tsi2.raw_gui_field_inputs['ID_BenefitSurtax_Switch_1'] ==
                 'False,*,True')
-        assert tsi2.raw_input_fields['ID_BenefitSurtax_Switch_3'] == 'True'
+        assert tsi2.raw_gui_field_inputs['ID_BenefitSurtax_Switch_3'] == 'True'
 
     def test_taxbrain_wildcard_params_with_validation_is_OK(self):
         """
@@ -534,7 +519,7 @@ class TestTaxBrainViews(object):
                                         taxcalc_vers="0.10.0",
                                         webapp_vers="1.1.0")
 
-        tsi = unique_url.unique_inputs
+        tsi = unique_url.inputs
         old_result = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   "example_old_result.json")
 
@@ -550,9 +535,15 @@ class TestTaxBrainViews(object):
         ans = get_result_context(tsi, req, url)
         assert ans
 
-    @pytest.mark.parametrize('bad_exp',
-                             ['XTOT*4500', 'abc', 'abc,123', '01', 'a' * 200])
-    def test_taxbrain_bad_expression(self, bad_exp):
+    @pytest.mark.parametrize('param_name,bad_input',
+                             [('II_brk1_0', 'XTOT*4500'),
+                              ('II_brk1_0', 'abc'),
+                              ('II_brk1_0', 'abc,123'),
+                              ('II_brk1_0', '01'),
+                              ('II_brk1_0', 'a' * 200),
+                              ('II_brk3_0', '0'),
+                              ('BE_inc', '0.3')])
+    def test_taxbrain_bad_input(self, param_name, bad_input):
         """
         POST a bad expression for a TaxBrain parameter and verify that
         it gives an error
@@ -561,22 +552,22 @@ class TestTaxBrainViews(object):
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
         data = get_post_data(START_YEAR, _ID_BenefitSurtax_Switches=False)
-        mod = {'II_brk1_0': [bad_exp],
+        mod = {param_name: [bad_input],
                'II_brk2_0': ['*, *, 39500']}
         data.update(mod)
 
         response = CLIENT.post('/taxbrain/', data)
         assert response.status_code == 200
         assert response.context['has_errors'] is True
-        assert bad_exp in str(response.context['form'].errors)
+
+        err_string = str(response.context['form'].errors)
+        assert bad_input in err_string and param_name in err_string
 
     @pytest.mark.parametrize('data_source', ['PUF', 'CPS'])
     def test_taxbrain_error_reform_file(self, data_source, bad_reform):
         """
         POST a reform file that causes errors. See PB issue #630
         """
-        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
-
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
@@ -595,7 +586,7 @@ class TestTaxBrainViews(object):
                     for msg in response.context['errors']])
 
         # get most recent object
-        objects = js.objects.order_by('id')
+        objects = TaxSaveInputs.objects.order_by('id')
         obj = objects[len(objects) - 1]
 
         next_token = str(response.context['csrf_token'])
@@ -618,7 +609,6 @@ class TestTaxBrainViews(object):
         POST a reform file that causes warnings and check that re-submission
         is allowed. See PB issue #630 and #761
         """
-        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
 
@@ -637,7 +627,7 @@ class TestTaxBrainViews(object):
                     for msg in response.context['errors']])
 
         # get most recent object
-        objects = js.objects.order_by('id')
+        objects = TaxSaveInputs.objects.order_by('id')
         obj = objects[len(objects) - 1]
 
         next_token = str(response.context['csrf_token'])
@@ -671,7 +661,6 @@ class TestTaxBrainViews(object):
         swapped files are used. See PB issue #630 and #761
         """
         start_year = 2017
-        from webapp.apps.taxbrain.models import JSONReformTaxCalculator as js
         # Monkey patch to mock out running of compute jobs
         get_dropq_compute_from_module('webapp.apps.taxbrain.views')
         if use_assumptions:
@@ -695,7 +684,7 @@ class TestTaxBrainViews(object):
                     for msg in response.context['errors']])
 
         # get most recent object
-        objects = js.objects.order_by('id')
+        objects = TaxSaveInputs.objects.order_by('id')
         obj = objects[len(objects) - 1]
 
         next_token = str(response.context['csrf_token'])
@@ -714,9 +703,10 @@ class TestTaxBrainViews(object):
         result = do_micro_sim(CLIENT, data2, post_url=url)
 
         dropq_compute = result['tb_dropq_compute']
+        # Pick the first of jobs submitted
         inputs = msgpack.loads(dropq_compute.last_posted, encoding='utf8',
-                               use_list=True)
-        user_mods = inputs['inputs']['user_mods']
+                               use_list=True)[0]
+        user_mods = inputs['user_mods']
         if use_assumptions:
             assert user_mods["behavior"][2018]["_BE_sub"][0] == 1.0
         truth_mods = {2018: {'_II_em': [8000.0]}}
@@ -770,15 +760,14 @@ class TestTaxBrainViews(object):
         unique_url = get_taxbrain_model(fields,
                                         taxcalc_vers="0.14.2",
                                         webapp_vers="1.3.0")
-        model = unique_url.unique_inputs
-        model.raw_input_fields = None
-        model.input_fields = None
-        model.deprecated_fields = None
-        model.ALD_Alimony_hc = "*,1,*,*,*,*,*,*,0"
-        model.PT_exclusion_rt = "0.2,*,*,*,*,*,*,*,0.0"
-        model.PT_exclusion_wage_limit = "0.5,*,*,*,*,*,*,*,9e99"
+        model = unique_url.inputs
+        model.raw_gui_field_inputs = {
+            'ALD_Alimony_hc': '*,1,*,*,*,*,*,*,0',
+            'PT_exclusion_rt': '0.2,*,*,*,*,*,*,*,0.0',
+            'PT_exclusion_wage_limit': '0.5,*,*,*,*,*,*,*,9e99'
+        }
         model.save()
-        unique_url.unique_inputs = model
+        unique_url.inputs = model
         unique_url.save()
 
         pk = unique_url.pk
@@ -795,34 +784,3 @@ class TestTaxBrainViews(object):
         for param in ["ALD_Alimony_hc", "PT_exclusion_rt",
                       "PT_exclusion_wage_limit"]:
             assert msg.format(param) in str(response.context["form"].errors)
-
-    @pytest.mark.parametrize(
-        'start_year,start_year_is_none',
-        [(2018, False), (2017, True)]
-    )
-    def test_get_not_avail_page_renders(self, start_year, start_year_is_none):
-        """
-        Make sure not_avail.html page is rendered if exception is thrown
-        while parsing results
-        """
-        fields = get_post_data(start_year)
-        fields["first_year"] = start_year
-        unique_url = get_taxbrain_model(fields,
-                                        first_year=start_year,
-                                        taxcalc_vers="0.14.2",
-                                        webapp_vers="1.3.0")
-        model = unique_url.unique_inputs
-        model.tax_result = "unrenderable"
-        if start_year_is_none:
-            model.first_year = None
-        model.save()
-        unique_url.unique_inputs = model
-        unique_url.save()
-
-        pk = unique_url.pk
-        url = '/taxbrain/{}/'.format(pk)
-        response = CLIENT.get(url)
-        assert any([t.name == 'taxbrain/not_avail.html'
-                    for t in response.templates])
-        edit_exp = '/taxbrain/edit/{}/?start_year={}'.format(pk, start_year)
-        assert response.context['edit_href'] == edit_exp

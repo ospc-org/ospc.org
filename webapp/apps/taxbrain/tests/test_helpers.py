@@ -1,12 +1,11 @@
 import pytest
 import json
-import numpy as np
 import taxcalc
-import pyparsing as pp
-from ..helpers import (rename_keys, json_int_key_encode, is_safe, make_bool,
-                       is_reverse, reorder_lists)
+from ..helpers import (json_int_key_encode, is_safe, make_bool,
+                       is_reverse, convert_val)
 from ..param_formatters import parse_value, MetaParam
-from ..param_displayers import TaxCalcParam, nested_form_parameters
+from ..param_displayers import (TaxCalcParam, nested_form_parameters,
+                                default_policy)
 
 
 CURRENT_LAW_POLICY = """
@@ -86,75 +85,11 @@ def test_nested_form_parameters(monkeypatch, mock_current_law_policy):
             not res["ALD_IRAContributions_hc"].gray_out)
 
 
-def test_rename_keys(monkeypatch):
-    a = {
-        'a': {
-            'b': {
-                'c': []
-            }
-        },
-        'd': {
-            'e': []
-        },
-        'f_1': [],
-        'g': {
-            'h': [],
-            'i_0': [],
-            'j': []
-        }
-    }
-    exp = {
-        'A': {
-            'B': {
-                'C': []
-            }
-        },
-        'D': {
-            'E': []
-        },
-        'F_1': [],
-        'G': {
-            'H': [],
-            'I_0': [],
-            'J': []
-        }
-    }
-
-    map_dict = {
-        'a': 'A',
-        'b': 'B',
-        'c': 'C',
-        'd': 'D',
-        'e': 'E',
-        'f': 'F',
-        'g': 'G',
-        'h': 'H',
-        'i': 'I',
-        'j': 'J'
-    }
-    act = rename_keys(a, map_dict)
-    np.testing.assert_equal(act, exp)
-
-
 def test_json_int_key_encode():
     exp = {2017: 'stuff', 2019: {2016: 'stuff', 2000: {1: 'heyo'}}}
     json_str = json.loads(json.dumps(exp))
     act = json_int_key_encode(json_str)
     assert exp == act
-
-
-def test_reorder_lists():
-    reorder_map = [1, 0, 2]
-    data = {"table_label_0": {"bin_0": [1, 0, 2], "bin_1": [1, 2, 0]},
-            "table_label_1": {"bin_0": [1, 0, 2], "bin_1": [1, 2, 0]}}
-    reorder_table_ids = ["table_label_0", "table_label_1"]
-
-    res = reorder_lists(data, reorder_map, reorder_table_ids)
-
-    assert (res["table_label_0"]["bin_0"] == [0, 1, 2])
-    assert (res["table_label_0"]["bin_1"] == [2, 1, 0])
-    assert (res["table_label_1"]["bin_0"] == [0, 1, 2])
-    assert (res["table_label_1"]["bin_1"] == [2, 1, 0])
 
 
 @pytest.mark.parametrize(
@@ -225,3 +160,24 @@ def test_taxbrain_TaxCalcParam():
         for field in tc_param.col_fields:
             for value in field.values_by_year:
                 assert value == parse_value(str(value), meta_param)
+
+
+def test_convert_val():
+    field = '*,*,130000'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = ['*', '*', 130000.0]
+    assert out == exp
+    field = 'False'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = [False]
+    assert out == exp
+    field = '0.12,0.13,0.14'
+    out = [convert_val(x) for x in field.split(',')]
+    exp = [0.12, 0.13, 0.14]
+    assert out == exp
+
+
+def test_default_taxcalc_data_cpi_flags_on_II_credit():
+    taxcalc_default_params = default_policy(int(2017))
+    assert taxcalc_default_params['II_credit'].inflatable
+    assert taxcalc_default_params['II_credit_ps'].inflatable

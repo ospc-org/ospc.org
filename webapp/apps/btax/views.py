@@ -17,14 +17,13 @@ from django.shortcuts import redirect, render, render_to_response
 from django.template.context import RequestContext
 from django.contrib.auth.models import User
 
-from .forms import BTaxExemptionForm, has_field_errors
+from .forms import BTaxExemptionForm
 from .models import BTaxOutputUrl
 from .helpers import (get_btax_defaults,
-                      BTAX_BITR, BTAX_DEPREC, BTAX_OTHER, BTAX_ECON,
                       group_args_to_btax_depr, hover_args_to_btax_depr,
                       make_bool, convert_val)
-from ..taxbrain.helpers import format_csv, is_wildcard
-from .compute import BTAX_WORKERS, DropqComputeBtax, JobFailError
+from .compute import DropqComputeBtax
+from ..core.compute import JobFailError
 
 from ..constants import (METTR_TOOLTIP, METR_TOOLTIP, COC_TOOLTIP,
                          DPRC_TOOLTIP, START_YEAR)
@@ -55,6 +54,16 @@ TAXCALC_VERSION = tcversion_info['version']
 
 
 JOB_PROC_TIME_IN_SECONDS = 30
+
+
+def denormalize(x):
+    ans = [str("#".join([i[0], i[1]])) for i in x]
+    return ans
+
+
+def normalize(x):
+    ans = [i.split('#') for i in x]
+    return ans
 
 
 def make_bool_gds_ads(form_btax_input):
@@ -163,15 +172,15 @@ def btax_results(request):
                 print("BEGIN DROPQ WORK FROM: unknown IP")
 
             # start calc job
-            submitted_ids, max_q_length = (
+            submitted_id, max_q_length = (
                 dropq_compute.submit_btax_calculation(worker_data, start_year))
 
-            print('submitted_ids', submitted_ids, max_q_length)
-            if not submitted_ids:
+            print('submitted_ids', submitted_id, max_q_length)
+            if not submitted_id:
                 no_inputs = True
                 form_btax_input = btax_inputs
             else:
-                model.job_ids = submitted_ids
+                model.job_id = submitted_id
                 model.first_year = int(start_year)
                 model.save()
                 unique_url = BTaxOutputUrl()
@@ -220,7 +229,7 @@ def btax_results(request):
 
     btax_default_params = get_btax_defaults(start_year)
     has_errors = False
-    if has_field_errors(form_btax_input):
+    if form_btax_input.errors:
         msg = ("Some fields have errors. Values outside of suggested ranges "
                " will be accepted if submitted again from this page.")
         form_btax_input.add_error(None, msg)
@@ -357,7 +366,7 @@ def output_detail(request, pk):
         try:
             exp_num_minutes = 0.25
             tax_result = url.unique_inputs.tax_result
-            tables = json.loads(tax_result)[0]
+            tables = json.loads(tax_result)
             first_year = url.unique_inputs.first_year
             created_on = url.unique_inputs.creation_date
             tables["tooltips"] = {
@@ -402,33 +411,30 @@ def output_detail(request, pk):
         return render(request, 'btax/results.html', context)
 
     else:
-        job_ids = model.job_ids
+        job_id = model.job_id
 
         try:
-            jobs_ready = dropq_compute.results_ready(job_ids)
+            job_ready = dropq_compute.results_ready(job_id)
         except JobFailError as jfe:
             print(jfe)
-            return render_to_response('taxbrain/failed.html')
+            return render_to_response('core/failed.html',
+                                      {'error_msg': 'JFE',
+                                       'is_btax': True})
 
-        if any(j == 'FAIL' for j in jobs_ready):
-            failed_jobs = [sub_id for (sub_id, job_ready)
-                           in zip(job_ids, jobs_ready)
-                           if job_ready == 'FAIL']
-
+        if job_ready == 'FAIL':
             # Just need the error message from one failed job
-            error_msgs = dropq_compute.get_results([failed_jobs[0]],
-                                                         job_failure=True)
-            if error_msgs:
-                error_msg = error_msgs[0]
-            else:
-                error_msg = "Error: stack trace for this error is unavailable"
+            error_msg = dropq_compute.get_results(job_id, job_failure=True)
+            if not error_msg:
+                error_msg = ("Error: stack trace for this error is "
+                             "unavailable")
             val_err_idx = error_msg.rfind("Error")
+            error_contents = error_msg[val_err_idx:].replace(" ", "&nbsp;")
             context = {"error_msg": error_msg[val_err_idx:],
                        "is_btax": True}
-            return render(request, 'taxbrain/failed.html', context)
+            return render(request, 'core/failed.html', context)
 
-        if all([job == 'YES' for job in jobs_ready]):
-            results = dropq_compute.btax_get_results(job_ids)
+        if job_ready == 'YES':
+            results = dropq_compute.btax_get_results(job_id)
             model.tax_result = json.dumps(results)
             model.creation_date = timezone.now()
             model.save()

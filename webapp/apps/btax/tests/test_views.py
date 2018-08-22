@@ -3,7 +3,6 @@ from django.test import Client
 
 from ..models import BTaxSaveInputs, BTaxOutputUrl
 from ..forms import BTaxExemptionForm
-from ...taxbrain.models import WorkerNodesCounter
 from ..compute import (DropqComputeBtax, MockComputeBtax,
                        MockFailedComputeBtax, NodeDownComputeBtax)
 from ...btax import views
@@ -98,14 +97,6 @@ class BTaxViewsTests(TestCase):
         Ensure that Btax submission does not advance the
         worker node counter, nor use the dropq_offset
         """
-
-        # Set the worker node count to 1, which would error if we used
-        # that for BTax, since there is only a single node
-        wnc, created = WorkerNodesCounter.objects.get_or_create(
-            singleton_enforce=1)
-        wnc.current_offset = 1
-        wnc.save()
-
         # Monkey patch to mock out running of compute jobs
         import sys
         webapp_views = sys.modules['webapp.apps.btax.views']

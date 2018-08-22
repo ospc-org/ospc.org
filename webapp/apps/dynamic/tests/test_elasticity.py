@@ -3,17 +3,13 @@ import pytest
 import json
 import sys
 import msgpack
-# os.environ["NUM_BUDGET_YEARS"] = '2'
 
-from ...taxbrain.helpers import (expand_1D, expand_2D, expand_list,
-                                 package_up_vars, format_csv,
-                                 arrange_totals_by_row, default_taxcalc_data)
-from ...taxbrain.compute import ElasticMockCompute, MockCompute
+from ...taxbrain.mock_compute import MockCompute
+from ..compute import ElasticMockCompute
 
 from .utils import do_dynamic_sim, START_YEAR
-from ...test_assets.utils import (check_posted_params, do_micro_sim,
-                                  get_post_data, get_file_post_data)
-import pytest
+from ...test_assets.utils import (do_micro_sim, get_post_data,
+                                  get_file_post_data)
 
 
 CLIENT = Client()
@@ -90,7 +86,7 @@ class TestDynamicElasticityViews(object):
         last_posted = views.dropq_compute.last_posted
         inputs = msgpack.loads(last_posted, encoding='utf8',
                                use_list=True)
-        last_posted = inputs['inputs']
+        last_posted = inputs[0]
         assert last_posted['use_puf_not_cps'] is False
 
     @pytest.mark.xfail

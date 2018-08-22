@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.test import Client
 
-from ..compute import MockCompute
+from ..mock_compute import MockCompute
 
 
 class MockComputeTests(MockCompute):

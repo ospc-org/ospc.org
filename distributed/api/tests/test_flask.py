@@ -8,7 +8,7 @@ from api import create_app
 
 @pytest.fixture
 def taxcalc_inputs():
-    return {
+    return [{
         'user_mods': {
             "policy": {
                 2017: {"_FICA_ss_trt": [0.1]}},
@@ -18,10 +18,10 @@ def taxcalc_inputs():
             "growdiff_response": {},
             "growmodel": {}
         },
-        'first_budget_year': 2017,
-        'use_puf_not_cps': True,
-        'year': 0
-    }
+        'start_year': 2017,
+        'use_puf_not_cps': False,
+        'year_n': 0
+    }]
 
 
 @pytest.fixture
@@ -37,7 +37,7 @@ def client(app):
 
 
 def post_and_poll(client, url, data, exp_status='YES', tries=30):
-    packed = msgpack.dumps({'inputs': data}, use_bin_type=True)
+    packed = msgpack.dumps(data, use_bin_type=True)
     resp = client.post(url,
                        data=packed,
                        headers={'Content-Type': 'application/octet-stream'}
@@ -72,11 +72,11 @@ def test_hello(client):
 def test_dropq_small_start_job(client, taxcalc_inputs):
     resp = post_and_poll(client, '/dropq_small_start_job', taxcalc_inputs)
     result = json.loads(resp.data.decode('utf-8'))
-    assert 'aggr_1' in result
+    assert 'aggr_outputs' in result
 
 
 def test_dropq_job_fails(client, taxcalc_inputs):
-    del taxcalc_inputs['user_mods']['policy']
+    del taxcalc_inputs[0]['user_mods']['policy']
     resp = post_and_poll(client, '/dropq_start_job', exp_status='FAIL',
                          data=taxcalc_inputs)
 

@@ -1,7 +1,6 @@
 import pytest
 import json
 import os
-import functools
 
 CUR_PATH = os.path.join(
     os.path.abspath(os.path.dirname(__file__)),

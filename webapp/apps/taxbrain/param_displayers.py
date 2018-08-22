@@ -1,8 +1,6 @@
 import taxcalc
 
 from .helpers import (
-    default_taxcalc_data,
-    TAXCALC_COMING_SOON_INDEXED_BY_MARS,
     string_to_float,
     is_string)
 from .param_formatters import MetaParam, parse_value
@@ -99,18 +97,9 @@ class TaxCalcParam(object):
         else:
             meta_param = None
 
-        if self.tc_id in TAXCALC_COMING_SOON_INDEXED_BY_MARS:
-            col_labels = ["Single", "Married filing Jointly",
-                          "Married filing Separately", "Head of Household"]
-            values_by_col = ['0', '0', '0', '0']
-
-        elif isinstance(col_labels, list):
+        if isinstance(col_labels, list):
             if col_labels == ["0kids", "1kid", "2kids", "3+kids"]:
                 col_labels = ["0 Kids", "1 Kid", "2 Kids", "3+ Kids"]
-
-            elif set(col_labels) & set(self.FORM_HIDDEN_PARAMS):
-                col_labels = ["Single", "Married filing Jointly",
-                              "Married filing Separately", "Head of Household"]
 
         else:
             if col_labels == "NA" or col_labels == "":
@@ -215,8 +204,12 @@ def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
                            defaults=None):
     # defaults are None unless we are testing
     if defaults is None:
-        defaults = taxcalc.Policy.default_data(metadata=True,
-                                               start_year=budget_year)
+        defaults_pol = taxcalc.Policy.default_data(metadata=True,
+                                                   start_year=budget_year)
+        defaults_behv = taxcalc.Behavior.default_data(metadata=True,
+                                                      start_year=budget_year)
+        defaults = dict(defaults_pol, **defaults_behv)
+
     groups = parse_top_level(defaults)
     for x in groups:
         for y, z in x.items():
@@ -227,30 +220,32 @@ def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
 
 
 def default_behavior(first_budget_year):
+    behv_defaults = taxcalc.Behavior.default_data(metadata=True,
+                                                  start_year=first_budget_year)
 
-    default_behavior_params = {}
-    BEHAVIOR_DEFAULT_PARAMS_JSON = default_taxcalc_data(
-        taxcalc.Behavior, metadata=True, start_year=first_budget_year)
-
-    for k, v in BEHAVIOR_DEFAULT_PARAMS_JSON.items():
+    default_taxcalc_params = {}
+    for k, v in behv_defaults.items():
         param = TaxCalcParam(k, v, first_budget_year)
-        default_behavior_params[param.nice_id] = param
+        default_taxcalc_params[param.nice_id] = param
 
-    return default_behavior_params
+    return default_taxcalc_params
 
 
 # Create a list of default policy
 def default_policy(first_budget_year, use_puf_not_cps=True):
-
-    TAXCALC_DEFAULT_PARAMS_JSON = default_taxcalc_data(
-        taxcalc.policy.Policy, metadata=True, start_year=first_budget_year)
+    policy_defaults = taxcalc.Policy.default_data(metadata=True,
+                                                  start_year=first_budget_year)
 
     default_taxcalc_params = {}
-    for k, v in TAXCALC_DEFAULT_PARAMS_JSON.items():
+    for k, v in policy_defaults.items():
         param = TaxCalcParam(k, v, first_budget_year,
                              use_puf_not_cps=use_puf_not_cps)
         default_taxcalc_params[param.nice_id] = param
 
-    TAXCALC_DEFAULT_PARAMS = default_taxcalc_params
+    return default_taxcalc_params
 
-    return TAXCALC_DEFAULT_PARAMS
+
+def defaults_all(first_budget_year, use_puf_not_cps=True):
+    default_behv = default_behavior(first_budget_year)
+    default_pol = default_policy(first_budget_year, use_puf_not_cps)
+    return dict(default_behv, **default_pol)
