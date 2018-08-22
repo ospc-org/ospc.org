@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.urlresolvers import reverse
 from django.contrib.postgres.fields import ArrayField
 from ..core.models import CoreInputs, CoreRun
 
@@ -88,6 +89,24 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
 
 class TaxBrainRun(CoreRun):
     inputs = models.OneToOneField(TaxSaveInputs, related_name='outputs')
+
+    def get_absolute_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        return reverse('output_detail', kwargs=kwargs)
+
+    def get_absolute_edit_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        return reverse('edit_personal_results', kwargs=kwargs)
+
+    def get_absolute_download_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        return reverse('download_outputs', kwargs=kwargs)
 
     def zip_filename(self):
         return 'taxbrain.zip'

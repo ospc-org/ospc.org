@@ -86,7 +86,7 @@
         {% if view.has_link_to_dyn %}
         <button onclick="buttonAction()" class="text-white btn btn-secondary">Link to Dynamic Simulations</button>
         {% endif %}
-        <a href="/taxbrain/{{ object.pk }}/download" class="text-white btn btn-secondary">Download Files</a>
+        <a href="{{ object.get_absolute_download_url }}" class="text-white btn btn-secondary">Download Files</a>
       </div>
       {% if view.is_from_file %}
       <h2>The following reform file(s) were uploaded for this simulation: </h2>

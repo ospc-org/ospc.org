@@ -104,8 +104,7 @@ class TaxBrainRunDetailView(CoreRunDetailView):
             ])]
 
     def has_link_to_dyn(self):
-        assumptions = self.object.inputs.upstream_parameters.get('assumptions', None)
-        print('assumptions', assumptions)
+        assumptions = self.object.inputs.upstream_parameters.get('assumption', None)
         if assumptions is None:
             return True
         else:

@@ -10,7 +10,7 @@ urlpatterns = [
         name='edit_dynamic_elastic'),
     url(r'^macro/(?P<pk>[-\d\w]+)/', dynamic_elasticities,
         name='dynamic_elasticities'),
-    url(r'^macro/(?P<pk>[-\d\w]+)/download/?$', TaxBrainElastRunDownloadView.as_view(),
+    url(r'^macro_results/(?P<pk>[-\d\w]+)/download/?$', TaxBrainElastRunDownloadView.as_view(),
         name='elast_download_outputs'),
     url(r'^macro_results/(?P<pk>[-\d\w]+)/', TaxBrainElastRunDetailView.as_view(),
         name='elast_output_detail'),

@@ -41,15 +41,19 @@ class TaxBrainElastRun(CoreRun):
         kwargs = {
             'pk': self.pk
         }
-        # TODO: Generalize away from TB
         return reverse('elast_output_detail', kwargs=kwargs)
 
     def get_absolute_edit_url(self):
         kwargs = {
             'pk': self.pk
         }
-        # TODO: Generalize away from TB
         return reverse('edit_dynamic_elastic', kwargs=kwargs)
 
+    def get_absolute_download_url(self):
+        kwargs = {
+            'pk': self.pk
+        }
+        return reverse('elast_download_outputs', kwargs=kwargs)
+
     def zip_filename(self):
-        return 'taxbrain.zip'
+        return 'taxbrain_macro_elastic.zip'

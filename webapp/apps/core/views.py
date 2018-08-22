@@ -142,12 +142,15 @@ class CoreRunDownloadView(SingleObjectMixin, View):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        if not self.object.outputs or self.object.error_text:
+        if (not (self.object.outputs or self.object.aggr_outputs) or
+           self.object.error_text):
             return redirect(self.object)
 
         try:
             downloadables = list(itertools.chain.from_iterable(
                 output['downloadable'] for output in self.object.outputs))
+            downloadables += list(itertools.chain.from_iterable(
+                output['downloadable'] for output in self.object.aggr_outputs))
         except KeyError:
             raise Http404
         if not downloadables:
@@ -158,7 +161,6 @@ class CoreRunDownloadView(SingleObjectMixin, View):
         for i in downloadables:
             z.writestr(i['filename'], i['text'])
         z.close()
-
         resp = HttpResponse(s.getvalue(), content_type="application/zip")
         resp['Content-Disposition'] = 'attachment; filename={}'.format(
             self.object.zip_filename())

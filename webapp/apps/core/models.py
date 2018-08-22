@@ -69,18 +69,13 @@ class CoreRun(models.Model):
                                    max_length=50)
 
     def get_absolute_url(self):
-        kwargs = {
-            'pk': self.pk
-        }
-        # TODO: Generalize away from TB
-        return reverse('output_detail', kwargs=kwargs)
+        raise NotImplementedError()
 
     def get_absolute_edit_url(self):
-        kwargs = {
-            'pk': self.pk
-        }
-        # TODO: Generalize away from TB
-        return reverse('edit_personal_results', kwargs=kwargs)
+        raise NotImplementedError()
+
+    def get_absolute_download_url(self):
+        raise NotImplementedError()
 
     def zip_filename(self):
         return 'policybrain.zip'
