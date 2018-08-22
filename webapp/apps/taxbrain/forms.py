@@ -1,86 +1,16 @@
 from django import forms
 from django.forms import ModelForm
-from pyparsing import ParseException
 import six
 import json
 
 from ..constants import START_YEAR
 
 from .models import TaxSaveInputs
-from .helpers import (is_number,
-                      int_to_nth, is_string, string_to_float_array,
-                      check_wildcards, default_taxcalc_data, expand_list,
-                      propagate_user_list, convert_val, is_safe, INPUTS_META)
-from .param_displayers import default_policy, defaults_all
+from .helpers import (is_safe, INPUTS_META, bool_like)
+from .param_displayers import defaults_all
 from .param_formatters import (get_default_policy_param,
                                ParameterLookUpException)
 import taxcalc
-
-
-def bool_like(x):
-    b = True if x == 'True' or x else False
-    return b
-
-
-def parameter_name(param):
-    if not param.startswith("_"):
-        param = "_" + param
-
-    is_multi_param = any(param.endswith("_" + suffix)
-                         for suffix in ("0", "1", "2", "3"))
-    if is_multi_param:
-        return param[:-2]
-    else:
-        return param
-
-
-def expand_unless_empty(param_values, param_name, param_column_name, form,
-                        new_len):
-    ''' Take a list of parameters and, unless the list is empty, fill in any
-    wildcards and/or expand the list to the desired number of years, using
-    the proper inflation rates if necessary
-
-    If the list is empty, return it.
-
-    param_values: list of current values
-    param_name: name of the parameter
-    param_column_name: eg. _II_brk2_1 (names the sub-field)
-    form: The form object that has some data for the calculation
-    new_len: the new desired length of the return list
-
-    Returns: list of length new_len, unless the empty list is passed
-    '''
-
-    if param_values == []:
-        return param_values
-
-    has_wildcards = check_wildcards(param_values)
-    if len(param_values) < new_len or has_wildcards:
-        # Only process wildcards and floats from this point on
-        param_values = [convert_val(x) for x in param_values]
-        # Discover the CPI setting for this parameter
-        cpi_flag = form.discover_cpi_flag(param_name, form.cleaned_data)
-
-        default_data = form._default_taxcalc_data[param_name]
-        expnded_defaults = expand_list(default_data, new_len)
-
-        is_multi_param = any(param_column_name.endswith("_" + suffix)
-                             for suffix in ("0", "1", "2", "3"))
-        if is_multi_param:
-            idx = int(param_column_name[-1])
-        else:
-            idx = -1
-
-        param_values = propagate_user_list(param_values,
-                                           name=param_name,
-                                           defaults=expnded_defaults,
-                                           cpi=cpi_flag,
-                                           first_budget_year=form._first_year,
-                                           multi_param_idx=idx)
-
-        param_values = [float(x) for x in param_values]
-
-    return param_values
 
 
 class PolicyBrainForm:
@@ -212,7 +142,7 @@ class PolicyBrainForm:
 
 TAXCALC_DEFAULTS = {
     (int(START_YEAR), True): defaults_all(int(START_YEAR),
-                                            use_puf_not_cps=True)
+                                          use_puf_not_cps=True)
 }
 
 

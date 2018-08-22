@@ -6,10 +6,6 @@ http://blog.kevinastone.com/django-model-behaviors.html
 """
 
 from django.db import models
-
-
-from .helpers import (rename_keys, reorder_lists, PRE_TC_0130_RES_MAP,
-                      REORDER_LT_TC_0130_DIFF_LIST, DIFF_TABLE_IDs)
 from . import param_formatters
 
 
@@ -34,7 +30,6 @@ class Fieldable(models.Model):
             dd = obj.default_data(start_year=self.start_year,
                                                      metadata=True)
             default_data.update(dd)
-
 
         gui_field_inputs, failed_lookups = param_formatters.parse_fields(
             self.raw_gui_field_inputs,

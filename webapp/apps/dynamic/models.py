@@ -1,23 +1,11 @@
-import uuid
+import datetime
 
 from django.db import models
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
-
-from django.contrib.postgres.fields import JSONField, ArrayField
-
-import taxcalc
-
-from ..btax.models import CommaSeparatedField, SeparatedValuesField
-
-from ..core.models import CoreInputs, CoreRun
-from ..taxbrain.models import TaxBrainRun
-from ..taxbrain.behaviors import (Fieldable, DataSourceable)
-from ..taxbrain import param_formatters
-
-import datetime
+from ..core.models import CoreRun
 from django.utils.timezone import make_aware
 
+from ..taxbrain.models import TaxBrainRun
 
 class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
@@ -26,7 +14,7 @@ class DynamicElasticitySaveInputs(DataSourceable, models.Model):
     """
 
     # Elasticity of GDP w.r.t. average marginal tax rates
-    elastic_gdp = CommaSeparatedField(default=None, blank=True, null=True)
+    elastic_gdp = models.CharField(default=None, blank=True, null=True)
 
     # Starting Year of the reform calculation
     first_year = models.IntegerField(default=None, null=True)

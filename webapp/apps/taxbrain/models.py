@@ -1,12 +1,5 @@
-import uuid
-
 from django.db import models
-from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
-
 from django.contrib.postgres.fields import ArrayField
-import datetime
-from django.utils.timezone import make_aware
 from ..core.models import CoreInputs, CoreRun
 
 import taxcalc
@@ -14,40 +7,6 @@ import taxcalc
 from . import param_formatters
 
 from .behaviors import Fieldable, DataSourceable
-
-
-class JSONReformTaxCalculator(models.Model):
-    '''
-    This class holds all of the text for a JSON-based reform input
-    for TaxBrain. A TaxSavesInput Model will have a foreign key to
-    an instance of this model if the user created the TaxBrain job
-    through the JSON iput page.
-    '''
-    reform_text = models.TextField(blank=True, null=False)
-    raw_reform_text = models.TextField(blank=True, null=False)
-    assumption_text = models.TextField(blank=True, null=False)
-    raw_assumption_text = models.TextField(blank=True, null=False)
-    errors_warnings_text = models.TextField(blank=True, null=False)
-    def get_errors_warnings(self):
-        """
-        Errors were only stored for the taxcalc.Policy class until PB 1.6.0
-        This method ensures that old runs are parsed correctly
-        """
-        ew = json.loads(self.errors_warnings_text)
-        if 'errors' in ew:
-            return {'policy': ew}
-        else:
-            return ew
-
-
-class ErrorMessageTaxCalculator(models.Model):
-    '''
-    This class holds all of the text for an error message on
-    TaxBrain. A TaxSavesInput Model will have a foreign key to
-    an instance of this model if the user created the TaxBrain job
-    that ends up failing and reporting this failure.
-    '''
-    text = models.CharField(blank=True, null=False, max_length=4000)
 
 
 class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
@@ -66,7 +25,6 @@ class TaxSaveInputs(DataSourceable, Fieldable, CoreInputs):
     # Parameters used for Social Security.
     # Record whether or not this was a quick calculation on a sample of data
     quick_calc = models.BooleanField(default=False)
-
 
     # deprecated fields list
     deprecated_fields = ArrayField(

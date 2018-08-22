@@ -1,6 +1,6 @@
 from functools import partial
 import os
-from ..core.compute import Compute, JobFailError
+from ..core.compute import Compute
 from ..taxbrain.mock_compute import (MockCompute,
                                      MockFailedCompute,
                                      NodeDownCompute,
