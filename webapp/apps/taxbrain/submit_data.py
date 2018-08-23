@@ -124,6 +124,7 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
     """
     fields = dict(request.GET)
     fields.update(dict(request.POST))
+    # fields.pop('datafile')
     fields = {k: v[0] if isinstance(v, list) else v
               for k, v in list(fields.items())}
     start_year = fields.get('start_year', START_YEAR)
@@ -210,9 +211,11 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                 assumption_inputs_file,
                 errors_warnings) = get_reform_from_file(request_files)
         else:
+            print(fields)
             personal_inputs = TaxBrainForm(start_year, use_puf_not_cps, fields)
             # If an attempt is made to post data we don't accept
             # raise a 400
+            print('errors', personal_inputs.errors)
             if personal_inputs.non_field_errors():
                 return BadPost(
                     http_response_404=HttpResponse(
@@ -303,12 +306,18 @@ def submit_reform(request, dropq_compute, user=None, inputs_id=None):
                 'start_year': int(start_year),
                 'use_puf_not_cps': use_puf_not_cps}
         data_list = [dict(year_n=i, **data) for i in years_n]
-        if do_full_calc:
+        if 'datafile' in request.FILES:
+            tmpfile = request.FILES['datafile']
+            data_list = [{'data': tmpfile.read(), 'compression': 'gzip'}]
             submitted_id, max_q_length = (
-                dropq_compute.submit_calculation(data_list))
+                dropq_compute.submit_file_upload_test(data_list))
         else:
-            submitted_id, max_q_length = (
-                dropq_compute.submit_quick_calculation(data_list))
+            if do_full_calc:
+                submitted_id, max_q_length = (
+                    dropq_compute.submit_calculation(data_list))
+            else:
+                submitted_id, max_q_length = (
+                    dropq_compute.submit_quick_calculation(data_list))
 
     return PostMeta(
         request=request,

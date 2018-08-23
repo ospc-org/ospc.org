@@ -12,7 +12,7 @@ from api.celery_tasks import (taxbrain_postprocess,
                               dropq_task_async,
                               dropq_task_small_async,
                               taxbrain_elast_async,
-                              btax_async)
+                              btax_async, file_upload_test)
 
 bp = Blueprint('endpoints', __name__)
 
@@ -48,6 +48,17 @@ def endpoint(task):
     return json.dumps(data)
 
 
+def file_test_endpoint(task):
+    print('file test endpoint')
+    data = request.get_data()
+    inputs = msgpack.loads(data, encoding='utf8',
+                           use_list=True)
+    result = task.apply_async(kwargs=inputs[0], serializer='msgpack')
+    length = client.llen(queue_name) + 1
+    data = {'job_id': str(result), 'qlength': length}
+    return json.dumps(data)
+
+
 @bp.route("/dropq_start_job", methods=['POST'])
 def dropq_endpoint_full():
     return aggr_endpoint(dropq_task_async, taxbrain_postprocess)
@@ -66,6 +77,11 @@ def btax_endpoint():
 @bp.route("/elastic_gdp_start_job", methods=['POST'])
 def elastic_endpoint():
     return aggr_endpoint(taxbrain_elast_async, taxbrain_elast_postprocess)
+
+
+@bp.route("/file_upload_test", methods=['POST'])
+def file_upload_test_endpoint():
+    return file_test_endpoint(file_upload_test)
 
 
 @bp.route("/dropq_get_result", methods=['GET'])

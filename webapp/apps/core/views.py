@@ -92,7 +92,12 @@ class CoreRunDetailView(SuperclassTemplateNameMixin, DetailView):
                 return self.fail()
 
             if job_ready == 'YES':
-                results = self.dropq_compute.get_results(job_id)
+                try:
+                    results = self.dropq_compute.get_results(job_id)
+                except Exception as e:
+                    self.object.error_text = str(e)
+                    self.object.save()
+                    return self.fail()
                 self.object.outputs = results['outputs']
                 self.object.aggr_outputs = results['aggr_outputs']
                 self.object.creation_date = timezone.now()
