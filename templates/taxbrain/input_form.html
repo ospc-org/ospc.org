@@ -125,7 +125,7 @@
         </div>
       </section>
     </div>
-    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}&data_source={{data_source}}" enctype="multipart/form-data">
+    <form class="inputs-form" method="post" action="/taxbrain/?start_year={{start_year}}&data_source={{data_source}}">
       {% csrf_token %}
       <input type="hidden" name="has_errors" value="{{ has_errors }}" />
       <div class="container">
@@ -226,7 +226,6 @@
                   </div>
                 </div>
               </div>
-              {% include 'taxbrain/includes/params/inputs/file.html' %}
               {% for param in params %}
                 {% for key, value in param.items %}
                   {% if key != "ubi" %}

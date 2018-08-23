@@ -205,14 +205,8 @@ def personal_results(request):
     has_errors = False
     data_source = DEFAULT_SOURCE
     if request.method == 'POST':
-        # import pandas as pd
-        print('files', request.FILES)
-        # raw = request.FILES['datafile']
-        # df = pd.read_csv(raw, compression='gzip')
-        # print(df)
         print('method=POST get', request.GET)
         print('method=POST post', request.POST)
-        # raise ValueError()
         obj, post_meta = process_reform(request, dropq_compute)
         # case where validation failed in forms.TaxBrainForm
         # TODO: assert HttpResponse status is 404
