@@ -1,0 +1,20 @@
+{% extends 'taxbrain/input_form_section.html' %}
+
+{% block input_section_shortname %}payroll-taxes{% endblock %}
+{% block input_section_title %}Payroll Taxes{% endblock %}
+
+{% load flatblocks %}
+
+{% block content %}
+<div class="inputs-block-header">
+    <h1>Data File: A CSV file to describe</a></h1>
+  {% block section_warnings %}
+  {% endblock %}
+</div>
+
+<p><label for="id_datafile">Upload a data file:</label> </p>
+<p><input id="id_datafile" name="datafile" type="file" /></p>
+
+{% endblock %}
+
+{% block provide_if_no_continue %}{% endblock %}

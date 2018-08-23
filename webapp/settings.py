@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     'webapp.apps.pages',
     'webapp.apps.register',
     'webapp.apps.btax',
+    'webapp.apps.fileuploadex',
 
     # Third party apps
     'flatblocks',

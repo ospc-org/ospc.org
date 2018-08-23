@@ -139,7 +139,7 @@ def file_upload_test(data, compression):
     desc = df.describe()
     formatted = {'outputs': [], 'aggr_outputs': []}
     formatted['aggr_outputs'].append({
-            'tags': {'law': 'current'},
+            'tags': {'default': 'default'},
             'title': 'desc',
             'downloadable': [{'filename': 'desc' + '.csv',
                               'text': desc.to_csv()}],
