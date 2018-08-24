@@ -7,6 +7,12 @@ dist-build:
 	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/flask:$(TAG) --file Dockerfile.flask ./ && \
 	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/celery:$(TAG) --file Dockerfile.celery ./
 
+dist-build-local:
+	cd distributed && \
+	docker build -t opensourcepolicycenter/distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) --file Dockerfile.local && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/flask:$(TAG) --file Dockerfile.flask ./ && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/celery:$(TAG) --file Dockerfile.celery ./
+
 dist-push:
 	cd distributed && \
 	docker push opensourcepolicycenter/distributed:$(TAG) && \
