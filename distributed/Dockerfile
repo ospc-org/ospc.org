@@ -7,7 +7,7 @@ RUN mkdir /home/distributed
 RUN mkdir /home/distributed/api
 COPY requirements.txt home/distributed
 
-WORKDIR /home/distributed
+WORKDIR /home/distributed/api
 
 RUN conda config --add channels ospc
 RUN conda config --add channels ospc/label/dev
@@ -23,6 +23,8 @@ RUN if [ -z ${PUF_TOKEN+x} ]; \
             write-latest-taxpuf; \
             gunzip -k puf.csv.gz; \
         fi
+
+WORKDIR /home/distributed
 
 RUN conda install numpy>=1.12.1 pandas>=0.23.0 taxcalc=0.20.1 \
     btax=0.2.2 ogusa=0.5.11 matplotlib numba six bokeh>=0.12.7 mock xlrd \
