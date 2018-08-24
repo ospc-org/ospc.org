@@ -4,6 +4,22 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.8.0 on 2018-08-????
+----------------------------
+**Major Changes**
+- [#921](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/921) - Outputs revamp - Lucas Szwarcberg and with implementation help from Hank Doupe
+
+**Minor Changes**
+- [#917](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/917) -  Remove unused variables and imports - Lucas Szwarcberg
+- [#919](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/919) - PEP8 fixes - Lucas Szwarcberg
+- [#922](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/922) - Simplify `compute.py` for new backend archictecture - Hank Doupe
+- [#923](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/923) - Beginning steps for refactoring high level submission logic - Hank Doupe
+- [#928](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/928) - Add Dockerfile for local dev on upstream packages - Hank Doupe
+
+**Bug Fixes**
+- [#918](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/918) - Bug fix for #914 - Lucas Szwarcberg
+- [#926](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/926) -  In Python 3, '01' causes a syntax error when evaled via ast.literal_eval  - Hank Doupe
+
 Release 1.7.0 on 2018-07-02
 ----------------------------
 **Major Changes**
