@@ -14,6 +14,7 @@ Release 1.8.0 on 2018-08-????
 - [#919](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/919) - PEP8 fixes - Lucas Szwarcberg
 - [#922](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/922) - Simplify `compute.py` for new backend archictecture - Hank Doupe
 - [#923](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/923) - Beginning steps for refactoring high level submission logic - Hank Doupe
+- [#928](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/928) - Add Dockerfile for local dev on upstream packages - Hank Doupe
 
 **Bug Fixes**
 - [#918](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/918) - Bug fix for #914 - Lucas Szwarcberg
