@@ -26,7 +26,7 @@ class Compute(object):
             data,
             timeout=TIMEOUT_IN_SECONDS,
             headers=None):
-        print(theurl, data)
+        # print(theurl, data)
         if headers is not None:
             response = requests.post(theurl,
                                      data=data,
@@ -56,13 +56,17 @@ class Compute(object):
         url_template = "http://{hn}/elastic_gdp_start_job"
         return self.submit(data, url_template)
 
+    def submit_file_upload_test(self, data):
+        url_template = "http://{hn}/file_upload_test"
+        return self.submit(data, url_template)
+
     def submit(self,
                data_list,
                url_template,
                increment_counter=True,
                use_wnc_offset=True):
         print("hostnames: ", WORKER_HN)
-        print("submitting data: ", data_list)
+        # print("submitting data: ", data_list)
         queue_length = 0
         submitted = False
         attempts = 0
@@ -80,7 +84,7 @@ class Compute(object):
                     job_id = response_d['job_id']
                     queue_length = response_d['qlength']
                 else:
-                    print("FAILED: ", data_list, WORKER_HN)
+                    print("FAILED: ", WORKER_HN)
                     attempts += 1
             except Timeout:
                 print("Couldn't submit to: ", WORKER_HN)
@@ -124,7 +128,7 @@ class Compute(object):
                 msg = 'PROBLEM WITH RESPONSE. TEXT RECEIVED: {}'
                 raise ValueError(msg)
         else:
-            raise  # TODO
+            raise  IOError()
 
     def get_results(self, job_id, job_failure=False):
         if job_failure:

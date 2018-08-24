@@ -1,5 +1,6 @@
 import json
 import os
+from io import BytesIO
 
 from celery import Celery
 
@@ -129,3 +130,19 @@ def btax_async(user_mods, start_year):
     results['btax_version'] = binfo['version']
     json_res = json.dumps(results)
     return json_res
+
+
+@celery_app.task(name='api.celery_tasks.file_upload_test')
+def file_upload_test(data, compression):
+    import pandas as pd
+    df = pd.read_csv(BytesIO(data), compression='gzip')
+    desc = df.describe()
+    formatted = {'outputs': [], 'aggr_outputs': []}
+    formatted['aggr_outputs'].append({
+            'tags': {'default': 'default'},
+            'title': 'desc',
+            'downloadable': [{'filename': 'desc' + '.csv',
+                              'text': desc.to_csv()}],
+            'renderable': desc.to_html()
+        })
+    return json.dumps(formatted)

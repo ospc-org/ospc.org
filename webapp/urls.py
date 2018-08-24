@@ -18,6 +18,7 @@ urlpatterns = [
     url(r'^taxbrain/', include("webapp.apps.taxbrain.urls")),
     url(r'^dynamic/', include("webapp.apps.dynamic.urls")),
     url(r'^ccc/', include("webapp.apps.btax.urls")),
+    url(r'^upload/', include('webapp.apps.fileuploadex.urls')),
     # Login & Registration URL Confs
     url(r'^accounts/login/$', login),
     url(r'^logout/$', logout),
