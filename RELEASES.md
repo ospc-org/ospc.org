@@ -4,6 +4,17 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.7.1 on 2018-08-30
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#931](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pull/900) - Remove drip.co marketing
+
+**Bug Fixes**
+- None
+
 Release 1.7.0 on 2018-07-02
 ----------------------------
 **Major Changes**
