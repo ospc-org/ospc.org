@@ -28,3 +28,4 @@ python-dateutil
 toolz
 whitenoise
 msgpack
+jinja
