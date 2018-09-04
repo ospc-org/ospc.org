@@ -16,3 +16,4 @@ channels:
   - ospc/label/dev
   - defaults
   - conda-forge
+  - anaconda
