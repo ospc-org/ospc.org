@@ -6,7 +6,6 @@ dependencies:
 - numba >=0.33.0
 - pandas >=0.22.0
 - bokeh =0.12.7
-- nomkl
 - gevent
 - pillow
 - pyparsing
