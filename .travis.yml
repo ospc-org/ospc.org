@@ -12,6 +12,7 @@ install:
   - conda clean --all -y
   - ./python_env_build.sh
   - source activate pb_env
+  - pip install dj-database-url==0.3.0
   - python manage.py collectstatic --no-input
 
 addons:
