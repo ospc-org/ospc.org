@@ -12,7 +12,7 @@ install:
   - conda clean --all -y
   - ./python_env_build.sh
   - source activate pb_env
-  - python -c "import dj_database_url; print(dj_database_url.__version__)"
+  - source deactivate && python -c "import dj_database_url; print(dj_database_url.__version__)" && source activate pb_env
   - python manage.py collectstatic --no-input
 
 addons:
