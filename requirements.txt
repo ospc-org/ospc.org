@@ -29,4 +29,3 @@ toolz
 whitenoise
 msgpack
 jinja
-dj_database_url
