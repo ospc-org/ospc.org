@@ -3,21 +3,24 @@ NEW_RELIC_TOKEN := `cat ~/.newrelic-$(VERSION)`
 
 dist-build:
 	cd distributed && \
-	docker build -t opensourcepolicycenter/distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) && \
-	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/flask:$(TAG) --file Dockerfile.flask ./ && \
-	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/celery:$(TAG) --file Dockerfile.celery ./
+	docker build -t distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t flask:$(TAG) --file Dockerfile.flask ./ && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t celery:$(TAG) --file Dockerfile.celery ./
 
 dist-build-local:
 	cd distributed && \
-	docker build -t opensourcepolicycenter/distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) --file Dockerfile.local && \
-	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/flask:$(TAG) --file Dockerfile.flask ./ && \
-	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/celery:$(TAG) --file Dockerfile.celery ./
+	docker build -t distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) --file Dockerfile.local && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t flask:$(TAG) --file Dockerfile.flask ./ && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t celery:$(TAG) --file Dockerfile.celery ./
 
 dist-push:
 	cd distributed && \
-	docker push opensourcepolicycenter/distributed:$(TAG) && \
-	docker push opensourcepolicycenter/flask:$(TAG) && \
-	docker push opensourcepolicycenter/celery:$(TAG)
+	docker tag distributed:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
+	docker tag distributed:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
+	docker tag distributed:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG) && \
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG)
 
 dist-test:
 	cd distributed && \
