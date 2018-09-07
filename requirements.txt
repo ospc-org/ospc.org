@@ -21,7 +21,7 @@ yolk==0.4.3
 django-ipware
 requests_mock
 boto
-django-storages
+django-storages==1.6.3
 django-htmlmin
 pyparsing
 python-dateutil

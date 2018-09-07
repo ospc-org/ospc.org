@@ -109,7 +109,6 @@ WSGI_APPLICATION = 'webapp.wsgi.application'
 
 # if os.environ.get('DATABASE_URL', None):
 # Parse database configuration from $DATABASE_URL
-import dj_database_url
 TEST_DATABASE = {
     'TEST': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
