@@ -9,7 +9,6 @@ dependencies:
 - gevent
 - pillow
 - pyparsing
-- pip
 channels:
   - ospc
   - ospc/label/dev
