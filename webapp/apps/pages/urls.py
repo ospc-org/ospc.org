@@ -2,7 +2,8 @@ from django.conf.urls import patterns, include, url
 
 from .views import (homepage, aboutpage, newspage, gallerypage, hellopage,
                    embedpage, widgetpage, newsdetailpage,
-                   apps_landing_page, border_adjustment_plot, docspage, gettingstartedpage)
+                   apps_landing_page, border_adjustment_plot, docspage,
+                   gettingstartedpage, donate)
 
 urlpatterns = [
     url(r'^$', homepage, name='home'), # url(r'^apps/$', apps_landing_page, name='apps'),
@@ -10,6 +11,7 @@ urlpatterns = [
     url(r'^getting-started/$', gettingstartedpage, name='gettingstartedpage'),
     url(r'^hello/$', hellopage, name='hello'),
     url(r'^gallery/$', gallerypage, name='gallery'),
+    url(r'^donate/$', donate, name='donate'),
     url(r'^news/$', newspage, name='news'),
     url(r'^news/news-detail$', newsdetailpage, name='newsdetail'),
     url(r'^gallery/(?P<widget_id>\w+)/$', widgetpage),

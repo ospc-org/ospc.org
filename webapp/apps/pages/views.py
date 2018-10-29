@@ -57,6 +57,24 @@ def homepage(request):
 
     return test
 
+def donate(request):
+    form = subscribeform(request)
+    csrf_token = csrf(request)
+    if request.method == 'POST' and form.is_valid():
+        return check_email(request)
+
+    test = render(request, 'pages/donate.html', {
+        'csrv_token': csrf(request)['csrf_token'],
+        'email_form': form,
+        'section': {
+            'active_nav': 'home',
+            'title': 'Welcome to the Open Source Policy Center',
+        },
+        'username': request.user
+    })
+
+    return test
+
 def aboutpage(request):
     form = subscribeform(request)
     if request.method == 'POST' and form.is_valid():
