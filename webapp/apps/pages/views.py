@@ -1,7 +1,6 @@
 import os
 
 from django.shortcuts import redirect, render
-from webapp.apps.register.forms import SubscribeForm
 from django.template.context_processors import csrf
 from django.conf import settings
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -24,52 +23,16 @@ def settings_context_processor(request):
     return {'BLOG_URL': settings.BLOG_URL}
 
 
-def subscribeform(request):
-    if request.method == 'POST':
-        subscribeform = SubscribeForm(request.POST)
-        if subscribeform.is_valid():
-            subscriber = subscribeform.save()
-            subscriber.send_subscribe_confirm_email()
-    else:
-        subscribeform = SubscribeForm()
-    return subscribeform
-
-
-def check_email(request):
-    return render(request, 'register/please-check-email.html', {})
+def subscribed(request):
+    return render(request, 'pages/thanks-for-subscribing.html', {})
 
 
 def homepage(request):
-    form = subscribeform(request)
-    if request.method == 'POST' and form.is_valid():
-        return check_email(request)
-
-    test = render(request, 'pages/home_content.html', {
-        'csrv_token': csrf(request)['csrf_token'],
-        'email_form': form,
-        'section': {
-            'active_nav': 'home',
-            'title': 'Welcome to the Open Source Policy Center',
-        },
-        'username': request.user
-    })
-
-    return test
+    return render(request, 'pages/home_content.html')
 
 
 def aboutpage(request):
-    form = subscribeform(request)
-    if request.method == 'POST' and form.is_valid():
-        return check_email(request)
-    test_1 = render(request, 'pages/about.html', {
-        'csrv_token': csrf(request)['csrf_token'],
-        'email_form': form,
-        'section': {
-            'active_nav': 'about',
-            'title': 'About',
-        }
-    })
-    return test_1
+    return render(request, 'pages/about.html')
 
 
 def gallerypage(request):

@@ -2,13 +2,15 @@ from django.conf.urls import url
 
 from .views import (homepage, aboutpage, newspage, gallerypage, hellopage,
                     embedpage, widgetpage, newsdetailpage, apps_landing_page,
-                    border_adjustment_plot, docspage, gettingstartedpage)
+                    border_adjustment_plot, docspage, gettingstartedpage,
+                    subscribed)
 
 urlpatterns = [
     # url(r'^apps/$', apps_landing_page, name='apps'),
     url(r'^$', homepage, name='home'),
     url(r'^about/$', aboutpage, name='about'),
     url(r'^getting-started/$', gettingstartedpage, name='gettingstartedpage'),
+    url(r'^subscribed/$', subscribed, name='subscribed'),
     url(r'^hello/$', hellopage, name='hello'),
     url(r'^gallery/$', gallerypage, name='gallery'),
     url(r'^news/$', newspage, name='news'),
