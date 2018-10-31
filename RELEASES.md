@@ -4,6 +4,19 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.7.2 on 2018-10-31
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#931](https://github.com/ospc-org/ospc.org/pull/937) - Use conda 'defaults' channel instead of 'anaconda' - Hank Doupe
+- [#938](https://github.com/ospc-org/ospc.org/pull/938) - Add subscribed landing page - Hank Doupe
+
+**Bug Fixes**
+- None
+
+
 Release 1.7.1 on 2018-08-30
 ----------------------------
 **Major Changes**
