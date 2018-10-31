@@ -36,6 +36,11 @@ def subscribeform(request):
         subscribeform = SubscribeForm()
     return subscribeform
 
+
+def subscribed(request):
+    return render(request, 'pages/thanks-for-subscribing.html')
+
+
 def check_email(request):
     return render(request, 'register/please-check-email.html', {})
 
