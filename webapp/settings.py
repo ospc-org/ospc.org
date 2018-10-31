@@ -58,7 +58,7 @@ TEMPLATES = [
 ]
 
 
-WEBAPP_VERSION = "1.7.0"
+WEBAPP_VERSION = "1.7.2"
 
 # Application definition
 
