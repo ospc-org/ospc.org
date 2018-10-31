@@ -6,7 +6,7 @@ echo 'activating env: pb_env'
 source activate pb_env
 
 echo 'installing conda packages'
-conda install -c ospc -c anaconda --file conda-requirements.txt --yes
+conda install -c ospc -c defaults --file conda-requirements.txt --yes
 
 
 echo 'pip installing remaining requirements'
