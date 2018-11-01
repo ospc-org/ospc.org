@@ -214,7 +214,7 @@ INPUTS_META = ('has_errors', 'csrfmiddlewaretoken', 'start_year',
 #
 TAXCALC_RESULTS_START_YEAR = START_YEAR
 TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.DIST_TABLE_LABELS[:]
-TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS[:-2]
+TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS[:]
 TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     #   divisor,   unit,   decimals
     [      1000,      None, 0], # 'Returns',
