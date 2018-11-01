@@ -144,6 +144,24 @@
   {% block extrajs %}
 
   {% endblock %}
+  <script>
+      MktoForms2.whenReady(function (form) {
+         //listen for the validate event
+          form.onValidate(function() {
+              // Get the values
+              var vals = form.vals();
+              //Check if the honeypot field is empty
+              if (vals.honeypot == "") {
+                  // Not a spam bot! Submit the form
+                  form.submittable(true);
+              }
+              else {
+                 // This is a spam bot! Don't submit the form
+                 form.submittable(false);
+              }
+          });
+      });
+  </script>
 
   </body>
 </html>
