@@ -1,4 +1,4 @@
-OSPC_ANACONDA_TOKEN := `cat ~/.ospc_anaconda_token`
+OSPC_PW := `cat ~/.ospc_anaconda_token`
 NEW_RELIC_TOKEN := `cat ~/.newrelic-$(VERSION)`
 
 dist-build:

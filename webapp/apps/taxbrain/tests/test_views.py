@@ -415,7 +415,7 @@ class TestTaxBrainViews(object):
         data.pop('start_year')
         data.pop('data_source')
         url = '/taxbrain/?start_year={0}&data_source={1}'.format(START_YEAR, 'PUF')
-        data['STD_3'] = ['1000']
+        data['STD_3'] = ['-1000']
         response = CLIENT.post(url, data)
 
         assert response.status_code == 200
@@ -631,7 +631,7 @@ class TestTaxBrainViews(object):
         assert response.context['has_errors'] is True
         assert response.context['start_year'] == str(START_YEAR)
         assert response.context['data_source'] == data_source
-        assert any(['_STD_0' in msg and '2023' in msg
+        assert any(['_ID_Medical_frt' in msg and '2020' in msg
                     for msg in response.context['errors']])
 
         # get most recent object
@@ -651,7 +651,7 @@ class TestTaxBrainViews(object):
 
         truth_mods = {
             2020: {
-                "_STD":  [[1000, 24981.84, 12490.92, 18736.38, 24981.84]]
+                "_ID_Medical_frt":  [0.05]
             }
         }
         check_posted_params(result['tb_dropq_compute'], truth_mods, START_YEAR,
@@ -686,7 +686,7 @@ class TestTaxBrainViews(object):
         assert response.context['has_errors'] is True
         assert response.context['data_source'] == data_source
         assert response.context['start_year'] == str(start_year)
-        assert any(['_STD_0' in msg and '2023' in msg
+        assert any(['_ID_Medical_frt' in msg and '2020' in msg
                     for msg in response.context['errors']])
 
         # get most recent object

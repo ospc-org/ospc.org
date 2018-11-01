@@ -317,7 +317,7 @@ TAXCALC_RESULTS_TABLE_LABELS = {
     'aggr_2': 'Total Liabilities Reform by Calendar Year'
 }
 
-AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
+AGG_ROW_NAMES = taxcalc.tbi.AGG_ROW_NAMES
 TAXCALC_RESULTS_TOTAL_ROW_KEY_LABELS = {
     'ind_tax':'Individual Income Tax Liability Change',
     'payroll_tax':'Payroll Tax Liability Change',
