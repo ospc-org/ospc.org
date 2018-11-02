@@ -70,24 +70,10 @@
     </div>
   </section>
 
-  <div class="container">
-    <section class="join">
-      <h2>Join the community</h2>
-      <div class="input-container">
-        <div class="input-group">
-          <form action="{% url 'home' %}" method="post">{% csrf_token %}
-          <span class="input-group-btn">
-            {{ email_form.email }}
-            {{ email_form.email.errors }}
-            <input type="submit" class="btn btn-join" value="Sign Up"/>
-          </span>
-          </form>
-          <script>
-
-          </script>
-        </div>
-      </div>
-    </section>
+  <div style="margin-bottom:20px;">
+    <script src="//hello.aei.org/js/forms2/js/forms2.min.js"></script>
+    <form style="margin-left: auto;margin-right: auto;" id="mktoForm_1179"></form>
+    <script>MktoForms2.loadForm("//app-sj19.marketo.com", "475-PBQ-971", 1179);</script>
   </div>
 
   <div class="container">
@@ -210,4 +196,5 @@
     </div>
   </section>
   <div class="push"></div>
+
 {% endblock  %}
