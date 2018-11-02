@@ -4,6 +4,18 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.7.3 on 2018-11-02
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#940](https://github.com/ospc-org/ospc.org/pull/940) - Add marketo email form #940 - Hank Doupe
+
+**Bug Fixes**
+- None
+
+
 Release 1.7.2 on 2018-10-31
 ----------------------------
 **Major Changes**
