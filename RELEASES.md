@@ -10,7 +10,7 @@ Release 1.7.3 on 2018-11-02
 - None
 
 **Minor Changes**
-- [#940](https://github.com/ospc-org/ospc.org/pull/940) - Add marketo email form #940 - Hank Doupe
+- [#940](https://github.com/ospc-org/ospc.org/pull/940) - Add marketo email form #940 - Kaitlyn Heese and Hank Doupe
 
 **Bug Fixes**
 - None
