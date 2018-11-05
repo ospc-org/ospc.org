@@ -10,6 +10,7 @@ Release 1.7.4 on 2018-11-06
 - None
 
 **Minor Changes**
+- [#942](https://github.com/ospc-org/ospc.org/pull/939) -  Use AWS Container Registry instead of DockerHub #942 - Hank Doupe
 - [#939](https://github.com/ospc-org/ospc.org/pull/939) - Update to Tax-Calculator 0.22.2 - Hank Doupe
 
 **Bug Fixes**
