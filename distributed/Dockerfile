@@ -29,6 +29,6 @@ RUN if [ -z ${PUF_TOKEN+x} ]; \
         then echo PUF token not specified; \
         else echo getting and writing PUF file && \
             conda install taxpuf matplotlib>=3.0.1 -c https://conda.anaconda.org/t/$PUF_TOKEN/opensourcepolicycenter && \
-            write-latest-taxpuf; \
+            write-latest-taxpuf && \
             gunzip -k puf.csv.gz; \
         fi
