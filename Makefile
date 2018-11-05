@@ -1,17 +1,20 @@
 OSPC_ANACONDA_TOKEN := `cat ~/.ospc_anaconda_token`
-NEW_RELIC_TOKEN := `cat ~/.newrelic-$(VERSION)`
+NEW_RELIC_TOKEN := `cat ~/.newrelic-$(MODE)`
 
 dist-build:
-	cd distributed && \
-	docker build -t opensourcepolicycenter/distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) && \
-	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/flask:$(TAG) --file Dockerfile.flask ./ && \
-	docker build --no-cache --build-arg TAG=$(TAG) -t opensourcepolicycenter/celery:$(TAG) --file Dockerfile.celery ./
+        cd distributed && \
+        docker build -t distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) && \
+        docker build --no-cache --build-arg TAG=$(TAG) -t flask:$(TAG) --file Dockerfile.flask ./ && \
+        docker build --no-cache --build-arg TAG=$(TAG) -t celery:$(TAG) --file Dockerfile.celery ./
 
 dist-push:
-	cd distributed && \
-	docker push opensourcepolicycenter/distributed:$(TAG) && \
-	docker push opensourcepolicycenter/flask:$(TAG) && \
-	docker push opensourcepolicycenter/celery:$(TAG)
+        cd distributed && \
+        docker tag distributed:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
+        docker tag flask:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
+        docker tag celery:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG) && \
+        docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
+        docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
+        docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG)
 
 dist-test:
 	cd distributed && \
@@ -20,12 +23,11 @@ dist-test:
 	docker-compose rm -f
 
 webapp-build:
-	docker build --build-arg NEW_RELIC_TOKEN=$(NEW_RELIC_TOKEN) -t opensourcepolicycenter/web:$(TAG) ./
+	docker build --build-arg NEW_RELIC_TOKEN=$(NEW_RELIC_TOKEN) -t web:$(TAG) ./
 
 webapp-push:
-	docker tag opensourcepolicycenter/web:$(TAG) registry.heroku.com/ospc-$(VERSION)/web
-	docker push registry.heroku.com/ospc-$(VERSION)/web
-	docker push opensourcepolicycenter/web:$(TAG)
+	docker tag ospc-web:$(TAG) registry.heroku.com/ospc-$(MODE)/web
+	docker push registry.heroku.com/ospc-$(MODE)/web
 
 webapp-release:
-	heroku container:release web -a ospc-$(VERSION)
+	heroku container:release web -a ospc-$(MODE)
