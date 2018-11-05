@@ -2,15 +2,14 @@
 
 1. Build and push images to AWS container registry
     ```
-    export MODE= TAG= AWS_ACCOUNT_ID= AWS_REGION=
+    export TAG= AWS_ACCOUNT_ID= AWS_REGION=
     rm -rf PolicyBrain
     git clone https://github.com/OpenSourcePolicyCenter/PolicyBrain
     cd PolicyBrain
     git fetch origin
     git checkout -b $TAG $TAG
 
-    pushd .. && make dist-build -e TAG=$TAG && \
-        make dist-push -e TAG=$TAG && popd &&\
+    make dist-build && make dist-push
     ```
 
 
