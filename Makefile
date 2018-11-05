@@ -26,7 +26,7 @@ webapp-build:
 	docker build --build-arg NEW_RELIC_TOKEN=$(NEW_RELIC_TOKEN) -t web:$(TAG) ./
 
 webapp-push:
-	docker tag ospc-web:$(TAG) registry.heroku.com/ospc-$(MODE)/web
+	docker tag web:$(TAG) registry.heroku.com/ospc-$(MODE)/web
 	docker push registry.heroku.com/ospc-$(MODE)/web
 
 webapp-release:
