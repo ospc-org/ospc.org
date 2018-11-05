@@ -4,6 +4,18 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.7.4 on 2018-11-06
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#939](https://github.com/ospc-org/ospc.org/pull/939) - Update to Tax-Calculator 0.22.2 - Hank Doupe
+
+**Bug Fixes**
+- None
+
+
 Release 1.7.3 on 2018-11-02
 ----------------------------
 **Major Changes**
