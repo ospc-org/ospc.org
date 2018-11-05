@@ -1,14 +1,14 @@
 version: '3'
 services:
   flask:
-    image: "opensourcepolicycenter/flask:${TAG}"
+    image: "${REPO}/flask:${TAG}"
     ports:
       - 5050:5050
     depends_on:
       - redis
       - celery
   celery:
-    image: "opensourcepolicycenter/celery:${TAG}"
+    image: "${REPO}/celery:${TAG}"
     depends_on:
       - redis
   redis:
