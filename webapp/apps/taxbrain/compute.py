@@ -24,7 +24,7 @@ DROPQ_SMALL_URL = "/dropq_small_start_job"
 ENFORCE_REMOTE_VERSION_CHECK = os.environ.get('ENFORCE_VERSION', 'False') == 'True'
 TIMEOUT_IN_SECONDS = 1.0
 MAX_ATTEMPTS_SUBMIT_JOB = 20
-AGG_ROW_NAMES = taxcalc.tbi_utils.AGGR_ROW_NAMES
+AGG_ROW_NAMES = taxcalc.tbi.AGG_ROW_NAMES
 GDP_ELAST_ROW_NAMES = taxcalc.tbi.GDP_ELAST_ROW_NAMES
 BYTES_HEADER = {'Content-Type': 'application/octet-stream'}
 

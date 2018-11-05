@@ -247,18 +247,14 @@ def errors_warnings_exp_read_json_reform():
     _errors_warnings_exp_read_json_reform = {
         2018: {
             '_FICA_ss_trt': [-1.0],
-            '_ID_BenefitSurtax_Switch': [[True, True, True, True,
-                                          True, True, False]],
-            '_STD': [[10000.0, 24000.0, 12000.0, 20000.0, 24000.0]]
-        },
+            '_ID_BenefitSurtax_Switch': [[True, True, True, True, True, True, False]],
+            '_STD': [[12000.0, 24000.0, 12000.0, 20000.0, 24000.0]]},
         2019: {
             '_FICA_ss_trt': [0.1],
-            '_II_brk4': [[500.0, 321268.5, 160634.25, 160634.25, 321268.5]]
-        },
+            '_II_brk4': [[500.0, 321268.5, 160634.25, 160634.25, 321268.5]]},
         2020: {
-            '_STD': [[10409.1, 24981.84, 12490.92, 150.0, 24981.84]]
-        }
-    }
+            '_ID_Medical_frt': [0.05],
+            '_STD': [[12490.92, 24981.84, 12490.92, 150.0, 24981.84]]}}
     return _errors_warnings_exp_read_json_reform
 
 

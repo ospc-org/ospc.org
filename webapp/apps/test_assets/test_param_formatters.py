@@ -251,6 +251,8 @@ def test_read_json_reform(request, _test_reform, _test_assump,
         test_assump,
         use_puf_not_cps=True
     )
+    print(json.dumps(act_reform, indent=4))
+    print(json.dumps(exp_reform, indent=4))
     print(json.dumps(act_errors_warnings, indent=4))
     print(json.dumps(exp_errors_warnings, indent=4))
     np.testing.assert_equal(act_reform, exp_reform)

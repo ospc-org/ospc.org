@@ -4,7 +4,7 @@
     "_ID_BenefitSurtax_Switch_charity": {"2018": [false]},
     "_STD_headhousehold": {"2018": [20000.0], "2020": [150.0]},
     "_FICA_ss_trt": {"2018": [-1.0], "2019": [0.1]},
-    "_STD_single": {"2018": [10000.0]},
+    "_ID_Medical_frt": {"2020": [0.05]},
     "_II_brk4_single": {"2019": [500.0]}
     }
 }
