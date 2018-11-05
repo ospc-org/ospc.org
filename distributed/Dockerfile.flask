@@ -1,5 +1,5 @@
 ARG TAG
-FROM opensourcepolicycenter/distributed:$TAG
+FROM distributed:$TAG
 
 LABEL build="flask" date="2018-06-13"
 
