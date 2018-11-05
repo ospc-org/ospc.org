@@ -2,19 +2,19 @@ OSPC_ANACONDA_TOKEN := `cat ~/.ospc_anaconda_token`
 NEW_RELIC_TOKEN := `cat ~/.newrelic-$(MODE)`
 
 dist-build:
-        cd distributed && \
-        docker build -t distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) && \
-        docker build --no-cache --build-arg TAG=$(TAG) -t flask:$(TAG) --file Dockerfile.flask ./ && \
-        docker build --no-cache --build-arg TAG=$(TAG) -t celery:$(TAG) --file Dockerfile.celery ./
+	cd distributed && \
+	docker build -t distributed:$(TAG) ./ --build-arg PUF_TOKEN=$(OSPC_ANACONDA_TOKEN) && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t flask:$(TAG) --file Dockerfile.flask ./ && \
+	docker build --no-cache --build-arg TAG=$(TAG) -t celery:$(TAG) --file Dockerfile.celery ./
 
 dist-push:
-        cd distributed && \
-        docker tag distributed:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
-        docker tag flask:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
-        docker tag celery:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG) && \
-        docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
-        docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
-        docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG)
+	cd distributed && \
+	docker tag distributed:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
+	docker tag flask:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
+	docker tag celery:$(TAG) $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG) && \
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/distributed:$(TAG) && \
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/flask:$(TAG) && \
+	docker push $(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com/celery:$(TAG)
 
 dist-test:
 	cd distributed && \
