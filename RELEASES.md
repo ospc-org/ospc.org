@@ -15,6 +15,7 @@ Release 1.7.4 on 2018-11-06
 
 **Bug Fixes**
 - [#943](https://github.com/ospc-org/ospc.org/pull/943) -  Fix image name - Hank Doupe
+- [#944](https://github.com/ospc-org/ospc.org/pull/944) -  Remove hanging asterisk - Hank Doupe
 
 
 Release 1.7.3 on 2018-11-02
