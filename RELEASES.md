@@ -4,6 +4,18 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.7.5 on 2018-11-07
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#945](https://github.com/ospc-org/ospc.org/pull/945) -  Remove all of the hanging asterisks - Hank Doupe
+
+
 Release 1.7.4 on 2018-11-06
 ----------------------------
 **Major Changes**
