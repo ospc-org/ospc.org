@@ -4,6 +4,18 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.7.6 on 2018-11-09
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- None
+
+**Bug Fixes**
+- [#948](https://github.com/ospc-org/ospc.org/pull/948) -  No longer need to scale numbers - Hank Doupe
+
+
 Release 1.7.5 on 2018-11-07
 ----------------------------
 **Major Changes**
