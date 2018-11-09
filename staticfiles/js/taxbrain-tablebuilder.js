@@ -46,10 +46,10 @@ $(function() {
                 var j = 0;
                 _.each(row.cells, function(cell) {
                     if (_.isEmpty(cell.year_values)) {
-                        that.get('rows')[i]['cells'][j]['tot_value'] = that.numberWithCommas((parseFloat(cell.value / cell.format.divisor)).toFixed(cell.format.decimals));
+                        that.get('rows')[i]['cells'][j]['tot_value'] = that.numberWithCommas((parseFloat(cell.value)).toFixed(cell.format.decimals));
                     } else {
                         _.each(_.keys(cell.year_values), function(year) {
-                            that.get('rows')[i]['cells'][j]['year_values'][year] = that.numberWithCommas((parseFloat(cell.year_values[year] / cell.format.divisor)).toFixed(cell.format.decimals));
+                            that.get('rows')[i]['cells'][j]['year_values'][year] = that.numberWithCommas((parseFloat(cell.year_values[year])).toFixed(cell.format.decimals));
                         });
                     }
                     j++;
