@@ -308,10 +308,10 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         fields = ['first_year', 'data_source', 'raw_input_fields',
                   'input_fields']
         start_year = int(START_YEAR)
-        default_policy = taxcalc.Policy.default_data(
-                             start_year=int(START_YEAR),
-                             metadata=True
-                         )
+        pol = taxcalc.Policy()
+        pol.set_year(int(START_YEAR))
+        default_policy = pol.metadata()
+
         defaults_key = (start_year, True)
         if defaults_key not in TAXCALC_DEFAULTS:
             TAXCALC_DEFAULTS[defaults_key] = default_policy(

@@ -65,8 +65,12 @@ class Fieldable(models.Model):
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
         """
-        default_data = upstream_obj.default_data(start_year=self.start_year,
-                                                 metadata=True)
+        if isinstance(upstream_obj, taxcalc.Policy):
+            pol = taxcalc.Policy()
+            pol.set_year(start_year)
+            default_data = pol.metadata()
+        else: #isinstance(upstream_obj, taxcalc.Behavior):
+            default_data = taxcalc.Behavior()._vals
 
         if self.raw_input_fields is None:
             self.raw_input_fields = {}

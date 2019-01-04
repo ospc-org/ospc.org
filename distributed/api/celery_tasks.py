@@ -43,9 +43,8 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
     )
 
     # Add taxcalc version to results
-    vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version']
-    results['dropq_version'] = vinfo['version']
+    results['taxcalc_version'] = taxcalc.__version__
+    results['dropq_version'] = taxcalc.__version__
 
     json_res = json.dumps(results)
     return json_res
@@ -118,7 +117,7 @@ def btax_async(user_mods, start_year):
     vinfo = taxcalc._version.get_versions()
     results['taxcalc_version'] = vinfo['version']
     results['dropq_version'] = vinfo['version']
-    binfo = btax._version.get_versions()
+    binfo = btax.__version__
     results['btax_version'] = binfo['version']
     json_res = json.dumps(results)
     return json_res

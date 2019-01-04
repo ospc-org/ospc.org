@@ -67,9 +67,7 @@ dropq_compute = DropqCompute()
 
 WEBAPP_VERSION = settings.WEBAPP_VERSION
 
-tcversion_info = taxcalc._version.get_versions()
-
-TAXCALC_VERSION = tcversion_info['version']
+TAXCALC_VERSION = taxcalc.__version__
 
 JOB_PROC_TIME_IN_SECONDS = 35
 

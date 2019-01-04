@@ -15,10 +15,8 @@ import requests
 import btax
 import taxcalc
 
-BTAX_VERSION_INFO = btax._version.get_versions()
-TAXCALC_VERSION_INFO = taxcalc._version.get_versions()
-BTAX_VERSION = BTAX_VERSION_INFO['version']
-TAXCALC_VERSION = TAXCALC_VERSION_INFO['version']
+BTAX_VERSION = btax.__version__
+TAXCALC_VERSION = taxcalc.__version__
 
 BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
 EMAIL_DEFAULT = '1'

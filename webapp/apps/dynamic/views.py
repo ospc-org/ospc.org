@@ -64,14 +64,11 @@ from ..constants import (DISTRIBUTION_TOOLTIP, DIFFERENCE_TOOLTIP,
 from ..formatters import format_dynamic_params, get_version
 
 
-tcversion_info = taxcalc._version.get_versions()
-TAXCALC_VERSION = tcversion_info['version']
+TAXCALC_VERSION = taxcalc.__version__
 
 # TODO: use import ogusa; ogusa.__version__
-version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
-with open(version_path, "r") as f:
-    ogversion_info = json.load(f)
-OGUSA_VERSION = ogversion_info['version']
+import ogusa
+OGUSA_VERSION = ogusa.__version__
 
 from django.conf import settings
 WEBAPP_VERSION = settings.WEBAPP_VERSION
