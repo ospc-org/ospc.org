@@ -1,5 +1,5 @@
 nomkl
-taxcalc==0.23.3
+taxcalc==0.24
 btax==0.2.6
 ogusa==0.5.12
 numba>=0.33.0
