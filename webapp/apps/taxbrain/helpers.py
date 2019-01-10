@@ -167,15 +167,15 @@ def round_gt_one_to_nearest_int(values):
     return rounded
 
 
-def default_taxcalc_data(cls, start_year, metadata=False):
+def default_taxcalc_data(cls, start_year, metadata=True):
     ''' Call the default data function on the given class for the given
         start year with meatadata flag
     '''
-    if isinstance(cls, taxcalc.Policy):
+    if cls == taxcalc.Policy:
         pol = taxcalc.Policy()
         pol.set_year(start_year)
         dd = pol.metadata()
-    else: #isinstance(cls, taxcalc.Behavior):
+    else: #cls == taxcalc.Behavior):
         dd = taxcalc.Behavior()._vals
     if metadata:
         for k in dd:

@@ -112,12 +112,12 @@ class PolicyBrainForm:
                            "Extra input '{0}' not allowed".format(_input))
 
         all_fields = self.cleaned_data['raw_input_fields']
-        default_policy = getattr(self.Meta, 'default_policy', None)
+        default_policy_data = getattr(self.Meta, 'default_policy_data', None)
         allowed_fields = getattr(self.Meta, 'allowed_fields', None)
         for _field in all_fields:
-            if default_policy:
+            if default_policy_data:
                 try:
-                    get_default_policy_param(_field, default_policy)
+                    get_default_policy_param(_field, default_policy_data)
                 except ParameterLookUpException as exn:
                     self.add_error(None, str(exn))
             elif _field not in allowed_fields:
@@ -310,7 +310,7 @@ class TaxBrainForm(PolicyBrainForm, ModelForm):
         start_year = int(START_YEAR)
         pol = taxcalc.Policy()
         pol.set_year(int(START_YEAR))
-        default_policy = pol.metadata()
+        default_policy_data = pol.metadata()
 
         defaults_key = (start_year, True)
         if defaults_key not in TAXCALC_DEFAULTS:

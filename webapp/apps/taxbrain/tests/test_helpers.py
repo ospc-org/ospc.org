@@ -207,7 +207,9 @@ def test_taxbrain_TaxCalcParam():
     to make sure that the values are set correctly for display to
     the user.
     """
-    dd = taxcalc.Policy.default_data(metadata=True, start_year=2017)
+    pol = taxcalc.Policy()
+    pol.set_year(2017)
+    dd = pol.metadata()
 
     for param_name in dd:
         tc_param = TaxCalcParam(param_name, dd[param_name], 2017)
