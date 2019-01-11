@@ -13,7 +13,7 @@ RUN conda config --add channels pslmodels
 RUN conda config --append channels conda-forge
 
 RUN conda install python=3.6 numpy>=1.12.1 pandas>=0.23.0 taxcalc=0.24.0 \
-    btax=0.2.6 matplotlib>=3.0.1 numba six bokeh>=0.12.7 mock xlrd \
+    btax=0.2.8 matplotlib>=3.0.1 numba six bokeh>=0.12.7 mock xlrd \
     sphinx nomkl
 
 RUN pip install -r requirements.txt
