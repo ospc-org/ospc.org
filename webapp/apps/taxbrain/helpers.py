@@ -167,11 +167,16 @@ def round_gt_one_to_nearest_int(values):
     return rounded
 
 
-def default_taxcalc_data(cls, start_year, metadata=False):
+def default_taxcalc_data(cls, start_year, metadata=True):
     ''' Call the default data function on the given class for the given
         start year with meatadata flag
     '''
-    dd = cls.default_data(metadata=metadata, start_year=start_year)
+    if cls == taxcalc.Policy:
+        pol = taxcalc.Policy()
+        pol.set_year(start_year)
+        dd = pol.metadata()
+    else: #cls == taxcalc.Behavior):
+        dd = taxcalc.Behavior()._vals
     if metadata:
         for k in dd:
             dd[k]['value'] = round_gt_one_to_nearest_int(dd[k]['value'])
@@ -184,8 +189,7 @@ def default_taxcalc_data(cls, start_year, metadata=False):
 # Prepare user params to send to DropQ/Taxcalc
 #
 
-tcversion_info = taxcalc._version.get_versions()
-taxcalc_version = tcversion_info['version']
+taxcalc_version = taxcalc.__version__
 
 TAXCALC_COMING_SOON_FIELDS = []
 

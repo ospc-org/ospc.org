@@ -216,8 +216,11 @@ class TaxInputTests(TestCase):
     def test_default_taxcalc_data(self):
         import math
         dd = default_taxcalc_data(taxcalc.policy.Policy, start_year=2017)
-        dd_raw = taxcalc.policy.Policy.default_data(start_year=2017)
-        dd_meta = default_taxcalc_data(taxcalc.policy.Policy, start_year=2017, metadata=True)
+        dd = {k: dd[k]['value'] for k in dd}
+        pol = taxcalc.Policy()
+        pol.set_year(2017)
+        dd_meta = pol.metadata()
+        dd_raw = {k: dd_meta[k]["value"] for k in dd_meta}
         floored_std_aged = list(map(math.floor, dd['_STD_Aged'][0]))
         assert dd['_STD_Aged'] == [floored_std_aged]
         assert dd_meta['_STD_Aged']['value'] == [floored_std_aged]

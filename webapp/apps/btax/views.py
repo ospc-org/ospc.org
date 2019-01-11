@@ -54,16 +54,10 @@ from .bubble_plot.bubble_plot_tabs import bubble_plot_tabs
 
 dropq_compute = DropqComputeBtax()
 
-BTAX_VERSION_INFO = btax._version.get_versions()
-
-BTAX_VERSION = BTAX_VERSION_INFO['version']
+BTAX_VERSION = btax.__version__
 
 WEBAPP_VERSION = settings.WEBAPP_VERSION
-
-
-tcversion_info = taxcalc._version.get_versions()
-
-TAXCALC_VERSION = tcversion_info['version']
+TAXCALC_VERSION = taxcalc.__version__
 
 
 JOB_PROC_TIME_IN_SECONDS = 30

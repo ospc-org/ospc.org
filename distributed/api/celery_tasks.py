@@ -43,9 +43,8 @@ def dropq_task(year_n, user_mods, first_budget_year, use_puf_not_cps=True,
     )
 
     # Add taxcalc version to results
-    vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version']
-    results['dropq_version'] = vinfo['version']
+    results['taxcalc_version'] = taxcalc.__version__
+    results['dropq_version'] = taxcalc.__version__
 
     json_res = json.dumps(results)
     return json_res
@@ -105,7 +104,7 @@ def btax_async(user_mods, start_year):
     user_mods['start_year'] = start_year
     print("submitting btax data: ", user_mods)
     results = {}
-    tables = json.loads(runner_json_tables(**user_mods))
+    tables = json.loads(runner_json_tables(test_run=False, **user_mods))
     if tables.get("json_table"):
         results.update(tables["json_table"])
         if tables.get("dataframes"):
@@ -115,10 +114,8 @@ def btax_async(user_mods, start_year):
             results["dataframes"] = dataframes
     else:
         results.update(tables)
-    vinfo = taxcalc._version.get_versions()
-    results['taxcalc_version'] = vinfo['version']
-    results['dropq_version'] = vinfo['version']
-    binfo = btax._version.get_versions()
-    results['btax_version'] = binfo['version']
+    results['taxcalc_version'] = taxcalc.__version__
+    results['dropq_version'] = taxcalc.__version__
+    results['btax_version'] = btax.__version__
     json_res = json.dumps(results)
     return json_res

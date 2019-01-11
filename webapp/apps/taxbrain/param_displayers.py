@@ -202,8 +202,10 @@ def nested_form_parameters(budget_year=2017, use_puf_not_cps=True,
                            defaults=None):
     # defaults are None unless we are testing
     if defaults is None:
-        defaults = taxcalc.Policy.default_data(metadata=True,
-                                               start_year=budget_year)
+        pol = taxcalc.Policy()
+        pol.set_year(budget_year)
+        defaults = pol.metadata()
+
     groups = parse_top_level(defaults)
     for x in groups:
         for y, z in x.items():

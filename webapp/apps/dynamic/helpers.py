@@ -96,15 +96,9 @@ def normalize(x):
 #
 
 import taxcalc
-tcversion_info = taxcalc._version.get_versions()
-#ogversion_info = {u'full-revisionid': u'9ae018afc6c80b10fc19684d7ba9aa1729aa2f47',
-                  #u'dirty': False, u'version': u'0.1.1', u'error': None}
-
-version_path = os.path.join(os.path.split(__file__)[0], "ogusa_version.json")
-with open(version_path, "r") as f:
-    ogversion_info = json.load(f)
-ogusa_version = ".".join([ogversion_info['version'],
-                         ogversion_info['full-revisionid'][:6]])
+import ogusa
+tcversion_info = taxcalc.__version__
+ogusa_version = ogusa.__version__
 
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 

@@ -22,8 +22,9 @@ CUR_PATH = os.path.abspath(os.path.dirname(__file__))
 
 @pytest.fixture
 def default_params_Policy():
-    return taxcalc.Policy.default_data(start_year=START_YEAR,
-                                       metadata=True)
+    pol = taxcalc.Policy()
+    pol.set_year(2017)
+    return pol.metadata()
 
 
 ###############################################################################

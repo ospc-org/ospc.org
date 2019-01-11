@@ -6,3 +6,4 @@ celery
 requests-mock
 requests
 pytest
+msgpack

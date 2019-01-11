@@ -34,13 +34,12 @@ BTAX_DEPREC = ['btax_depr_allyr', 'btax_depr_3yr', 'btax_depr_5yr',
                'btax_depr_7yr', 'btax_depr_10yr',
                'btax_depr_15yr','btax_depr_20yr', 'btax_depr_25yr',
                'btax_depr_27_5yr', 'btax_depr_39yr']
-BTAX_OTHER = ['btax_other_hair', 'btax_other_corpeq',
+BTAX_OTHER = [ 'btax_other_hair_c', 'btax_other_hair_nc', 'btax_other_corpeq',
               'btax_other_proptx','btax_other_invest']
 BTAX_ECON = ['btax_econ_nomint', 'btax_econ_inflat',]
 
 
-BTAX_VERSION_INFO = btax._version.get_versions()
-BTAX_VERSION = BTAX_VERSION_INFO['version']
+BTAX_VERSION = btax.__version__
 
 
 #

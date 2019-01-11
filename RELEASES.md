@@ -4,6 +4,18 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
+Release 1.7.7 on 2019-01-14
+----------------------------
+**Major Changes**
+- None
+
+**Minor Changes**
+- [#950](https://github.com/ospc-org/ospc.org/pull/950) - Update Tax-Calculator and B-Tax - Hank Doupe
+
+**Bug Fixes**
+- None
+
+
 Release 1.7.6 on 2018-11-09
 ----------------------------
 **Major Changes**

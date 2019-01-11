@@ -11,7 +11,8 @@ import taxcalc
 
 from distutils.version import LooseVersion
 from .helpers import (rename_keys, reorder_lists, PRE_TC_0130_RES_MAP,
-                      REORDER_LT_TC_0130_DIFF_LIST, DIFF_TABLE_IDs)
+                      REORDER_LT_TC_0130_DIFF_LIST, DIFF_TABLE_IDs,
+                      default_taxcalc_data)
 from ..constants import TAXCALC_VERS_RESULTS_BACKWARDS_INCOMPATIBLE
 from . import param_formatters
 
@@ -65,8 +66,7 @@ class Fieldable(models.Model):
             3. Do more specific type checking--in particular, check if
                field is the type that Tax-Calculator expects from this param
         """
-        default_data = upstream_obj.default_data(start_year=self.start_year,
-                                                 metadata=True)
+        default_data = default_taxcalc_data(upstream_obj, self.start_year)
 
         if self.raw_input_fields is None:
             self.raw_input_fields = {}

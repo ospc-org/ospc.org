@@ -1,7 +1,7 @@
 nomkl
-taxcalc==0.22.2
-btax==0.2.2
-ogusa==0.5.11
+taxcalc==0.24
+btax==0.2.8
+ogusa==0.5.12
 numba>=0.33.0
 pandas>=0.22.0
 pillow

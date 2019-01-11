@@ -11,8 +11,7 @@ from ..constants import START_YEAR
 import requests_mock
 requests_mock.Mocker.TEST_PREFIX = 'dropq'
 
-dqversion_info = taxcalc._version.get_versions()
-dropq_version = dqversion_info['version']
+dropq_version = taxcalc.__version__
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 NUM_BUDGET_YEARS_QUICK = int(os.environ.get('NUM_BUDGET_YEARS_QUICK', 1))
 #Hard fail on lack of dropq workers
