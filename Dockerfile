@@ -9,7 +9,7 @@ RUN python --version
 
 # Install dependencies
 RUN conda update conda
-RUN conda install -c ospc -c anaconda --file conda-requirements.txt --yes
+RUN conda install -c pslmodels -c anaconda --file conda-requirements.txt --yes
 RUN pip install -qr requirements.txt
 
 # Add our code
