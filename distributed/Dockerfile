@@ -9,8 +9,7 @@ COPY requirements.txt home/distributed
 WORKDIR /home/distributed
 
 RUN conda update conda
-RUN conda config --add channels ospc
-RUN conda config --add channels ospc/label/dev
+RUN conda config --add channels pslmodels
 RUN conda config --append channels conda-forge
 
 RUN conda install python=3.6 numpy>=1.12.1 pandas>=0.23.0 taxcalc=0.24.0 \
