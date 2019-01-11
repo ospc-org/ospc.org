@@ -11,6 +11,7 @@ Release 1.7.7 on 2019-01-14
 
 **Minor Changes**
 - [#950](https://github.com/ospc-org/ospc.org/pull/950) - Update Tax-Calculator and B-Tax - Hank Doupe
+- [#951](https://github.com/ospc-org/ospc.org/pull/951) - Use pslmodels channel for webapp Dockerfile - Hank Doupe
 
 **Bug Fixes**
 - None
