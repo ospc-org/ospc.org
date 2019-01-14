@@ -14,7 +14,7 @@ Release 1.7.7 on 2019-01-14
 - [#951](https://github.com/ospc-org/ospc.org/pull/951) - Use pslmodels channel for webapp Dockerfile - Hank Doupe
 
 **Bug Fixes**
-- [#952](https://github.com/ospc-org/ospc.org/pull/952) - Updates links - Hank Doupe
+- [#952](https://github.com/ospc-org/ospc.org/pull/952) - Update links - Hank Doupe
 
 
 Release 1.7.6 on 2018-11-09
