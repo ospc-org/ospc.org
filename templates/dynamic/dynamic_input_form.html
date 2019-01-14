@@ -30,7 +30,7 @@
       <div class="container">
         <div class="taxbrain-history">
           <h2>About TaxBrain</h2>
-          <p>TaxBrain is an interface to <a href = "//www.github.com/open-source-economics" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
+          <p>TaxBrain is an interface to <a href = "//www.github.com/PSLmodels" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
 
             <ul>
             <li> <strong>Step 1.</strong> Create a policy reform by modifying tax law parameters such as rates and deductions, adjust the economic baseline, and request the static result. You can do so with the graphical user interface below or by uploading a policy reform file <a href = "//www.ospc.org/taxbrain/file" target="_blank">from this page</a>.</li>
@@ -61,8 +61,8 @@
 
             <p>TaxBrain's static modeling capabilities rely on several open source economic models and other packages:</p>
             <ul>
-            <li> <a href = "//www.github.com/open-source-economics/tax-calculator" target="_blank">Tax-Calculator</a> </li>
-            <li><a href = "//www.github.com/open-source-economics/taxdata" target="_blank">TaxData</a></li>
+            <li> <a href = "//www.github.com/PSLmodels/tax-calculator" target="_blank">Tax-Calculator</a> </li>
+            <li><a href = "//www.github.com/PSLmodels/taxdata" target="_blank">TaxData</a></li>
             <li> <a href = "//www.github.com/ospc-org/ospc.org" target="_blank">ospc.org</a> itself is an open source project.</a></li>
             </ul>
 
@@ -86,7 +86,7 @@
             <a href = '//www.nber.org/taxcalc' target="_blank">detailed SAS program</a> developed by Dan
             Feenberg and Ina Shapiro of NBER.  Third, a subset of input variables has been used to compare the results of Tax-Calculator to <a href = '//users.nber.org/~taxsim' target="_blank">Internet TAXSIM</a> as well as against the Policy Simulation Group's <a href = '//www.polsim.com/inctax-caps.html' target="_blank">PENSIM tax module</a></p>
 
-            <p> Bugs aside, the results from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
+            <p> Bugs aside, the results from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
 
             <p><strong>
             Core Maintainers (static modeling):
@@ -107,11 +107,11 @@
         </div>
         <div class="taxbrain-build">
           <h2>OG-USA Code Build</h2>
-          <p><a href="https://github.com/open-source-economics/OG-USA/tree/{{ogusa_version}}">Version {{ ogusa_version }} - GitHub</a></p>
+          <p><a href="https://github.com/PSLmodels/OG-USA/tree/{{ogusa_version}}">Version {{ ogusa_version }} - GitHub</a></p>
         </div>
         <div class="taxbrain-build">
           <h2>Tax-Calculator Code Build</h2>
-          <p><a href="https://github.com/open-source-economics/Tax-Calculator/tree/{{taxcalc_version}}">Version {{ taxcalc_version }} - GitHub</a></p>
+          <p><a href="https://github.com/PSLmodels/Tax-Calculator/tree/{{taxcalc_version}}">Version {{ taxcalc_version }} - GitHub</a></p>
         </div>
       </div>
     </section>
@@ -153,9 +153,9 @@
                 <div class="inputs-block-header">
                   <h1>Get Started</h1>
                   <p><strong>Caution: this model is highly preliminary!</p></strong>
-                 <p>OG-USA is an open source economic dynamic general equilibrium model intended to evaluate U.S. tax policy.  The model code and detailed documentation is available at <a href = "http://www.github.com/open-source-economics/OG-USA." target= "_blank">http://www.github.com/open-source-economics/OG-USA.</a></p>
+                 <p>OG-USA is an open source economic dynamic general equilibrium model intended to evaluate U.S. tax policy.  The model code and detailed documentation is available at <a href = "http://www.github.com/PSLmodels/OG-USA." target= "_blank">http://www.github.com/PSLmodels/OG-USA.</a></p>
 
-                 <p>OG-USA is an overlapping-generations model comprised of households, perfectly competitive firms, and a government with a balanced budget requirement. Firms make a static profit maximization decision in which they rent capital and hire labor to maximize profits given a Cobb-Douglas production function. The government levies taxes on individuals and makes lump sum transfers to individuals according to a balanced budget constraint. In the version deployed through TaxBrain, the model is scaled-down to have a single, representative household for each generation and simple tax functions. A detailed description of the model is available <a href = "https://github.com/open-source-economics/OG-USA/blob/master/Model Writeup/OGUSA_TaxBrain_version.pdf" target="blank"> here.</a></p>
+                 <p>OG-USA is an overlapping-generations model comprised of households, perfectly competitive firms, and a government with a balanced budget requirement. Firms make a static profit maximization decision in which they rent capital and hire labor to maximize profits given a Cobb-Douglas production function. The government levies taxes on individuals and makes lump sum transfers to individuals according to a balanced budget constraint. In the version deployed through TaxBrain, the model is scaled-down to have a single, representative household for each generation and simple tax functions. A detailed description of the model is available <a href = "https://github.com/PSLmodels/OG-USA/blob/master/Model Writeup/OGUSA_TaxBrain_version.pdf" target="blank"> here.</a></p>
 
                  <p>It is important to note a few caveats for OG-USA and the results available on TaxBrain:</p>
 
@@ -164,10 +164,10 @@
                  <li>Solving the model requires that it attain a steady state.  One implication of this requirement is that the government’s budget constraint must be satisfied in the long run.  Therefore, the model must specify how tax cuts are financed.  The assumptions about how the budget is closed have substantial impact on the predictions of the model (see Table 2 of this JCT document).  In OG-USA, we specify a very simple government that contemporaneously redistributes all revenues in a lump-sum manner.  Tax cuts are financed by reducing these transfers.  Users should recognize that this assumption tends to provide an upper bound on the macroeconomic benefits of tax cuts, as other possible financing methods for tax cuts tend to yield smaller benefits. We are in the process of allowing users to alter the financing assumption.</li>
                  <li>Because there is a representative household for each cohort, OG-USA cannot currently evaluate the distributional effects of tax policy within a cohort (although one could do intergenerational distributional analysis in this framework). We are in the process of adding heterogeneous households in each cohort.</li>
                  <li>The production side of the model is very simplified. It does not allow the user to evaluate business taxation or interactions between personal and business taxation. We are in the process of expanding the production side of the model to allow for the evaluation of business taxation. </li>
-                 <li>The results are for a specific set of parameters values, which are outlined in our <a href = "https://github.com/open-source-economics/OG-USA/blob/master/Model Writeup/OGUSA_TaxBrain_version.pdf" target="blank">detailed documentation.</a>  While we have tried to make reasonable parameterizations based on empirical analysis, some users might disagree with these values.  The ability to modify parameters through the web application is limited, but users who wish to consider adjustments may download the source code and do so.</li>
+                 <li>The results are for a specific set of parameters values, which are outlined in our <a href = "https://github.com/PSLmodels/OG-USA/blob/master/Model Writeup/OGUSA_TaxBrain_version.pdf" target="blank">detailed documentation.</a>  While we have tried to make reasonable parameterizations based on empirical analysis, some users might disagree with these values.  The ability to modify parameters through the web application is limited, but users who wish to consider adjustments may download the source code and do so.</li>
                  </ol>
 
-                 <p>OG-USA interacts with Tax-Calculator, an open source economic microsimulation model available at <a href = "www.github.com/open-source-economics/tax-calculator" target= "blank"> www.github.com/open-source-economics/tax-calculator</a>.  It does so in the following way. The user enters changes to the individual income tax code he wishes to evaluate via the TaxBrain interface.  These tax policy parameters are then used to recompute marginal and effective tax rates for individuals in the microdata underlying Tax-Calculator.  These marginal and effective tax rates are then use to estimate marginal and effective tax rates faced by the households in OG-USA, thereby determining how model households respond to changes in tax policy.</p>
+                 <p>OG-USA interacts with Tax-Calculator, an open source economic microsimulation model available at <a href = "www.github.com/PSLmodels/tax-calculator" target= "blank"> www.github.com/PSLmodels/tax-calculator</a>.  It does so in the following way. The user enters changes to the individual income tax code he wishes to evaluate via the TaxBrain interface.  These tax policy parameters are then used to recompute marginal and effective tax rates for individuals in the microdata underlying Tax-Calculator.  These marginal and effective tax rates are then use to estimate marginal and effective tax rates faced by the households in OG-USA, thereby determining how model households respond to changes in tax policy.</p>
 
                  <p><strong>How to cite</strong></p>
 

@@ -31,7 +31,7 @@
       <div class="container">
         <div class="taxbrain-history">
           <h2>About TaxBrain</h2>
-          <p>TaxBrain is an interface to <a href = "//www.github.com/open-source-economics" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
+          <p>TaxBrain is an interface to <a href = "//www.github.com/PSLmodels" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
 
             <ul>
             <li> <strong>Step 1.</strong> Create a policy reform by modifying tax law parameters such as rates and deductions, adjust the economic baseline, and request the static result. You can do so with the graphical user interface below or by uploading a policy reform file <a href = "//www.ospc.org/taxbrain/file" target="_blank">from this page</a>.</li>
@@ -62,8 +62,8 @@
 
             <p>TaxBrain's static modeling capabilities rely on several open source economic models and other packages:</p>
             <ul>
-            <li> <a href = "//www.github.com/open-source-economics/tax-calculator" target="_blank">Tax-Calculator</a> </li>
-            <li><a href = "//www.github.com/open-source-economics/taxdata" target="_blank">TaxData</a></li>
+            <li> <a href = "//www.github.com/PSLmodels/tax-calculator" target="_blank">Tax-Calculator</a> </li>
+            <li><a href = "//www.github.com/PSLmodels/taxdata" target="_blank">TaxData</a></li>
             <li> <a href = "//www.github.com/ospc-org/ospc.org" target="_blank">ospc.org</a> itself is an open source project.</a></li>
             </ul>
 
@@ -87,7 +87,7 @@
             <a href = '//www.nber.org/taxcalc' target="_blank">detailed SAS program</a> developed by Dan
             Feenberg and Ina Shapiro of NBER.  Third, a subset of input variables has been used to compare the results of Tax-Calculator to <a href = '//users.nber.org/~taxsim' target="_blank">Internet TAXSIM</a> as well as against the Policy Simulation Group's <a href = '//www.polsim.com/inctax-caps.html' target="_blank">PENSIM tax module</a></p>
 
-            <p> Bugs aside, the results from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
+            <p> Bugs aside, the results from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
 
             <p><strong>
             Core Maintainers (static modeling):
@@ -108,7 +108,7 @@
         </div>
         <div class="taxbrain-build">
           <h2>Tax-Calculator Code Build</h2>
-          <p><a href="https://github.com/open-source-economics/Tax-Calculator/tree/{{taxcalc_version}}">Version {{ taxcalc_version }} - GitHub</a></p>
+          <p><a href="https://github.com/PSLmodels/Tax-Calculator/tree/{{taxcalc_version}}">Version {{ taxcalc_version }} - GitHub</a></p>
         </div>
       </div>
     </section>
@@ -151,7 +151,7 @@
 
                  <p>The PE approach is similar to the "conventional" modeling conducted by government agencies for the budgeting process in that both approaches allow for taxpayers to change their behavior in response to policy reforms. The difference is that the PE model allows those behavioral changes to influence Gross National Product (GNP), whereas JCT and the Office of Tax Analysis (OTA) at the Treasury Department hold GNP fixed.</p>
 
-                 <p> The PE model is implemented by applying the behavioral elasticities at the individual taxpayer level. The source code for the implementation is available in the <a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/behavior.py" target="_blank"> behavior module </a> of the open source <a href = "https://github.com/open-source-economics/Tax-Calculator/" target="_blank"> Tax-Calculator model</a> .
+                 <p> The PE model is implemented by applying the behavioral elasticities at the individual taxpayer level. The source code for the implementation is available in the <a href = "https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/behavior.py" target="_blank"> behavior module </a> of the open source <a href = "https://github.com/PSLmodels/Tax-Calculator/" target="_blank"> Tax-Calculator model</a> .
                  </p>
 
 
