@@ -15,7 +15,7 @@ Release 1.7.7 on 2019-01-14
 
 **Bug Fixes**
 - [#952](https://github.com/ospc-org/ospc.org/pull/952) - Update links - Hank Doupe
-
+- [#953](https://github.com/ospc-org/ospc.org/pull/953) - Update more links - Hank Doupe
 
 Release 1.7.6 on 2018-11-09
 ----------------------------
