@@ -30,7 +30,7 @@
       <div class="container">
         <div class="taxbrain-history">
           <h2>About TaxBrain</h2>
-          <p>TaxBrain is an interface to <a href = "//www.github.com/open-source-economics" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
+          <p>TaxBrain is an interface to <a href = "//www.github.com/PSLmodels" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
 
             <ul>
             <li> <strong>Step 1.</strong> Create a policy reform by modifying tax law parameters such as rates and deductions, adjust the economic baseline, and request the static result. You can do so with the graphical user interface below or by uploading a policy reform file <a href = "//www.ospc.org/taxbrain/file" target="_blank">from this page</a>.</li>
@@ -61,8 +61,8 @@
 
             <p>TaxBrain's static modeling capabilities rely on several open source economic models and other packages:</p>
             <ul>
-              <li> <a href = "//www.github.com/open-source-economics/tax-calculator" target="_blank">Tax-Calculator</a> </li>
-              <li><a href = "//www.github.com/open-source-economics/taxdata" target="_blank">TaxData</a></li>
+              <li> <a href = "//www.github.com/PSLmodels/tax-calculator" target="_blank">Tax-Calculator</a> </li>
+              <li><a href = "//www.github.com/PSLmodels/taxdata" target="_blank">TaxData</a></li>
               <li> <a href = "//www.github.com/ospc-org/ospc.org" target="_blank">ospc.org</a> itself is an open source project.</a></li>
               </ul>
 
@@ -73,14 +73,7 @@
             <p>Note that these reports currently rely on the latest versions of tax-calculator and TaxData, which might not correspond perfectly to TaxBrain.</p>
 
             <ul>
-            <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/reform_results.txt" target = "_blank">Federal income tax and FICA liability deltas for example reforms</a></li>
-            <li>Dummy datasets and associated Tax-Calculator results (Coming soon)</li>
-            <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/variable_stats_summary.csv">Basic summary statistics for variables used in Tax-Calculator and major intermediate results (2013-2026) </a></li>Currently only weighted mean is available, more statistics will be  added shortly.
-            <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/correlation.csv" target= "_blank">Correlation matrix for the same set of variables</a> 2016 available now, other years coming soon.</li>
-            <li>Extrapolation related: <br>
-            <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_I_factors.csv" target= "_blank">Blow-up factors</a><br>
-            <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_II_targets.csv" target= "_blank">Aggregate and distributional targets</a></li>
-            <li>Equations and coefficients for imputations (Coming soon)</li>
+              <li><a href = "https://github.com/PSLmodels/Tax-Calculator/blob/master/README.md#tax-calculator" target = "_blank">Tax-Calculator Documentation</a></li>
             </ul>
 
             <p><strong>Accuracy notes</strong></p>
@@ -93,7 +86,7 @@
             <a href = '//www.nber.org/taxcalc' target="_blank">detailed SAS program</a> developed by Dan
             Feenberg and Ina Shapiro of NBER.  Third, a subset of input variables has been used to compare the results of Tax-Calculator to <a href = '//users.nber.org/~taxsim' target="_blank">Internet TAXSIM</a> as well as against the Policy Simulation Group's <a href = '//www.polsim.com/inctax-caps.html' target="_blank">PENSIM tax module</a></p>
 
-            <p> Bugs aside, the results from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
+            <p> Bugs aside, the results from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
 
             <p><strong>
             Core Maintainers (static modeling):
@@ -114,7 +107,7 @@
         </div>
         <div class="taxbrain-build">
           <h2>Tax-Calculator Code Build</h2>
-          <p><a href="https://github.com/open-source-economics/Tax-Calculator/tree/{{taxcalc_version}}">Version {{ taxcalc_version }} - GitHub</a></p>
+          <p><a href="https://github.com/PSLmodels/Tax-Calculator/tree/{{taxcalc_version}}">Version {{ taxcalc_version }} - GitHub</a></p>
         </div>
       </div>
     </section>
@@ -151,7 +144,7 @@
                   <h1>Macroeconomic Elasticity Simulation</h1>
                   <p>This approach harnesses econometric estimates of the historic relationship between tax policy and the macroeconomy to predict the effect of tax reforms on growth.</p>
 
-                 <p>In particular, this model relies on estimates of how GDP responds to changes in the average after tax rate on wage income across all taxpayers (one minus the average marginal tax rate, or 1 - AMTR). These estimates are derived from calculations of income-weighted marginal tax rates under the baseline and reform using Tax-Calculator with baseline data from TaxData. An example of the implementation is available <a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/macro_elasticity.py" target = "blank">here.</a></p>
+                 <p>In particular, this model relies on estimates of how GDP responds to changes in the average after tax rate on wage income across all taxpayers (one minus the average marginal tax rate, or 1 - AMTR). These estimates are derived from calculations of income-weighted marginal tax rates under the baseline and reform using Tax-Calculator with baseline data from TaxData. An example of the implementation is available <a href = "https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/macro_elasticity.py" target = "blank">here.</a></p>
 
                  <p> Evidence for this parameter can be found in Barro and Redlick's <a href = //qje.oxfordjournals.org/content/126/1/51.abstract target="_blank"> "Macroeconomic Effects from Government Purchases and Taxes." </a> In particular, Barro and Redlick find that a 1 percentage point increase in the AMTR leads to a 0.54 percent increase in GDP. Evaluated at the sample mean, this translates to an elasticity of GDP with respect to the average after tax rate of 0.36. </p>
 

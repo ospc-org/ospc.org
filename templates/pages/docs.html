@@ -22,7 +22,7 @@
     <div id="TaxBrain" class="docs-section">
       <h1>TaxBrain</h1>
       <h2>Overview</h2>
-      <p>TaxBrain is an interface to <a href = "//www.github.com/open-source-economics" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
+      <p>TaxBrain is an interface to <a href = "//www.github.com/PSLmodels" target="_blank">open source economic models</a> for tax policy analysis. <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">The code</a> for the TaxBrain webapp interface is itself open source. </p>
 
       <ul>
       <li> <strong>Step 1.</strong> Create a policy reform by modifying tax law parameters such as rates and deductions, adjust the economic baseline, and request the static result. You can do so with the graphical user interface below or by uploading a policy reform file <a href = "//www.ospc.org/taxbrain/file" target="_blank">from this page</a>.</li>
@@ -40,8 +40,8 @@
 
     <p>TaxBrain's static modeling capabilities rely on several open source economic models and other packages:</p>
     <ul>
-    <li> <a href = "//www.github.com/open-source-economics/tax-calculator" target="_blank">Tax-Calculator</a> computes federal individual income taxes and Federal Insurance Contribution Act(FICA) taxes for a sample of tax filing units in years beginning with 2013 .</li>
-    <li><a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> creates a microdataset that closely reproduces the multivariate distribution of income, deduction and credit items in 2009, extrapolated through 2026 levels in accordance with Congressional Budget Office forecasts available in spring 2016. It is intended to match similar but confidential data used by the Congressional Joint Committee on Taxation. The underlying dataset must be purchased from the Statistics of Income division of the Internal Revenue Service. Additional information on non-filers is taken from the March 2013 Current Population Survey. </li>
+    <li> <a href = "//www.github.com/PSLmodels/tax-calculator" target="_blank">Tax-Calculator</a> computes federal individual income taxes and Federal Insurance Contribution Act(FICA) taxes for a sample of tax filing units in years beginning with 2013 .</li>
+    <li><a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a> creates a microdataset that closely reproduces the multivariate distribution of income, deduction and credit items in 2009, extrapolated through 2026 levels in accordance with Congressional Budget Office forecasts available in spring 2016. It is intended to match similar but confidential data used by the Congressional Joint Committee on Taxation. The underlying dataset must be purchased from the Statistics of Income division of the Internal Revenue Service. Additional information on non-filers is taken from the March 2013 Current Population Survey. </li>
     <li> DropQ implements a disclosure avoidance algorithm initially proposed by the U.S. Census Bureau to protect confidential data from differencing attacks. The code is undergoing security review before it is open sourced.</li>
     <li> <a href = '//www.github.com/opensourcepolicycenter/webapp-public' target="_blank">TaxBrain</a> itself is an open source project. The underlying models are deployed to TaxBrain using conda, a free and open source package management system supported by <a href = '//www.continuum.io' target="_blank">Continuum Analytics</a></li>
     </ul>
@@ -53,13 +53,13 @@
     <p>Note that these reports currently rely on the latest versions of tax-calculator and TaxData, which might not correspond perfectly to TaxBrain.</p>
 
     <ul>
-    <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/reform_results.txt" target = "_blank">Federal income tax and FICA liability deltas for example reforms</a></li>
+    <li><a href = "https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/comparison/reform_results.txt" target = "_blank">Federal income tax and FICA liability deltas for example reforms</a></li>
     <li>Dummy datasets and associated Tax-Calculator results (Coming soon)</li>
-    <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/variable_stats_summary.csv">Basic summary statistics for variables used in Tax-Calculator and major intermediate results (2013-2026) </a></li>Currently only weighted mean is available, more statistics will be  added shortly.
-    <li><a href = "https://github.com/open-source-economics/Tax-Calculator/blob/master/taxcalc/comparison/correlation.csv" target= "_blank">Correlation matrix for the same set of variables</a> 2016 available now, other years coming soon.</li>
+    <li><a href = "https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/comparison/variable_stats_summary.csv">Basic summary statistics for variables used in Tax-Calculator and major intermediate results (2013-2026) </a></li>Currently only weighted mean is available, more statistics will be  added shortly.
+    <li><a href = "https://github.com/PSLmodels/Tax-Calculator/blob/master/taxcalc/comparison/correlation.csv" target= "_blank">Correlation matrix for the same set of variables</a> 2016 available now, other years coming soon.</li>
     <li>Extrapolation related: <br>
-    <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_I_factors.csv" target= "_blank">Blow-up factors</a><br>
-    <a href = "https://github.com/open-source-economics/taxdata/blob/master/Stage%20II/Stage_II_targets.csv" target= "_blank">Aggregate and distributional targets</a></li>
+    <a href = "https://github.com/PSLmodels/taxdata/blob/master/Stage%20II/Stage_I_factors.csv" target= "_blank">Blow-up factors</a><br>
+    <a href = "https://github.com/PSLmodels/taxdata/blob/master/Stage%20II/Stage_II_targets.csv" target= "_blank">Aggregate and distributional targets</a></li>
     <li>Equations and coefficients for imputations (Coming soon)</li>
     </ul>
 
@@ -73,7 +73,7 @@
     <a href = '//www.nber.org/taxcalc' target="_blank">detailed SAS program</a> developed by Dan
     Feenberg and Ina Shapiro of NBER.  Third, a subset of input variables has been used to compare the results of Tax-Calculator to <a href = '//users.nber.org/~taxsim' target="_blank">Internet TAXSIM</a> as well as against the Policy Simulation Group's <a href = '//www.polsim.com/inctax-caps.html' target="_blank">PENSIM tax module</a></p>
 
-    <p> Bugs aside, the static modelingresults from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/open-source-economics/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
+    <p> Bugs aside, the static modelingresults from TaxBrain might differ in comparison to those produced by Congress or the Administration for other reasons. Modeling requires many assumptions, and neither Congress nor the executive branch publicize all of their assumptions. For example, the distribution of wages in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a> is assumed to stay the same in real terms for all years after the last year we have available data (2013). We know that Congress assumes this distribution changes over time, but it doesn't publish by how much. These assumptions are all flexible in <a href = '//www.github.com/PSLmodels/taxdata' target="_blank">TaxData</a>, so please conduct sensitivity analyses. Other assumptions can be made flexible in TaxBrain based on user requests.</p>
 
     <p><strong>
     Core Maintainers (static modeling):
