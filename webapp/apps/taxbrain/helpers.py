@@ -221,17 +221,17 @@ TAXCALC_RESULTS_MTABLE_COL_LABELS = taxcalc.DIST_TABLE_LABELS[:]
 TAXCALC_RESULTS_DFTABLE_COL_LABELS = taxcalc.DIFF_TABLE_LABELS[:]
 TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     #   divisor,   unit,   decimals
-    [      1000,      None, 0], # 'Returns',
+    [      1000000,      None, 0], # 'Returns',
     [1000000000, 'Dollars', 1],  # 'AGI',
-    [      1000,      None, 0],  # 'Standard Deduction Filers',
+    [      1000000,      None, 0],  # 'Standard Deduction Filers',
     [1000000000, 'Dollars', 1],  # 'Standard Deduction',
-    [      1000,      None, 0],  # 'Itemizers',
+    [      1000000,      None, 0],  # 'Itemizers',
     [1000000000, 'Dollars', 1],  # 'Itemized Deduction',
     [1000000000, 'Dollars', 1],  # 'Personal Exemption',
     [1000000000, 'Dollars', 1],  # 'Taxable Income',
     [1000000000, 'Dollars', 1],  # 'Regular Tax',
     [1000000000, 'Dollars', 1],  # 'AMTI',
-    [      1000,      None, 0],  # 'AMT Filers',
+    [      1000000,      None, 0],  # 'AMT Filers',
     [1000000000, 'Dollars', 1],  # 'AMT',
     [1000000000, 'Dollars', 1],  # 'Tax before Credits',
     [1000000000, 'Dollars', 1],  # 'Non-refundable Credits',
@@ -247,10 +247,10 @@ TAXCALC_RESULTS_MTABLE_COL_FORMATS = [
     [1000000000, 'Dollars', 1],  # 'After-Tax Expanded Income'
 ]
 TAXCALC_RESULTS_DFTABLE_COL_FORMATS = [
-    [      1000,      None, 0],    # "Count", --> All Tax Units
-    [      1000,      None, 0],    # "Tax Units with Tax Cut",
+    [      1000000,      None, 0],    # "Count", --> All Tax Units
+    [      1000000,      None, 0],    # "Tax Units with Tax Cut",
     [         1,        '%',1],    # "Percent Tax Decrease" --> "Percent with Tax Cut"
-    [      1000,      None, 0],    # "Tax Units with Tax Cut",
+    [      1000000,      None, 0],    # "Tax Units with Tax Cut",
     [         1,       '%', 1],    # "Percent Tax Increase" --> "Percent with Tax Increase",
     [         1, 'Dollars', 0],    # "Average Tax Change",
     [1000000000, 'Dollars', 1],    # "Total Tax Difference",
