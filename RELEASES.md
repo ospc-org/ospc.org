@@ -4,7 +4,7 @@ Go
 [here](https://github.com/OpenSourcePolicyCenter/PolicyBrain/pulls?q=is%3Apr+is%3Aclosed)
 for a complete commit history.
 
-Release 1.7.7 on 2019-01-14
+Release 1.7.7 on 2019-01-15
 ----------------------------
 **Major Changes**
 - None
@@ -16,6 +16,7 @@ Release 1.7.7 on 2019-01-14
 **Bug Fixes**
 - [#952](https://github.com/ospc-org/ospc.org/pull/952) - Update links - Hank Doupe
 - [#953](https://github.com/ospc-org/ospc.org/pull/953) - Update more links - Hank Doupe
+- [#955](https://github.com/ospc-org/ospc.org/pull/955) - Output page fixes - Hank Doupe
 
 Release 1.7.6 on 2018-11-09
 ----------------------------
