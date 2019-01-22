@@ -19,7 +19,68 @@ BTAX_VERSION = btax.__version__
 TAXCALC_VERSION = taxcalc.__version__
 
 BLOG_URL = os.environ.get('BLOG_URL', 'www.ospc.org')
+GH_PAGES_URL = "https://ospc-org.github.io"
 EMAIL_DEFAULT = '1'
+
+# GH Pages redirect views:
+# https://ospc-org.github.io/#about
+# https://ospc-org.github.io/portfolio/
+# https://ospc-org.github.io/team/
+# https://ospc-org.github.io/newsletter/
+# https://ospc-org.github.io/newsletter01092019/
+# https://ospc-org.github.io/newsletter12192018/
+# https://ospc-org.github.io/newsletter12052018/
+# https://ospc-org.github.io/newsletter11152018/
+# https://ospc-org.github.io/newsletter11022018/
+# https://ospc-org.github.io/signup/
+# https://ospc-org.github.io/subscribed/
+# https://ospc-org.github.io/donate/
+
+
+def homepage(request):
+    return redirect(GH_PAGES_URL)
+
+def aboutpage(request):
+    return redirect(GH_PAGES_URL + "/#about")
+
+def teampage(request):
+    return redirect(GH_PAGES_URL + "/team/")
+
+def portfoliopage(request):
+    return redirect(GH_PAGES_URL + "/portfolio/")
+
+def newsletterpage(request):
+    return redirect(GH_PAGES_URL + "/newsletter/")
+
+def newsletter0page(request):
+    return redirect(GH_PAGES_URL + "/newsletter01092019/")
+
+def newsletter1page(request):
+    return redirect(GH_PAGES_URL + "/newsletter12192018/")
+
+def newsletter2page(request):
+    return redirect(GH_PAGES_URL + "/newsletter12052018/")
+
+def newsletter3page(request):
+    return redirect(GH_PAGES_URL + "/newsletter11152018/")
+
+def newsletter4page(request):
+    return redirect(GH_PAGES_URL + "/newsletter11022018/")
+
+### add next newsletter here
+
+
+def signuppage(request):
+    return redirect(GH_PAGES_URL + "/signup/")
+
+def subscribedpage(request):
+    return redirect(GH_PAGES_URL + "/subscribed/")
+
+def donatepage(request):
+    return redirect(GH_PAGES_URL + "/donate/")
+
+
+#### end redirect views
 
 def settings_context_processor(request):
     return {'BLOG_URL': settings.BLOG_URL}
@@ -41,38 +102,6 @@ def subscribed(request):
 
 def check_email(request):
     return render(request, 'register/please-check-email.html', {})
-
-def homepage(request):
-    form = subscribeform(request)
-    csrf_token = csrf(request)
-    if request.method == 'POST' and form.is_valid():
-        return check_email(request)
-
-    test = render(request, 'pages/home_content.html', {
-        'csrv_token': csrf(request)['csrf_token'],
-        'email_form': form,
-        'section': {
-            'active_nav': 'home',
-            'title': 'Welcome to the Open Source Policy Center',
-        },
-        'username': request.user
-    })
-
-    return test
-
-def aboutpage(request):
-    form = subscribeform(request)
-    if request.method == 'POST' and form.is_valid():
-        return check_email(request)
-    test_1 = render(request, 'pages/about.html', {
-        'csrv_token': csrf(request)['csrf_token'],
-        'email_form': form,
-        'section': {
-            'active_nav': 'about',
-            'title': 'About',
-        }
-    })
-    return test_1
 
 def gallerypage(request):
     return render(request, 'pages/gallery.html', {
