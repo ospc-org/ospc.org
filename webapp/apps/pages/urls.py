@@ -31,10 +31,8 @@ urlpatterns = [
 
 
     url(r'^getting-started/$', gettingstartedpage, name='gettingstartedpage'),
-    # url(r'^subscribed/$', subscribed, name='subscribed'),
     url(r'^hello/$', hellopage, name='hello'),
     url(r'^gallery/$', gallerypage, name='gallery'),
-    # url(r'^news/$', newspage, name='news'),
     url(r'^news/news-detail$', newsdetailpage, name='newsdetail'),
     url(r'^gallery/(?P<widget_id>\w+)/$', widgetpage),
     url(r'^gallery/embed/(?P<widget_id>\w+)/$', embedpage),
