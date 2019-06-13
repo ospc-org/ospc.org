@@ -34,25 +34,6 @@
 
   <body>
   <div id="container">
-    <div class="modal fade" id="redirect-modal" tabindex="-1" role="dialog" aria-labelledby="redirect-modal-label">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="redirect-modal-label">This page has moved to <a href="https://compmodels.org/PSLmodels/Tax-Brain/">https://compmodels.org/PSLmodels/Tax-Brain/</a></h4>
-          </div>
-          <div class="modal-body">
-            <p>Redirecting in 5 seconds...</p>
-            <p>Your previous simulations on ospc.org/taxbrain/[sim-number] are still available.</p>
-          </div>
-          <div class="modal-footer">
-            <a type="button" class="btn btn-default" data-dismiss="modal" id="stay-put">Return to apps.ospc.org</a>
-            <a type="button" class="btn btn-primary" href="https://compmodels.org/PSLmodels/Tax-Brain/">Redirect now</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
   {% block content %}
 
   {% endblock %}
@@ -118,19 +99,6 @@
       }, 1000);
     });
   </script>
-  <script>
-    $(document).ready(function() {
-      var timer = 0;
-      timer = setTimeout(function () {
-        window.location.replace("https://compmodels.org/PSLmodels/Tax-Brain/")
-      }, 5000);
-      $("#redirect-modal").modal("show");
-      $("#stay-put").click( function(e) {
-        clearTimeout(timer);
-      });
-    })
-  </script>
-
   {% block bottom_scripts %}
   {% endblock %}
   </body>
