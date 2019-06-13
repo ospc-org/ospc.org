@@ -96,9 +96,15 @@ def normalize(x):
 #
 
 import taxcalc
-import ogusa
+try:
+    import ogusa
+except ImportError:
+    ogusa = None
+    ogusa_version = "0.5.12"
+else:
+    ogusa_version = ogusa.__version__
+
 tcversion_info = taxcalc.__version__
-ogusa_version = ogusa.__version__
 
 NUM_BUDGET_YEARS = int(os.environ.get('NUM_BUDGET_YEARS', 10))
 
