@@ -157,14 +157,8 @@
               </ul>
               <div class="sidebar-button">
                 <a href="#" ></a>
-                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" name="full_calc" value="Show me the results!">
+                <a class="btn btn-secondary btn-block btn-animate" disabled>Show me the results!</a>
             </div>
-              <div class="sidebar-button">
-                <a href="#" ></a>
-                <button id="tax-submit-quick" class="btn btn-tertiary btn-block" type="submit" value="quick_calc" name="quick_calc">
-                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; small sample)</span>
-                </button>
-              </div>
             </div> <!-- sidebar -->
           </div>
           <div class="col-xs-9">
@@ -241,10 +235,10 @@
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          <h4 class="modal-title" id="redirect-modal-label">This page has moved to <a href="https://compmodels.org/PSLmodels/Tax-Brain/">https://compmodels.org/PSLmodels/Tax-Brain/</a></h4>
+          <h4 class="modal-title" id="redirect-modal-label">This page has moved to <a href="https://compmodels.org/PSLmodels/Tax-Brain/">compmodels.org/PSLmodels/Tax-Brain/</a></h4>
         </div>
         <div class="modal-body">
-          <p>Redirecting in 5 seconds...</p>
+          <p>Redirecting in 15 seconds...</p>
           <p>Your previous simulations on ospc.org/taxbrain/[sim-number] are still available.</p>
         </div>
         <div class="modal-footer">
@@ -297,7 +291,7 @@
     var timer = 0;
     timer = setTimeout(function () {
       window.location.replace("https://compmodels.org/PSLmodels/Tax-Brain/")
-    }, 5000);
+    }, 15000);
     $("#redirect-modal").modal("show");
     $("#stay-put").click( function(e) {
       clearTimeout(timer);
