@@ -632,7 +632,7 @@ def edit_personal_results(request, pk):
         'data_source': model.data_source
     }
 
-    return render(request, 'taxbrain/input_form.html', init_context)
+    return render(request, 'taxbrain/edit_input_form.html', init_context)
 
 
 def add_summary_column(table):
