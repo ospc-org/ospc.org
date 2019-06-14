@@ -2,12 +2,10 @@ Django==1.9
 argparse==1.2.1
 dj-database-url==0.3.0
 dj-static==0.0.6
-django-toolbelt==0.0.1
 waitress
 static3==0.5.1
 -e git+https://github.com/funkybob/django-flatblocks.git#egg=django-flatblocks
 sendgrid-django
-psycopg2>=2.5.4
 django-user-accounts
 django-uuidfield==0.5.0
 newrelic
@@ -29,3 +27,4 @@ toolz
 whitenoise
 msgpack
 psycopg2-binary
+gunicorn
