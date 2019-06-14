@@ -157,14 +157,8 @@
               </ul>
               <div class="sidebar-button">
                 <a href="#" ></a>
-                <input id="tax-submit" class="btn btn-secondary btn-block btn-animate" type="submit" name="full_calc" value="Show me the results!">
+                <a class="btn btn-secondary btn-block btn-animate" disabled>Show me the results!</a>
             </div>
-              <div class="sidebar-button">
-                <a href="#" ></a>
-                <button id="tax-submit-quick" class="btn btn-tertiary btn-block" type="submit" value="quick_calc" name="quick_calc">
-                    Quick Calculation! <br> <span style="font-size:smaller;">(1 year; small sample)</span>
-                </button>
-              </div>
             </div> <!-- sidebar -->
           </div>
           <div class="col-xs-9">
@@ -236,6 +230,24 @@
     </form> <!-- form -->
     <div class="push"></div>
   </div> <!-- /wrapper -->
+  <div class="modal fade" id="redirect-modal" tabindex="-1" role="dialog" aria-labelledby="redirect-modal-label">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="redirect-modal-label">This page has moved to <a href="https://compmodels.org/PSLmodels/Tax-Brain/">compmodels.org/PSLmodels/Tax-Brain/</a></h4>
+        </div>
+        <div class="modal-body">
+          <p>Redirecting in 15 seconds...</p>
+          <p>Your previous simulations on ospc.org/taxbrain/[sim-number] are still available.</p>
+        </div>
+        <div class="modal-footer">
+          <a type="button" class="btn btn-default" data-dismiss="modal" id="stay-put">Return to apps.ospc.org</a>
+          <a type="button" class="btn btn-primary" href="https://compmodels.org/PSLmodels/Tax-Brain/">Redirect now</a>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="modal fade" id="current-year-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -271,4 +283,22 @@
     </div>
   </div>
 
+{% endblock %}
+
+{% block bottom_scripts %}
+<script>
+  $(document).ready(function() {
+    var timer = 0;
+    timer = setTimeout(function () {
+      window.location.replace("https://compmodels.org/PSLmodels/Tax-Brain/")
+    }, 15000);
+    $("#redirect-modal").modal("show");
+    $("#stay-put").click( function(e) {
+      clearTimeout(timer);
+    });
+    $("input.form-control").each(function() {
+      $(this).attr("disabled", true);
+    });
+  })
+</script>
 {% endblock %}

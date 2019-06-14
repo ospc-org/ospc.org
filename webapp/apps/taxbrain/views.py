@@ -629,10 +629,11 @@ def edit_personal_results(request, pk):
         'is_edit_page': True,
         'has_errors': False,
         'data_sources': DATA_SOURCES,
-        'data_source': model.data_source
+        'data_source': model.data_source,
+        'result_url': url.get_absolute_url()
     }
 
-    return render(request, 'taxbrain/input_form.html', init_context)
+    return render(request, 'taxbrain/edit_input_form.html', init_context)
 
 
 def add_summary_column(table):

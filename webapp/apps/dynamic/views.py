@@ -66,9 +66,13 @@ from ..formatters import format_dynamic_params, get_version
 
 TAXCALC_VERSION = taxcalc.__version__
 
-# TODO: use import ogusa; ogusa.__version__
-import ogusa
-OGUSA_VERSION = ogusa.__version__
+try:
+    import ogusa
+except ImportError:
+    ogusa = None
+    OGUSA_VERSION = "0.5.12"
+else:
+    OGUSA_VERSION = ogusa.__version__
 
 from django.conf import settings
 WEBAPP_VERSION = settings.WEBAPP_VERSION

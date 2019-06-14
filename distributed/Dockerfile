@@ -12,9 +12,21 @@ RUN conda update conda
 RUN conda config --add channels pslmodels
 RUN conda config --append channels conda-forge
 
-RUN conda install python=3.6 numpy>=1.12.1 pandas>=0.23.0 taxcalc=0.24.0 \
-    btax=0.2.8 matplotlib>=3.0.1 numba six bokeh>=0.12.7 mock xlrd \
-    sphinx nomkl
+# RUN conda install -c ospc -c anaconda --file conda-requirements.txt --yes
+RUN conda install --yes \
+    "numpy==1.14.2" \
+    "pandas==0.23.4" \
+    "bokeh==1.0.2" \
+    "numba==0.41.0" \
+    "scipy==1.1.0" \
+    "pyparsing==2.3.0" \
+    "matplotlib==3.0.1" \
+    "pillow==5.3.0"
+COPY taxcalc-0.24.0-py36_0.tar.bz2 /home/taxcalc-0.24.0-py36_0.tar.bz2
+COPY btax-0.2.8-py36_0.tar.bz2 /home/btax-0.2.8-py36_0.tar.bz2
+RUN ls /
+RUN conda install --yes /home/taxcalc-0.24.0-py36_0.tar.bz2
+RUN conda install --yes /home/btax-0.2.8-py36_0.tar.bz2
 
 RUN pip install -r requirements.txt
 
@@ -31,3 +43,9 @@ RUN if [ -z ${PUF_TOKEN+x} ]; \
             write-latest-taxpuf && \
             gunzip -k puf.csv.gz; \
         fi
+
+WORKDIR /home/distributed
+
+RUN pip install -r requirements.txt
+
+WORKDIR /home/distributed/api
