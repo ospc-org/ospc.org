@@ -13,7 +13,7 @@ pdfkit==0.4.1
 django-hermes
 mock
 eventlet
-django-debug-toolbar==1.2.1
+django-debug-toolbar==1.11.1
 django_import_export
 yolk==0.4.3
 django-ipware
